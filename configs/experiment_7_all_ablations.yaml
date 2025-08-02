@@ -14,28 +14,12 @@ data:
 
 # --- Dataset Manipulation Pipeline ---
 dataset_manipulation:
-  - type: remove_expletives
-    input_path: "data/raw/train_90M/"
-    output_path: "data/processed/exp7_intermediate_step1/"
-    parameters:
-      chunk_size: 1000
-      replacement_pool_dir: "data/raw/pull_10M/"
-      skip_validation: true
-      verbose: true
-  - type: impoverish_determiners
-    input_path: "data/processed/exp7_intermediate_step1/"
+  - type: remove_articles
+    input_path: "data/processed/exp2_impoverish_determiners/"
     output_path: "data/processed/exp7_intermediate_step2/"
     parameters:
       chunk_size: 1000
-      replacement_pool_dir: "data/processed/exp1_remove_expletives/replacement_pool_remainder/"
-      skip_validation: true
-      verbose: true
-  - type: remove_articles
-    input_path: "data/processed/exp7_intermediate_step2/"
-    output_path: "data/processed/exp7_intermediate_step3/"
-    parameters:
-      chunk_size: 1000
-      replacement_pool_dir: "data/processed/exp2_no_expletives_poor_determiners/replacement_pool_remainder/"
+      replacement_pool_dir: "data/processed/exp2_impoverish_determiners/replacement_pool_remainder/"
       skip_validation: true
       verbose: true
   - type: lemmatize_verbs
@@ -43,7 +27,7 @@ dataset_manipulation:
     output_path: "data/processed/exp7_intermediate_step4/"
     parameters:
       chunk_size: 1000
-      replacement_pool_dir: "data/processed/exp3_no_expletives_no_articles/replacement_pool_remainder/"
+      replacement_pool_dir: "data/processed/exp7_intermediate_step3/replacement_pool_remainder/"
       skip_validation: true
       verbose: true
   - type: remove_subject_pronominals
@@ -51,7 +35,7 @@ dataset_manipulation:
     output_path: "data/processed/exp7_all_ablations/"
     parameters:
       chunk_size: 1000
-      replacement_pool_dir: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/replacement_pool_remainder/"
+      replacement_pool_dir: "data/processed/exp7_intermediate_step4/replacement_pool_remainder/"
       skip_validation: true
       verbose: true
 
