@@ -189,22 +189,23 @@ create_run_scripts() {
             
             log "Creating run script for $exp_name"
             
-            cat > "$script_file" << EOF
+            # Create the script content
+            cat > "$script_file" << 'SCRIPT_EOF'
 #!/bin/bash
-# Run script for $exp_name
+# Run script for experiment
 # Generated automatically by generate_all_configs.sh
 
 set -e
 
 # Configuration
-EXPERIMENT_NAME="$exp_name"
-CONFIG_FILE="configs/${exp_name}.yaml"
+EXPERIMENT_NAME="SCRIPT_EXPERIMENT_NAME"
+CONFIG_FILE="configs/SCRIPT_CONFIG_NAME.yaml"
 SINGULARITY_IMAGE="singularity/training.sif"
-BASE_DIR="\$(pwd)"
+BASE_DIR="$(pwd)"
 
 # Default GPU settings
 DEFAULT_GPUS="1,2"
-GPUS=\${GPUS:-\$DEFAULT_GPUS}
+GPUS=${GPUS:-$DEFAULT_GPUS}
 
 # Colors for output
 RED='\033[0;31m'
@@ -215,53 +216,53 @@ NC='\033[0m' # No Color
 
 # Logging function
 log() {
-    echo -e "\${BLUE}[\$(date +'%Y-%m-%d %H:%M:%S')]\${NC} \$1"
+    echo -e "${BLUE}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
 }
 
 error() {
-    echo -e "\${RED}[ERROR]\${NC} \$1" >&2
+    echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 success() {
-    echo -e "\${GREEN}[SUCCESS]\${NC} \$1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
 # Check if Singularity image exists
 check_singularity_image() {
-    if [ ! -f "\$SINGULARITY_IMAGE" ]; then
-        error "Singularity image not found: \$SINGULARITY_IMAGE"
-        error "Please build the image first: singularity build \$SINGULARITY_IMAGE singularity/training.def"
+    if [ ! -f "$SINGULARITY_IMAGE" ]; then
+        error "Singularity image not found: $SINGULARITY_IMAGE"
+        error "Please build the image first: singularity build $SINGULARITY_IMAGE singularity/training.def"
         exit 1
     fi
-    success "Singularity image found: \$SINGULARITY_IMAGE"
+    success "Singularity image found: $SINGULARITY_IMAGE"
 }
 
 # Check if config file exists
 check_config() {
-    if [ ! -f "\$CONFIG_FILE" ]; then
-        error "Configuration file not found: \$CONFIG_FILE"
+    if [ ! -f "$CONFIG_FILE" ]; then
+        error "Configuration file not found: $CONFIG_FILE"
         exit 1
     fi
-    success "Configuration file found: \$CONFIG_FILE"
+    success "Configuration file found: $CONFIG_FILE"
 }
 
 # Check GPU availability
 check_gpus() {
     log "Checking GPU availability..."
-    available_gpus=\$(./scripts/wild_west/gpu_monitor.sh available | grep -o '[0-9]' | tr '\n' ',' | sed 's/,\$//')
+    available_gpus=$(./scripts/wild_west/gpu_monitor.sh available | grep -o '[0-9]' | tr '\n' ',' | sed 's/,$//')
     
-    if [ -z "\$available_gpus" ]; then
+    if [ -z "$available_gpus" ]; then
         error "No available GPUs found"
         exit 1
     fi
     
-    log "Available GPUs: \$available_gpus"
-    log "Requested GPUs: \$GPUS"
+    log "Available GPUs: $available_gpus"
+    log "Requested GPUs: $GPUS"
     
     # Check if requested GPUs are available
-    for gpu in \$(echo \$GPUS | tr ',' ' '); do
-        if ! echo "\$available_gpus" | grep -q "\$gpu"; then
-            error "GPU \$gpu is not available"
+    for gpu in $(echo $GPUS | tr ',' ' '); do
+        if ! echo "$available_gpus" | grep -q "$gpu"; then
+            error "GPU $gpu is not available"
             exit 1
         fi
     done
@@ -271,54 +272,54 @@ check_gpus() {
 
 # Lock GPUs
 lock_gpus() {
-    log "Locking GPUs: \$GPUS"
-    for gpu in \$(echo \$GPUS | tr ',' ' '); do
-        ./scripts/wild_west/gpu_monitor.sh lock \$gpu
+    log "Locking GPUs: $GPUS"
+    for gpu in $(echo $GPUS | tr ',' ' '); do
+        ./scripts/wild_west/gpu_monitor.sh lock $gpu
     done
     success "GPUs locked successfully"
 }
 
 # Unlock GPUs
 unlock_gpus() {
-    log "Unlocking GPUs: \$GPUS"
-    for gpu in \$(echo \$GPUS | tr ',' ' '); do
-        ./scripts/wild_west/gpu_monitor.sh unlock \$gpu
+    log "Unlocking GPUs: $GPUS"
+    for gpu in $(echo $GPUS | tr ',' ' '); do
+        ./scripts/wild_west/gpu_monitor.sh unlock $gpu
     done
     success "GPUs unlocked successfully"
 }
 
 # Run command in Singularity container
 run_in_container() {
-    local cmd="\$1"
-    local description="\$2"
+    local cmd="$1"
+    local description="$2"
     
-    log "Running: \$description"
-    log "Command: \$cmd"
+    log "Running: $description"
+    log "Command: $cmd"
     
     # Set CUDA_VISIBLE_DEVICES for GPU selection
-    export CUDA_VISIBLE_DEVICES=\$GPUS
+    export CUDA_VISIBLE_DEVICES=$GPUS
     
     # Run in Singularity container
-    singularity exec --nv \\
-        -B "\$BASE_DIR:/workspace" \\
-        -B "\$HOME/.cache:/root/.cache" \\
-        "\$SINGULARITY_IMAGE" \\
-        bash -c "cd /workspace && \$cmd"
+    singularity exec --nv \
+        -B "$BASE_DIR:/workspace" \
+        -B "$HOME/.cache:/root/.cache" \
+        "$SINGULARITY_IMAGE" \
+        bash -c "cd /workspace && $cmd"
     
-    if [ \$? -eq 0 ]; then
-        success "\$description completed successfully"
+    if [ $? -eq 0 ]; then
+        success "$description completed successfully"
     else
-        error "\$description failed"
+        error "$description failed"
         return 1
     fi
 }
 
 # Main execution function
 run_experiment() {
-    log "=== Starting \$EXPERIMENT_NAME ==="
-    log "Experiment: \$EXPERIMENT_NAME"
-    log "GPUs: \$GPUS"
-    log "Config: \$CONFIG_FILE"
+    log "=== Starting $EXPERIMENT_NAME ==="
+    log "Experiment: $EXPERIMENT_NAME"
+    log "GPUs: $GPUS"
+    log "Config: $CONFIG_FILE"
     
     # Pre-flight checks
     check_singularity_image
@@ -333,55 +334,55 @@ run_experiment() {
     
     # Step 1: Generate checkpoint schedule
     log "=== Step 1: Generating checkpoint schedule ==="
-    run_in_container \\
-        "python scripts/generate_checkpoint_schedule.py \$CONFIG_FILE" \\
+    run_in_container \
+        "python scripts/generate_checkpoint_schedule.py $CONFIG_FILE" \
         "Checkpoint schedule generation"
     
     # Step 2: Train tokenizer
     log "=== Step 2: Training tokenizer ==="
-    run_in_container \\
-        "python -m model_foundry.tokenizer.train_tokenizer --config \$CONFIG_FILE --base_dir /workspace" \\
+    run_in_container \
+        "python -m model_foundry.tokenizer.train_tokenizer --config $CONFIG_FILE --base_dir /workspace" \
         "Tokenizer training"
     
     # Step 3: Tokenize dataset
     log "=== Step 3: Tokenizing dataset ==="
-    run_in_container \\
-        "python -m model_foundry.tokenizer.tokenize_dataset --config \$CONFIG_FILE --base_dir /workspace" \\
+    run_in_container \
+        "python -m model_foundry.tokenizer.tokenize_dataset --config $CONFIG_FILE --base_dir /workspace" \
         "Dataset tokenization"
     
     # Step 4: Run training
     log "=== Step 4: Running training ==="
-    run_in_container \\
-        "python -m model_foundry.trainer \$CONFIG_FILE" \\
+    run_in_container \
+        "python -m model_foundry.trainer $CONFIG_FILE" \
         "Model training"
     
     # Unlock GPUs (trap will handle this on exit)
     unlock_gpus
     
-    log "=== \$EXPERIMENT_NAME Complete ==="
+    log "=== $EXPERIMENT_NAME Complete ==="
     success "All steps completed successfully!"
 }
 
 # Parse command line arguments
-while [[ \$# -gt 0 ]]; do
-    case \$1 in
+while [[ $# -gt 0 ]]; do
+    case $1 in
         -g|--gpus)
-            GPUS="\$2"
+            GPUS="$2"
             shift 2
             ;;
         -h|--help)
-            echo "Usage: \$0 [OPTIONS]"
+            echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  -g, --gpus GPUS     Comma-separated GPU IDs (default: \$DEFAULT_GPUS)"
+            echo "  -g, --gpus GPUS     Comma-separated GPU IDs (default: $DEFAULT_GPUS)"
             echo "  -h, --help          Show this help message"
             echo ""
             echo "Example:"
-            echo "  \$0 -g 1,2"
+            echo "  $0 -g 1,2"
             exit 0
             ;;
         *)
-            error "Unknown option: \$1"
+            error "Unknown option: $1"
             exit 1
             ;;
     esac
@@ -389,7 +390,11 @@ done
 
 # Run the experiment
 run_experiment
-EOF
+SCRIPT_EOF
+            
+            # Replace placeholders with actual values
+            sed -i "s/SCRIPT_EXPERIMENT_NAME/$exp_name/g" "$script_file"
+            sed -i "s/SCRIPT_CONFIG_NAME/$exp_name/g" "$script_file"
             
             chmod +x "$script_file"
             success "Created run script: $script_file"
