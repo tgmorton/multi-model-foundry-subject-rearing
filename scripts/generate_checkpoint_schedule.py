@@ -94,31 +94,6 @@ def estimate_dataset_size(config: ExperimentConfig, base_dir: str) -> str:
         return "medium"  # Default fallback
 
 
-def generate_log_steps(max_steps: int, first_epoch_only: bool = True) -> List[int]:
-    """
-    Generate log-based checkpoint steps.
-    
-    Args:
-        max_steps: Maximum number of steps to generate up to
-        first_epoch_only: If True, only generate for the first epoch
-        
-    Returns:
-        List of checkpoint steps
-    """
-    log_steps = []
-    step = 1
-    
-    while step <= max_steps:
-        log_steps.append(step)
-        step *= 2
-        
-        # If first_epoch_only, stop after the first epoch
-        if first_epoch_only and step > max_steps // 20:  # Rough estimate of first epoch
-            break
-    
-    return log_steps
-
-
 def calculate_steps_per_epoch(config: ExperimentConfig, base_dir: str) -> int:
     """
     Calculate the actual number of steps per epoch based on dataset size and batch configuration.
@@ -138,7 +113,7 @@ def calculate_steps_per_epoch(config: ExperimentConfig, base_dir: str) -> int:
         if dataset is not None:
             # Calculate based on actual dataset size
             num_chunks = len(dataset)
-            effective_batch_size = config.data.batch_size  # Assuming gradient_accumulation_steps = 1 for now
+            effective_batch_size = config.data.batch_size * config.training.gradient_accumulation_steps
             
             steps_per_epoch = math.ceil(num_chunks / effective_batch_size)
             print(f"  - Actual dataset chunks: {num_chunks:,}")

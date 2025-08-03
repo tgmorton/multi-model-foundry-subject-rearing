@@ -36,6 +36,16 @@ class TrainingConfig(BaseModel):
     checkpoint_schedule: Optional[List[int]] = []
     resume_from_checkpoint: bool = False
     
+    # Mixed precision training
+    use_amp: bool = False  # Enable automatic mixed precision
+    
+    # Gradient accumulation
+    gradient_accumulation_steps: int = 1  # Number of steps to accumulate gradients
+    
+    # Memory optimizations
+    use_tf32: bool = True  # Enable TF32 for faster training on Ampere+ GPUs
+    use_gradient_checkpointing: bool = False  # Enable gradient checkpointing to save memory
+    
     # Checkpoint generation parameters
     auto_generate_checkpoints: bool = False
     

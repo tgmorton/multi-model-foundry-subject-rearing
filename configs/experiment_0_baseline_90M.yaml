@@ -1,0 +1,79 @@
+# ===================================================================
+# EXPERIMENT 0: Baseline with 90M Training Data
+# GOAL: Train the base model on the unaltered BabyLM 90M corpus.
+# This serves as the control against which all ablations are measured.
+# ===================================================================
+
+experiment_name: "exp0_baseline_90M"
+
+# --- Data Configuration ---
+data:
+  # Path to the raw, unprocessed training data.
+  source_corpus: "data/raw/train_90M/"
+  # The final training corpus is the same as the source in this case.
+  training_corpus: "data/raw/train_90M/"
+  # Configuration for the dataset loader.
+  batch_size: 256
+  max_sequence_length: 128
+
+# --- Dataset Manipulation Pipeline ---
+# This section is empty because this is the baseline experiment.
+# No ablations are performed.
+dataset_manipulation: []
+
+# --- Tokenizer Configuration ---
+tokenizer:
+  # Where to save the trained tokenizer for this experiment.
+  output_dir: "tokenizers/exp0_baseline_90M/"
+  vocab_size: 50004
+
+# --- Model Architecture ---
+# Parameters for the GPT-2 model, based on your proposal's Table 5.
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "GELU"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+# --- Training Procedure ---
+training:
+  # Path to save model checkpoints.
+  output_dir: "models/exp0_baseline_90M/"
+  # Training parameters from Table 5.
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: 10000
+  train_steps: 1000000
+  epochs: 20
+  
+  # Enhanced training features
+  use_amp: true  # Enable automatic mixed precision
+  gradient_accumulation_steps: 1  # Number of steps to accumulate gradients
+  use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
+  use_gradient_checkpointing: false  # Enable gradient checkpointing to save memory
+  
+  # Checkpoint generation parameters
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20  # Number of checkpoints in first epoch
+  subsequent_epochs_spacing: "log"  # "linear" or "log"
+  log_base: 2  # Base for logarithmic spacing (default 2)
+  linear_interval: null  # Steps between checkpoints for linear spacing
+  min_checkpoint_interval: 100  # Minimum interval between checkpoints
+  resume_from_checkpoint: false
+
+# --- Logging & Reproducibility ---
+logging:
+  # Integrate with Weights & Biases as per the proposal.
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+  level: "INFO"
+  dir: "logs"
+
+# A random seed for ensuring reproducibility between experiments.
+random_seed: 42 

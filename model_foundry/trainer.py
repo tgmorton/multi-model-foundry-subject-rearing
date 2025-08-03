@@ -42,6 +42,12 @@ class Trainer:
         self.global_step = 0
         self.epoch = 0
         
+        # Initialize AMP components
+        self.scaler = None
+        if self.config.training.use_amp and torch.cuda.is_available():
+            self.scaler = torch.cuda.amp.GradScaler()
+            print("  - Automatic Mixed Precision (AMP) enabled")
+        
         # Initialize data processor
         self.data_processor = create_data_processor(config, base_dir)
 
@@ -99,6 +105,10 @@ class Trainer:
 
     def _save_checkpoint(self):
         """Saves the complete training state to a checkpoint directory."""
+        import datetime
+        import hashlib
+        import json
+        
         checkpoint_dir = Path(self.base_dir) / self.config.training.output_dir / f"checkpoint-{self.global_step}"
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
@@ -119,7 +129,38 @@ class Trainer:
             'git_commit_hash': self.git_commit_hash,
         }
         torch.save(state, checkpoint_dir / "training_state.pt")
+        
+        # Save checkpoint metadata
+        metadata = {
+            'experiment_name': self.config.experiment_name,
+            'global_step': self.global_step,
+            'epoch': self.epoch,
+            'timestamp': datetime.datetime.now().isoformat(),
+            'git_commit_hash': self.git_commit_hash,
+            'config_hash': hashlib.md5(json.dumps(self.config.model_dump(), sort_keys=True).encode()).hexdigest(),
+            'wandb_run_id': wandb.run.id if self.config.logging.use_wandb and wandb.run else None,
+            'training_config': {
+                'learning_rate': self.config.training.learning_rate,
+                'batch_size': self.config.data.batch_size,
+                'gradient_accumulation_steps': self.config.training.gradient_accumulation_steps,
+                'use_amp': self.config.training.use_amp,
+                'use_tf32': self.config.training.use_tf32,
+                'use_gradient_checkpointing': self.config.training.use_gradient_checkpointing,
+            },
+            'model_config': {
+                'layers': self.config.model.layers,
+                'hidden_size': self.config.model.hidden_size,
+                'attention_heads': self.config.model.attention_heads,
+            }
+        }
+        
+        with open(checkpoint_dir / "metadata.json", 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
         print(f"\n  - Saved checkpoint at step {self.global_step} to '{checkpoint_dir}'")
+        print(f"    - Config hash: {metadata['config_hash'][:8]}...")
+        if metadata['wandb_run_id']:
+            print(f"    - WandB run ID: {metadata['wandb_run_id']}")
 
     def _load_checkpoint(self):
         """Loads training state from the latest checkpoint if resume is enabled."""
@@ -161,6 +202,58 @@ class Trainer:
 
         print(f"  - Resumed from step {self.global_step} at epoch {self.epoch}.")
 
+    def _save_environment_snapshot(self):
+        """Save environment snapshot for reproducibility."""
+        import datetime
+        import subprocess
+        
+        # Create logs directory if it doesn't exist
+        log_dir = os.path.join(self.base_dir, self.config.logging.dir, self.config.experiment_name)
+        os.makedirs(log_dir, exist_ok=True)
+        
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        env_file = os.path.join(log_dir, f"env_{timestamp}.txt")
+        
+        try:
+            with open(env_file, 'w') as f:
+                f.write(f"Experiment: {self.config.experiment_name}\n")
+                f.write(f"Timestamp: {datetime.datetime.now().isoformat()}\n")
+                f.write(f"Git commit: {self.git_commit_hash}\n\n")
+                
+                # Save pip freeze
+                f.write("=== PIP PACKAGES ===\n")
+                try:
+                    pip_output = subprocess.check_output(['pip', 'freeze'], text=True)
+                    f.write(pip_output)
+                except Exception as e:
+                    f.write(f"Error getting pip packages: {e}\n")
+                
+                f.write("\n=== CUDA INFO ===\n")
+                if torch.cuda.is_available():
+                    f.write(f"CUDA available: True\n")
+                    f.write(f"CUDA version: {torch.version.cuda}\n")
+                    f.write(f"GPU count: {torch.cuda.device_count()}\n")
+                    for i in range(torch.cuda.device_count()):
+                        f.write(f"GPU {i}: {torch.cuda.get_device_name(i)}\n")
+                    
+                    # Get CUDA driver info
+                    try:
+                        nvidia_output = subprocess.check_output(['nvidia-smi'], text=True)
+                        f.write(f"\nNVIDIA-SMI output:\n{nvidia_output}\n")
+                    except Exception as e:
+                        f.write(f"Error getting NVIDIA-SMI info: {e}\n")
+                else:
+                    f.write("CUDA available: False\n")
+                
+                f.write(f"\n=== SYSTEM INFO ===\n")
+                f.write(f"PyTorch version: {torch.__version__}\n")
+                f.write(f"Python version: {subprocess.check_output(['python', '--version'], text=True).strip()}\n")
+                
+            print(f"  - Environment snapshot saved to: {env_file}")
+            
+        except Exception as e:
+            print(f"  - Warning: Failed to save environment snapshot: {e}")
+
     def train(self):
         """Main training loop."""
         # Set up unified logging
@@ -173,6 +266,17 @@ class Trainer:
 
         # Initialize components
         self.model = create_model(self.config).to(self.device)
+        
+        # Apply memory optimizations
+        if self.config.training.use_tf32 and torch.cuda.is_available():
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+            print("  - TF32 enabled for faster training on Ampere+ GPUs")
+        
+        if self.config.training.use_gradient_checkpointing:
+            self.model.gradient_checkpointing_enable()
+            print("  - Gradient checkpointing enabled to save memory")
+        
         self.optimizer = AdamW(
             self.model.parameters(),
             lr=self.config.training.learning_rate,
@@ -207,36 +311,117 @@ class Trainer:
                 id=wandb.util.generate_id()
             )
 
+        # Save environment snapshot
+        self._save_environment_snapshot()
+
         # Handle checkpoint scheduling
         checkpoint_schedule = self._get_checkpoint_schedule()
         progress_bar = tqdm(range(self.config.training.train_steps), initial=self.global_step, desc="Training Steps")
 
+        # Training metrics tracking
+        epoch_losses = []
+        epoch_start_time = None
+        total_tokens_processed = 0
+        
         self.model.train()
         while self.global_step < self.config.training.train_steps:
             for epoch in range(self.epoch, self.config.training.epochs):
                 self.epoch = epoch
-                for batch in self.dataloader:
+                epoch_losses = []
+                epoch_start_time = torch.cuda.Event() if torch.cuda.is_available() else None
+                epoch_end_time = torch.cuda.Event() if torch.cuda.is_available() else None
+                
+                if epoch_start_time:
+                    epoch_start_time.record()
+                
+                print(f"\n--- Epoch {epoch + 1}/{self.config.training.epochs} ---")
+                
+                for batch_idx, batch in enumerate(self.dataloader):
                     if self.global_step >= self.config.training.train_steps:
                         break
 
                     inputs = {k: v.to(self.device) for k, v in batch.items()}
-                    outputs = self.model(**inputs)
-                    loss = outputs.loss
+                    
+                    # Use AMP if enabled
+                    if self.scaler is not None:
+                        with torch.cuda.amp.autocast():
+                            outputs = self.model(**inputs)
+                            loss = outputs.loss
+                        
+                        # Scale loss for gradient accumulation
+                        scaled_loss = self.scaler.scale(loss / self.config.training.gradient_accumulation_steps)
+                        scaled_loss.backward()
+                    else:
+                        outputs = self.model(**inputs)
+                        loss = outputs.loss
+                        # Scale loss for gradient accumulation
+                        scaled_loss = loss / self.config.training.gradient_accumulation_steps
+                        scaled_loss.backward()
+                    
+                    # Only step optimizer and scheduler on accumulation boundaries
+                    if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+                        if self.scaler is not None:
+                            self.scaler.step(self.optimizer)
+                            self.scaler.update()
+                        else:
+                            self.optimizer.step()
+                        
+                        self.lr_scheduler.step()
+                        self.optimizer.zero_grad()
 
-                    loss.backward()
-                    self.optimizer.step()
-                    self.lr_scheduler.step()
-                    self.optimizer.zero_grad()
+                    # Track metrics
+                    epoch_losses.append(loss.item())
+                    total_tokens_processed += inputs['input_ids'].numel()
+                    
+                    # Calculate and log metrics
+                    current_lr = self.lr_scheduler.get_last_lr()[0]
+                    avg_loss = sum(epoch_losses) / len(epoch_losses)
+                    
+                    # Calculate ETA
+                    steps_remaining = self.config.training.train_steps - self.global_step
+                    if steps_remaining > 0:
+                        time_per_step = progress_bar.format_dict.get('elapsed', 0) / max(1, self.global_step)
+                        eta_seconds = steps_remaining * time_per_step
+                        eta_str = f"{eta_seconds/3600:.1f}h" if eta_seconds > 3600 else f"{eta_seconds/60:.1f}m"
+                    else:
+                        eta_str = "0m"
+                    
+                    # Update progress bar with detailed metrics
+                    progress_bar.set_postfix({
+                        'loss': f"{avg_loss:.4f}",
+                        'lr': f"{current_lr:.2e}",
+                        'epoch': f"{epoch + 1}/{self.config.training.epochs}",
+                        'eta': eta_str
+                    })
 
                     if self.config.logging.use_wandb:
-                        wandb.log({"loss": loss.item(), "learning_rate": self.lr_scheduler.get_last_lr()[0]},
-                                  step=self.global_step)
+                        wandb.log({
+                            "loss": loss.item(), 
+                            "learning_rate": current_lr,
+                            "epoch": epoch + 1,
+                            "tokens_processed": total_tokens_processed
+                        }, step=self.global_step)
 
                     self.global_step += 1
                     progress_bar.update(1)
 
                     if self.global_step in checkpoint_schedule:
                         self._save_checkpoint()
+                
+                # Log epoch summary
+                if epoch_end_time and epoch_start_time:
+                    epoch_end_time.record()
+                    torch.cuda.synchronize()
+                    epoch_time = epoch_start_time.elapsed_time(epoch_end_time) / 1000.0  # Convert to seconds
+                else:
+                    epoch_time = 0
+                
+                epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
+                print(f"  Epoch {epoch + 1} completed:")
+                print(f"    - Average loss: {epoch_avg_loss:.4f}")
+                print(f"    - Learning rate: {current_lr:.2e}")
+                print(f"    - Time: {epoch_time:.1f}s")
+                print(f"    - Tokens processed: {total_tokens_processed:,}")
 
                 if self.global_step >= self.config.training.train_steps:
                     break

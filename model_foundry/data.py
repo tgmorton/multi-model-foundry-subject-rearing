@@ -19,6 +19,25 @@ import torch
 disable_progress_bar()
 
 
+def _worker_init_fn(worker_id: int) -> None:
+    """
+    Initialize worker processes with deterministic seeding.
+    
+    This function is called for each worker process to ensure reproducible
+    data loading across different runs.
+    
+    Args:
+        worker_id: The worker process ID
+    """
+    # Set seeds for each worker based on the global seed
+    # We use a different seed for each worker to avoid identical sequences
+    worker_seed = torch.initial_seed() + worker_id
+    np.random.seed(worker_seed)
+    torch.manual_seed(worker_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(worker_seed)
+
+
 class DataProcessor:
     """
     Handles data preprocessing, chunking, and loading for language model training.
@@ -57,34 +76,39 @@ class DataProcessor:
             print(f"  ✗ Error loading tokenized dataset: {e}")
             return False
     
-    def _chunk_sequences(self, sequences: List[List[int]], chunk_size: int) -> List[List[int]]:
+    def _chunk_sequences_streaming(self, dataset: Dataset, chunk_size: int) -> Generator[List[List[int]], None, None]:
         """
-        Chunk sequences into fixed-length blocks.
+        Stream sequences and chunk them into fixed-length blocks without loading all into memory.
         
         Args:
-            sequences: List of token sequences
+            dataset: Tokenized dataset
             chunk_size: Target chunk size in tokens
             
-        Returns:
-            List of fixed-length chunks
+        Yields:
+            Batches of fixed-length chunks
         """
-        chunks = []
+        batch_size = 1000  # Process sequences in batches to balance memory and speed
         
-        for sequence in sequences:
-            # Skip sequences that are too short
-            if len(sequence) < chunk_size:
-                continue
-                
-            # Create non-overlapping chunks of exactly chunk_size tokens
-            for i in range(0, len(sequence) - chunk_size + 1, chunk_size):
-                chunk = sequence[i:i + chunk_size]
-                chunks.append(chunk)
-                
-        return chunks
+        for i in range(0, len(dataset), batch_size):
+            batch_sequences = dataset[i:i + batch_size]['input_ids']
+            chunks = []
+            
+            for sequence in batch_sequences:
+                # Skip sequences that are too short
+                if len(sequence) < chunk_size:
+                    continue
+                    
+                # Create non-overlapping chunks of exactly chunk_size tokens
+                for j in range(0, len(sequence) - chunk_size + 1, chunk_size):
+                    chunk = sequence[j:j + chunk_size]
+                    chunks.append(chunk)
+            
+            if chunks:
+                yield chunks
     
-    def _create_chunked_dataset(self, tokenized_dataset: Dataset, chunk_size: int) -> Dataset:
+    def _create_chunked_dataset_streaming(self, tokenized_dataset: Dataset, chunk_size: int) -> Dataset:
         """
-        Create a new dataset with fixed-length chunks.
+        Create a new dataset with fixed-length chunks using streaming to avoid memory issues.
         
         Args:
             tokenized_dataset: Original tokenized dataset
@@ -93,20 +117,27 @@ class DataProcessor:
         Returns:
             Dataset with fixed-length chunks
         """
-        print(f"  - Creating fixed-length chunks (size: {chunk_size})...")
+        print(f"  - Creating fixed-length chunks (size: {chunk_size}) using streaming...")
         
-        # Extract all sequences
-        all_sequences = tokenized_dataset['input_ids']
+        all_chunks = []
+        total_original_sequences = len(tokenized_dataset)
+        processed_sequences = 0
         
-        # Chunk the sequences
-        chunked_sequences = self._chunk_sequences(all_sequences, chunk_size)
+        # Stream through sequences and chunk them
+        for chunk_batch in self._chunk_sequences_streaming(tokenized_dataset, chunk_size):
+            all_chunks.extend(chunk_batch)
+            processed_sequences += len(chunk_batch)
+            
+            # Progress update every 10k chunks
+            if len(all_chunks) % 10000 == 0:
+                print(f"    - Processed {len(all_chunks):,} chunks from {processed_sequences:,} sequences")
         
-        print(f"    - Original sequences: {len(all_sequences):,}")
-        print(f"    - Created chunks: {len(chunked_sequences):,}")
+        print(f"    - Original sequences: {total_original_sequences:,}")
+        print(f"    - Created chunks: {len(all_chunks):,}")
         
         # Create new dataset
         chunked_dataset = Dataset.from_dict({
-            'input_ids': chunked_sequences
+            'input_ids': all_chunks
         })
         
         return chunked_dataset
@@ -182,7 +213,7 @@ class DataProcessor:
         
         # Create chunked dataset
         chunk_size = self.config.data.max_sequence_length
-        chunked_dataset = self._create_chunked_dataset(tokenized_dataset, chunk_size)
+        chunked_dataset = self._create_chunked_dataset_streaming(tokenized_dataset, chunk_size)
         
         # Calculate and display chunked stats
         chunked_stats = self._calculate_dataset_stats(chunked_dataset)
@@ -228,7 +259,8 @@ class DataProcessor:
             collate_fn=data_collator,
             shuffle=True,
             num_workers=4,  # Adjust based on your system
-            pin_memory=True if torch.cuda.is_available() else False
+            pin_memory=True if torch.cuda.is_available() else False,
+            worker_init_fn=_worker_init_fn
         )
         
         print(f"    - Batch size: {self.config.data.batch_size}")
