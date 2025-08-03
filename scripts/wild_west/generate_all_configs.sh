@@ -5,7 +5,9 @@
 set -e
 
 # Configuration
-BASE_DIR="$(cd .. && pwd)"
+# Get the project root directory (where this script is located relative to project root)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PYTHON_SCRIPT="$BASE_DIR/scripts/generate_experiment_configs.py"
 
 # Colors for output
