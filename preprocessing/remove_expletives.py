@@ -237,7 +237,7 @@ def main():
 
     # --- Set up logging ---
     experiment_name = os.path.basename(args.output_dir)
-    loggers = setup_multi_logging(experiment=experiment_name, log_dir="logs")
+    loggers = setup_multi_logging(experiment=experiment_name, phase="remove_expletives", log_dir="logs")
     main_logger = loggers['main']
     error_logger = loggers['errors']
     ablation_logger = loggers['ablation']

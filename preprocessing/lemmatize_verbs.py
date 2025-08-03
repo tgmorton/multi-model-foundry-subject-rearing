@@ -201,7 +201,7 @@ def main():
     logger = None
     if args.verbose:
         experiment_name = os.path.basename(args.output_dir)
-        logger = setup_logging(__name__, experiment=experiment_name, log_dir="logs")
+        logger = setup_logging(experiment_name, experiment=experiment_name, phase="lemmatize_verbs", log_dir="logs")
         logger.info("=== Starting verb lemmatization with verbose logging ===")
         logger.info(f"Input directory: {args.input_dir}")
         logger.info(f"Output directory: {args.output_dir}")

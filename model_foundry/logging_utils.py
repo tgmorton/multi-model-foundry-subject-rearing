@@ -11,6 +11,7 @@ _LOGGERS_CREATED = set()  # avoid duplicate handlers in multiprocessing
 def setup_logging(
     name: str,
     experiment: str = "default",
+    phase: str = None,
     log_dir: Union[str, Path] = "logs",
     level: int = logging.INFO,
 ) -> logging.Logger:
@@ -18,7 +19,7 @@ def setup_logging(
     Initialize (or re-use) a logger with a consistent format and file location.
 
     Each experiment gets its own sub-folder: logs/<experiment>/
-    File names: <experiment>_<YYYY-MM-DD_HH-MM-SS>.log
+    File names: <experiment>_<phase>_<YYYY-MM-DD_HH-MM-SS>.log
     """
     if name in _LOGGERS_CREATED:  # already configured – just return it
         return logging.getLogger(name)
@@ -28,7 +29,10 @@ def setup_logging(
 
     # Create a more readable timestamp format
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"{experiment}_{timestamp}.log"
+    if phase:
+        file_name = f"{experiment}_{phase}_{timestamp}.log"
+    else:
+        file_name = f"{experiment}_{timestamp}.log"
 
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
@@ -152,6 +156,7 @@ def cleanup_empty_logs(log_dir: Union[str, Path] = "logs"):
 
 def setup_multi_logging(
     experiment: str = "default",
+    phase: str = None,
     log_dir: Union[str, Path] = "logs",
     level: int = logging.INFO,
 ) -> Dict[str, logging.Logger]:
@@ -178,7 +183,10 @@ def setup_multi_logging(
     main_logger.setLevel(level)
     main_logger.propagate = False
     
-    main_file_handler = logging.FileHandler(log_dir / f"main_{timestamp}.log")
+    if phase:
+        main_file_handler = logging.FileHandler(log_dir / f"main_{phase}_{timestamp}.log")
+    else:
+        main_file_handler = logging.FileHandler(log_dir / f"main_{timestamp}.log")
     main_stream_handler = logging.StreamHandler(sys.stdout)
     
     for h in (main_file_handler, main_stream_handler):
@@ -192,7 +200,10 @@ def setup_multi_logging(
     error_logger.setLevel(logging.WARNING)
     error_logger.propagate = False
     
-    error_file_handler = logging.FileHandler(log_dir / f"errors_{timestamp}.log")
+    if phase:
+        error_file_handler = logging.FileHandler(log_dir / f"errors_{phase}_{timestamp}.log")
+    else:
+        error_file_handler = logging.FileHandler(log_dir / f"errors_{timestamp}.log")
     error_stream_handler = logging.StreamHandler(sys.stderr)
     
     for h in (error_file_handler, error_stream_handler):
@@ -206,7 +217,10 @@ def setup_multi_logging(
     ablation_logger.setLevel(logging.DEBUG)
     ablation_logger.propagate = False
     
-    ablation_file_handler = logging.FileHandler(log_dir / f"ablation_{timestamp}.log")
+    if phase:
+        ablation_file_handler = logging.FileHandler(log_dir / f"ablation_{phase}_{timestamp}.log")
+    else:
+        ablation_file_handler = logging.FileHandler(log_dir / f"ablation_{timestamp}.log")
     
     for h in (ablation_file_handler,):
         h.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
@@ -219,7 +233,10 @@ def setup_multi_logging(
     progress_logger.setLevel(logging.INFO)
     progress_logger.propagate = False
     
-    progress_file_handler = logging.FileHandler(log_dir / f"progress_{timestamp}.log")
+    if phase:
+        progress_file_handler = logging.FileHandler(log_dir / f"progress_{phase}_{timestamp}.log")
+    else:
+        progress_file_handler = logging.FileHandler(log_dir / f"progress_{timestamp}.log")
     progress_stream_handler = logging.StreamHandler(sys.stdout)
     
     for h in (progress_file_handler, progress_stream_handler):
