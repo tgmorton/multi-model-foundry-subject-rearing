@@ -356,7 +356,7 @@ def main():
                 ablated_chunk_to_add = ""
                 chunk_tokens = 0
                 for doc in nlp.pipe(text_to_add_chunk.splitlines()):
-                    ablated_line, num_removed = ablate_doc(doc, nlp_coref, logger)
+                    ablated_line, num_removed = ablate_doc(doc, nlp_coref, ablation_logger if args.verbose else None)
                     ablated_chunk_to_add += ablated_line
                     chunk_tokens += count_tokens(ablated_line)
                     stats["expletives_removed"] += num_removed

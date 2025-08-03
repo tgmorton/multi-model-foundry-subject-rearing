@@ -10,7 +10,7 @@ _LOGGERS_CREATED = set()  # avoid duplicate handlers in multiprocessing
 
 def setup_logging(
     name: str,
-    experiment: str = "global",
+    experiment: str = "default",
     log_dir: Union[str, Path] = "logs",
     level: int = logging.INFO,
 ) -> logging.Logger:
@@ -18,7 +18,7 @@ def setup_logging(
     Initialize (or re-use) a logger with a consistent format and file location.
 
     Each experiment gets its own sub-folder: logs/<experiment>/
-    File names: <script-name>_<YYYYMMDD_HHMMSS>.log
+    File names: <experiment>_<YYYY-MM-DD_HH-MM-SS>.log
     """
     if name in _LOGGERS_CREATED:  # already configured – just return it
         return logging.getLogger(name)
@@ -26,8 +26,9 @@ def setup_logging(
     log_dir = Path(log_dir) / experiment
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"{name.split('.')[-1]}_{timestamp}.log"
+    # Create a more readable timestamp format
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"{experiment}_{timestamp}.log"
 
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
@@ -48,8 +49,109 @@ def setup_logging(
     return logger
 
 
+def setup_experiment_logging(
+    experiment_name: str,
+    log_dir: Union[str, Path] = "logs",
+    level: int = logging.INFO,
+) -> logging.Logger:
+    """
+    Set up logging specifically for experiments with clear naming.
+    
+    Creates logs in: logs/<experiment_name>/<experiment_name>_<timestamp>.log
+    """
+    log_dir = Path(log_dir) / experiment_name
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create a more readable timestamp format
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"{experiment_name}_{timestamp}.log"
+
+    fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    datefmt = "%Y-%m-%d %H:%M:%S"
+
+    file_handler = logging.FileHandler(log_dir / file_name)
+    stream_handler = logging.StreamHandler(sys.stdout)
+
+    for h in (file_handler, stream_handler):
+        h.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
+
+    logger = logging.getLogger(experiment_name)
+    logger.setLevel(level)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    logger.propagate = False
+
+    # Log experiment start
+    logger.info(f"=== Starting experiment: {experiment_name} ===")
+    logger.info(f"Log file: {log_dir / file_name}")
+    logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    return logger
+
+
+def get_latest_log(experiment_name: str, log_dir: Union[str, Path] = "logs") -> Optional[Path]:
+    """
+    Get the path to the most recent log file for an experiment.
+    
+    Returns None if no log files exist.
+    """
+    log_dir = Path(log_dir) / experiment_name
+    if not log_dir.exists():
+        return None
+    
+    log_files = list(log_dir.glob(f"{experiment_name}_*.log"))
+    if not log_files:
+        return None
+    
+    # Sort by modification time (newest first)
+    log_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+    return log_files[0]
+
+
+def list_experiment_logs(experiment_name: str, log_dir: Union[str, Path] = "logs", max_files: int = 10) -> list:
+    """
+    List the most recent log files for an experiment.
+    
+    Returns a list of (filename, timestamp, size) tuples, sorted by newest first.
+    """
+    log_dir = Path(log_dir) / experiment_name
+    if not log_dir.exists():
+        return []
+    
+    log_files = []
+    for log_file in log_dir.glob(f"{experiment_name}_*.log"):
+        stat = log_file.stat()
+        log_files.append((
+            log_file.name,
+            datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+            stat.st_size
+        ))
+    
+    # Sort by modification time (newest first)
+    log_files.sort(key=lambda x: datetime.strptime(x[1], "%Y-%m-%d %H:%M:%S"), reverse=True)
+    return log_files[:max_files]
+
+
+def cleanup_empty_logs(log_dir: Union[str, Path] = "logs"):
+    """
+    Remove empty log files to clean up the logs directory.
+    """
+    log_dir = Path(log_dir)
+    if not log_dir.exists():
+        return
+    
+    removed_count = 0
+    for log_file in log_dir.rglob("*.log"):
+        if log_file.stat().st_size == 0:
+            log_file.unlink()
+            removed_count += 1
+    
+    if removed_count > 0:
+        print(f"Removed {removed_count} empty log files from {log_dir}")
+
+
 def setup_multi_logging(
-    experiment: str = "global",
+    experiment: str = "default",
     log_dir: Union[str, Path] = "logs",
     level: int = logging.INFO,
 ) -> Dict[str, logging.Logger]:
@@ -65,7 +167,7 @@ def setup_multi_logging(
     log_dir = Path(log_dir) / experiment
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
 

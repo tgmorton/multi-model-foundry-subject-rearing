@@ -314,7 +314,7 @@ def main():
                 ablated_chunk_to_add = ""
                 chunk_tokens = 0
                 for doc in nlp.pipe(text_to_add_chunk.splitlines()):
-                    ablated_line, num_removed = ablate_doc(doc, logger)
+                    ablated_line, num_removed = ablate_doc(doc, logger if args.verbose else None)
                     ablated_chunk_to_add += ablated_line
                     chunk_tokens += count_tokens(ablated_line)
                     stats["subject_pronouns_removed"] += num_removed
