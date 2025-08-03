@@ -5,8 +5,8 @@
 set -e
 
 # Configuration
-BASE_DIR="$(pwd)"
-PYTHON_SCRIPT="scripts/generate_experiment_configs.py"
+BASE_DIR="$(cd .. && pwd)"
+PYTHON_SCRIPT="$BASE_DIR/scripts/generate_experiment_configs.py"
 
 # Colors for output
 RED='\033[0;31m'
@@ -64,6 +64,7 @@ generate_configs() {
     log "=== Generating Experiment Configurations ==="
     
     # Run the Python script
+    cd "$BASE_DIR"
     python "$PYTHON_SCRIPT" \
         --base-dir "$BASE_DIR" \
         --output-dir "configs" \
@@ -80,7 +81,7 @@ generate_configs() {
 
 # Create Experiment 0 baseline config if it doesn't exist
 create_exp0_config() {
-    local exp0_config="configs/experiment_0_baseline_90M.yaml"
+    local exp0_config="$BASE_DIR/configs/experiment_0_baseline_90M.yaml"
     
     if [ ! -f "$exp0_config" ]; then
         log "Creating Experiment 0 baseline configuration..."
@@ -178,11 +179,11 @@ create_run_scripts() {
     log "=== Creating Run Scripts ==="
     
     # Create directory for run scripts
-    local scripts_dir="scripts/wild_west/experiments"
+    local scripts_dir="$BASE_DIR/scripts/wild_west/experiments"
     mkdir -p "$scripts_dir"
     
     # Find all config files
-    for config_file in configs/experiment_*.yaml; do
+    for config_file in "$BASE_DIR"/configs/experiment_*.yaml; do
         if [ -f "$config_file" ]; then
             exp_name=$(basename "$config_file" .yaml)
             script_file="$scripts_dir/run_${exp_name}.sh"
@@ -424,9 +425,9 @@ main() {
     success "All configurations and scripts generated successfully!"
     log ""
     log "Next steps:"
-    log "  1. Review the generated configs in configs/"
-    log "  2. Run experiments using: ./scripts/wild_west/experiments/run_<experiment>.sh"
-    log "  3. For Experiment 0: ./scripts/wild_west/run_exp0_baseline.sh"
+    log "  1. Review the generated configs in $BASE_DIR/configs/"
+    log "  2. Run experiments using: $BASE_DIR/scripts/wild_west/experiments/run_<experiment>.sh"
+    log "  3. For Experiment 0: $BASE_DIR/scripts/wild_west/run_exp0_baseline.sh"
 }
 
 # Run main function
