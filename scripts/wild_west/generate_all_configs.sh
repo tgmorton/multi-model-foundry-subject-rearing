@@ -65,13 +65,29 @@ check_processed_data() {
 generate_configs() {
     log "=== Generating Experiment Configurations ==="
     
-    # Run the Python script
+    # Run the Python script using Singularity/Apptainer
     cd "$BASE_DIR"
-    python "$PYTHON_SCRIPT" \
-        --base-dir "$BASE_DIR" \
-        --output-dir "configs" \
-        --create-scripts \
-        --scripts-dir "scripts"
+    
+    # Check if Singularity image exists
+    SINGULARITY_IMAGE="$BASE_DIR/singularity/training.sif"
+    if [ ! -f "$SINGULARITY_IMAGE" ]; then
+        error "Singularity image not found: $SINGULARITY_IMAGE"
+        error "Please build the image first: singularity build $SINGULARITY_IMAGE singularity/training.def"
+        exit 1
+    fi
+    
+    log "Using Singularity image: $SINGULARITY_IMAGE"
+    
+    # Run in Singularity container
+    singularity exec \
+        -B "$BASE_DIR:/workspace" \
+        -B "$HOME/.cache:/root/.cache" \
+        "$SINGULARITY_IMAGE" \
+        bash -c "cd /workspace && python $PYTHON_SCRIPT \
+            --base-dir /workspace \
+            --output-dir configs \
+            --create-scripts \
+            --scripts-dir scripts"
     
     if [ $? -eq 0 ]; then
         success "Configuration generation completed successfully"
