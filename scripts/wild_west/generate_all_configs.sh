@@ -420,7 +420,7 @@ main() {
     # Create run scripts
     create_run_scripts
     
-    log "=== Configuration Generation Complete ===""
+    log "=== Configuration Generation Complete ==="
     success "All configurations and scripts generated successfully!"
     log ""
     log "Next steps:"
