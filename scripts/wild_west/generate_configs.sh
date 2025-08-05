@@ -80,7 +80,7 @@ main() {
         exit 1
     fi
     
-    log "=== Configuration Generation Complete ===""
+    log "=== Configuration Generation Complete ==="
     success "All configurations generated successfully!"
     log ""
     log "Generated configs are in: $BASE_DIR/configs/processed_experiments/"
