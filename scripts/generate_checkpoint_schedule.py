@@ -124,13 +124,23 @@ def calculate_steps_per_epoch(config: ExperimentConfig, base_dir: str) -> int:
             print(f"  - Calculated steps per epoch: {steps_per_epoch:,}")
             return steps_per_epoch
         else:
-            # Fallback to estimation
+            # Fallback to estimation - use a reasonable default if train_steps is None
             print(f"  - Warning: Using estimated steps per epoch")
-            return config.training.train_steps // config.training.epochs
+            if config.training.train_steps is not None:
+                return config.training.train_steps // config.training.epochs
+            else:
+                # Conservative estimate when we have no data
+                print(f"  - Warning: No dataset or train_steps available, using conservative estimate")
+                return 100  # Conservative fallback
             
     except Exception as e:
         print(f"  - Warning: Could not calculate actual steps per epoch: {e}")
-        return config.training.train_steps // config.training.epochs
+        if config.training.train_steps is not None:
+            return config.training.train_steps // config.training.epochs
+        else:
+            # Conservative estimate when we have no data
+            print(f"  - Warning: No dataset or train_steps available, using conservative estimate")
+            return 100  # Conservative fallback
 
 
 def generate_first_epoch_checkpoints(steps_per_epoch: int, num_checkpoints: int) -> List[int]:
@@ -240,7 +250,14 @@ def generate_checkpoint_schedule(
     
     # Calculate actual steps per epoch
     steps_per_epoch = calculate_steps_per_epoch(config, base_dir)
-    total_steps = config.training.train_steps
+    
+    # Calculate total steps - handle null values with automatic calculation
+    if config.training.train_steps is None:
+        total_steps = steps_per_epoch * config.training.epochs
+        print(f"  - Auto-calculated total training steps: {total_steps:,} ({config.training.epochs} epochs × {steps_per_epoch} steps/epoch)")
+    else:
+        total_steps = config.training.train_steps
+        
     num_epochs = config.training.epochs
     
     print(f"  - Total training steps: {total_steps:,}")
