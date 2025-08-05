@@ -5,7 +5,29 @@
 set -e
 
 # Configuration
-BASE_DIR="$(cd .. && pwd)"
+# Find project root by looking for .git directory
+find_project_root() {
+    local dir="$1"
+    while [ "$dir" != "/" ]; do
+        if [ -d "$dir/.git" ]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Find project root from script location
+BASE_DIR="$(find_project_root "$SCRIPT_DIR")"
+
+if [ -z "$BASE_DIR" ]; then
+    echo "Error: Could not find project root (no .git directory found)"
+    exit 1
+fi
+
 PYTHON_SCRIPT="$BASE_DIR/scripts/generate_experiment_configs.py"
 SINGULARITY_IMAGE="$BASE_DIR/singularity/training.sif"
 
