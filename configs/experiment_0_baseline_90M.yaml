@@ -51,9 +51,9 @@ training:
   adam_beta2: 0.999
   adam_epsilon: 1.0e-6
   # Training duration - automatically calculated from dataset size
-  # warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps  
+  warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps
   warmup_ratio: 0.1  # Warmup as 10% of total training steps
-  # train_steps: null  # Auto-calculated as epochs × steps_per_epoch
+  train_steps: null  # Auto-calculated as epochs × steps_per_epoch
   epochs: 20
   
   # Enhanced training features

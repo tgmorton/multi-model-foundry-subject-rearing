@@ -3,8 +3,7 @@
 Generate Experiment Configurations
 
 This script generates configuration files for all experiments based on the processed
-data folders. It creates both tokenization and training configurations for each
-experiment, ensuring proper data paths and experiment naming.
+data folders. It creates YAML configs and integrates with the checkpoint schedule generator.
 """
 
 import os
@@ -211,94 +210,58 @@ def save_config(config: Dict, config_path: str) -> None:
     print(f"  ✓ Saved: {config_path}")
 
 
-def create_tokenization_script(exp_info: Dict[str, str], base_dir: str) -> str:
+def generate_checkpoint_schedule(config_path: str, base_dir: str) -> None:
     """
-    Create a tokenization script for an experiment.
+    Generate checkpoint schedule for a configuration file.
     
     Args:
-        exp_info: Experiment information dictionary
+        config_path: Path to the configuration file
         base_dir: Project base directory
+    """
+    try:
+        # Import the checkpoint schedule generator
+        from scripts.generate_checkpoint_schedule import generate_checkpoint_schedule, CheckpointGenerationConfig
         
-    Returns:
-        Script content as string
-    """
-    script_content = f"""#!/bin/bash
-# Tokenization script for {exp_info['config_name']}
-
-set -e
-
-echo "=== Tokenizing {exp_info['display_name']} experiment ==="
-
-# Set up paths
-BASE_DIR="{base_dir}"
-CONFIG_FILE="$BASE_DIR/configs/{exp_info['config_name']}.yaml"
-
-# Create tokenizer directory
-TOKENIZER_DIR="$BASE_DIR/tokenizers/exp{exp_info['number']}_{exp_info['display_name']}/"
-mkdir -p "$TOKENIZER_DIR"
-
-echo "Training tokenizer..."
-python -m model_foundry.tokenizer.train_tokenizer \\
-    --config "$CONFIG_FILE" \\
-    --base_dir "$BASE_DIR"
-
-echo "Tokenizing dataset..."
-python -m model_foundry.tokenizer.tokenize_dataset \\
-    --config "$CONFIG_FILE" \\
-    --base_dir "$BASE_DIR"
-
-echo "✓ Tokenization complete for {exp_info['display_name']}"
-"""
-    return script_content
-
-
-def create_training_script(exp_info: Dict[str, str], base_dir: str) -> str:
-    """
-    Create a training script for an experiment.
-    
-    Args:
-        exp_info: Experiment information dictionary
-        base_dir: Project base directory
+        # Load the config
+        with open(config_path, 'r') as f:
+            config_data = yaml.safe_load(f)
         
-    Returns:
-        Script content as string
-    """
-    script_content = f"""#!/bin/bash
-# Training script for {exp_info['config_name']}
-
-set -e
-
-echo "=== Training {exp_info['display_name']} experiment ==="
-
-# Set up paths
-BASE_DIR="{base_dir}"
-CONFIG_FILE="$BASE_DIR/configs/{exp_info['config_name']}.yaml"
-
-# Generate checkpoint schedule
-echo "Generating checkpoint schedule..."
-python scripts/generate_checkpoint_schedule.py "$CONFIG_FILE"
-
-# Run training
-echo "Starting training..."
-python -m model_foundry.trainer "$CONFIG_FILE"
-
-echo "✓ Training complete for {exp_info['display_name']}"
-"""
-    return script_content
+        config = ExperimentConfig(**config_data)
+        
+        # Create generation config
+        generation_config = CheckpointGenerationConfig(
+            first_epoch_checkpoints=20,
+            subsequent_epochs_spacing="log",
+            log_base=2,
+            min_interval=100
+        )
+        
+        # Generate schedule
+        schedule = generate_checkpoint_schedule(config, base_dir, generation_config)
+        
+        # Update the config with the schedule
+        config_data['training']['checkpoint_schedule'] = schedule
+        
+        # Save updated config
+        with open(config_path, 'w') as f:
+            yaml.dump(config_data, f, default_flow_style=False, indent=2)
+        
+        print(f"  ✓ Generated checkpoint schedule for: {Path(config_path).name}")
+        
+    except Exception as e:
+        print(f"  ⚠ Warning: Could not generate checkpoint schedule for {Path(config_path).name}: {e}")
 
 
 def main(
     base_dir: str = typer.Option(".", "--base-dir", help="Project base directory"),
-    output_dir: str = typer.Option("configs", "--output-dir", help="Output directory for configs"),
-    create_scripts: bool = typer.Option(True, "--create-scripts", help="Create tokenization and training scripts"),
-    scripts_dir: str = typer.Option("scripts", "--scripts-dir", help="Directory for generated scripts")
+    output_dir: str = typer.Option("configs/processed_experiments", "--output-dir", help="Output directory for configs"),
+    generate_schedules: bool = typer.Option(True, "--generate-schedules", help="Generate checkpoint schedules for configs")
 ):
     """
     Generate configuration files for all experiments based on processed data.
     """
     base_path = Path(base_dir).resolve()
     output_path = Path(output_dir)
-    scripts_path = Path(scripts_dir)
     
     print(f"=== Generating Experiment Configurations ===")
     print(f"Base directory: {base_path}")
@@ -315,10 +278,8 @@ def main(
     for exp in experiments:
         print(f"  - {exp['config_name']}: {exp['display_name']}")
     
-    # Create output directories
+    # Create output directory
     output_path.mkdir(parents=True, exist_ok=True)
-    if create_scripts:
-        scripts_path.mkdir(parents=True, exist_ok=True)
     
     # Generate configurations for each experiment
     for exp_info in experiments:
@@ -331,27 +292,18 @@ def main(
         config_file = output_path / f"{exp_info['config_name']}.yaml"
         save_config(config, str(config_file))
         
-        # Create scripts if requested
-        if create_scripts:
-            # Tokenization script
-            tokenize_script = scripts_path / f"tokenize_{exp_info['config_name']}.sh"
-            with open(tokenize_script, 'w') as f:
-                f.write(create_tokenization_script(exp_info, str(base_path)))
-            tokenize_script.chmod(0o755)
-            print(f"  ✓ Created: {tokenize_script}")
-            
-            # Training script
-            train_script = scripts_path / f"train_{exp_info['config_name']}.sh"
-            with open(train_script, 'w') as f:
-                f.write(create_training_script(exp_info, str(base_path)))
-            train_script.chmod(0o755)
-            print(f"  ✓ Created: {train_script}")
+        # Generate checkpoint schedule if requested
+        if generate_schedules:
+            generate_checkpoint_schedule(str(config_file), str(base_path))
     
     print(f"\n✓ Generated {len(experiments)} experiment configurations!")
+    print(f"Configs saved to: {output_path}")
+    print(f"")
     print(f"Next steps:")
     print(f"  1. Review the generated configs in {output_path}")
-    print(f"  2. Run tokenization: ./scripts/tokenize_<experiment>.sh")
-    print(f"  3. Run training: ./scripts/train_<experiment>.sh")
+    print(f"  2. Run experiments using the existing wild_west scripts:")
+    print(f"     ./scripts/wild_west/run_experiment.sh <config_name>")
+    print(f"  3. Example: ./scripts/wild_west/run_experiment.sh configs/processed_experiments/experiment_1_remove_expletives.yaml")
 
 
 if __name__ == "__main__":

@@ -39,6 +39,7 @@ show_usage() {
     echo "  -l, --lock-gpus           Lock GPUs before running"
     echo "  -u, --unlock-gpus         Unlock GPUs after running"
     echo "  -c, --check-gpus          Check GPU availability before running"
+    echo "  --wandb-mode <mode>       Weights & Biases mode (online, offline, disabled) (default: disabled)"
     echo "  -v, --verbose             Verbose output"
     echo "  -h, --help                Show this help"
     echo ""
@@ -63,6 +64,7 @@ WORLD_SIZE=1
 LOCK_GPUS=false
 UNLOCK_GPUS=false
 CHECK_GPUS=false
+WANDB_MODE="disabled"
 VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
@@ -110,6 +112,10 @@ while [[ $# -gt 0 ]]; do
         -c|--check-gpus)
             CHECK_GPUS=true
             shift
+            ;;
+        --wandb-mode)
+            WANDB_MODE="$2"
+            shift 2
             ;;
         -v|--verbose)
             VERBOSE=true
@@ -291,11 +297,25 @@ run_in_container() {
         return 1
     fi
     
+    # Set up wandb environment variables
+    local wandb_env=""
+    case "$WANDB_MODE" in
+        "disabled")
+            wandb_env="WANDB_MODE=disabled WANDB_SILENT=true"
+            ;;
+        "offline")
+            wandb_env="WANDB_MODE=offline"
+            ;;
+        "online")
+            wandb_env="WANDB_MODE=online"
+            ;;
+    esac
+    
     # Execute the command inside the container with spaCy model download
     singularity exec --nv \
         --bind "${PROJECT_DIR}":/workspace \
         "$container_path" \
-        bash -c "cd /workspace && python -m spacy download en_core_web_sm --quiet && $command"
+        bash -c "cd /workspace && python -m spacy download en_core_web_sm --quiet && $wandb_env $command"
 }
 
 # Function to build command with overrides

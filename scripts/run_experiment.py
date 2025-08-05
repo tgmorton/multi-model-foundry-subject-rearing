@@ -20,16 +20,18 @@ from typing import Dict, List, Optional
 class ExperimentOrchestrator:
     """Orchestrates the complete experimental pipeline."""
     
-    def __init__(self, experiment_number: int, base_dir: Path):
+    def __init__(self, experiment_number: int, base_dir: Path, wandb_mode: str = "disabled"):
         """
         Initialize the experiment orchestrator.
         
         Args:
             experiment_number: The experiment number (0-7)
             base_dir: Project base directory
+            wandb_mode: Weights & Biases mode (online, offline, or disabled)
         """
         self.experiment_number = experiment_number
         self.base_dir = base_dir
+        self.wandb_mode = wandb_mode
         self.config_path = self._get_config_path()
         self.config = self._load_config()
         
@@ -162,11 +164,24 @@ class ExperimentOrchestrator:
     def run_model_training(self) -> bool:
         """Run model training."""
         print(f"\n=== Step 6: Model Training for Experiment {self.experiment_number} ===")
+        print(f"  - Weights & Biases mode: {self.wandb_mode}")
+        
+        # Set up environment variables for wandb
+        import os
+        env = os.environ.copy()
+        
+        if self.wandb_mode == "disabled":
+            env["WANDB_MODE"] = "disabled"
+            env["WANDB_SILENT"] = "true"
+        elif self.wandb_mode == "offline":
+            env["WANDB_MODE"] = "offline"
+        else:  # online
+            env["WANDB_MODE"] = "online"
         
         result = subprocess.run([
             sys.executable, "-m", "model_foundry.cli", "run",
             str(self.config_path)
-        ])
+        ], env=env)
         
         if result.returncode != 0:
             print("❌ Model training failed")
@@ -290,6 +305,13 @@ def main():
         default=".",
         help="Project base directory"
     )
+    parser.add_argument(
+        "--wandb-mode",
+        type=str,
+        choices=["online", "offline", "disabled"],
+        default="disabled",
+        help="Weights & Biases mode (online, offline, or disabled)"
+    )
     
     args = parser.parse_args()
     
@@ -305,7 +327,7 @@ def main():
     
     # Initialize orchestrator
     try:
-        orchestrator = ExperimentOrchestrator(args.experiment_number, base_dir)
+        orchestrator = ExperimentOrchestrator(args.experiment_number, base_dir, args.wandb_mode)
     except FileNotFoundError as e:
         print(f"❌ {e}")
         return 1

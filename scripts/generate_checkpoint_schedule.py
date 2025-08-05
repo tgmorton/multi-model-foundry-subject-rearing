@@ -36,6 +36,9 @@ class CheckpointGenerationConfig(BaseModel):
     # Minimum interval between checkpoints
     min_interval: int = 100
     
+    # Minimum number of checkpoints per epoch (for epochs after the first)
+    min_checkpoints_per_epoch: int = 5
+    
     @field_validator("subsequent_epochs_spacing")
     @classmethod
     def validate_spacing(cls, v: str) -> str:
@@ -164,7 +167,8 @@ def generate_subsequent_epoch_checkpoints(
     epoch_end: int,
     spacing: str,
     log_base: int = 2,
-    linear_interval: Optional[int] = None
+    linear_interval: Optional[int] = None,
+    min_checkpoints_per_epoch: int = 5
 ) -> List[int]:
     """
     Generate checkpoints for subsequent epochs with specified spacing.
@@ -175,16 +179,18 @@ def generate_subsequent_epoch_checkpoints(
         spacing: "linear" or "log"
         log_base: Base for logarithmic spacing
         linear_interval: Steps between checkpoints for linear spacing
+        min_checkpoints_per_epoch: Minimum number of checkpoints per epoch
         
     Returns:
         List of checkpoint steps for the epoch
     """
     checkpoints = []
+    epoch_length = epoch_end - epoch_start
     
     if spacing == "linear":
         if linear_interval is None:
             # Calculate reasonable interval based on epoch length
-            linear_interval = max(1, (epoch_end - epoch_start) // 10)
+            linear_interval = max(1, epoch_length // 10)
         
         current_step = epoch_start + linear_interval
         while current_step < epoch_end:
@@ -196,6 +202,20 @@ def generate_subsequent_epoch_checkpoints(
         while current_step < epoch_end:
             checkpoints.append(current_step)
             current_step *= log_base
+    
+    # Ensure minimum number of checkpoints per epoch
+    if len(checkpoints) < min_checkpoints_per_epoch and epoch_length > min_checkpoints_per_epoch:
+        # Calculate evenly spaced checkpoints to meet minimum requirement
+        interval = epoch_length // (min_checkpoints_per_epoch + 1)  # +1 to avoid boundary
+        checkpoints = []
+        
+        for i in range(1, min_checkpoints_per_epoch + 1):
+            checkpoint_step = epoch_start + (i * interval)
+            if checkpoint_step < epoch_end:
+                checkpoints.append(checkpoint_step)
+        
+        # Sort and remove duplicates
+        checkpoints = sorted(list(set(checkpoints)))
     
     return checkpoints
 
@@ -252,7 +272,8 @@ def generate_checkpoint_schedule(
             epoch_end,
             generation_config.subsequent_epochs_spacing,
             generation_config.log_base,
-            generation_config.linear_interval
+            generation_config.linear_interval,
+            generation_config.min_checkpoints_per_epoch
         )
         
         # Always add epoch boundary checkpoint
@@ -314,6 +335,7 @@ def main(
     log_base: int = typer.Option(2, "--log-base", help="Base for logarithmic spacing (default: 2)"),
     linear_interval: Optional[int] = typer.Option(None, "--linear-interval", help="Steps between checkpoints for linear spacing"),
     min_interval: int = typer.Option(100, "--min-interval", help="Minimum interval between checkpoints"),
+    min_checkpoints_per_epoch: int = typer.Option(5, "--min-per-epoch", help="Minimum checkpoints per epoch (after first epoch)"),
 ):
     """
     Generate an optimal checkpoint schedule for a training experiment.
@@ -345,7 +367,8 @@ def main(
         subsequent_epochs_spacing=subsequent_spacing,
         log_base=log_base,
         linear_interval=linear_interval,
-        min_interval=min_interval
+        min_interval=min_interval,
+        min_checkpoints_per_epoch=min_checkpoints_per_epoch
     )
     
     # Generate schedule
