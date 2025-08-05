@@ -116,7 +116,8 @@ class Trainer:
                 subsequent_epochs_spacing=self.config.training.subsequent_epochs_spacing,
                 log_base=self.config.training.log_base,
                 linear_interval=self.config.training.linear_interval,
-                min_interval=self.config.training.min_checkpoint_interval
+                min_interval=self.config.training.min_checkpoint_interval,
+                min_checkpoints_per_epoch=self.config.training.min_checkpoints_per_epoch
             )
             
             # Generate schedule

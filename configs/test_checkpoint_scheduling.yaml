@@ -154,6 +154,7 @@ training:
   linear_interval: null
   log_base: 2
   min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
   output_dir: models/test_checkpoint_scheduling/
   subsequent_epochs_spacing: log
   # Training duration - automatically calculated from dataset size

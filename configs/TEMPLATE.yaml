@@ -112,6 +112,7 @@ training:
   log_base: 2                      # Base for logarithmic spacing (default 2)
   linear_interval: null             # Steps between checkpoints for linear spacing (null = auto)
   min_checkpoint_interval: 100     # Minimum steps between checkpoints
+  min_checkpoints_per_epoch: 5     # Minimum checkpoints per epoch (after first epoch)
   
   # Mixed precision training
   use_amp: true  # Enable automatic mixed precision

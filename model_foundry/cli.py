@@ -237,6 +237,7 @@ def generate_checkpoints(
     log_base: int = Option(2, "--log-base", help="Base for logarithmic spacing (default: 2)"),
     linear_interval: Optional[int] = Option(None, "--linear-interval", help="Steps between checkpoints for linear spacing"),
     min_interval: int = Option(100, "--min-interval", help="Minimum interval between checkpoints"),
+    min_checkpoints_per_epoch: int = Option(5, "--min-per-epoch", help="Minimum checkpoints per epoch (after first epoch)"),
 ):
     """
     Generate an optimal checkpoint schedule for a training experiment.
@@ -281,7 +282,8 @@ def generate_checkpoints(
         subsequent_epochs_spacing=subsequent_spacing,
         log_base=log_base,
         linear_interval=linear_interval,
-        min_interval=min_interval
+        min_interval=min_interval,
+        min_checkpoints_per_epoch=min_checkpoints_per_epoch
     )
     
     # Generate schedule

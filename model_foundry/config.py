@@ -65,6 +65,9 @@ class TrainingConfig(BaseModel):
     
     # Minimum interval between checkpoints
     min_checkpoint_interval: int = 100
+    
+    # Minimum number of checkpoints per epoch (for epochs after the first)
+    min_checkpoints_per_epoch: int = 5
 
 class LoggingConfig(BaseModel):
     level: str = "INFO"
