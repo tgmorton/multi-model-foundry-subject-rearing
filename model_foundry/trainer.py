@@ -273,6 +273,54 @@ class Trainer:
                         return {"input_ids": torch.tensor(encoded)}
                     else:
                         return {"input_ids": encoded}
+                
+                def pad(self, encoded_inputs, padding=True, max_length=None, pad_to_multiple_of=None, return_tensors=None):
+                    """Pad sequences to the same length."""
+                    # Handle different input formats
+                    if isinstance(encoded_inputs, dict):
+                        if "input_ids" in encoded_inputs:
+                            input_ids = encoded_inputs["input_ids"]
+                        else:
+                            input_ids = encoded_inputs
+                    else:
+                        input_ids = encoded_inputs
+                    
+                    # Ensure input_ids is a list of lists
+                    if isinstance(input_ids[0], int):
+                        input_ids = [input_ids]
+                    
+                    # Determine max length
+                    if max_length is None:
+                        max_length = max(len(seq) for seq in input_ids)
+                    
+                    # Pad sequences
+                    padded_input_ids = []
+                    attention_mask = []
+                    
+                    for seq in input_ids:
+                        # Truncate if necessary
+                        if len(seq) > max_length:
+                            seq = seq[:max_length]
+                        
+                        # Create attention mask (1 for real tokens, 0 for padding)
+                        mask = [1] * len(seq) + [0] * (max_length - len(seq))
+                        attention_mask.append(mask)
+                        
+                        # Pad sequence
+                        padded_seq = seq + [self.pad_token_id] * (max_length - len(seq))
+                        padded_input_ids.append(padded_seq)
+                    
+                    result = {
+                        "input_ids": padded_input_ids,
+                        "attention_mask": attention_mask
+                    }
+                    
+                    # Convert to tensors if requested
+                    if return_tensors == "pt":
+                        import torch
+                        result = {k: torch.tensor(v) for k, v in result.items()}
+                    
+                    return result
             
             print("  - Successfully loaded SentencePiece tokenizer with wrapper")
             return SentencePieceTokenizerWrapper(sp_processor)
