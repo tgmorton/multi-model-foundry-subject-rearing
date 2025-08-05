@@ -10,24 +10,15 @@ experiment_name: "exp2_no_expletives_poor_determiners"
 data:
   source_corpus: "data/raw/train_90M/"
   # The final training corpus is the output of the final manipulation step.
-  training_corpus: "data/processed/exp2_no_expletives_poor_determiners/"
+  training_corpus: "data/processed/exp2_impoverish_determiners/"
   # Path to the test dataset.
   test_corpus: "data/raw/test_10M/"
   batch_size: 32
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
-# The pipeline now has two sequential steps.
-# dataset_manipulation:
-#   - type: impoverish_determiners # This step runs second.
-#     # The input is the output from the previous step.
-#     input_path: "data/processed/exp1_remove_expletives/"
-#     output_path: "data/processed/exp2_impoverish_determiners/"
-#     parameters:
-#       chunk_size: 1000
-#       replacement_pool_dir: "data/processed/exp1_remove_expletives/replacement_pool_remainder/"
-#       skip_validation: true
-#       verbose: true
+# Dataset manipulation already completed - using existing processed data
+dataset_manipulation: []
 
 # --- Tokenizer Configuration ---
 tokenizer:
