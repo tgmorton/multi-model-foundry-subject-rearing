@@ -30,9 +30,14 @@ class TrainingConfig(BaseModel):
     adam_beta1: float = Field(..., ge=0.0, lt=1.0)
     adam_beta2: float = Field(..., ge=0.0, lt=1.0)
     adam_epsilon: float = Field(..., gt=0)
-    warmup_steps: int = Field(..., ge=0)
-    train_steps: int = Field(..., gt=0)
+    
+    # Training duration - can be specified explicitly or calculated automatically
+    warmup_steps: Optional[int] = Field(None, ge=0)  # If None, will be calculated as percentage of train_steps
+    train_steps: Optional[int] = Field(None, gt=0)   # If None, will be calculated from epochs
     epochs: int = Field(..., gt=0)
+    
+    # Automatic calculation parameters
+    warmup_ratio: float = Field(0.1, ge=0.0, le=1.0)  # Warmup as fraction of total training steps
     checkpointing_strategy: Optional[str] = None
     checkpoint_schedule: Optional[List[int]] = []
     resume_from_checkpoint: bool = False

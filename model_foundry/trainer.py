@@ -52,6 +52,36 @@ class Trainer:
         # Initialize data processor
         self.data_processor = create_data_processor(config, base_dir)
 
+    def _calculate_training_parameters(self):
+        """Calculate training parameters based on dataset size if not explicitly set."""
+        # Get steps per epoch from dataset
+        try:
+            steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
+        except:
+            # Fallback: estimate based on typical dataset size if preprocessing hasn't run yet
+            print("  ⚠️  Could not determine exact dataset size, using estimates")
+            steps_per_epoch = 100  # Conservative estimate
+        
+        # Calculate train_steps if not specified
+        if self.config.training.train_steps is None:
+            calculated_train_steps = steps_per_epoch * self.config.training.epochs
+            print(f"  - Auto-calculated train_steps: {calculated_train_steps} ({self.config.training.epochs} epochs × {steps_per_epoch} steps/epoch)")
+            # Update the config object
+            self.config.training.train_steps = calculated_train_steps
+        
+        # Calculate warmup_steps if not specified
+        if self.config.training.warmup_steps is None:
+            calculated_warmup_steps = int(self.config.training.train_steps * self.config.training.warmup_ratio)
+            print(f"  - Auto-calculated warmup_steps: {calculated_warmup_steps} ({self.config.training.warmup_ratio:.1%} of total steps)")
+            # Update the config object
+            self.config.training.warmup_steps = calculated_warmup_steps
+        
+        print(f"  - Final training configuration:")
+        print(f"    - Epochs: {self.config.training.epochs}")
+        print(f"    - Steps per epoch: {steps_per_epoch}")
+        print(f"    - Total training steps: {self.config.training.train_steps}")
+        print(f"    - Warmup steps: {self.config.training.warmup_steps}")
+
     def _prepare_data(self):
         """Loads and prepares the dataset and dataloader."""
         # Preprocess data into fixed-length chunks
@@ -484,6 +514,10 @@ class Trainer:
     def _train_loop(self):
         """Internal training loop implementation."""
         set_seed(self.config.random_seed)
+
+        # Calculate training parameters based on dataset size
+        print("  - Calculating training parameters from dataset...")
+        self._calculate_training_parameters()
 
         # Initialize components
         self.model = create_model(self.config).to(self.device)

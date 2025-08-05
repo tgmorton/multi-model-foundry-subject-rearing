@@ -94,10 +94,11 @@ training:
   adam_epsilon: 1.0e-6
 
   # Learning rate scheduler parameters.
-  warmup_steps: 10000
+  # warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps
+  warmup_ratio: 0.1  # Warmup as 10% of total training steps
 
   # Total training duration.
-  train_steps: 1000000
+  # train_steps: null  # Auto-calculated as epochs × steps_per_epoch
   epochs: 20
 
   # Checkpoint generation parameters

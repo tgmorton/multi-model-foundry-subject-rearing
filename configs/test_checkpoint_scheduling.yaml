@@ -156,8 +156,10 @@ training:
   min_checkpoint_interval: 100
   output_dir: models/test_checkpoint_scheduling/
   subsequent_epochs_spacing: log
-  train_steps: 1000000
-  warmup_steps: 10000
+  # Training duration - automatically calculated from dataset size
+  # train_steps: null  # Auto-calculated as epochs × steps_per_epoch
+  # warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps  
+  warmup_ratio: 0.1  # Warmup as 10% of total training steps
   
   # Mixed precision training
   use_amp: true
