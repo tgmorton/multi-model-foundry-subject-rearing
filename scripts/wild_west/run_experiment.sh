@@ -40,6 +40,7 @@ show_usage() {
     echo "  -u, --unlock-gpus         Unlock GPUs after running"
     echo "  -c, --check-gpus          Check GPU availability before running"
     echo "  --wandb-mode <mode>       Weights & Biases mode (online, offline, disabled) (default: disabled)"
+    echo "  --wandb-api-key <key>     Weights & Biases API key"
     echo "  -v, --verbose             Verbose output"
     echo "  -h, --help                Show this help"
     echo ""
@@ -50,6 +51,7 @@ show_usage() {
     echo "  $0 -g 1,2 -p run experiment_2_baseline"
     echo "  $0 -g 1 -d -n 2 -r 0 experiment_3_remove_articles"
     echo "  $0 -g 1,2 -l -c experiment_4_lemmatize_verbs"
+    echo "  $0 -g 0 --wandb-mode online --wandb-api-key YOUR_API_KEY experiment_0_baseline"
 }
 
 # Parse command line arguments
@@ -65,6 +67,7 @@ LOCK_GPUS=false
 UNLOCK_GPUS=false
 CHECK_GPUS=false
 WANDB_MODE="disabled"
+WANDB_API_KEY=""
 VERBOSE=false
 
 while [[ $# -gt 0 ]]; do
@@ -115,6 +118,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --wandb-mode)
             WANDB_MODE="$2"
+            shift 2
+            ;;
+        --wandb-api-key)
+            WANDB_API_KEY="$2"
             shift 2
             ;;
         -v|--verbose)
@@ -310,6 +317,11 @@ run_in_container() {
             wandb_env="WANDB_MODE=online"
             ;;
     esac
+    
+    # Add API key if provided
+    if [ -n "$WANDB_API_KEY" ]; then
+        wandb_env="$wandb_env WANDB_API_KEY=$WANDB_API_KEY"
+    fi
     
     # Execute the command inside the container with spaCy model download
     singularity exec --nv \
