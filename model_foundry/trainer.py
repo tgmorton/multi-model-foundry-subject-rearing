@@ -281,23 +281,51 @@ class Trainer:
                         if "input_ids" in encoded_inputs:
                             input_ids = encoded_inputs["input_ids"]
                         else:
+                            # If it's a dict but no input_ids, assume it's a single example
+                            input_ids = [encoded_inputs]
+                    elif isinstance(encoded_inputs, list):
+                        # Check if it's a list of dicts (batch) or list of lists (sequences)
+                        if encoded_inputs and isinstance(encoded_inputs[0], dict):
+                            # List of dicts - extract input_ids from each
+                            input_ids = []
+                            for item in encoded_inputs:
+                                if "input_ids" in item:
+                                    input_ids.append(item["input_ids"])
+                                else:
+                                    # Assume the dict itself contains the sequence
+                                    input_ids.append(list(item.values())[0] if item else [])
+                        else:
+                            # List of sequences or single sequence
                             input_ids = encoded_inputs
                     else:
                         input_ids = encoded_inputs
                     
                     # Ensure input_ids is a list of lists
-                    if isinstance(input_ids[0], int):
+                    if input_ids and not isinstance(input_ids[0], (list, tuple)):
                         input_ids = [input_ids]
+                    
+                    # Handle empty input
+                    if not input_ids:
+                        return {"input_ids": [], "attention_mask": []}
                     
                     # Determine max length
                     if max_length is None:
-                        max_length = max(len(seq) for seq in input_ids)
+                        max_length = max(len(seq) for seq in input_ids if seq)
                     
                     # Pad sequences
                     padded_input_ids = []
                     attention_mask = []
                     
                     for seq in input_ids:
+                        # Ensure seq is a list
+                        if isinstance(seq, dict):
+                            if "input_ids" in seq:
+                                seq = seq["input_ids"]
+                            else:
+                                seq = list(seq.values())[0] if seq else []
+                        elif not isinstance(seq, (list, tuple)):
+                            seq = [seq]
+                        
                         # Truncate if necessary
                         if len(seq) > max_length:
                             seq = seq[:max_length]
@@ -307,7 +335,7 @@ class Trainer:
                         attention_mask.append(mask)
                         
                         # Pad sequence
-                        padded_seq = seq + [self.pad_token_id] * (max_length - len(seq))
+                        padded_seq = list(seq) + [self.pad_token_id] * (max_length - len(seq))
                         padded_input_ids.append(padded_seq)
                     
                     result = {
