@@ -8,7 +8,8 @@ from pathlib import Path
 import torch
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
-from transformers import get_scheduler, AutoTokenizer
+from transformers import get_scheduler, AutoTokenizer, PreTrainedTokenizerFast
+import sentencepiece as spm
 from tqdm.auto import tqdm
 import wandb
 import random
@@ -202,6 +203,80 @@ class Trainer:
 
         print(f"  - Resumed from step {self.global_step} at epoch {self.epoch}.")
 
+    def _load_sentencepiece_tokenizer(self, tokenizer_path: str):
+        """Load a SentencePiece tokenizer and wrap it for Hugging Face compatibility."""
+        try:
+            # First try to load as a standard Hugging Face tokenizer
+            return AutoTokenizer.from_pretrained(tokenizer_path, use_fast=True)
+        except Exception as e:
+            print(f"  - Standard tokenizer loading failed: {e}")
+            print("  - Attempting to load SentencePiece tokenizer directly...")
+            
+            # Load SentencePiece model directly
+            sp_model_path = os.path.join(tokenizer_path, "tokenizer.model")
+            if not os.path.exists(sp_model_path):
+                raise FileNotFoundError(f"SentencePiece model not found at {sp_model_path}")
+            
+            # Create a simple wrapper tokenizer
+            sp_processor = spm.SentencePieceProcessor()
+            sp_processor.load(sp_model_path)
+            
+            # Create a basic tokenizer wrapper
+            class SentencePieceTokenizerWrapper:
+                def __init__(self, sp_processor):
+                    self.sp_processor = sp_processor
+                    self.vocab_size = sp_processor.vocab_size()
+                    self.pad_token = "<pad>"
+                    self.eos_token = "</s>"
+                    self.unk_token = "<unk>"
+                    self.bos_token = "<s>"
+                    self.pad_token_id = sp_processor.piece_to_id("<pad>")
+                    self.eos_token_id = sp_processor.piece_to_id("</s>")
+                    self.unk_token_id = sp_processor.piece_to_id("<unk>")
+                    self.bos_token_id = sp_processor.piece_to_id("<s>")
+                
+                def encode(self, text, add_special_tokens=True):
+                    """Encode text to token ids."""
+                    if add_special_tokens:
+                        return [self.bos_token_id] + self.sp_processor.encode(text) + [self.eos_token_id]
+                    else:
+                        return self.sp_processor.encode(text)
+                
+                def decode(self, token_ids, skip_special_tokens=True):
+                    """Decode token ids to text."""
+                    if skip_special_tokens:
+                        # Filter out special tokens
+                        special_tokens = {self.pad_token_id, self.eos_token_id, self.unk_token_id, self.bos_token_id}
+                        token_ids = [tid for tid in token_ids if tid not in special_tokens]
+                    return self.sp_processor.decode(token_ids)
+                
+                def __call__(self, text, padding=False, truncation=False, max_length=None, return_tensors=None):
+                    """Tokenize text (basic implementation)."""
+                    if isinstance(text, str):
+                        text = [text]
+                    
+                    encoded = []
+                    for t in text:
+                        tokens = self.encode(t, add_special_tokens=True)
+                        if truncation and max_length and len(tokens) > max_length:
+                            tokens = tokens[:max_length]
+                        encoded.append(tokens)
+                    
+                    if padding:
+                        max_len = max(len(tokens) for tokens in encoded) if not max_length else max_length
+                        for tokens in encoded:
+                            while len(tokens) < max_len:
+                                tokens.append(self.pad_token_id)
+                    
+                    if return_tensors == "pt":
+                        import torch
+                        return {"input_ids": torch.tensor(encoded)}
+                    else:
+                        return {"input_ids": encoded}
+            
+            print("  - Successfully loaded SentencePiece tokenizer with wrapper")
+            return SentencePieceTokenizerWrapper(sp_processor)
+
     def _save_environment_snapshot(self):
         """Save environment snapshot for reproducibility."""
         import datetime
@@ -295,7 +370,7 @@ class Trainer:
         # If not resuming, load tokenizer from its original path
         if self.tokenizer is None:
             tokenizer_path = os.path.join(self.base_dir, self.config.tokenizer.output_dir)
-            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, use_fast=True)
+            self.tokenizer = self._load_sentencepiece_tokenizer(tokenizer_path)
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
 

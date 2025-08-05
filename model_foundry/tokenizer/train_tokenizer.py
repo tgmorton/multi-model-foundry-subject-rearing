@@ -4,6 +4,7 @@ import yaml
 import sentencepiece as spm
 from pathlib import Path
 import glob
+import json
 
 def find_project_root(start_path: str) -> str:
     """Finds the project root by searching upwards for a .git directory."""
@@ -79,6 +80,47 @@ def train_tokenizer_from_config(config_path: str):
     print(f"\n  - Starting SentencePiece training for experiment: '{experiment_name}'...")
     spm.SentencePieceTrainer.train(arg_string)
 
+    # Convert SentencePiece model to Hugging Face format
+    print("  - Converting to Hugging Face tokenizer format...")
+    
+    # Load the trained SentencePiece model
+    sp_model_path = f"{model_prefix}.model"
+    
+    # Create a tokenizer configuration
+    tokenizer_config = {
+        "tokenizer_class": "PreTrainedTokenizerFast",
+        "auto_map": {
+            "AutoTokenizer": ["sentencepiece", None]
+        },
+        "model_max_length": 8192,
+        "padding_side": "right",
+        "truncation_side": "right",
+        "pad_token": "<pad>",
+        "eos_token": "</s>",
+        "unk_token": "<unk>",
+        "bos_token": "<s>",
+        "tokenizer_type": "sentencepiece"
+    }
+    
+    # Save tokenizer config
+    config_path = os.path.join(output_dir, "tokenizer_config.json")
+    with open(config_path, 'w') as f:
+        json.dump(tokenizer_config, f, indent=2)
+    
+    # Create special tokens map
+    special_tokens_map = {
+        "bos_token": "<s>",
+        "eos_token": "</s>",
+        "unk_token": "<unk>",
+        "pad_token": "<pad>"
+    }
+    
+    special_tokens_path = os.path.join(output_dir, "special_tokens_map.json")
+    with open(special_tokens_path, 'w') as f:
+        json.dump(special_tokens_map, f, indent=2)
+    
+    print("  - Created Hugging Face tokenizer configuration files")
+    
     print(f"  - Successfully trained and saved tokenizer to '{output_dir}'.\n")
     print("----- Tokenizer Training Complete -----")
 
