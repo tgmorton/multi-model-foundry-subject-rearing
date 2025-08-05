@@ -83,7 +83,10 @@ show_gpu_status() {
         
         # Calculate available memory
         local available_gb=$((memory_total - memory_used))
-        local memory_pct=$((memory_used * 100 / memory_total))
+        local memory_pct=0
+        if [ "$memory_total" -gt 0 ]; then
+            memory_pct=$((memory_used * 100 / memory_total))
+        fi
         
         # Determine status
         if [ "$available_gb" -gt 20480 ]; then  # More than 20GB available
