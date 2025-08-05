@@ -250,6 +250,41 @@ class Trainer:
                         token_ids = [tid for tid in token_ids if tid not in special_tokens]
                     return self.sp_processor.decode(token_ids)
                 
+                def save_pretrained(self, save_directory):
+                    """Save tokenizer to directory (SentencePiece compatible)."""
+                    import os
+                    import shutil
+                    import json
+                    
+                    save_directory = Path(save_directory)
+                    save_directory.mkdir(parents=True, exist_ok=True)
+                    
+                    # Copy the SentencePiece model file
+                    tokenizer_dir = Path(tokenizer_path)
+                    sp_model_path = tokenizer_dir / "tokenizer.model"
+                    if sp_model_path.exists():
+                        shutil.copy2(sp_model_path, save_directory / "tokenizer.model")
+                    
+                    # Copy config files if they exist
+                    for config_file in ["tokenizer_config.json", "special_tokens_map.json"]:
+                        config_path = tokenizer_dir / config_file
+                        if config_path.exists():
+                            shutil.copy2(config_path, save_directory / config_file)
+                    
+                    # Create a simple config if none exists
+                    config_path = save_directory / "tokenizer_config.json"
+                    if not config_path.exists():
+                        config = {
+                            "tokenizer_type": "sentencepiece",
+                            "vocab_size": self.vocab_size,
+                            "pad_token": self.pad_token,
+                            "eos_token": self.eos_token,
+                            "unk_token": self.unk_token,
+                            "bos_token": self.bos_token
+                        }
+                        with open(config_path, 'w') as f:
+                            json.dump(config, f, indent=2)
+                
                 def __call__(self, text, padding=False, truncation=False, max_length=None, return_tensors=None):
                     """Tokenize text (basic implementation)."""
                     if isinstance(text, str):
@@ -412,7 +447,26 @@ class Trainer:
                               log_dir=self.config.logging.dir,
                               level=getattr(logging, self.config.logging.level))
         logger.info(f"--- Starting Training Run for: {self.config.experiment_name} ---")
-
+        
+        try:
+            return self._train_loop()
+        except Exception as e:
+            # Log the error without verbose traceback
+            logger.error(f"Training failed: {str(e)}")
+            logger.error(f"Error type: {type(e).__name__}")
+            
+            # Print a clean error message
+            print(f"\n❌ Training failed: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            
+            # Save a minimal traceback to logs only
+            import traceback
+            logger.debug("Full traceback:", exc_info=True)
+            
+            raise SystemExit(1)
+    
+    def _train_loop(self):
+        """Internal training loop implementation."""
         set_seed(self.config.random_seed)
 
         # Initialize components
