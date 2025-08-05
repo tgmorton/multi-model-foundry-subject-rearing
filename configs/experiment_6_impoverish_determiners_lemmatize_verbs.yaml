@@ -37,7 +37,7 @@ model:
   hidden_size: 768
   intermediate_hidden_size: 3072
   attention_heads: 12
-  activation_function: "GELU"
+  activation_function: "gelu"
   dropout: 0.1
   attention_dropout: 0.1
 

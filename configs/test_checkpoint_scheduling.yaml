@@ -10,7 +10,7 @@ logging:
   use_wandb: false
   wandb_project: test-checkpoint-scheduling
 model:
-  activation_function: GELU
+  activation_function: gelu
   attention_dropout: 0.1
   attention_heads: 12
   dropout: 0.1
