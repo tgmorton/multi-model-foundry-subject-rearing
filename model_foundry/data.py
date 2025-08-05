@@ -31,7 +31,9 @@ def _worker_init_fn(worker_id: int) -> None:
     """
     # Set seeds for each worker based on the global seed
     # We use a different seed for each worker to avoid identical sequences
-    worker_seed = torch.initial_seed() + worker_id
+    # Ensure the seed stays within numpy's valid range (0 to 2^32 - 1)
+    base_seed = torch.initial_seed() % (2**32 - 1)
+    worker_seed = (base_seed + worker_id) % (2**32 - 1)
     np.random.seed(worker_seed)
     torch.manual_seed(worker_seed)
     if torch.cuda.is_available():

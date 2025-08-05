@@ -1,6 +1,6 @@
 data:
   batch_size: 1024
-  max_sequence_length: 128
+  max_sequence_length: 1000
   source_corpus: data/raw/train_90M/
   training_corpus: data/tokenized/exp0_baseline_model/
   test_corpus: data/raw/test_10M/
@@ -18,7 +18,7 @@ model:
   hidden_size: 768
   intermediate_hidden_size: 3072
   layers: 12
-random_seed: 42
+random_seed: 9
 tokenizer:
   output_dir: tokenizers/exp0_baseline/
   vocab_size: 50004

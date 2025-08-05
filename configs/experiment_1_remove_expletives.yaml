@@ -16,7 +16,7 @@ data:
   test_corpus: "data/raw/test_10M/"
   # Configuration for the dataset loader
   batch_size: 1024
-  max_sequence_length: 128
+  max_sequence_length: 1000
 
 # --- dataset manipulation pipeline ---
 # this experiment removes expletives from the training corpus
@@ -85,4 +85,4 @@ logging:
   use_wandb: true
   wandb_project: "just-drop-the-subject"
 # A random seed for ensuring reproducibility between experiments
-random_seed: 42 
+random_seed: 9 

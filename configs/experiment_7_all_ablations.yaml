@@ -12,7 +12,7 @@ data:
   # Path to the test dataset.
   test_corpus: "data/raw/test_10M/"
   batch_size: 1024
-  max_sequence_length: 128
+  max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
 dataset_manipulation:
@@ -89,4 +89,4 @@ training:
 logging:
   use_wandb: true
   wandb_project: "just-drop-the-subject"
-random_seed: 42 
+random_seed: 9 

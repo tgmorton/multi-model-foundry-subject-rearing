@@ -33,7 +33,7 @@ data:
 
   # Passed to the PyTorch DataLoader.
   batch_size: 1024
-  max_sequence_length: 128
+  max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
 # Defines a sequence of preprocessing steps to perform on the `source_corpus`.
@@ -132,4 +132,4 @@ logging:
 
 # This seed is used for all random initializations (model weights, data shuffling, etc.)
 # to ensure that the only difference between experiments is the configuration itself.
-random_seed: 42
+random_seed: 9

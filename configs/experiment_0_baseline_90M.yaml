@@ -16,7 +16,7 @@ data:
   test_corpus: "data/raw/test_10M/"
   # Configuration for the dataset loader.
   batch_size: 1024
-  max_sequence_length: 128
+  max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
 # This section is empty because this is the baseline experiment.
@@ -78,4 +78,4 @@ logging:
   dir: "logs"
 
 # A random seed for ensuring reproducibility between experiments.
-random_seed: 42 
+random_seed: 9 
