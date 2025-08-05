@@ -92,8 +92,7 @@ main() {
         "$SINGULARITY_IMAGE" \
         bash -c "cd /workspace && python $PYTHON_SCRIPT \
             --base-dir /workspace \
-            --output-dir configs/processed_experiments \
-            --generate-schedules"
+            --output-dir configs/processed_experiments"
     
     if [ $? -eq 0 ]; then
         success "Configuration generation completed successfully"
