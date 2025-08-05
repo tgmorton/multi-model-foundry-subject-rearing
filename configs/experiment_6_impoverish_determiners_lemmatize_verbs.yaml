@@ -9,7 +9,7 @@ experiment_name: "exp6_no_expletives_poor_determiners_lemmatize_verbs"
 data:
   source_corpus: "data/raw/train_90M/"
   training_corpus: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
-  batch_size: 256
+  batch_size: 1024
   max_sequence_length: 128
 
 # --- Dataset Manipulation Pipeline ---
@@ -48,8 +48,24 @@ training:
   adam_epsilon: 1.0e-6
   warmup_steps: 10000
   train_steps: 1000000
-  checkpointing_strategy: "log_steps_first_epoch"
   epochs: 20
+  
+  # Mixed precision training
+  use_amp: true
+  
+  # Gradient accumulation
+  gradient_accumulation_steps: 1
+  
+  # Memory optimizations
+  use_tf32: true
+  use_gradient_checkpointing: false
+  
+  # Checkpoint generation parameters
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
 
 # --- Logging & Reproducibility ---
 logging:

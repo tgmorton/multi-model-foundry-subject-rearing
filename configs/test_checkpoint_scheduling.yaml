@@ -1,5 +1,5 @@
 data:
-  batch_size: 256
+  batch_size: 1024
   max_sequence_length: 128
   source_corpus: data/raw/train_90M/
   training_corpus: data/tokenized/exp0_baseline_model/
@@ -25,7 +25,7 @@ training:
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_epsilon: 1.0e-06
-  auto_generate_checkpoints: false
+  auto_generate_checkpoints: true
   checkpoint_schedule:
   - 0
   - 72
@@ -147,7 +147,6 @@ training:
   - 5760
   - 5800
   - 1000000
-  checkpointing_strategy: log_steps_first_epoch
   epochs: 20
   first_epoch_checkpoints: 20
   learning_rate: 0.0001
@@ -158,3 +157,13 @@ training:
   subsequent_epochs_spacing: log
   train_steps: 1000000
   warmup_steps: 10000
+  
+  # Mixed precision training
+  use_amp: true
+  
+  # Gradient accumulation
+  gradient_accumulation_steps: 1
+  
+  # Memory optimizations
+  use_tf32: true
+  use_gradient_checkpointing: false

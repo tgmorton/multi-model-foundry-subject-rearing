@@ -29,7 +29,7 @@ data:
   training_corpus: "data/processed/final_ablated_corpus"
 
   # Passed to the PyTorch DataLoader.
-  batch_size: 256
+  batch_size: 1024
   max_sequence_length: 128
 
 # --- Dataset Manipulation Pipeline ---
@@ -97,12 +97,8 @@ training:
   train_steps: 1000000
   epochs: 20
 
-  # As specified in the proposal, this custom strategy saves checkpoints
-  # at log-increasing steps (1, 2, 4, 8...) during the first epoch.
-  checkpointing_strategy: "log_steps_first_epoch"
-  
-  # Checkpoint generation parameters (NEW)
-  auto_generate_checkpoints: false  # Set to true for automatic schedule generation
+  # Checkpoint generation parameters
+  auto_generate_checkpoints: true  # Set to true for automatic schedule generation
   
   # First epoch configuration
   first_epoch_checkpoints: 20      # Number of checkpoints in first epoch
@@ -112,6 +108,16 @@ training:
   log_base: 2                      # Base for logarithmic spacing (default 2)
   linear_interval: null             # Steps between checkpoints for linear spacing (null = auto)
   min_checkpoint_interval: 100     # Minimum steps between checkpoints
+  
+  # Mixed precision training
+  use_amp: true  # Enable automatic mixed precision
+  
+  # Gradient accumulation
+  gradient_accumulation_steps: 1  # Number of steps to accumulate gradients
+  
+  # Memory optimizations
+  use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
+  use_gradient_checkpointing: false  # Enable gradient checkpointing to save memory
 
 # --- Logging & Reproducibility ---
 # Manages external logging and ensures the experiment can be perfectly replicated.
