@@ -11,7 +11,7 @@ data:
   training_corpus: "data/processed/exp5_no_expletives_remove_subject_pronominals/"
   # Path to the test dataset.
   test_corpus: "data/raw/test_10M/"
-  batch_size: 1024
+  batch_size: 32
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
