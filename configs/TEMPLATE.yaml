@@ -88,7 +88,7 @@ training:
   output_dir: "models/unique_experiment_name/"
 
   # Optimizer hyperparameters.
-  learning_rate: 0.0001
+  learning_rate: 0.0004  # 4x higher for 4x smaller effective batch size
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_epsilon: 1.0e-6
@@ -118,7 +118,7 @@ training:
   use_amp: true  # Enable automatic mixed precision
   
   # Gradient accumulation
-  gradient_accumulation_steps: 32  # Number of steps to accumulate gradients
+  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256  # Number of steps to accumulate gradients
   
   # Memory optimizations
   use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs

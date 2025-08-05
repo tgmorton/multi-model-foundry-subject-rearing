@@ -54,7 +54,7 @@ training:
   # Path to save model checkpoints
   output_dir: "models/exp1_remove_expletives/"
   # Training parameters from baseline
-  learning_rate: 0.0001
+  learning_rate: 0.0004  # 4x higher for 4x smaller effective batch size
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_epsilon: 1.0e-6
@@ -68,7 +68,7 @@ training:
   use_amp: true
   
   # Gradient accumulation
-  gradient_accumulation_steps: 32
+  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
   
   # Memory optimizations
   use_tf32: true
