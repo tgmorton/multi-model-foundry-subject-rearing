@@ -20,16 +20,16 @@ data:
 
 # --- dataset manipulation pipeline ---
 # this experiment removes expletives from the training corpus
-dataset_manipulation:
-  - type: remove_expletives
-    input_path: "data/raw/train_90M/"
-    output_path: "data/processed/exp1_remove_expletives/"
-    # additional parameters for the expletive removal script
-    parameters:
-      chunk_size: 1000
-      replacement_pool_dir: "data/raw/pull_10M/"
-      skip_validation: true
-      verbose: true
+# dataset_manipulation:
+#   - type: remove_expletives
+#     input_path: "data/raw/train_90M/"
+#     output_path: "data/processed/exp1_remove_expletives/"
+#     # additional parameters for the expletive removal script
+#     parameters:
+#       chunk_size: 1000
+#       replacement_pool_dir: "data/raw/pull_10M/"
+#       skip_validation: true
+#       verbose: true
 
 # --- Tokenizer Configuration ---
 tokenizer:

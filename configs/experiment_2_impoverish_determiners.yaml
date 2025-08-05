@@ -18,16 +18,16 @@ data:
 
 # --- Dataset Manipulation Pipeline ---
 # The pipeline now has two sequential steps.
-dataset_manipulation:
-  - type: impoverish_determiners # This step runs second.
-    # The input is the output from the previous step.
-    input_path: "data/processed/exp1_remove_expletives/"
-    output_path: "data/processed/exp2_impoverish_determiners/"
-    parameters:
-      chunk_size: 1000
-      replacement_pool_dir: "data/processed/exp1_remove_expletives/replacement_pool_remainder/"
-      skip_validation: true
-      verbose: true
+# dataset_manipulation:
+#   - type: impoverish_determiners # This step runs second.
+#     # The input is the output from the previous step.
+#     input_path: "data/processed/exp1_remove_expletives/"
+#     output_path: "data/processed/exp2_impoverish_determiners/"
+#     parameters:
+#       chunk_size: 1000
+#       replacement_pool_dir: "data/processed/exp1_remove_expletives/replacement_pool_remainder/"
+#       skip_validation: true
+#       verbose: true
 
 # --- Tokenizer Configuration ---
 tokenizer:
