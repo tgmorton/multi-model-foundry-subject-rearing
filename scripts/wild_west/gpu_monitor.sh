@@ -29,6 +29,24 @@ get_gpu_processes() {
     nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader,nounits
 }
 
+# Function to get process owner
+get_process_owner() {
+    local pid="$1"
+    if [ -n "$pid" ] && [ "$pid" != "N/A" ]; then
+        # Try to get owner from /proc
+        if [ -f "/proc/$pid/status" ]; then
+            local owner=$(grep "^Uid:" "/proc/$pid/status" | cut -f2 | tr -d '\t')
+            # Convert UID to username
+            local username=$(id -un "$owner" 2>/dev/null || echo "unknown")
+            echo "$username"
+        else
+            echo "unknown"
+        fi
+    else
+        echo "N/A"
+    fi
+}
+
 # Function to check if GPU is available (less than 10GB used)
 is_gpu_available() {
     local gpu_id="$1"
@@ -95,8 +113,8 @@ show_gpu_processes() {
         return
     fi
     
-    echo -e "${YELLOW}GPU | PID | Process | Memory${NC}"
-    echo "----|-----|---------|-------"
+    echo -e "${YELLOW}GPU | PID | Owner | Process | Memory${NC}"
+    echo "----|-----|-------|---------|-------"
     
     while IFS=',' read -r gpu_uuid pid process memory; do
         # Clean up values
@@ -108,8 +126,64 @@ show_gpu_processes() {
         # Get GPU index from UUID
         local gpu_index=$(nvidia-smi --query-gpu=index,uuid --format=csv,noheader,nounits | grep "$gpu_uuid" | cut -d',' -f1 | tr -d ' ')
         
-        printf "%-3s | %-4s | %-7s | %s MiB\n" "$gpu_index" "$pid" "$process" "$memory"
+        # Get process owner
+        local owner=$(get_process_owner "$pid")
+        
+        printf "%-3s | %-4s | %-5s | %-7s | %s MiB\n" "$gpu_index" "$pid" "$owner" "$process" "$memory"
     done <<< "$processes"
+    
+    echo ""
+}
+
+# Function to show GPU usage summary by user
+show_gpu_usage_summary() {
+    echo -e "${BLUE}=== GPU Usage Summary by User ===${NC}"
+    echo ""
+    
+    local processes=$(get_gpu_processes)
+    
+    if [ -z "$processes" ]; then
+        echo -e "${GREEN}No GPU processes found${NC}"
+        return
+    fi
+    
+    # Create associative array to track user GPU usage
+    declare -A user_gpus
+    declare -A user_memory
+    
+    while IFS=',' read -r gpu_uuid pid process memory; do
+        # Clean up values
+        pid=$(echo "$pid" | tr -d ' ')
+        memory=$(echo "$memory" | tr -d ' ')
+        
+        # Get process owner
+        local owner=$(get_process_owner "$pid")
+        
+        if [ "$owner" != "N/A" ] && [ "$owner" != "unknown" ]; then
+            # Count GPUs per user
+            if [ -z "${user_gpus[$owner]}" ]; then
+                user_gpus[$owner]=1
+                user_memory[$owner]=$memory
+            else
+                user_gpus[$owner]=$((${user_gpus[$owner]} + 1))
+                user_memory[$owner]=$((${user_memory[$owner]} + memory))
+            fi
+        fi
+    done <<< "$processes"
+    
+    if [ ${#user_gpus[@]} -eq 0 ]; then
+        echo -e "${YELLOW}No user processes found${NC}"
+        return
+    fi
+    
+    echo -e "${YELLOW}User | GPUs | Total Memory${NC}"
+    echo "-----|------|-------------"
+    
+    for user in "${!user_gpus[@]}"; do
+        local gpu_count=${user_gpus[$user]}
+        local total_memory=${user_memory[$user]}
+        printf "%-4s | %-4s | %s MiB\n" "$user" "$gpu_count" "$total_memory"
+    done
     
     echo ""
 }
@@ -207,6 +281,9 @@ case "${1:-status}" in
         show_gpu_status
         show_gpu_processes
         ;;
+    "summary")
+        show_gpu_usage_summary
+        ;;
     "available")
         find_available_gpus
         ;;
@@ -240,6 +317,7 @@ case "${1:-status}" in
         echo ""
         echo "Commands:"
         echo "  status    - Show current GPU status (default)"
+        echo "  summary   - Show GPU usage summary by user"
         echo "  available - Find available GPUs"
         echo "  lock <id> - Lock a GPU for your use"
         echo "  unlock <id> - Release a GPU lock"
