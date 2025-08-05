@@ -48,9 +48,42 @@ class DataProcessor:
         self.base_dir = base_dir
         self.tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name)
         self.chunked_data_dir = os.path.join(base_dir, "data", "chunked", config.experiment_name)
+        self.test_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name, "test")
         
     def _validate_tokenized_dataset(self) -> bool:
         """Validate that the tokenized dataset exists and has the expected structure."""
+        # Check for new structure with separate train/test directories
+        train_dir = os.path.join(self.tokenized_data_dir, "train")
+        test_dir = os.path.join(self.tokenized_data_dir, "test")
+        
+        if os.path.exists(train_dir):
+            # New structure with separate train/test
+            try:
+                train_dataset = load_from_disk(train_dir)
+                if 'input_ids' not in train_dataset.column_names:
+                    print(f"  ✗ Training dataset missing 'input_ids' column")
+                    return False
+                print(f"  ✓ Training dataset loaded successfully")
+                print(f"    - Training size: {len(train_dataset):,} examples")
+                print(f"    - Columns: {train_dataset.column_names}")
+                
+                # Check if test dataset exists
+                if os.path.exists(test_dir):
+                    test_dataset = load_from_disk(test_dir)
+                    if 'input_ids' not in test_dataset.column_names:
+                        print(f"  ✗ Test dataset missing 'input_ids' column")
+                        return False
+                    print(f"  ✓ Test dataset loaded successfully")
+                    print(f"    - Test size: {len(test_dataset):,} examples")
+                else:
+                    print(f"  ⚠ Test dataset not found at: {test_dir}")
+                
+                return True
+            except Exception as e:
+                print(f"  ✗ Error loading tokenized datasets: {e}")
+                return False
+        
+        # Fallback to old structure
         if not os.path.exists(self.tokenized_data_dir):
             # Try the training_corpus path directly
             training_corpus_path = os.path.join(self.base_dir, self.config.data.training_corpus)
@@ -201,8 +234,16 @@ class DataProcessor:
         if not self._validate_tokenized_dataset():
             return False
         
-        # Load tokenized dataset
-        tokenized_dataset = load_from_disk(self.tokenized_data_dir)
+        # Load tokenized dataset (handle new structure with separate train/test)
+        train_dir = os.path.join(self.tokenized_data_dir, "train")
+        if os.path.exists(train_dir):
+            # New structure with separate train/test
+            tokenized_dataset = load_from_disk(train_dir)
+            print(f"  - Using training dataset from: {train_dir}")
+        else:
+            # Fallback to old structure
+            tokenized_dataset = load_from_disk(self.tokenized_data_dir)
+            print(f"  - Using dataset from: {self.tokenized_data_dir}")
         
         # Calculate and display original stats
         original_stats = self._calculate_dataset_stats(tokenized_dataset)
@@ -284,6 +325,27 @@ class DataProcessor:
         steps_per_epoch = math.ceil(num_chunks / self.config.data.batch_size)
         
         return steps_per_epoch
+    
+    def load_test_dataset(self) -> Optional[Dataset]:
+        """
+        Load the test dataset for evaluation.
+        
+        Returns:
+            Test dataset or None if not available
+        """
+        test_dir = os.path.join(self.tokenized_data_dir, "test")
+        if not os.path.exists(test_dir):
+            print(f"  ⚠ Test dataset not found at: {test_dir}")
+            return None
+        
+        try:
+            test_dataset = load_from_disk(test_dir)
+            print(f"  ✓ Test dataset loaded successfully")
+            print(f"    - Test size: {len(test_dataset):,} examples")
+            return test_dataset
+        except Exception as e:
+            print(f"  ✗ Error loading test dataset: {e}")
+            return None
 
 
 def create_data_processor(config, base_dir: str) -> DataProcessor:

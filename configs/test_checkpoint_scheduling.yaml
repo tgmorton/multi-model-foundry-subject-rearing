@@ -3,6 +3,7 @@ data:
   max_sequence_length: 128
   source_corpus: data/raw/train_90M/
   training_corpus: data/tokenized/exp0_baseline_model/
+  test_corpus: data/raw/test_10M/
 dataset_manipulation: []
 experiment_name: test_checkpoint_scheduling
 logging:

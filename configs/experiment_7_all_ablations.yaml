@@ -9,6 +9,8 @@ experiment_name: "exp7_all_ablations"
 data:
   source_corpus: "data/raw/train_90M/"
   training_corpus: "data/processed/exp7_all_ablations/"
+  # Path to the test dataset.
+  test_corpus: "data/raw/test_10M/"
   batch_size: 1024
   max_sequence_length: 128
 

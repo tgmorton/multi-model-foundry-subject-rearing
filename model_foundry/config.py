@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Any
 class DataConfig(BaseModel):
     source_corpus: str
     training_corpus: str
+    test_corpus: Optional[str] = None  # Path to test dataset
     batch_size: int = Field(..., gt=0)
     max_sequence_length: int = Field(..., gt=0)
 

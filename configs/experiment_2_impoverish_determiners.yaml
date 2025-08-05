@@ -11,6 +11,8 @@ data:
   source_corpus: "data/raw/train_90M/"
   # The final training corpus is the output of the final manipulation step.
   training_corpus: "data/processed/exp2_no_expletives_poor_determiners/"
+  # Path to the test dataset.
+  test_corpus: "data/raw/test_10M/"
   batch_size: 1024
   max_sequence_length: 128
 

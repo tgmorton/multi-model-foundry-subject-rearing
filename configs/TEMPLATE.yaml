@@ -28,6 +28,9 @@ data:
   # this will be the same as `source_corpus`.
   training_corpus: "data/processed/final_ablated_corpus"
 
+  # Path to the test dataset for evaluation.
+  test_corpus: "data/raw/test_10M/"
+
   # Passed to the PyTorch DataLoader.
   batch_size: 1024
   max_sequence_length: 128

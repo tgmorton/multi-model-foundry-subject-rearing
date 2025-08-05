@@ -9,6 +9,8 @@ experiment_name: "exp4_no_expletives_lemmatize_verbs"
 data:
   source_corpus: "data/raw/train_90M/"
   training_corpus: "data/processed/exp4_no_expletives_lemmatize_verbs/"
+  # Path to the test dataset.
+  test_corpus: "data/raw/test_10M/"
   batch_size: 1024
   max_sequence_length: 128
 
