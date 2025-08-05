@@ -21,7 +21,10 @@ mkdir -p "$LOCK_DIR"
 
 # Function to get GPU status
 get_gpu_status() {
-    nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw --format=csv,noheader,nounits
+    if ! nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw --format=csv,noheader,nounits 2>/dev/null; then
+        echo "ERROR: NVML initialization failed (driver/library version mismatch)"
+        return 1
+    fi
 }
 
 # Function to get GPU processes
@@ -68,18 +71,35 @@ show_gpu_status() {
     
     # Get GPU status
     local gpu_status=$(get_gpu_status)
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ NVIDIA driver error: $gpu_status${NC}"
+        echo -e "${YELLOW}💡 This usually means:${NC}"
+        echo "   - CUDA driver/library version mismatch"
+        echo "   - GPU driver needs restart"
+        echo "   - System reboot may be required"
+        echo ""
+        echo "You can still run experiments, but GPU monitoring is unavailable."
+        return 1
+    fi
     
     echo -e "${YELLOW}GPU ID | Memory Used/Total | Utilization | Temp | Power | Status${NC}"
     echo "-------|-------------------|------------|------|-------|--------"
     
     while IFS=',' read -r gpu_id name memory_used memory_total utilization temp power; do
-        # Clean up values
+        # Clean up values and set defaults for empty values
         gpu_id=$(echo "$gpu_id" | tr -d ' ')
         memory_used=$(echo "$memory_used" | tr -d ' ')
         memory_total=$(echo "$memory_total" | tr -d ' ')
         utilization=$(echo "$utilization" | tr -d ' ')
         temp=$(echo "$temp" | tr -d ' ')
         power=$(echo "$power" | tr -d ' ')
+        
+        # Handle empty/invalid values
+        [[ -z "$memory_used" || ! "$memory_used" =~ ^[0-9]+$ ]] && memory_used=0
+        [[ -z "$memory_total" || ! "$memory_total" =~ ^[0-9]+$ ]] && memory_total=0
+        [[ -z "$utilization" || ! "$utilization" =~ ^[0-9]+$ ]] && utilization=0
+        [[ -z "$temp" || ! "$temp" =~ ^[0-9]+$ ]] && temp=0
+        [[ -z "$power" || ! "$power" =~ ^[0-9.]+$ ]] && power=0
         
         # Calculate available memory
         local available_gb=$((memory_total - memory_used))
