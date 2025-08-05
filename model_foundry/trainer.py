@@ -459,6 +459,22 @@ class Trainer:
             print(f"\n❌ Training failed: {str(e)}")
             print(f"Error type: {type(e).__name__}")
             
+            # Check for CUDA-specific errors and provide debugging info
+            error_msg = str(e)
+            if "CUDA" in error_msg and torch.cuda.is_available():
+                print(f"\n🔍 CUDA Error Debugging Information:")
+                print(f"   - CUDA Device: {torch.cuda.get_device_name()}")
+                print(f"   - Memory allocated: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
+                print(f"   - Memory reserved: {torch.cuda.memory_reserved() / 1024**3:.2f} GB")
+                print(f"   - Max memory allocated: {torch.cuda.max_memory_allocated() / 1024**3:.2f} GB")
+                
+                print(f"\n💡 Debugging suggestions:")
+                print(f"   - Try reducing batch_size further (current: {self.config.data.batch_size})")
+                print(f"   - Enable gradient checkpointing: use_gradient_checkpointing: true")
+                print(f"   - Run with CUDA_LAUNCH_BLOCKING=1 for better error tracing")
+                print(f"   - Check GPU driver compatibility")
+                print(f"   - Try restarting the training to clear GPU state")
+            
             # Save a minimal traceback to logs only
             import traceback
             logger.debug("Full traceback:", exc_info=True)
@@ -578,6 +594,10 @@ class Trainer:
                     epoch_losses.append(loss.item())
                     total_tokens_processed += inputs['input_ids'].numel()
                     
+                    # Clean up CUDA memory periodically to prevent fragmentation
+                    if self.global_step % 100 == 0 and torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    
                     # Calculate and log metrics
                     current_lr = self.lr_scheduler.get_last_lr()[0]
                     avg_loss = sum(epoch_losses) / len(epoch_losses)
@@ -628,10 +648,27 @@ class Trainer:
                 print(f"    - Time: {epoch_time:.1f}s")
                 print(f"    - Tokens processed: {total_tokens_processed:,}")
 
+                # Clean up CUDA memory and events at end of epoch
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.synchronize()
+                
+                # Clean up CUDA events to prevent resource handle issues
+                if epoch_start_time:
+                    del epoch_start_time
+                if epoch_end_time:
+                    del epoch_end_time
+
                 if self.global_step >= self.config.training.train_steps:
                     break
 
         print("\n----- Training Complete -----")
+        
+        # Final cleanup
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        
         if self.config.logging.use_wandb:
             wandb.finish()
 

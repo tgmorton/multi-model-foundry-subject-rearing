@@ -163,7 +163,7 @@ training:
   use_amp: true
   
   # Gradient accumulation
-  gradient_accumulation_steps: 1
+  gradient_accumulation_steps: 32
   
   # Memory optimizations
   use_tf32: true

@@ -116,11 +116,11 @@ training:
   use_amp: true  # Enable automatic mixed precision
   
   # Gradient accumulation
-  gradient_accumulation_steps: 1  # Number of steps to accumulate gradients
+  gradient_accumulation_steps: 32  # Number of steps to accumulate gradients
   
   # Memory optimizations
   use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
-  use_gradient_checkpointing: false  # Enable gradient checkpointing to save memory
+  use_gradient_checkpointing: true  # Enable gradient checkpointing to save memory
 
 # --- Logging & Reproducibility ---
 # Manages external logging and ensures the experiment can be perfectly replicated.
