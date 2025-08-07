@@ -316,9 +316,21 @@ def run(
     if resume:
         config.training.resume_from_checkpoint = True
     
-    # Create and run the trainer
-    trainer = Trainer(config, base_dir)
-    trainer.train()
+    # Create and run the trainer with proper cleanup
+    trainer = None
+    try:
+        trainer = Trainer(config, base_dir)
+        trainer.train()
+    except KeyboardInterrupt:
+        logger.info("Training interrupted by user")
+        if trainer and hasattr(trainer, '_cleanup_gpu'):
+            trainer._cleanup_gpu()
+        raise typer.Exit(0)
+    except Exception as e:
+        logger.error(f"Training failed: {e}")
+        if trainer and hasattr(trainer, '_cleanup_gpu'):
+            trainer._cleanup_gpu()
+        raise typer.Exit(1)
 
 
 @app.command()

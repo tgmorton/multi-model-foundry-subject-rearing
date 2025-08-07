@@ -6,6 +6,48 @@
 # Exit on any error
 set -e
 
+# Function to cleanup on exit
+cleanup() {
+    echo "=== Cleaning up on exit ==="
+    
+    # Get the current process ID and its children
+    SCRIPT_PID=$$
+    
+    # Kill any remaining Python processes that might be holding GPU memory
+    echo "  - Terminating Python processes..."
+    pkill -f "python.*model_foundry" || true
+    pkill -f "python.*trainer" || true
+    
+    # Wait a moment for processes to terminate
+    sleep 2
+    
+    # Force kill any remaining processes if needed
+    pkill -9 -f "python.*model_foundry" || true
+    pkill -9 -f "python.*trainer" || true
+    
+    # Clear CUDA cache if nvidia-smi is available
+    echo "  - Clearing GPU memory..."
+    if command -v nvidia-smi &> /dev/null; then
+        nvidia-smi --gpu-reset || true
+        # Also try to clear cache
+        python3 -c "import torch; torch.cuda.empty_cache() if torch.cuda.is_available() else None" 2>/dev/null || true
+    fi
+    
+    echo "  - Cleanup completed"
+}
+
+# Set up trap to call cleanup on script exit
+trap cleanup EXIT INT TERM
+
+# Function to monitor GPU usage
+monitor_gpu() {
+    if command -v nvidia-smi &> /dev/null; then
+        echo "=== GPU Status ==="
+        nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits
+        echo "================="
+    fi
+}
+
 # --- Script Usage ---
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <config_name_without_yaml_extension> [--resume]"
@@ -62,14 +104,28 @@ mkdir -p "${HOST_PROJECT_DIR}/logs"
 echo "Starting model training inside Singularity container..."
 echo "Using config file: ${CONTAINER_CONFIG_FILE}"
 
+# Show initial GPU status
+monitor_gpu
+
 # Set PyTorch CUDA Allocator Config for better memory management
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-# Execute the training script inside the container
-singularity exec --nv \
+# Execute the training script inside the container with timeout
+echo "Starting training with automatic cleanup on exit..."
+timeout 24h singularity exec --nv \
     --bind "${HOST_PROJECT_DIR}":/workspace \
     "${HOST_TRAINING_SIF_PATH}" \
     bash -c "cd /workspace && python -m model_foundry.cli run ${CONTAINER_CONFIG_FILE} ${RESUME_FLAG}"
+
+# Check if timeout occurred
+if [ $? -eq 124 ]; then
+    echo "⚠️  Training was terminated due to timeout (24 hours)"
+    cleanup
+fi
+
+# Show final GPU status
+echo "=== Final GPU Status ==="
+monitor_gpu
 
 # === Script Completion ===
 echo "=== Training Script Finished: $(date) ===" 

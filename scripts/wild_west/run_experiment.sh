@@ -206,6 +206,33 @@ check_gpu_availability() {
     return 0
 }
 
+# Function to check for defunct processes
+check_defunct_processes() {
+    log "INFO" "Checking for defunct processes..."
+    
+    # Look for defunct processes
+    local defunct_count=$(ps aux | grep -c "defunct\|<defunct>" || echo "0")
+    
+    if [ "$defunct_count" -gt 0 ]; then
+        log "WARN" "Found $defunct_count defunct processes:"
+        ps aux | grep "defunct\|<defunct>" | head -5
+        log "WARN" "Consider cleaning up defunct processes manually"
+        return 1
+    else
+        log "INFO" "No defunct processes found"
+        return 0
+    fi
+}
+
+# Function to monitor GPU status
+monitor_gpu_status() {
+    log "INFO" "=== GPU Status ==="
+    if command -v nvidia-smi &> /dev/null; then
+        nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits
+    fi
+    log "INFO" "================="
+}
+
 # Function to lock GPUs
 lock_gpus() {
     log "INFO" "Locking GPUs: $GPUS"
@@ -289,6 +316,55 @@ setup_environment() {
     fi
 }
 
+# Function to cleanup wandb processes specifically
+cleanup_wandb() {
+    log "INFO" "Cleaning up wandb processes..."
+    
+    # Find and kill wandb processes
+    local wandb_pids=$(pgrep -f "wandb" || echo "")
+    if [ -n "$wandb_pids" ]; then
+        log "INFO" "Found wandb processes: $wandb_pids"
+        echo "$wandb_pids" | xargs kill -TERM 2>/dev/null || true
+        sleep 2
+        echo "$wandb_pids" | xargs kill -KILL 2>/dev/null || true
+        log "INFO" "Wandb processes terminated"
+    else
+        log "INFO" "No wandb processes found"
+    fi
+}
+
+# Function to cleanup processes and GPU memory
+cleanup_processes() {
+    log "INFO" "Cleaning up processes and GPU memory..."
+    
+    # Clean up wandb processes first (they can become orphaned)
+    cleanup_wandb
+    
+    # Kill any remaining Python processes that might be holding GPU memory
+    log "INFO" "Terminating Python processes..."
+    pkill -f "python.*model_foundry" || true
+    pkill -f "python.*trainer" || true
+    pkill -f "wandb" || true
+    
+    # Wait a moment for processes to terminate
+    sleep 2
+    
+    # Force kill any remaining processes if needed
+    pkill -9 -f "python.*model_foundry" || true
+    pkill -9 -f "python.*trainer" || true
+    pkill -9 -f "wandb" || true
+    
+    # Clear CUDA cache if nvidia-smi is available
+    log "INFO" "Clearing GPU memory..."
+    if command -v nvidia-smi &> /dev/null; then
+        nvidia-smi --gpu-reset || true
+        # Also try to clear cache
+        python3 -c "import torch; torch.cuda.empty_cache() if torch.cuda.is_available() else None" 2>/dev/null || true
+    fi
+    
+    log "INFO" "Cleanup completed"
+}
+
 # Function to run command in container
 run_in_container() {
     local container_path="$1"
@@ -323,11 +399,72 @@ run_in_container() {
         wandb_env="$wandb_env WANDB_API_KEY=$WANDB_API_KEY"
     fi
     
-    # Execute the command inside the container with spaCy model download
-    singularity exec --nv \
+    # Create a wrapper script for proper signal handling inside the container
+    local wrapper_script=$(mktemp)
+    cat > "$wrapper_script" << 'EOF'
+#!/bin/bash
+set -e
+
+# Function to cleanup inside container
+cleanup_container() {
+    echo "Cleaning up inside container..."
+    
+    # Kill wandb processes first (they can become orphaned)
+    pkill -f "wandb" || true
+    sleep 1
+    pkill -9 -f "wandb" || true
+    
+    # Kill any Python processes
+    pkill -f "python.*model_foundry" || true
+    pkill -f "python.*trainer" || true
+    sleep 1
+    pkill -9 -f "python.*model_foundry" || true
+    pkill -9 -f "python.*trainer" || true
+    
+    # Clear GPU memory
+    python3 -c "import torch; torch.cuda.empty_cache() if torch.cuda.is_available() else None" 2>/dev/null || true
+    
+    echo "Container cleanup completed"
+    exit 0
+}
+
+# Set up signal handlers
+trap cleanup_container INT TERM
+
+# Change to workspace directory
+cd /workspace
+
+# Download spaCy model
+python -m spacy download en_core_web_sm --quiet
+
+# Execute the actual command
+exec "$@"
+EOF
+    
+    chmod +x "$wrapper_script"
+    
+    # Execute the command inside the container with proper signal handling and timeout
+    log "INFO" "Starting container execution with 24-hour timeout..."
+    timeout 24h singularity exec --nv --cleanenv \
         --bind "${PROJECT_DIR}":/workspace \
+        --bind "$wrapper_script":/tmp/wrapper.sh \
         "$container_path" \
-        bash -c "cd /workspace && python -m spacy download en_core_web_sm --quiet && $wandb_env $command"
+        bash -c "/tmp/wrapper.sh bash -c '$wandb_env $command'"
+    
+    # Check if timeout occurred
+    local exit_code=$?
+    if [ $exit_code -eq 124 ]; then
+        log "WARN" "Container execution was terminated due to timeout (24 hours)"
+        cleanup_processes
+        return 1
+    elif [ $exit_code -ne 0 ]; then
+        log "ERROR" "Container execution failed with exit code $exit_code"
+        cleanup_processes
+        return $exit_code
+    fi
+    
+    # Clean up wrapper script
+    rm -f "$wrapper_script"
 }
 
 # Function to build command with overrides
@@ -357,6 +494,9 @@ build_command() {
 
 # Main execution
 main() {
+    # Set up trap to call cleanup on script exit
+    trap 'log "INFO" "Received interrupt signal, cleaning up..."; cleanup_processes; unlock_gpus; exit' INT TERM EXIT
+    
     log "INFO" "Starting experiment: $CONFIG_NAME"
     log "INFO" "Phase: $PHASE"
     log "INFO" "GPUs: $GPUS"
@@ -366,15 +506,18 @@ main() {
         check_gpu_availability || exit 1
     fi
     
+    # Always check for defunct processes at start
+    check_defunct_processes
+    
+    # Show initial GPU status
+    monitor_gpu_status
+    
     # Lock GPUs if requested
     if [ "$LOCK_GPUS" = true ]; then
         lock_gpus || exit 1
     fi
     
-    # Set up trap to unlock GPUs on exit
-    if [ "$UNLOCK_GPUS" = true ]; then
-        trap 'unlock_gpus' EXIT
-    fi
+    # Note: GPU unlocking is now handled in the main trap above
     
     # Setup environment
     setup_environment
@@ -441,6 +584,11 @@ main() {
             exit 1
             ;;
     esac
+    
+    # Final monitoring
+    log "INFO" "=== Final Status ==="
+    check_defunct_processes
+    monitor_gpu_status
     
     log "SUCCESS" "Experiment completed: $CONFIG_NAME"
     log "SUCCESS" "Phase: $PHASE"
