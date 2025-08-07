@@ -379,7 +379,12 @@ build_command() {
 # Main execution
 main() {
     # Set up trap to call cleanup on script exit
-    trap 'cleanup; unlock_gpus; exit 130' INT TERM
+    # Always unlock if we locked, regardless of UNLOCK_GPUS flag
+    if [ "$LOCK_GPUS" = true ]; then
+        trap 'cleanup; unlock_gpus' EXIT INT TERM
+    else
+        trap 'cleanup' EXIT INT TERM
+    fi
     
     log "INFO" "Starting experiment: $CONFIG_NAME"
     log "INFO" "Phase: $PHASE"
