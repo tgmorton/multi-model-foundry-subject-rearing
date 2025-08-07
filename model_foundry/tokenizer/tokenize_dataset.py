@@ -71,7 +71,12 @@ def tokenize_dataset_from_config(config_path: str):
         return
 
     print(f"  - Loading {len(training_files)} training file(s)...")
-    raw_training_dataset = load_dataset('text', data_files={'train': training_files}, split='train')
+    # Use custom cache directory to avoid filling up home directory
+    # Can be overridden with HF_DATASETS_CACHE environment variable
+    cache_dir = os.environ.get('HF_DATASETS_CACHE', os.path.join(tokenized_data_dir, '.cache'))
+    os.makedirs(cache_dir, exist_ok=True)
+    print(f"  - Using cache directory: {cache_dir}")
+    raw_training_dataset = load_dataset('text', data_files={'train': training_files}, split='train', cache_dir=cache_dir)
     print(f"  - Found {len(raw_training_dataset):,} total lines in the training corpus.")
 
     def tokenize_function(examples):
@@ -98,7 +103,7 @@ def tokenize_dataset_from_config(config_path: str):
 
             if test_files:
                 print(f"  - Loading {len(test_files)} test file(s)...")
-                raw_test_dataset = load_dataset('text', data_files={'test': test_files}, split='test')
+                raw_test_dataset = load_dataset('text', data_files={'test': test_files}, split='test', cache_dir=cache_dir)
                 print(f"  - Found {len(raw_test_dataset):,} total lines in the test corpus.")
 
                 print("  - Tokenizing test dataset...")

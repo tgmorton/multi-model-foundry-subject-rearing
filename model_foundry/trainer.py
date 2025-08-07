@@ -629,6 +629,9 @@ class Trainer:
             epoch_losses = []
             epoch_start_time = None
             
+            # Update progress bar description to show current epoch
+            progress_bar.set_description(f"Epoch {epoch + 1}/{self.config.training.epochs}")
+            
             print(f"\n--- Epoch {epoch + 1}/{self.config.training.epochs} ---")
             
             # Record start time using simple time tracking instead of CUDA events

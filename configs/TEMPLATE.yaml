@@ -118,7 +118,10 @@ training:
   use_amp: true  # Enable automatic mixed precision
   
   # Gradient accumulation
-  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256  # Number of steps to accumulate gradients
+  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
+  
+  # Gradient clipping for training stability
+  max_grad_norm: 1.0  # Maximum gradient norm for clipping (set to null to disable)
   
   # Memory optimizations
   use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
