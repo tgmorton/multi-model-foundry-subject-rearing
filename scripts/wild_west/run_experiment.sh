@@ -347,7 +347,7 @@ run_in_container() {
             python -m spacy download en_core_web_sm --quiet
             
             # single exec replaces the shell -> no extra zombies
-            exec $wandb_env $command
+            exec env $wandb_env $command
         "
 }
 
