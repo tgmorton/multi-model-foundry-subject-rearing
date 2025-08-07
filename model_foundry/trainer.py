@@ -4,8 +4,6 @@ import yaml
 import glob
 import re
 import logging
-import signal
-import sys
 from pathlib import Path
 import torch
 from torch.optim import AdamW
@@ -35,9 +33,6 @@ class Trainer:
         self.base_dir = base_dir
         self.device = get_device()
         self.git_commit_hash = get_git_commit_hash()
-        
-        # Flag to track if we're in the middle of training
-        self._training_active = False
 
         # State variables to be initialized
         self.model = None
@@ -58,67 +53,7 @@ class Trainer:
         # Initialize data processor
         self.data_processor = create_data_processor(config, base_dir)
         
-        # Set up signal handlers for graceful shutdown
-        self._setup_signal_handlers()
 
-    def _setup_signal_handlers(self):
-        """Set up signal handlers for graceful shutdown."""
-        def signal_handler(signum, frame):
-            print(f"\n⚠️  Received signal {signum}. Cleaning up and shutting down gracefully...")
-            self._cleanup_gpu()
-            sys.exit(0)
-        
-        # Register handlers for common interrupt signals
-        signal.signal(signal.SIGINT, signal_handler)   # Ctrl+C
-        signal.signal(signal.SIGTERM, signal_handler)  # Termination signal
-        
-        # On Unix systems, also handle SIGUSR1 and SIGUSR2
-        if hasattr(signal, 'SIGUSR1'):
-            signal.signal(signal.SIGUSR1, signal_handler)
-        if hasattr(signal, 'SIGUSR2'):
-            signal.signal(signal.SIGUSR2, signal_handler)
-
-    def _cleanup_gpu(self):
-        """Clean up GPU memory and resources."""
-        print("  - Cleaning up GPU resources...")
-        
-        try:
-            # Clear CUDA cache
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                torch.cuda.synchronize()
-                print("    ✓ CUDA cache cleared")
-            
-            # Delete model and optimizer to free memory
-            if hasattr(self, 'model') and self.model is not None:
-                del self.model
-                print("    ✓ Model deleted")
-            
-            if hasattr(self, 'optimizer') and self.optimizer is not None:
-                del self.optimizer
-                print("    ✓ Optimizer deleted")
-            
-            if hasattr(self, 'lr_scheduler') and self.lr_scheduler is not None:
-                del self.lr_scheduler
-                print("    ✓ Learning rate scheduler deleted")
-            
-            if hasattr(self, 'scaler') and self.scaler is not None:
-                del self.scaler
-                print("    ✓ Gradient scaler deleted")
-            
-            # Force garbage collection
-            import gc
-            gc.collect()
-            
-            # Final CUDA cleanup
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                print("    ✓ Final CUDA cleanup completed")
-                
-        except Exception as e:
-            print(f"    ⚠️  Warning: Error during GPU cleanup: {e}")
-        
-        print("  - GPU cleanup completed")
 
     def _calculate_training_parameters(self):
         """Calculate training parameters based on dataset size if not explicitly set."""
@@ -578,17 +513,7 @@ class Trainer:
             import traceback
             logger.debug("Full traceback:", exc_info=True)
             
-            # Ensure GPU cleanup even on error
-            if self._training_active:
-                print("\n🧹 Cleaning up GPU resources after error...")
-                self._cleanup_gpu()
-            
             raise SystemExit(1)
-        finally:
-            # Ensure cleanup happens even if training completes normally
-            if self._training_active:
-                print("\n🧹 Final GPU cleanup...")
-                self._cleanup_gpu()
     
     def _train_loop(self):
         """Internal training loop implementation."""
@@ -597,9 +522,6 @@ class Trainer:
         # Calculate training parameters based on dataset size
         print("  - Calculating training parameters from dataset...")
         self._calculate_training_parameters()
-        
-        # Mark training as active
-        self._training_active = True
 
         # Initialize components
         self.model = create_model(self.config).to(self.device)
@@ -794,11 +716,10 @@ class Trainer:
 
         print("\n----- Training Complete -----")
         
-        # Mark training as inactive
-        self._training_active = False
-        
         # Final cleanup
-        self._cleanup_gpu()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
         
         if self.config.logging.use_wandb:
             wandb.finish()
