@@ -48,6 +48,9 @@ class TrainingConfig(BaseModel):
     # Gradient accumulation
     gradient_accumulation_steps: int = 1  # Number of steps to accumulate gradients
     
+    # Gradient clipping
+    max_grad_norm: Optional[float] = Field(None, gt=0)  # Maximum gradient norm for clipping
+    
     # Memory optimizations
     use_tf32: bool = True  # Enable TF32 for faster training on Ampere+ GPUs
     use_gradient_checkpointing: bool = False  # Enable gradient checkpointing to save memory

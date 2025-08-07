@@ -59,6 +59,10 @@ training:
   # Enhanced training features
   use_amp: true  # Enable automatic mixed precision
   gradient_accumulation_steps: 32  # Number of steps to accumulate gradients
+  
+  # Gradient clipping for training stability
+  max_grad_norm: 1.0
+  
   use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
   use_gradient_checkpointing: true  # Enable gradient checkpointing to save memory
   

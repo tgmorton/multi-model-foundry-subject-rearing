@@ -62,6 +62,9 @@ training:
   # Gradient accumulation - reduced for smaller effective batch size
   gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
   
+  # Gradient clipping for training stability
+  max_grad_norm: 1.0
+  
   # Memory optimizations
   use_tf32: true
   use_gradient_checkpointing: true

@@ -4,6 +4,7 @@ import yaml
 import glob
 import re
 import logging
+import time
 from pathlib import Path
 import torch
 from torch.optim import AdamW
@@ -43,11 +44,34 @@ class Trainer:
         self.global_step = 0
         self.epoch = 0
         
-        # Initialize AMP components
+        # Enhanced AMP setup
         self.scaler = None
+        self.amp_enabled = False
         if self.config.training.use_amp and torch.cuda.is_available():
-            self.scaler = torch.cuda.amp.GradScaler()
-            print("  - Automatic Mixed Precision (AMP) enabled")
+            self.amp_enabled = True
+            # Use higher initial scale for better stability
+            self.scaler = torch.cuda.amp.GradScaler(
+                init_scale=2**16,
+                growth_factor=2,
+                backoff_factor=0.5,
+                growth_interval=2000,
+                enabled=True
+            )
+            print("  - AMP enabled with enhanced GradScaler settings")
+            
+        # Memory management settings
+        if torch.cuda.is_available():
+            # Set memory fraction to prevent OOM
+            torch.cuda.set_per_process_memory_fraction(0.95)  # Use max 95% of GPU memory
+            
+            # Configure allocator for better performance
+            os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True,max_split_size_mb:512'
+            
+            # Enable cudnn benchmarking for consistent memory usage
+            torch.backends.cudnn.benchmark = True
+            torch.backends.cudnn.deterministic = False  # Faster, less memory
+            
+            print("  - CUDA memory management configured (95% memory limit, expandable segments)")
         
         # Initialize data processor
         self.data_processor = create_data_processor(config, base_dir)
@@ -161,6 +185,8 @@ class Trainer:
             'torch_random_state': torch.get_rng_state(),
             'torch_cuda_random_state': torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
             'git_commit_hash': self.git_commit_hash,
+            # Add AMP scaler state
+            'amp_scaler': self.scaler.state_dict() if self.scaler is not None else None,
         }
         torch.save(state, checkpoint_dir / "training_state.pt")
         
@@ -233,6 +259,11 @@ class Trainer:
         torch.set_rng_state(state['torch_random_state'])
         if torch.cuda.is_available() and state['torch_cuda_random_state']:
             torch.cuda.set_rng_state_all(state['torch_cuda_random_state'])
+
+        # Restore AMP scaler state
+        if self.scaler is not None and state.get('amp_scaler') is not None:
+            self.scaler.load_state_dict(state['amp_scaler'])
+            print(f"  - Restored AMP scaler state")
 
         print(f"  - Resumed from step {self.global_step} at epoch {self.epoch}.")
 
@@ -535,6 +566,11 @@ class Trainer:
             self.model.gradient_checkpointing_enable()
             print("  - Gradient checkpointing enabled to save memory")
         
+        # Initialize memory tracking
+        max_memory_reserved = 0
+        oom_counter = 0
+        gradient_overflow_counter = 0
+        
         self.optimizer = AdamW(
             self.model.parameters(),
             lr=self.config.training.learning_rate,
@@ -591,98 +627,163 @@ class Trainer:
                 
             self.epoch = epoch
             epoch_losses = []
-            epoch_start_time = torch.cuda.Event() if torch.cuda.is_available() else None
-            epoch_end_time = torch.cuda.Event() if torch.cuda.is_available() else None
-            
-            if epoch_start_time:
-                epoch_start_time.record()
+            epoch_start_time = None
             
             print(f"\n--- Epoch {epoch + 1}/{self.config.training.epochs} ---")
+            
+            # Record start time using simple time tracking instead of CUDA events
+            epoch_wall_start = time.time()
             
             for batch in self.dataloader:
                 if self.global_step >= self.config.training.train_steps:
                     break
 
-                inputs = {k: v.to(self.device) for k, v in batch.items()}
-                
-                # Use AMP if enabled
-                if self.scaler is not None:
-                    with torch.cuda.amp.autocast():
-                        outputs = self.model(**inputs)
-                        loss = outputs.loss
+                try:
+                    inputs = {k: v.to(self.device, non_blocking=True) for k, v in batch.items()}
                     
-                    # Scale loss for gradient accumulation
-                    scaled_loss = self.scaler.scale(loss / self.config.training.gradient_accumulation_steps)
-                    scaled_loss.backward()
-                else:
-                    outputs = self.model(**inputs)
-                    loss = outputs.loss
-                    # Scale loss for gradient accumulation
-                    scaled_loss = loss / self.config.training.gradient_accumulation_steps
-                    scaled_loss.backward()
-                
-                # Only step optimizer and scheduler on accumulation boundaries
-                if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
-                    if self.scaler is not None:
-                        self.scaler.step(self.optimizer)
-                        self.scaler.update()
+                    # Forward pass with AMP
+                    if self.amp_enabled:
+                        with torch.cuda.amp.autocast(dtype=torch.float16):
+                            outputs = self.model(**inputs)
+                            loss = outputs.loss / self.config.training.gradient_accumulation_steps
+                        
+                        # Backward with gradient scaling
+                        self.scaler.scale(loss).backward()
+                        
+                        # Gradient accumulation boundary
+                        if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+                            # Unscale gradients for gradient clipping
+                            self.scaler.unscale_(self.optimizer)
+                            
+                            # Gradient clipping (if configured)
+                            max_grad_norm = getattr(self.config.training, 'max_grad_norm', None)
+                            if max_grad_norm:
+                                torch.nn.utils.clip_grad_norm_(
+                                    self.model.parameters(), 
+                                    max_grad_norm
+                                )
+                            
+                            # Optimizer step with overflow checking
+                            scale_before = self.scaler.get_scale()
+                            self.scaler.step(self.optimizer)
+                            self.scaler.update()
+                            scale_after = self.scaler.get_scale()
+                            
+                            # Check for gradient overflow
+                            if scale_after < scale_before:
+                                gradient_overflow_counter += 1
+                                if gradient_overflow_counter % 10 == 0:
+                                    print(f"  ⚠️ Gradient overflow detected (count: {gradient_overflow_counter})")
+                            
+                            self.lr_scheduler.step()
+                            self.optimizer.zero_grad(set_to_none=True)  # More memory efficient
                     else:
-                        self.optimizer.step()
+                        # Non-AMP path
+                        outputs = self.model(**inputs)
+                        loss = outputs.loss / self.config.training.gradient_accumulation_steps
+                        loss.backward()
+                        
+                        if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+                            max_grad_norm = getattr(self.config.training, 'max_grad_norm', None)
+                            if max_grad_norm:
+                                torch.nn.utils.clip_grad_norm_(
+                                    self.model.parameters(), 
+                                    max_grad_norm
+                                )
+                            self.optimizer.step()
+                            self.lr_scheduler.step()
+                            self.optimizer.zero_grad(set_to_none=True)
+
+                    # Track metrics
+                    epoch_losses.append(loss.item() * self.config.training.gradient_accumulation_steps)
+                    total_tokens_processed += inputs['input_ids'].numel()
                     
-                    self.lr_scheduler.step()
-                    self.optimizer.zero_grad()
+                    # Memory monitoring (every 100 steps)
+                    if self.global_step % 100 == 0 and torch.cuda.is_available():
+                        current_reserved = torch.cuda.memory_reserved() / 1024**3
+                        max_memory_reserved = max(max_memory_reserved, current_reserved)
+                        
+                        # Only clear cache if memory fragmentation is severe
+                        allocated = torch.cuda.memory_allocated() / 1024**3
+                        fragmentation = current_reserved - allocated
+                        
+                        if fragmentation > 4.0:  # More than 4GB fragmented
+                            print(f"  ⚠️ High memory fragmentation detected: {fragmentation:.2f}GB")
+                            torch.cuda.empty_cache()
+                    
+                    # Calculate and log metrics
+                    current_lr = self.lr_scheduler.get_last_lr()[0]
+                    avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
+                    # Calculate current epoch based on steps completed
+                    current_epoch = (self.global_step // steps_per_epoch) + 1
+                    
+                    # Calculate ETA
+                    steps_remaining = self.config.training.train_steps - self.global_step
+                    if steps_remaining > 0:
+                        time_per_step = progress_bar.format_dict.get('elapsed', 0) / max(1, self.global_step)
+                        eta_seconds = steps_remaining * time_per_step
+                        eta_str = f"{eta_seconds/3600:.1f}h" if eta_seconds > 3600 else f"{eta_seconds/60:.1f}m"
+                    else:
+                        eta_str = "0m"
+                    
+                    # Update progress bar with detailed metrics
+                    progress_bar.set_postfix({
+                        'loss': f"{avg_loss:.4f}",
+                        'lr': f"{current_lr:.2e}",
+                        'epoch': f"{current_epoch}/{self.config.training.epochs}",
+                        'eta': eta_str
+                    })
 
-                # Track metrics
-                epoch_losses.append(loss.item())
-                total_tokens_processed += inputs['input_ids'].numel()
-                
-                # Clean up CUDA memory periodically to prevent fragmentation
-                if self.global_step % 100 == 0 and torch.cuda.is_available():
-                    torch.cuda.empty_cache()
-                
-                # Calculate and log metrics
-                current_lr = self.lr_scheduler.get_last_lr()[0]
-                avg_loss = sum(epoch_losses) / len(epoch_losses)
-                current_epoch = epoch + 1
-                
-                # Calculate ETA
-                steps_remaining = self.config.training.train_steps - self.global_step
-                if steps_remaining > 0:
-                    time_per_step = progress_bar.format_dict.get('elapsed', 0) / max(1, self.global_step)
-                    eta_seconds = steps_remaining * time_per_step
-                    eta_str = f"{eta_seconds/3600:.1f}h" if eta_seconds > 3600 else f"{eta_seconds/60:.1f}m"
-                else:
-                    eta_str = "0m"
-                
-                # Update progress bar with detailed metrics
-                progress_bar.set_postfix({
-                    'loss': f"{avg_loss:.4f}",
-                    'lr': f"{current_lr:.2e}",
-                    'epoch': f"{current_epoch}/{self.config.training.epochs}",
-                    'eta': eta_str
-                })
+                    if self.config.logging.use_wandb:
+                        wandb.log({
+                            "loss": loss.item(), 
+                            "learning_rate": current_lr,
+                            "epoch": current_epoch,
+                            "tokens_processed": total_tokens_processed,
+                            "memory_allocated_gb": torch.cuda.memory_allocated() / 1024**3 if torch.cuda.is_available() else 0,
+                            "memory_reserved_gb": torch.cuda.memory_reserved() / 1024**3 if torch.cuda.is_available() else 0
+                        }, step=self.global_step)
+                    
+                    # Checkpoint saving with memory cleanup
+                    if self.global_step in checkpoint_schedule:
+                        # Ensure all gradients are cleared before checkpoint
+                        self.optimizer.zero_grad(set_to_none=True)
+                        
+                        # Wait for all CUDA operations to complete
+                        if torch.cuda.is_available():
+                            torch.cuda.synchronize()
+                        
+                        self._save_checkpoint()
+                        
+                        # Clear cache after checkpoint to free memory
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
 
-                if self.config.logging.use_wandb:
-                    wandb.log({
-                        "loss": loss.item(), 
-                        "learning_rate": current_lr,
-                        "epoch": current_epoch,
-                        "tokens_processed": total_tokens_processed
-                    }, step=self.global_step)
-
-                self.global_step += 1
-                progress_bar.update(1)
-
-                if self.global_step in checkpoint_schedule:
-                    self._save_checkpoint()
+                    self.global_step += 1
+                    progress_bar.update(1)
+                    
+                except RuntimeError as e:
+                    if "out of memory" in str(e).lower():
+                        oom_counter += 1
+                        print(f"\n⚠️ OOM error #{oom_counter} at step {self.global_step}")
+                        print(f"  Memory allocated: {torch.cuda.memory_allocated()/1024**3:.2f}GB")
+                        print(f"  Memory reserved: {torch.cuda.memory_reserved()/1024**3:.2f}GB")
+                        
+                        # Clear cache and retry with smaller batch
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                            torch.cuda.synchronize()
+                        
+                        # Skip this batch and continue
+                        self.optimizer.zero_grad(set_to_none=True)
+                        continue
+                    else:
+                        # Re-raise non-OOM errors
+                        raise
             
             # Log epoch completion
-            if epoch_end_time and epoch_start_time:
-                epoch_end_time.record()
-                torch.cuda.synchronize()
-                epoch_time = epoch_start_time.elapsed_time(epoch_end_time) / 1000.0  # Convert to seconds
-            else:
-                epoch_time = 0
+            epoch_wall_end = time.time()
+            epoch_time = epoch_wall_end - epoch_wall_start
             
             epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
             print(f"  Epoch {epoch + 1} completed:")
@@ -690,24 +791,28 @@ class Trainer:
             print(f"    - Learning rate: {current_lr:.2e}")
             print(f"    - Time: {epoch_time:.1f}s")
             print(f"    - Tokens processed: {total_tokens_processed:,}")
-
-            # Clean up CUDA memory and events at end of epoch
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                torch.cuda.synchronize()
             
-            # Clean up CUDA events to prevent resource handle issues
-            if epoch_start_time:
-                del epoch_start_time
-            if epoch_end_time:
-                del epoch_end_time
+            # End of epoch cleanup - minimal intervention
+            if torch.cuda.is_available():
+                # Only synchronize, don't clear cache unless needed
+                torch.cuda.synchronize()
+                
+                # Log memory stats
+                print(f"    - Memory stats - Allocated: {torch.cuda.memory_allocated()/1024**3:.2f}GB, "
+                      f"Reserved: {torch.cuda.memory_reserved()/1024**3:.2f}GB, "
+                      f"Max Reserved: {max_memory_reserved:.2f}GB")
+                
+                # Report gradient overflow stats if any occurred
+                if gradient_overflow_counter > 0:
+                    print(f"    - Gradient overflows this epoch: {gradient_overflow_counter}")
 
         print("\n----- Training Complete -----")
         
         # Final cleanup
         if torch.cuda.is_available():
-            torch.cuda.empty_cache()
             torch.cuda.synchronize()
+            # Only one final empty_cache
+            torch.cuda.empty_cache()
         
         if self.config.logging.use_wandb:
             wandb.finish()

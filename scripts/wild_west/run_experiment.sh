@@ -261,8 +261,12 @@ setup_environment() {
     export CUDA_VISIBLE_DEVICES="$GPUS"
     log "INFO" "CUDA_VISIBLE_DEVICES set to: $CUDA_VISIBLE_DEVICES"
     
-    # Set PyTorch CUDA allocator config
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    # Set PyTorch CUDA allocator config for better memory management
+    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
+    
+    # Additional CUDA memory management settings
+    export TORCH_CUDA_MEMORY_FRACTION=0.95  # Alternative to set_per_process_memory_fraction
+    export CUDA_LAUNCH_BLOCKING=0  # Set to 1 only for debugging
     
     # Set distributed training environment variables if needed
     if [ "$DISTRIBUTED" = true ]; then
