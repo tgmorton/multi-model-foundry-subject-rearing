@@ -39,6 +39,7 @@ class Trainer:
         self.optimizer = None
         self.lr_scheduler = None
         self.dataloader = None
+        self.dataloader_iter = None
         self.tokenizer = None
         self.global_step = 0
         self.epoch = 0
@@ -574,101 +575,25 @@ class Trainer:
         checkpoint_schedule = self._get_checkpoint_schedule()
         progress_bar = tqdm(range(self.config.training.train_steps), initial=self.global_step, desc="Training Steps")
 
+        # Initialize dataloader iterator
+        self.dataloader_iter = iter(self.dataloader)
+
         # Training metrics tracking
         epoch_losses = []
         epoch_start_time = None
         total_tokens_processed = 0
         
+        # Calculate steps per epoch for proper epoch tracking
+        steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
+        
         self.model.train()
         while self.global_step < self.config.training.train_steps:
-            for epoch in range(self.epoch, self.config.training.epochs):
-                self.epoch = epoch
-                epoch_losses = []
-                epoch_start_time = torch.cuda.Event() if torch.cuda.is_available() else None
-                epoch_end_time = torch.cuda.Event() if torch.cuda.is_available() else None
-                
-                if epoch_start_time:
-                    epoch_start_time.record()
-                
-                print(f"\n--- Epoch {epoch + 1}/{self.config.training.epochs} ---")
-                
-                for batch_idx, batch in enumerate(self.dataloader):
-                    if self.global_step >= self.config.training.train_steps:
-                        break
-
-                    inputs = {k: v.to(self.device) for k, v in batch.items()}
-                    
-                    # Use AMP if enabled
-                    if self.scaler is not None:
-                        with torch.cuda.amp.autocast():
-                            outputs = self.model(**inputs)
-                            loss = outputs.loss
-                        
-                        # Scale loss for gradient accumulation
-                        scaled_loss = self.scaler.scale(loss / self.config.training.gradient_accumulation_steps)
-                        scaled_loss.backward()
-                    else:
-                        outputs = self.model(**inputs)
-                        loss = outputs.loss
-                        # Scale loss for gradient accumulation
-                        scaled_loss = loss / self.config.training.gradient_accumulation_steps
-                        scaled_loss.backward()
-                    
-                    # Only step optimizer and scheduler on accumulation boundaries
-                    if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
-                        if self.scaler is not None:
-                            self.scaler.step(self.optimizer)
-                            self.scaler.update()
-                        else:
-                            self.optimizer.step()
-                        
-                        self.lr_scheduler.step()
-                        self.optimizer.zero_grad()
-
-                    # Track metrics
-                    epoch_losses.append(loss.item())
-                    total_tokens_processed += inputs['input_ids'].numel()
-                    
-                    # Clean up CUDA memory periodically to prevent fragmentation
-                    if self.global_step % 100 == 0 and torch.cuda.is_available():
-                        torch.cuda.empty_cache()
-                    
-                    # Calculate and log metrics
-                    current_lr = self.lr_scheduler.get_last_lr()[0]
-                    avg_loss = sum(epoch_losses) / len(epoch_losses)
-                    
-                    # Calculate ETA
-                    steps_remaining = self.config.training.train_steps - self.global_step
-                    if steps_remaining > 0:
-                        time_per_step = progress_bar.format_dict.get('elapsed', 0) / max(1, self.global_step)
-                        eta_seconds = steps_remaining * time_per_step
-                        eta_str = f"{eta_seconds/3600:.1f}h" if eta_seconds > 3600 else f"{eta_seconds/60:.1f}m"
-                    else:
-                        eta_str = "0m"
-                    
-                    # Update progress bar with detailed metrics
-                    progress_bar.set_postfix({
-                        'loss': f"{avg_loss:.4f}",
-                        'lr': f"{current_lr:.2e}",
-                        'epoch': f"{epoch + 1}/{self.config.training.epochs}",
-                        'eta': eta_str
-                    })
-
-                    if self.config.logging.use_wandb:
-                        wandb.log({
-                            "loss": loss.item(), 
-                            "learning_rate": current_lr,
-                            "epoch": epoch + 1,
-                            "tokens_processed": total_tokens_processed
-                        }, step=self.global_step)
-
-                    self.global_step += 1
-                    progress_bar.update(1)
-
-                    if self.global_step in checkpoint_schedule:
-                        self._save_checkpoint()
-                
-                # Log epoch summary
+            # Calculate current epoch based on steps completed
+            current_epoch = (self.global_step // steps_per_epoch) + 1
+            
+            # Check if we've completed the current epoch and need to start a new one
+            if self.global_step % steps_per_epoch == 0 and self.global_step > 0:
+                # Calculate epoch time for logging
                 if epoch_end_time and epoch_start_time:
                     epoch_end_time.record()
                     torch.cuda.synchronize()
@@ -676,13 +601,16 @@ class Trainer:
                 else:
                     epoch_time = 0
                 
-                epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
-                print(f"  Epoch {epoch + 1} completed:")
-                print(f"    - Average loss: {epoch_avg_loss:.4f}")
-                print(f"    - Learning rate: {current_lr:.2e}")
-                print(f"    - Time: {epoch_time:.1f}s")
-                print(f"    - Tokens processed: {total_tokens_processed:,}")
-
+                # Log completion of previous epoch
+                if epoch_losses:
+                    epoch_avg_loss = sum(epoch_losses) / len(epoch_losses)
+                    current_lr = self.lr_scheduler.get_last_lr()[0]
+                    print(f"  Epoch {current_epoch - 1} completed:")
+                    print(f"    - Average loss: {epoch_avg_loss:.4f}")
+                    print(f"    - Learning rate: {current_lr:.2e}")
+                    print(f"    - Time: {epoch_time:.1f}s")
+                    print(f"    - Tokens processed: {total_tokens_processed:,}")
+                
                 # Clean up CUDA memory and events at end of epoch
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
@@ -693,9 +621,96 @@ class Trainer:
                     del epoch_start_time
                 if epoch_end_time:
                     del epoch_end_time
+            
+            # Start new epoch if needed
+            if self.global_step % steps_per_epoch == 0:
+                print(f"\n--- Epoch {current_epoch}/{self.config.training.epochs} ---")
+                epoch_losses = []
+                epoch_start_time = torch.cuda.Event() if torch.cuda.is_available() else None
+                epoch_end_time = torch.cuda.Event() if torch.cuda.is_available() else None
+                
+                if epoch_start_time:
+                    epoch_start_time.record()
+            
+            # Get next batch from dataloader
+            try:
+                batch = next(self.dataloader_iter)
+            except (StopIteration, AttributeError):
+                # Restart dataloader if we've exhausted it
+                self.dataloader_iter = iter(self.dataloader)
+                batch = next(self.dataloader_iter)
 
-                if self.global_step >= self.config.training.train_steps:
-                    break
+            inputs = {k: v.to(self.device) for k, v in batch.items()}
+            
+            # Use AMP if enabled
+            if self.scaler is not None:
+                with torch.cuda.amp.autocast():
+                    outputs = self.model(**inputs)
+                    loss = outputs.loss
+                
+                # Scale loss for gradient accumulation
+                scaled_loss = self.scaler.scale(loss / self.config.training.gradient_accumulation_steps)
+                scaled_loss.backward()
+            else:
+                outputs = self.model(**inputs)
+                loss = outputs.loss
+                # Scale loss for gradient accumulation
+                scaled_loss = loss / self.config.training.gradient_accumulation_steps
+                scaled_loss.backward()
+            
+            # Only step optimizer and scheduler on accumulation boundaries
+            if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+                if self.scaler is not None:
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                else:
+                    self.optimizer.step()
+                
+                self.lr_scheduler.step()
+                self.optimizer.zero_grad()
+
+            # Track metrics
+            epoch_losses.append(loss.item())
+            total_tokens_processed += inputs['input_ids'].numel()
+            
+            # Clean up CUDA memory periodically to prevent fragmentation
+            if self.global_step % 100 == 0 and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            
+            # Calculate and log metrics
+            current_lr = self.lr_scheduler.get_last_lr()[0]
+            avg_loss = sum(epoch_losses) / len(epoch_losses)
+            
+            # Calculate ETA
+            steps_remaining = self.config.training.train_steps - self.global_step
+            if steps_remaining > 0:
+                time_per_step = progress_bar.format_dict.get('elapsed', 0) / max(1, self.global_step)
+                eta_seconds = steps_remaining * time_per_step
+                eta_str = f"{eta_seconds/3600:.1f}h" if eta_seconds > 3600 else f"{eta_seconds/60:.1f}m"
+            else:
+                eta_str = "0m"
+            
+            # Update progress bar with detailed metrics
+            progress_bar.set_postfix({
+                'loss': f"{avg_loss:.4f}",
+                'lr': f"{current_lr:.2e}",
+                'epoch': f"{current_epoch}/{self.config.training.epochs}",
+                'eta': eta_str
+            })
+
+            if self.config.logging.use_wandb:
+                wandb.log({
+                    "loss": loss.item(), 
+                    "learning_rate": current_lr,
+                    "epoch": current_epoch,
+                    "tokens_processed": total_tokens_processed
+                }, step=self.global_step)
+
+            self.global_step += 1
+            progress_bar.update(1)
+
+            if self.global_step in checkpoint_schedule:
+                self._save_checkpoint()
 
         print("\n----- Training Complete -----")
         
