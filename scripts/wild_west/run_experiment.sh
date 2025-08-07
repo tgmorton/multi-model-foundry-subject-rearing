@@ -293,9 +293,25 @@ setup_environment() {
 
 # Function to cleanup processes using process groups
 cleanup() {
+    # Prevent recursive calls
+    if [ "${CLEANUP_IN_PROGRESS:-}" = "true" ]; then
+        return
+    fi
+    export CLEANUP_IN_PROGRESS=true
+    
     log "INFO" "Cleaning up process group..."
-    # Forward the signal to all processes in the group
-    kill -- -$$ 2>/dev/null || true
+    
+    # Disable the trap to prevent recursion
+    trap - EXIT INT TERM
+    
+    # Forward the signal to child processes only (not the current process)
+    local child_pids=$(jobs -p)
+    if [ -n "$child_pids" ]; then
+        echo "$child_pids" | xargs kill -TERM 2>/dev/null || true
+        sleep 1
+        echo "$child_pids" | xargs kill -KILL 2>/dev/null || true
+    fi
+    
     # Wait for children to exit and reap zombies
     wait 2>/dev/null || true
     log "INFO" "Cleanup completed"
