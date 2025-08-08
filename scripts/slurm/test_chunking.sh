@@ -25,7 +25,7 @@ echo "Start time: $(date)"
 echo "========================================================="
 
 # Set up environment
-module load cuda/12.1.0
+module load cuda/11.8
 module load singularity
 
 # Path configurations
