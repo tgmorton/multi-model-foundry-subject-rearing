@@ -7,6 +7,7 @@ This script provides verbose debugging information to understand why the chunk c
 import os
 import sys
 import json
+import yaml
 import numpy as np
 from pathlib import Path
 from datasets import load_from_disk, Dataset
@@ -227,8 +228,13 @@ def main():
     args = parser.parse_args()
     
     # Load configurations
-    exp0_config = ExperimentConfig.from_yaml(args.exp0_config)
-    exp1_config = ExperimentConfig.from_yaml(args.exp1_config)
+    with open(args.exp0_config, 'r') as f:
+        exp0_config_data = yaml.safe_load(f)
+    exp0_config = ExperimentConfig(**exp0_config_data)
+    
+    with open(args.exp1_config, 'r') as f:
+        exp1_config_data = yaml.safe_load(f)
+    exp1_config = ExperimentConfig(**exp1_config_data)
     
     print("="*80)
     print("CHUNKING ANALYSIS AND DEBUGGING")

@@ -9,6 +9,7 @@ import sys
 import argparse
 import tempfile
 import shutil
+import yaml
 from pathlib import Path
 from datasets import load_from_disk
 import numpy as np
@@ -28,7 +29,10 @@ def analyze_chunking(config_path: str):
     print("="*80)
     
     # Load configuration
-    config = ExperimentConfig.from_yaml(config_path)
+    with open(config_path, 'r') as f:
+        config_data = yaml.safe_load(f)
+    
+    config = ExperimentConfig(**config_data)
     print(f"\nExperiment: {config.experiment_name}")
     print(f"Base dir: {config.base_dir}")
     
