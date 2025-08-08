@@ -15,7 +15,7 @@ import numpy as np
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model_foundry.config import Config
+from model_foundry.config import ExperimentConfig
 from model_foundry.data import DataProcessor
 
 
@@ -28,7 +28,7 @@ def analyze_chunking(config_path: str):
     print("="*80)
     
     # Load configuration
-    config = Config.from_yaml(config_path)
+    config = ExperimentConfig.from_yaml(config_path)
     print(f"\nExperiment: {config.experiment_name}")
     print(f"Base dir: {config.base_dir}")
     

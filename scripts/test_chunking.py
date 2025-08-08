@@ -19,7 +19,7 @@ import torch
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model_foundry.config import Config
+from model_foundry.config import ExperimentConfig
 from model_foundry.data import DataProcessor
 
 
@@ -149,7 +149,7 @@ def simulate_chunking(dataset: Dataset, chunk_size: int, method: str = "current"
     return chunks_created, stats
 
 
-def test_actual_chunking(config: Config) -> Dict:
+def test_actual_chunking(config: ExperimentConfig) -> Dict:
     """Test the actual chunking implementation from DataProcessor."""
     print(f"\n{'='*60}")
     print(f"Testing actual DataProcessor chunking for: {config.experiment_name}")
@@ -227,8 +227,8 @@ def main():
     args = parser.parse_args()
     
     # Load configurations
-    exp0_config = Config.from_yaml(args.exp0_config)
-    exp1_config = Config.from_yaml(args.exp1_config)
+    exp0_config = ExperimentConfig.from_yaml(args.exp0_config)
+    exp1_config = ExperimentConfig.from_yaml(args.exp1_config)
     
     print("="*80)
     print("CHUNKING ANALYSIS AND DEBUGGING")
