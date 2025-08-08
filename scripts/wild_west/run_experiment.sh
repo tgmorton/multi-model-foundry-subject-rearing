@@ -33,7 +33,7 @@ Usage: $0 [OPTIONS] <config_name>
 
 Options:
   -g, --gpus <ids>           Comma-separated GPU IDs (default: $DEFAULT_GPUS)
-  -p, --phase <phase>        Phase: preprocess | train-tokenizer | tokenize-dataset | run | full-pipeline (default: $DEFAULT_PHASE)
+  -p, --phase <phase>        Phase: preprocess | train-tokenizer | tokenize-dataset | chunk-data | run | full-pipeline (default: $DEFAULT_PHASE)
   -b, --batch-size <size>    Override batch size
   -e, --epochs <num>         Override epochs
   -d, --distributed          Enable distributed training
@@ -255,6 +255,12 @@ main() {
         "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
         "Dataset tokenization"
       ;;
+    chunk-data)
+      log INFO "Chunk data..."
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli preprocess-data" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset chunking"
+      ;;
     run)
       log INFO "Train model..."
       run_in_container "$HOST_TRAINING_SIF_PATH" \
@@ -272,6 +278,9 @@ main() {
       run_in_container "$HOST_ABLATION_SIF_PATH" \
         "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
         "Dataset tokenization"
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli preprocess-data" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset chunking"
       run_in_container "$HOST_TRAINING_SIF_PATH" \
         "$(build_command "python -m model_foundry.cli run" "$CONTAINER_CONFIG_FILE")" \
         "Model training"

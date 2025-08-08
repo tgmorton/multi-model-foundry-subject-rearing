@@ -35,6 +35,7 @@ show_usage() {
     echo "  preprocess      - Dataset preprocessing and ablation"
     echo "  train-tokenizer - SentencePiece tokenizer training"
     echo "  tokenize-dataset- Dataset tokenization"
+    echo "  chunk-data      - Dataset chunking into fixed-length blocks"
     echo "  run            - Model training"
     echo ""
     echo "Examples:"
@@ -270,7 +271,7 @@ get_container_path() {
     local phase="$1"
     
     case $phase in
-        "preprocess"|"train-tokenizer"|"tokenize-dataset")
+        "preprocess"|"train-tokenizer"|"tokenize-dataset"|"chunk-data")
             echo "$PROJECT_DIR/singularity/ablation.sif"
             ;;
         "run")
@@ -341,6 +342,12 @@ main() {
                 "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
                 "Dataset tokenization"
             ;;
+        "chunk-data")
+            log "INFO" "Running dataset chunking phase..."
+            run_in_container "$CONTAINER_PATH" \
+                "$(build_command "python -m model_foundry.cli preprocess-data" "$CONTAINER_CONFIG_FILE")" \
+                "Dataset chunking"
+            ;;
         "run")
             log "INFO" "Running model training phase..."
             run_in_container "$CONTAINER_PATH" \
@@ -349,7 +356,7 @@ main() {
             ;;
         *)
             log "ERROR" "Unknown phase '$PHASE'"
-            log "ERROR" "Valid phases: preprocess, train-tokenizer, tokenize-dataset, run"
+            log "ERROR" "Valid phases: preprocess, train-tokenizer, tokenize-dataset, chunk-data, run"
             exit 1
             ;;
     esac
