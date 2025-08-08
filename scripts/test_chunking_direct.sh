@@ -73,11 +73,18 @@ echo ""
 echo -e "${GREEN}Running chunking test for: ${CONFIG_FILE}${NC}"
 echo -e "${BLUE}=========================================================${NC}"
 
+# Install tqdm if not available (usually it is)
 singularity exec --nv \
     --bind "${PROJECT_ROOT}:/workspace" \
     --pwd /workspace \
     "${CONTAINER}" \
-    python scripts/test_chunking_simple.py "${CONFIG_FILE}"
+    bash -c "pip list | grep -q tqdm || pip install -q tqdm"
+
+singularity exec --nv \
+    --bind "${PROJECT_ROOT}:/workspace" \
+    --pwd /workspace \
+    "${CONTAINER}" \
+    python -u scripts/test_chunking_simple.py "${CONFIG_FILE}"
 
 EXIT_CODE=$?
 

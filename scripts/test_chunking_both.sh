@@ -51,6 +51,13 @@ else
 fi
 echo ""
 
+# Install tqdm if not available
+singularity exec --nv \
+    --bind "${PROJECT_ROOT}:/workspace" \
+    --pwd /workspace \
+    "${CONTAINER}" \
+    bash -c "pip list | grep -q tqdm || pip install -q tqdm"
+
 # Test exp0_baseline
 echo -e "${BLUE}=========================================================${NC}"
 echo -e "${BLUE}TESTING: experiment_0_baseline${NC}"
@@ -60,7 +67,7 @@ singularity exec --nv \
     --bind "${PROJECT_ROOT}:/workspace" \
     --pwd /workspace \
     "${CONTAINER}" \
-    python scripts/test_chunking_simple.py configs/experiment_0_baseline.yaml
+    python -u scripts/test_chunking_simple.py configs/experiment_0_baseline.yaml
 
 EXP0_EXIT=$?
 
@@ -82,7 +89,7 @@ singularity exec --nv \
     --bind "${PROJECT_ROOT}:/workspace" \
     --pwd /workspace \
     "${CONTAINER}" \
-    python scripts/test_chunking_simple.py configs/experiment_1_remove_expletives.yaml
+    python -u scripts/test_chunking_simple.py configs/experiment_1_remove_expletives.yaml
 
 EXP1_EXIT=$?
 

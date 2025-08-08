@@ -13,6 +13,8 @@ import yaml
 from pathlib import Path
 from datasets import load_from_disk
 import numpy as np
+from tqdm import tqdm
+import time
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -59,13 +61,25 @@ def analyze_chunking(config_path: str):
         
         # Load tokenized dataset
         try:
-            tokenized_dataset = load_from_disk(processor.tokenized_data_dir)
-            print(f"\n✓ Loaded tokenized dataset from: {processor.tokenized_data_dir}")
+            print(f"\n📂 Loading tokenized dataset...")
+            with tqdm(total=1, desc="Loading dataset", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
+                tokenized_dataset = load_from_disk(processor.tokenized_data_dir)
+                pbar.update(1)
+            
+            print(f"✓ Loaded tokenized dataset from: {processor.tokenized_data_dir}")
             print(f"  - Number of sequences: {len(tokenized_dataset):,}")
             
             # Analyze tokenized dataset
+            print(f"\n📊 Analyzing tokenized dataset...")
             sequences = tokenized_dataset['input_ids']
-            lengths = [len(seq) for seq in sequences]
+            
+            # Calculate lengths with progress bar
+            lengths = []
+            with tqdm(sequences, desc="Calculating sequence lengths", 
+                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
+                for seq in pbar:
+                    lengths.append(len(seq))
+            
             total_tokens = sum(lengths)
             
             print(f"\nTokenized Dataset Statistics:")
@@ -76,16 +90,25 @@ def analyze_chunking(config_path: str):
             print(f"  - Min/Max length: {min(lengths)} / {max(lengths)}")
             print(f"  - Std deviation: {np.std(lengths):.1f}")
             
-            # Length distribution
-            print(f"\n  Length distribution:")
+            # Length distribution with progress bar
+            print(f"\n  Calculating length distribution...")
             bins = [0, 100, 250, 500, 750, 1000, 1500, 2000, 5000, 10000, float('inf')]
-            for i in range(len(bins) - 1):
-                lower, upper = bins[i], bins[i+1]
-                count = sum(1 for l in lengths if lower <= l < upper)
-                if count > 0:
-                    pct = (count / len(lengths)) * 100
-                    bin_label = f"{lower}-{upper}" if upper != float('inf') else f"{lower}+"
-                    print(f"    {bin_label:10s}: {count:7,} sequences ({pct:5.1f}%)")
+            distribution = {}
+            
+            with tqdm(total=len(bins)-1, desc="Computing bins", 
+                     bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
+                for i in range(len(bins) - 1):
+                    lower, upper = bins[i], bins[i+1]
+                    count = sum(1 for l in lengths if lower <= l < upper)
+                    if count > 0:
+                        pct = (count / len(lengths)) * 100
+                        bin_label = f"{lower}-{upper}" if upper != float('inf') else f"{lower}+"
+                        distribution[bin_label] = (count, pct)
+                    pbar.update(1)
+            
+            print(f"\n  Length distribution:")
+            for bin_label, (count, pct) in distribution.items():
+                print(f"    {bin_label:10s}: {count:7,} sequences ({pct:5.1f}%)")
             
         except Exception as e:
             print(f"\n❌ ERROR loading tokenized dataset: {e}")
@@ -100,17 +123,31 @@ def analyze_chunking(config_path: str):
         print(f"Chunk size: {config.data.max_sequence_length}")
         print(f"Output directory: {processor.chunked_data_dir}")
         
-        # Run the chunking process
-        print(f"\nStarting chunking process...")
+        # Run the chunking process with progress indication
+        print(f"\n🔄 Starting chunking process...")
+        print(f"   This may take a few minutes depending on dataset size...")
+        
+        # Add a simple progress indicator since we can't easily hook into the internal chunking
+        start_time = time.time()
+        
+        # Run the actual chunking
         success = processor.preprocess_data(force_reprocess=True)
+        
+        elapsed_time = time.time() - start_time
         
         if not success:
             print(f"\n❌ ERROR: Chunking failed")
             return
         
+        print(f"   ⏱️  Chunking completed in {elapsed_time:.1f} seconds")
+        
         # Load and analyze the chunked dataset
         try:
-            chunked_dataset = load_from_disk(processor.chunked_data_dir)
+            print(f"\n📂 Loading chunked dataset for analysis...")
+            with tqdm(total=1, desc="Loading chunks", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
+                chunked_dataset = load_from_disk(processor.chunked_data_dir)
+                pbar.update(1)
+            
             num_chunks = len(chunked_dataset)
             
             print(f"\n✓ Chunking completed successfully!")
