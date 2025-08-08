@@ -17,7 +17,8 @@ import numpy as np
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_foundry.config import ExperimentConfig
-from model_foundry.data import DataProcessor
+from model_foundry.data import create_data_processor
+from model_foundry.utils import find_project_root
 
 
 def analyze_chunking(config_path: str):
@@ -28,20 +29,27 @@ def analyze_chunking(config_path: str):
     print(f"CHUNKING TEST FOR: {config_path}")
     print("="*80)
     
+    # Find project root
+    base_dir = find_project_root(__file__)
+    
+    # Make config path absolute if it's relative
+    if not os.path.isabs(config_path):
+        config_path = os.path.join(base_dir, config_path)
+    
     # Load configuration
     with open(config_path, 'r') as f:
         config_data = yaml.safe_load(f)
     
     config = ExperimentConfig(**config_data)
     print(f"\nExperiment: {config.experiment_name}")
-    print(f"Base dir: {config.base_dir}")
+    print(f"Base dir: {base_dir}")
     
     # Create a temporary directory for chunked data
     with tempfile.TemporaryDirectory(prefix=f"chunk_test_{config.experiment_name}_") as temp_dir:
         print(f"\nUsing temporary directory: {temp_dir}")
         
-        # Create a modified DataProcessor that uses the temp directory
-        processor = DataProcessor(config)
+        # Create DataProcessor using the factory function
+        processor = create_data_processor(config, base_dir)
         
         # Check if tokenized dataset exists
         if not os.path.exists(processor.tokenized_data_dir):
