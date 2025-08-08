@@ -193,9 +193,14 @@ class DataProcessor:
             return None
             
         try:
+            # Load dataset with memory mapping to avoid loading everything into RAM
             dataset = load_from_disk(self.chunked_data_dir)
             print(f"  ✓ Loaded chunked dataset from: {self.chunked_data_dir}")
             print(f"    - Dataset size: {len(dataset):,} chunks")
+            
+            # Convert to memory-mapped format to reduce RAM usage
+            dataset.set_format(type=None)  # Remove any format to use memory mapping
+            
             return dataset
         except Exception as e:
             print(f"  ✗ Error loading chunked dataset: {e}")
@@ -299,14 +304,19 @@ class DataProcessor:
             pad_to_multiple_of=8  # For efficiency on modern hardware
         )
         
-        # Create DataLoader
+        # Create DataLoader with memory optimizations
+        num_workers = getattr(self.config.data, 'num_workers', 2)  # Reduced default
+        pin_memory = getattr(self.config.data, 'pin_memory', False)  # Disabled by default
+        prefetch_factor = getattr(self.config.data, 'prefetch_factor', 1)  # Reduced prefetch
+        
         dataloader = DataLoader(
             dataset,
             batch_size=self.config.data.batch_size,
             collate_fn=data_collator,
             shuffle=True,
-            num_workers=4,  # Adjust based on your system
-            pin_memory=True if torch.cuda.is_available() else False,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            prefetch_factor=prefetch_factor if num_workers > 0 else None,
             worker_init_fn=_worker_init_fn
         )
         
