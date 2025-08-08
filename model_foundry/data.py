@@ -114,6 +114,7 @@ class DataProcessor:
     def _chunk_sequences_streaming(self, dataset: Dataset, chunk_size: int) -> Generator[List[List[int]], None, None]:
         """
         Stream sequences and chunk them into fixed-length blocks without loading all into memory.
+        Uses concatenation to minimize token waste.
         
         Args:
             dataset: Tokenized dataset
@@ -123,23 +124,26 @@ class DataProcessor:
             Batches of fixed-length chunks
         """
         batch_size = 1000  # Process sequences in batches to balance memory and speed
+        concatenated_buffer = []  # Buffer to accumulate tokens across batches
         
         for i in range(0, len(dataset), batch_size):
             batch_sequences = dataset[i:i + batch_size]['input_ids']
-            chunks = []
             
+            # Concatenate all sequences in this batch to the buffer
             for sequence in batch_sequences:
-                # Skip sequences that are too short
-                if len(sequence) < chunk_size:
-                    continue
-                    
-                # Create non-overlapping chunks of exactly chunk_size tokens
-                for j in range(0, len(sequence) - chunk_size + 1, chunk_size):
-                    chunk = sequence[j:j + chunk_size]
-                    chunks.append(chunk)
+                concatenated_buffer.extend(sequence)
+            
+            # Extract as many complete chunks as possible from the buffer
+            chunks = []
+            while len(concatenated_buffer) >= chunk_size:
+                chunk = concatenated_buffer[:chunk_size]
+                chunks.append(chunk)
+                concatenated_buffer = concatenated_buffer[chunk_size:]
             
             if chunks:
                 yield chunks
+        
+        # Note: Any remaining tokens in concatenated_buffer (< chunk_size) are dropped
     
     def _create_chunked_dataset_streaming(self, tokenized_dataset: Dataset, chunk_size: int) -> Dataset:
         """
