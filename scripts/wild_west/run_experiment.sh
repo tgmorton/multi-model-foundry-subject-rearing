@@ -1,497 +1,287 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Wild-West Experiment Runner — hardened
 
-# Wild-West Experiment Runner
-# Flexible script for running ablation experiments on specific GPUs
+set -euo pipefail
 
-set -e
+# Colors
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Configuration
+# Paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 LOCK_DIR="/tmp/gpu_locks"
 
-# Default values
-DEFAULT_GPUS="1,2"  # Default to GPUs 1 and 2
+# Defaults
+DEFAULT_GPUS="1,2"
 DEFAULT_PHASE="full-pipeline"
-DEFAULT_BATCH_SIZE=""
-DEFAULT_NUM_EPOCHS=""
 
-# Function to show usage
-show_usage() {
-    echo "Usage: $0 [OPTIONS] <config_name>"
-    echo ""
-    echo "Options:"
-    echo "  -g, --gpus <gpu_ids>     Comma-separated GPU IDs (default: $DEFAULT_GPUS)"
-    echo "  -p, --phase <phase>       Phase to run (default: $DEFAULT_PHASE)"
-    echo "  -b, --batch-size <size>   Batch size override"
-    echo "  -e, --epochs <num>        Number of epochs override"
-    echo "  -d, --distributed         Enable distributed training"
-    echo "  -n, --nodes <num>         Number of nodes for distributed training"
-    echo "  -r, --rank <rank>         Node rank for distributed training"
-    echo "  -w, --world-size <size>   World size for distributed training"
-    echo "  -l, --lock-gpus           Lock GPUs before running"
-    echo "  -u, --unlock-gpus         Unlock GPUs after running"
-    echo "  -c, --check-gpus          Check GPU availability before running"
-    echo "  --wandb-mode <mode>       Weights & Biases mode (online, offline, disabled) (default: disabled)"
-    echo "  --wandb-api-key <key>     Weights & Biases API key"
-    echo "  -v, --verbose             Verbose output"
-    echo "  -h, --help                Show this help"
-    echo ""
-    echo "Phases: preprocess, train-tokenizer, tokenize-dataset, run, full-pipeline"
-    echo ""
-    echo "Examples:"
-    echo "  $0 experiment_1_remove_expletives"
-    echo "  $0 -g 1,2 -p run experiment_2_baseline"
-    echo "  $0 -g 1 -d -n 2 -r 0 experiment_3_remove_articles"
-    echo "  $0 -g 1,2 -l -c experiment_4_lemmatize_verbs"
-    echo "  $0 -g 0 --wandb-mode online --wandb-api-key YOUR_API_KEY experiment_0_baseline"
+# Logging
+log() {
+  local level="$1"; shift
+  local ts; ts=$(date '+%Y-%m-%d %H:%M:%S')
+  case "$level" in
+    INFO)    echo -e "${BLUE}[$ts] INFO: $*${NC}";;
+    WARN)    echo -e "${YELLOW}[$ts] WARN: $*${NC}";;
+    ERROR)   echo -e "${RED}[$ts] ERROR: $*${NC}";;
+    SUCCESS) echo -e "${GREEN}[$ts] SUCCESS: $*${NC}";;
+  esac
 }
 
-# Parse command line arguments
-GPUS="$DEFAULT_GPUS"
-PHASE="$DEFAULT_PHASE"
-BATCH_SIZE=""
-NUM_EPOCHS=""
-DISTRIBUTED=false
-NODES=1
-RANK=0
-WORLD_SIZE=1
-LOCK_GPUS=false
-UNLOCK_GPUS=false
-CHECK_GPUS=false
-WANDB_MODE="disabled"
-WANDB_API_KEY=""
-VERBOSE=false
+show_usage() {
+  cat <<EOF
+Usage: $0 [OPTIONS] <config_name>
+
+Options:
+  -g, --gpus <ids>           Comma-separated GPU IDs (default: $DEFAULT_GPUS)
+  -p, --phase <phase>        Phase: preprocess | train-tokenizer | tokenize-dataset | run | full-pipeline (default: $DEFAULT_PHASE)
+  -b, --batch-size <size>    Override batch size
+  -e, --epochs <num>         Override epochs
+  -d, --distributed          Enable distributed training
+  -n, --nodes <num>          Num nodes (default 1)
+  -r, --rank <rank>          Node rank (default 0)
+  -w, --world-size <size>    World size (default 1)
+  -l, --lock-gpus            Lock GPUs before running
+  -u, --unlock-gpus          Unlock GPUs after running
+  -c, --check-gpus           Check GPU availability before running
+  --wandb-mode <mode>        W&B mode: online | offline | disabled (default: disabled)
+  --wandb-api-key <key>      W&B API key
+  -v, --verbose              Verbose output
+  -h, --help                 Show this help
+EOF
+}
+
+# Args
+GPUS="$DEFAULT_GPUS"; PHASE="$DEFAULT_PHASE"; BATCH_SIZE=""; NUM_EPOCHS=""
+DISTRIBUTED=false; NODES=1; RANK=0; WORLD_SIZE=1
+LOCK_GPUS=false; UNLOCK_GPUS=false; CHECK_GPUS=false
+WANDB_MODE="disabled"; WANDB_API_KEY=""; VERBOSE=false
+CONFIG_NAME=""
 
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        -g|--gpus)
-            GPUS="$2"
-            shift 2
-            ;;
-        -p|--phase)
-            PHASE="$2"
-            shift 2
-            ;;
-        -b|--batch-size)
-            BATCH_SIZE="$2"
-            shift 2
-            ;;
-        -e|--epochs)
-            NUM_EPOCHS="$2"
-            shift 2
-            ;;
-        -d|--distributed)
-            DISTRIBUTED=true
-            shift
-            ;;
-        -n|--nodes)
-            NODES="$2"
-            shift 2
-            ;;
-        -r|--rank)
-            RANK="$2"
-            shift 2
-            ;;
-        -w|--world-size)
-            WORLD_SIZE="$2"
-            shift 2
-            ;;
-        -l|--lock-gpus)
-            LOCK_GPUS=true
-            shift
-            ;;
-        -u|--unlock-gpus)
-            UNLOCK_GPUS=true
-            shift
-            ;;
-        -c|--check-gpus)
-            CHECK_GPUS=true
-            shift
-            ;;
-        --wandb-mode)
-            WANDB_MODE="$2"
-            shift 2
-            ;;
-        --wandb-api-key)
-            WANDB_API_KEY="$2"
-            shift 2
-            ;;
-        -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
-        -h|--help)
-            show_usage
-            exit 0
-            ;;
-        -*)
-            echo "Unknown option: $1"
-            show_usage
-            exit 1
-            ;;
-        *)
-            CONFIG_NAME="$1"
-            shift
-            ;;
-    esac
+  case $1 in
+    -g|--gpus) GPUS="$2"; shift 2;;
+    -p|--phase) PHASE="$2"; shift 2;;
+    -b|--batch-size) BATCH_SIZE="$2"; shift 2;;
+    -e|--epochs) NUM_EPOCHS="$2"; shift 2;;
+    -d|--distributed) DISTRIBUTED=true; shift;;
+    -n|--nodes) NODES="$2"; shift 2;;
+    -r|--rank) RANK="$2"; shift 2;;
+    -w|--world-size) WORLD_SIZE="$2"; shift 2;;
+    -l|--lock-gpus) LOCK_GPUS=true; shift;;
+    -u|--unlock-gpus) UNLOCK_GPUS=true; shift;;
+    -c|--check-gpus) CHECK_GPUS=true; shift;;
+    --wandb-mode) WANDB_MODE="$2"; shift 2;;
+    --wandb-api-key) WANDB_API_KEY="$2"; shift 2;;
+    -v|--verbose) VERBOSE=true; shift;;
+    -h|--help) show_usage; exit 0;;
+    -* ) echo "Unknown option: $1"; show_usage; exit 1;;
+    *  ) CONFIG_NAME="$1"; shift;;
+  esac
 done
 
-# Check if config name is provided
-if [ -z "$CONFIG_NAME" ]; then
-    echo -e "${RED}ERROR: Config name is required${NC}"
-    show_usage
-    exit 1
+[[ -z "${CONFIG_NAME:-}" ]] && { log ERROR "Config name is required"; show_usage; exit 1; }
+
+# Ensure lock dir
+mkdir -p "$LOCK_DIR"
+
+# Container runtime
+if command -v apptainer >/dev/null 2>&1; then
+  CONTAINER_BIN="apptainer"
+elif command -v singularity >/dev/null 2>&1; then
+  CONTAINER_BIN="singularity"
+else
+  log ERROR "Neither apptainer nor singularity found in PATH."
+  exit 1
 fi
 
-# Function to log messages
-log() {
-    local level="$1"
-    shift
-    local message="$*"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    case $level in
-        "INFO")
-            echo -e "${BLUE}[$timestamp] INFO: $message${NC}"
-            ;;
-        "WARN")
-            echo -e "${YELLOW}[$timestamp] WARN: $message${NC}"
-            ;;
-        "ERROR")
-            echo -e "${RED}[$timestamp] ERROR: $message${NC}"
-            ;;
-        "SUCCESS")
-            echo -e "${GREEN}[$timestamp] SUCCESS: $message${NC}"
-            ;;
-    esac
-}
-
-# Function to check GPU availability
+# GPU check
 check_gpu_availability() {
-    log "INFO" "Checking GPU availability..."
-    
-    # Convert comma-separated GPUs to array
-    IFS=',' read -ra GPU_ARRAY <<< "$GPUS"
-    
-    for gpu_id in "${GPU_ARRAY[@]}"; do
-        gpu_id=$(echo "$gpu_id" | tr -d ' ')
-        
-        # Get GPU memory info
-        local memory_info=$(nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader,nounits | grep "^$gpu_id,")
-        
-        if [ -z "$memory_info" ]; then
-            log "ERROR" "GPU $gpu_id not found"
-            return 1
-        fi
-        
-        local memory_used=$(echo "$memory_info" | cut -d',' -f2 | tr -d ' ')
-        local memory_total=$(echo "$memory_info" | cut -d',' -f3 | tr -d ' ')
-        local available_gb=$((memory_total - memory_used))
-        
-        log "INFO" "GPU $gpu_id: ${available_gb}GB available (${memory_used}GB used / ${memory_total}GB total)"
-        
-        if [ "$available_gb" -lt 10240 ]; then  # Less than 10GB available
-            log "WARN" "GPU $gpu_id has limited memory (${available_gb}GB available)"
-        fi
-    done
-    
-    return 0
+  log INFO "Checking GPU availability..."
+  IFS=',' read -ra ARR <<< "$GPUS"
+  for gpu_id in "${ARR[@]}"; do
+    gpu_id=$(echo "$gpu_id" | tr -d ' ')
+    local info
+    info=$(nvidia-smi --query-gpu=index,memory.used,memory.total --format=csv,noheader,nounits | awk -F',' -v id="$gpu_id" '$1==id{print}')
+    [[ -z "$info" ]] && { log ERROR "GPU $gpu_id not found"; return 1; }
+    local used total
+    used=$(echo "$info" | cut -d',' -f2 | tr -d ' ')
+    total=$(echo "$info" | cut -d',' -f3 | tr -d ' ')
+    local avail=$((total - used))
+    log INFO "GPU $gpu_id: ${avail}MB available (${used}MB used / ${total}MB total)"
+    if (( avail < 10240 )); then log WARN "GPU $gpu_id low free memory (${avail}MB)"; fi
+  done
 }
 
-
-
-# Function to lock GPUs
+# Lock/unlock
 lock_gpus() {
-    log "INFO" "Locking GPUs: $GPUS"
-    
-    IFS=',' read -ra GPU_ARRAY <<< "$GPUS"
-    
-    for gpu_id in "${GPU_ARRAY[@]}"; do
-        gpu_id=$(echo "$gpu_id" | tr -d ' ')
-        local lock_file="$LOCK_DIR/gpu_${gpu_id}.lock"
-        
-        if [ -f "$lock_file" ]; then
-            log "ERROR" "GPU $gpu_id is already locked by:"
-            cat "$lock_file"
-            return 1
-        fi
-        
-        echo "User: $(whoami)" > "$lock_file"
-        echo "Time: $(date)" >> "$lock_file"
-        echo "PID: $$" >> "$lock_file"
-        echo "Config: $CONFIG_NAME" >> "$lock_file"
-        echo "Phase: $PHASE" >> "$lock_file"
-        
-        log "SUCCESS" "Locked GPU $gpu_id"
-    done
+  log INFO "Locking GPUs: $GPUS"
+  IFS=',' read -ra ARR <<< "$GPUS"
+  for gpu_id in "${ARR[@]}"; do
+    gpu_id=$(echo "$gpu_id" | tr -d ' ')
+    local f="$LOCK_DIR/gpu_${gpu_id}.lock"
+    if [[ -f "$f" ]]; then log ERROR "GPU $gpu_id already locked by:"; cat "$f"; return 1; fi
+    {
+      echo "User: $(whoami)"
+      echo "Time: $(date)"
+      echo "PID: $$"
+      echo "Config: $CONFIG_NAME"
+      echo "Phase: $PHASE"
+    } > "$f"
+    log SUCCESS "Locked GPU $gpu_id"
+  done
 }
-
-# Function to unlock GPUs
 unlock_gpus() {
-    log "INFO" "Unlocking GPUs: $GPUS"
-    
-    IFS=',' read -ra GPU_ARRAY <<< "$GPUS"
-    
-    for gpu_id in "${GPU_ARRAY[@]}"; do
-        gpu_id=$(echo "$gpu_id" | tr -d ' ')
-        local lock_file="$LOCK_DIR/gpu_${gpu_id}.lock"
-        
-        if [ -f "$lock_file" ]; then
-            rm "$lock_file"
-            log "SUCCESS" "Unlocked GPU $gpu_id"
-        else
-            log "WARN" "No lock found on GPU $gpu_id"
-        fi
-    done
+  log INFO "Unlocking GPUs: $GPUS"
+  IFS=',' read -ra ARR <<< "$GPUS"
+  for gpu_id in "${ARR[@]}"; do
+    gpu_id=$(echo "$gpu_id" | tr -d ' ')
+    local f="$LOCK_DIR/gpu_${gpu_id}.lock"
+    if [[ -f "$f" ]]; then rm -f "$f"; log SUCCESS "Unlocked GPU $gpu_id"; else log WARN "No lock found on GPU $gpu_id"; fi
+  done
 }
 
-# Function to set up environment
-setup_environment() {
-    log "INFO" "Setting up environment..."
-    
-    # Set CUDA visible devices
-    export CUDA_VISIBLE_DEVICES="$GPUS"
-    log "INFO" "CUDA_VISIBLE_DEVICES set to: $CUDA_VISIBLE_DEVICES"
-    
-    # Set PyTorch CUDA allocator config for better memory management
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
-    
-    # Additional CUDA memory management settings
-    export TORCH_CUDA_MEMORY_FRACTION=0.95  # Alternative to set_per_process_memory_fraction
-    export CUDA_LAUNCH_BLOCKING=0  # Set to 1 only for debugging
-    
-    # Set distributed training environment variables if needed
-    if [ "$DISTRIBUTED" = true ]; then
-        export MASTER_ADDR="localhost"
-        export MASTER_PORT="12355"
-        export WORLD_SIZE="$WORLD_SIZE"
-        export RANK="$RANK"
-        export NCCL_DEBUG=INFO
-        
-        log "INFO" "Distributed training enabled:"
-        log "INFO" "  World Size: $WORLD_SIZE"
-        log "INFO" "  Rank: $RANK"
-        log "INFO" "  Master Addr: $MASTER_ADDR"
-        log "INFO" "  Master Port: $MASTER_PORT"
-    fi
-    
-    # Load modules if available
-    if command -v module &> /dev/null; then
-        log "INFO" "Loading system modules..."
-        module load singularity/4.1.1 cuda/11.8 2>/dev/null || log "WARN" "Could not load modules"
-    fi
-    
-    # Check if singularity is available
-    if ! command -v singularity &> /dev/null; then
-        log "WARN" "Singularity not found in PATH. Make sure it's installed and loaded."
-    fi
-}
-
-# Function to cleanup processes using process groups
-cleanup() {
-    # Prevent recursive calls
-    if [ "${CLEANUP_IN_PROGRESS:-}" = "true" ]; then
-        return
-    fi
-    export CLEANUP_IN_PROGRESS=true
-    
-    log "INFO" "Cleaning up process group..."
-    
-    # Disable the trap to prevent recursion
-    trap - EXIT INT TERM
-    
-    # Forward the signal to child processes only (not the current process)
-    local child_pids=$(jobs -p)
-    if [ -n "$child_pids" ]; then
-        echo "$child_pids" | xargs kill -TERM 2>/dev/null || true
-        sleep 1
-        echo "$child_pids" | xargs kill -KILL 2>/dev/null || true
-    fi
-    
-    # Wait for children to exit and reap zombies
-    wait 2>/dev/null || true
-    log "INFO" "Cleanup completed"
-}
-
-# Function to run command in container
-run_in_container() {
-    local container_path="$1"
-    local command="$2"
-    local description="$3"
-    
-    log "INFO" "Running: $description"
-    log "INFO" "Container: $container_path"
-    log "INFO" "Command: $command"
-    
-    if [ ! -f "$container_path" ]; then
-        log "ERROR" "Container not found at $container_path"
-        return 1
-    fi
-    
-    # Set up wandb environment variables
-    local wandb_env=""
-    case "$WANDB_MODE" in
-        "disabled")
-            wandb_env="WANDB_MODE=disabled WANDB_SILENT=true"
-            ;;
-        "offline")
-            wandb_env="WANDB_MODE=offline"
-            ;;
-        "online")
-            wandb_env="WANDB_MODE=online"
-            ;;
-    esac
-    
-    # Add API key if provided
-    if [ -n "$WANDB_API_KEY" ]; then
-        wandb_env="$wandb_env WANDB_API_KEY=$WANDB_API_KEY"
-    fi
-    
-    # Execute the command inside the container with proper PID namespace and signal handling
-    singularity exec --nv --pid --contain --cleanenv \
-        --bind "${PROJECT_DIR}":/workspace \
-        "$container_path" \
-        bash -c "
-            set -e
-            trap 'echo [container] cleanup; kill -TERM 0; wait' INT TERM
-            
-            cd /workspace
-            python -m spacy download en_core_web_sm --quiet
-            
-            # single exec replaces the shell -> no extra zombies
-            exec env $wandb_env $command
-        "
-}
-
-# Function to build command with overrides
+# Build training command
 build_command() {
-    local base_command="$1"
-    local config_file="$2"
-    
-    local command="$base_command $config_file"
-    
-    # Add batch size override if specified
-    if [ -n "$BATCH_SIZE" ]; then
-        command="$command --batch-size $BATCH_SIZE"
-    fi
-    
-    # Add epochs override if specified
-    if [ -n "$NUM_EPOCHS" ]; then
-        command="$command --epochs $NUM_EPOCHS"
-    fi
-    
-    # Add distributed training flags if enabled
-    if [ "$DISTRIBUTED" = true ]; then
-        command="$command --distributed --world-size $WORLD_SIZE --rank $RANK"
-    fi
-    
-    echo "$command"
+  local base="$1"; local cfg="$2"; local cmd="$base $cfg"
+  [[ -n "$BATCH_SIZE" ]] && cmd="$cmd --batch-size $BATCH_SIZE"
+  [[ -n "$NUM_EPOCHS" ]] && cmd="$cmd --epochs $NUM_EPOCHS"
+  $DISTRIBUTED && cmd="$cmd --distributed --world-size $WORLD_SIZE --rank $RANK"
+  echo "$cmd"
 }
 
-# Main execution
+# Run inside container with robust signal/PGID handling
+run_in_container() {
+  local sif="$1"; local run_cmd="$2"; local desc="$3"
+  log INFO "Running: $desc"
+  log INFO "Container: $sif"
+  log INFO "Command: $run_cmd"
+  [[ ! -f "$sif" ]] && { log ERROR "Container not found: $sif"; return 1; }
+
+  # Env to pass into container (we use multiple --env flags to avoid comma parsing issues)
+  local env_flags=()
+  env_flags+=(--env "CUDA_VISIBLE_DEVICES=${GPUS}")
+  env_flags+=(--env "PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb:512}")
+  env_flags+=(--env "TORCH_CUDA_MEMORY_FRACTION=${TORCH_CUDA_MEMORY_FRACTION:-0.95}")
+  env_flags+=(--env "CUDA_LAUNCH_BLOCKING=${CUDA_LAUNCH_BLOCKING:-0}")
+  env_flags+=(--env "NCCL_DEBUG=${NCCL_DEBUG:-WARN}")
+  env_flags+=(--env "NCCL_ASYNC_ERROR_HANDLING=1")
+
+  case "$WANDB_MODE" in
+    disabled) env_flags+=(--env "WANDB_MODE=disabled" --env "WANDB_SILENT=true");;
+    offline)  env_flags+=(--env "WANDB_MODE=offline");;
+    online)   env_flags+=(--env "WANDB_MODE=online");;
+  esac
+  [[ -n "$WANDB_API_KEY" ]] && env_flags+=(--env "WANDB_API_KEY=${WANDB_API_KEY}")
+
+  if $DISTRIBUTED; then
+    env_flags+=(--env "MASTER_ADDR=${MASTER_ADDR:-localhost}")
+    env_flags+=(--env "MASTER_PORT=${MASTER_PORT:-12355}")
+    env_flags+=(--env "WORLD_SIZE=${WORLD_SIZE}")
+    env_flags+=(--env "RANK=${RANK}")
+  fi
+
+  # Launch in its own session so we can kill the whole PGID
+  setsid "$CONTAINER_BIN" exec --nv --pid --contain --cleanenv \
+    "${env_flags[@]}" \
+    --bind "${PROJECT_DIR}":/workspace \
+    "$sif" bash -lc "
+      set -euo pipefail
+      cd /workspace
+      # Avoid doing downloads on every run; ensure base image has these
+      # python -m spacy download en_core_web_sm --quiet || true
+      exec $run_cmd
+    " &
+
+  local child=$!
+  local pgid; pgid=$(ps -o pgid= "$child" | tr -d ' ')
+  log INFO "Container child PID: $child  PGID: $pgid"
+
+  # Trap to kill the entire container process group on exit/signals
+  trap 'kill -TERM -'"$pgid"' 2>/dev/null || true; sleep 2; kill -KILL -'"$pgid"' 2>/dev/null || true; wait '"$child"' 2>/dev/null || true' INT TERM EXIT
+
+  # Foreground wait
+  wait "$child"
+  local status=$?
+
+  # Clear trap for next phase
+  trap - INT TERM EXIT
+  return $status
+}
+
 main() {
-    # Set up trap to call cleanup on script exit
-    # Always unlock if we locked, regardless of UNLOCK_GPUS flag
-    if [ "$LOCK_GPUS" = true ]; then
-        trap 'cleanup; unlock_gpus' EXIT INT TERM
-    else
-        trap 'cleanup' EXIT INT TERM
-    fi
-    
-    log "INFO" "Starting experiment: $CONFIG_NAME"
-    log "INFO" "Phase: $PHASE"
-    log "INFO" "GPUs: $GPUS"
-    
-    # Check GPU availability if requested
-    if [ "$CHECK_GPUS" = true ]; then
-        check_gpu_availability || exit 1
-    fi
-    
-    # Lock GPUs if requested
-    if [ "$LOCK_GPUS" = true ]; then
-        lock_gpus || exit 1
-    fi
-    
-    # Note: GPU unlocking is now handled in the main trap above
-    
-    # Setup environment
-    setup_environment
-    
-    # Define paths
-    HOST_ABLATION_SIF_PATH="$PROJECT_DIR/singularity/ablation.sif"
-    HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training.sif"
-    HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
-    CONTAINER_CONFIG_FILE="configs/${CONFIG_NAME}.yaml"
-    
-    # Check for required files
-    if [ ! -f "$HOST_CONFIG_FILE" ]; then
-        log "ERROR" "Config file not found at $HOST_CONFIG_FILE"
-        exit 1
-    fi
-    
-    # Create logs directory
-    mkdir -p "$PROJECT_DIR/logs"
-    
-    # Phase-specific execution
-    case $PHASE in
-        "preprocess")
-            log "INFO" "Running preprocessing phase..."
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli preprocess" "$CONTAINER_CONFIG_FILE")" \
-                "Dataset preprocessing and ablation"
-            ;;
-        "train-tokenizer")
-            log "INFO" "Running tokenizer training phase..."
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli train-tokenizer" "$CONTAINER_CONFIG_FILE")" \
-                "SentencePiece tokenizer training"
-            ;;
-        "tokenize-dataset")
-            log "INFO" "Running dataset tokenization phase..."
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
-                "Dataset tokenization"
-            ;;
-        "run")
-            log "INFO" "Running model training phase..."
-            run_in_container "$HOST_TRAINING_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli run" "$CONTAINER_CONFIG_FILE")" \
-                "Model training"
-            ;;
-        "full-pipeline")
-            log "INFO" "Running full pipeline..."
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli preprocess" "$CONTAINER_CONFIG_FILE")" \
-                "Dataset preprocessing and ablation"
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli train-tokenizer" "$CONTAINER_CONFIG_FILE")" \
-                "SentencePiece tokenizer training"
-            run_in_container "$HOST_ABLATION_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
-                "Dataset tokenization"
-            run_in_container "$HOST_TRAINING_SIF_PATH" \
-                "$(build_command "python -m model_foundry.cli run" "$CONTAINER_CONFIG_FILE")" \
-                "Model training"
-            ;;
-        *)
-            log "ERROR" "Unknown phase '$PHASE'"
-            log "ERROR" "Valid phases: preprocess, train-tokenizer, tokenize-dataset, run, full-pipeline"
-            exit 1
-            ;;
-    esac
-    
-    log "SUCCESS" "Experiment completed: $CONFIG_NAME"
-    log "SUCCESS" "Phase: $PHASE"
-    log "SUCCESS" "GPUs used: $GPUS"
+  # Global trap ONLY handles unlocks; cleanup is per-container launch
+  if $LOCK_GPUS; then
+    trap 'unlock_gpus' EXIT
+  fi
+
+  log INFO "Starting experiment: $CONFIG_NAME"
+  log INFO "Phase: $PHASE  GPUs: $GPUS"
+
+  $CHECK_GPUS && check_gpu_availability
+
+  $LOCK_GPUS && lock_gpus
+
+  # Set env in host (also passed inside container)
+  export CUDA_VISIBLE_DEVICES="$GPUS"
+  export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb:512}"
+  export TORCH_CUDA_MEMORY_FRACTION="${TORCH_CUDA_MEMORY_FRACTION:-0.95}"
+  export CUDA_LAUNCH_BLOCKING="${CUDA_LAUNCH_BLOCKING:-0}"
+
+  # Paths
+  HOST_ABLATION_SIF_PATH="$PROJECT_DIR/singularity/ablation.sif"
+  HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training.sif"
+  HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
+  CONTAINER_CONFIG_FILE="configs/${CONFIG_NAME}.yaml"
+
+  [[ -f "$HOST_CONFIG_FILE" ]] || { log ERROR "Config file not found: $HOST_CONFIG_FILE"; exit 1; }
+  mkdir -p "$PROJECT_DIR/logs"
+
+  case "$PHASE" in
+    preprocess)
+      log INFO "Preprocess..."
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli preprocess" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset preprocessing and ablation"
+      ;;
+    train-tokenizer)
+      log INFO "Train tokenizer..."
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli train-tokenizer" "$CONTAINER_CONFIG_FILE")" \
+        "SentencePiece tokenizer training"
+      ;;
+    tokenize-dataset)
+      log INFO "Tokenize dataset..."
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset tokenization"
+      ;;
+    run)
+      log INFO "Train model..."
+      run_in_container "$HOST_TRAINING_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli run" "$CONTAINER_CONFIG_FILE")" \
+        "Model training"
+      ;;
+    full-pipeline)
+      log INFO "Full pipeline..."
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli preprocess" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset preprocessing and ablation"
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli train-tokenizer" "$CONTAINER_CONFIG_FILE")" \
+        "SentencePiece tokenizer training"
+      run_in_container "$HOST_ABLATION_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli tokenize-dataset" "$CONTAINER_CONFIG_FILE")" \
+        "Dataset tokenization"
+      run_in_container "$HOST_TRAINING_SIF_PATH" \
+        "$(build_command "python -m model_foundry.cli run" "$CONTAINER_CONFIG_FILE")" \
+        "Model training"
+      ;;
+    *)
+      log ERROR "Unknown phase '$PHASE'"; exit 1;;
+  esac
+
+  log SUCCESS "Experiment completed: $CONFIG_NAME"
+  $UNLOCK_GPUS && unlock_gpus
 }
 
-# Run main function
-main "$@" 
+main "$@"
