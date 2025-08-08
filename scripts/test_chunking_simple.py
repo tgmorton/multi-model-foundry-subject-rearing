@@ -59,11 +59,21 @@ def analyze_chunking(config_path: str):
             print(f"   Please run tokenization first.")
             return
         
-        # Load tokenized dataset
+        # Load tokenized dataset - handle both structures
         try:
             print(f"\n📂 Loading tokenized dataset...")
+            
+            # Check if it has train/test subdirectories or is a direct dataset
+            train_path = os.path.join(processor.tokenized_data_dir, "train")
+            
             with tqdm(total=1, desc="Loading dataset", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
-                tokenized_dataset = load_from_disk(processor.tokenized_data_dir)
+                if os.path.exists(train_path):
+                    # Load from train subdirectory (exp1 structure)
+                    print(f"  Loading from train subdirectory...")
+                    tokenized_dataset = load_from_disk(train_path)
+                else:
+                    # Load directly (exp0 structure)
+                    tokenized_dataset = load_from_disk(processor.tokenized_data_dir)
                 pbar.update(1)
             
             print(f"✓ Loaded tokenized dataset from: {processor.tokenized_data_dir}")
