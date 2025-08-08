@@ -12,9 +12,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+# Configuration - Use actual cluster paths
+HOST_PROJECT_DIR="/labs/ferreiralab/thmorton/subject-drop-rearing"
+SCRIPT_DIR="$HOST_PROJECT_DIR/scripts/p6000"
+PROJECT_DIR="$HOST_PROJECT_DIR"
 
 # Function to log messages
 log() {
@@ -78,16 +79,16 @@ Examples:
   # View logs for a job
   $0 logs 12345
   
-Config files should be in: $PROJECT_DIR/configs/
-Logs will be saved to: $PROJECT_DIR/logs/
+Config files should be in: $HOST_PROJECT_DIR/configs/
+Logs will be saved to: $HOST_PROJECT_DIR/logs/
 
 Available configurations:
 EOF
     
     # List available config files
-    if [ -d "$PROJECT_DIR/configs" ]; then
+    if [ -d "$HOST_PROJECT_DIR/configs" ]; then
         echo ""
-        for config in "$PROJECT_DIR"/configs/*.yaml; do
+        for config in "$HOST_PROJECT_DIR"/configs/*.yaml; do
             if [ -f "$config" ]; then
                 basename "$config" .yaml | sed 's/^/  - /'
             fi
@@ -154,7 +155,7 @@ submit_experiment() {
     done
     
     # Check if config exists
-    if [ ! -f "$PROJECT_DIR/configs/${config_name}.yaml" ]; then
+    if [ ! -f "$HOST_PROJECT_DIR/configs/${config_name}.yaml" ]; then
         log "ERROR" "Config file not found: ${config_name}.yaml"
         return 1
     fi
@@ -180,10 +181,10 @@ submit_experiment() {
     # Submit the job
     log "INFO" "Submitting experiment: $config_name (phase: $phase)"
     
-    local cmd="sbatch --partition=p6000 --gres=gpu:p6000:1 \
+    local cmd="sbatch --gres=gpu:1 \
         --nodes=1 --ntasks-per-node=1 --cpus-per-task=8 \
-        --mem=32G --output=$PROJECT_DIR/logs/%x-%j.out \
-        --error=$PROJECT_DIR/logs/%x-%j.err \
+        --mem=32G --output=$HOST_PROJECT_DIR/logs/%x-%j.out \
+        --error=$HOST_PROJECT_DIR/logs/%x-%j.err \
         --job-name=$job_name \
         $slurm_opts \
         $SCRIPT_DIR/run_experiment_slurm.sh \
@@ -257,7 +258,7 @@ submit_phase() {
     done
     
     # Check if config exists
-    if [ ! -f "$PROJECT_DIR/configs/${config_name}.yaml" ]; then
+    if [ ! -f "$HOST_PROJECT_DIR/configs/${config_name}.yaml" ]; then
         log "ERROR" "Config file not found: ${config_name}.yaml"
         return 1
     fi
@@ -280,10 +281,10 @@ submit_phase() {
     # Submit the job
     log "INFO" "Submitting phase: $phase for $config_name"
     
-    local cmd="sbatch --partition=p6000 --gres=gpu:p6000:1 \
+    local cmd="sbatch --gres=gpu:1 \
         --nodes=1 --ntasks-per-node=1 --cpus-per-task=8 \
-        --mem=32G --output=$PROJECT_DIR/logs/%x-%j.out \
-        --error=$PROJECT_DIR/logs/%x-%j.err \
+        --mem=32G --output=$HOST_PROJECT_DIR/logs/%x-%j.out \
+        --error=$HOST_PROJECT_DIR/logs/%x-%j.err \
         --job-name=$job_name \
         $slurm_opts \
         $SCRIPT_DIR/run_phase_slurm.sh \
@@ -370,8 +371,8 @@ cancel_all_jobs() {
 # Function to show logs
 show_logs() {
     local job_id="$1"
-    local log_file="$PROJECT_DIR/logs/*-${job_id}.out"
-    local err_file="$PROJECT_DIR/logs/*-${job_id}.err"
+    local log_file="$HOST_PROJECT_DIR/logs/*-${job_id}.out"
+    local err_file="$HOST_PROJECT_DIR/logs/*-${job_id}.err"
     
     log "INFO" "Showing logs for job: $job_id"
     

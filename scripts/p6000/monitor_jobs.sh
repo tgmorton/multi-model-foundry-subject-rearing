@@ -13,9 +13,10 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+# Configuration - Use actual cluster paths
+HOST_PROJECT_DIR="/labs/ferreiralab/thmorton/subject-drop-rearing"
+SCRIPT_DIR="$HOST_PROJECT_DIR/scripts/p6000"
+PROJECT_DIR="$HOST_PROJECT_DIR"
 REFRESH_INTERVAL=30
 
 # Function to log messages
@@ -215,7 +216,7 @@ monitor_job() {
         
         # Show last lines of output log if running
         if [ "$state" == "RUNNING" ]; then
-            local log_file="$PROJECT_DIR/logs/*-${job_id}.out"
+            local log_file="$HOST_PROJECT_DIR/logs/*-${job_id}.out"
             if ls $log_file 1> /dev/null 2>&1; then
                 echo -e "${CYAN}Recent Output:${NC}"
                 echo "--------------------------------------------------------------------------------"
@@ -240,7 +241,7 @@ follow_log() {
         return 1
     fi
     
-    local log_file="$PROJECT_DIR/logs/*-${job_id}.out"
+    local log_file="$HOST_PROJECT_DIR/logs/*-${job_id}.out"
     
     if ls $log_file 1> /dev/null 2>&1; then
         log "INFO" "Following log for job $job_id (Press Ctrl+C to exit)"

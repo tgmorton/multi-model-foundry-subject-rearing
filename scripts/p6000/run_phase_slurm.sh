@@ -1,14 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=subject-drop-phase
-#SBATCH --partition=p6000
-#SBATCH --gres=gpu:p6000:1
+#SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=12:00:00
-#SBATCH --output=logs/%x-%j.out
-#SBATCH --error=logs/%x-%j.err
 
 # P6000 SLURM Single Phase Runner
 # Adapted from wild_west/run_phase.sh with SLURM best practices
@@ -23,9 +20,19 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+# Configuration - Use actual cluster paths
+HOST_PROJECT_DIR="/labs/ferreiralab/thmorton/subject-drop-rearing"
+SCRIPT_DIR="$HOST_PROJECT_DIR/scripts/p6000"
+PROJECT_DIR="$HOST_PROJECT_DIR"
+
+# Create logs directory if it doesn't exist
+mkdir -p "$HOST_PROJECT_DIR/logs"
+
+# Set SLURM output/error files dynamically
+if [ -n "${SLURM_JOB_ID:-}" ]; then
+    exec 1> "$HOST_PROJECT_DIR/logs/${SLURM_JOB_NAME:-job}-${SLURM_JOB_ID}.out"
+    exec 2> "$HOST_PROJECT_DIR/logs/${SLURM_JOB_NAME:-job}-${SLURM_JOB_ID}.err"
+fi
 
 # Function to show usage
 show_usage() {
@@ -250,10 +257,10 @@ get_container_path() {
     
     case $phase in
         "preprocess"|"train-tokenizer"|"tokenize-dataset")
-            echo "$PROJECT_DIR/singularity/ablation.sif"
+            echo "$HOST_PROJECT_DIR/singularity/ablation.sif"
             ;;
         "run")
-            echo "$PROJECT_DIR/singularity/training.sif"
+            echo "$HOST_PROJECT_DIR/singularity/training.sif"
             ;;
         *)
             log "ERROR" "Unknown phase: $phase"
@@ -333,7 +340,7 @@ run_in_container() {
     srun --exclusive --ntasks=1 --gpus-per-task=1 \
         "$CONTAINER_BIN" exec --nv --pid --contain --cleanenv \
         $env_option \
-        --bind "${PROJECT_DIR}":/workspace \
+        --bind "${HOST_PROJECT_DIR}":/workspace \
         "$container_path" \
         bash -c "
             set -euo pipefail
@@ -373,8 +380,8 @@ main() {
         exit 1
     }
     
-    # Define paths
-    HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
+    # Define paths - using cluster absolute paths
+    HOST_CONFIG_FILE="$HOST_PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
     CONTAINER_CONFIG_FILE="configs/${CONFIG_NAME}.yaml"
     CONTAINER_PATH=$(get_container_path "$PHASE")
     
@@ -384,8 +391,8 @@ main() {
         exit 1
     fi
     
-    # Create logs directory
-    mkdir -p "$PROJECT_DIR/logs"
+    # Create logs directory (already done at top)
+    # mkdir -p "$HOST_PROJECT_DIR/logs"
     
     # Log estimated time for this phase
     local estimated_time=$(estimate_phase_time "$PHASE")
