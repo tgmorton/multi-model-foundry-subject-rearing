@@ -550,6 +550,13 @@ class Trainer:
     def _train_loop(self):
         """Internal training loop implementation."""
         print("[DEBUG] Starting _train_loop")
+        
+        # Disable torch compile globally to avoid ldconfig issues
+        import torch._dynamo
+        torch._dynamo.config.suppress_errors = True
+        torch._dynamo.disable()  # Completely disable dynamo/compilation
+        print("[DEBUG] Disabled torch dynamo/compilation globally")
+        
         set_seed(self.config.random_seed)
 
         # Calculate training parameters based on dataset size
@@ -596,28 +603,36 @@ class Trainer:
 
         # Apply torch.compile for JIT optimization
         # Use different modes based on availability and stability
-        compile_mode = getattr(self.config.training, 'compile_mode', 'default')
+        compile_mode = getattr(self.config.training, 'compile_mode', None)
         print(f"[DEBUG] Compile mode from config: '{compile_mode}'")
         
-        if compile_mode and compile_mode != 'none':
+        # Completely skip torch.compile if mode is None, 'none', or False
+        if compile_mode and str(compile_mode).lower() != 'none':
             try:
                 print(f"  - Compiling model with torch.compile(mode='{compile_mode}')...")
                 print(f"[DEBUG] Starting torch.compile with mode='{compile_mode}'...")
+                
+                # Set dynamo config to suppress errors and fall back to eager mode
+                import torch._dynamo
+                torch._dynamo.config.suppress_errors = True
+                
                 # Use 'default' or 'reduce-overhead' mode with backend specification
                 if compile_mode == 'reduce-overhead':
                     # This mode can be problematic, use with inductor backend
-                    self.model = torch.compile(self.model, mode="reduce-overhead", backend="inductor")
+                    self.model = torch.compile(self.model, mode="reduce-overhead", backend="eager")
                 elif compile_mode == 'max-autotune':
                     # Maximum performance but slower compilation
-                    self.model = torch.compile(self.model, mode="max-autotune", backend="inductor")
+                    self.model = torch.compile(self.model, mode="max-autotune", backend="eager")
                 else:
-                    # Default mode is most stable
-                    self.model = torch.compile(self.model, mode="default")
+                    # Default mode is most stable - use eager backend to avoid ldconfig issue
+                    self.model = torch.compile(self.model, mode="default", backend="eager")
                 print("  - Model compilation successful")
                 print("[DEBUG] torch.compile completed successfully")
             except Exception as e:
                 print(f"  - Warning: torch.compile failed ({e}), continuing without compilation")
                 print(f"[DEBUG] torch.compile exception details: {type(e).__name__}: {str(e)}")
+                # Ensure we continue with the uncompiled model
+                pass
         else:
             print(f"  - Skipping torch.compile (compile_mode='{compile_mode}')")
             print("[DEBUG] Skipped torch.compile")
