@@ -41,7 +41,7 @@ class BLIMPEvaluator:
         
         # Load model and tokenizer
         print(f"Loading model from: {model_path}")
-        self.model = AutoModelForCausalLM.from_pretrained(model_path)
+        self.model = AutoModelForCausalLM.from_pretrained(model_path, use_cache=False)
         self.model.to(self.device)
         self.model.eval()
         

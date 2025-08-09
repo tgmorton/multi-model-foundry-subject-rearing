@@ -24,6 +24,7 @@ def create_model(config: ExperimentConfig) -> AutoModelForCausalLM:
     model_config.resid_pdrop = model_params.dropout
     model_config.attn_pdrop = model_params.attention_dropout
     model_config.vocab_size = tokenizer_params.vocab_size
+    model_config.use_cache = False
 
     print(f"  - Model vocabulary size set to: {model_config.vocab_size}")
 
