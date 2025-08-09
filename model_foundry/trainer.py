@@ -565,16 +565,31 @@ class Trainer:
                 self.config,
                 attn_implementation="flash_attention_2",
                 torch_dtype=torch.bfloat16
-            ).to(self.device)
+            )
+            print("[DEBUG] Model created, moving to device...")
+            self.model = self.model.to(self.device)
             print("  - Successfully initialized model with Flash Attention 2")
         except (ImportError, ValueError) as e:
             # Fall back to standard attention if Flash Attention is not available
             print(f"  - Flash Attention 2 not available ({e}), falling back to standard attention")
             print("[DEBUG] Creating model with standard attention...")
-            self.model = create_model(
-                self.config,
-                torch_dtype=torch.bfloat16
-            ).to(self.device)
+            # Try without bfloat16 first
+            try:
+                self.model = create_model(
+                    self.config,
+                    torch_dtype=torch.float32  # Use float32 for better compatibility
+                )
+                print("[DEBUG] Model created with float32, moving to device...")
+                self.model = self.model.to(self.device)
+                print("  - Model created with float32 for compatibility")
+            except Exception as e2:
+                print(f"[DEBUG] Failed with float32: {e2}, trying bfloat16...")
+                self.model = create_model(
+                    self.config,
+                    torch_dtype=torch.bfloat16
+                )
+                print("[DEBUG] Model created with bfloat16, moving to device...")
+                self.model = self.model.to(self.device)
         
         print(f"[DEBUG] Model created successfully, type: {type(self.model)}")
         print(f"[DEBUG] Model device: {next(self.model.parameters()).device}")

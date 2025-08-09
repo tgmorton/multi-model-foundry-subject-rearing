@@ -52,7 +52,7 @@ training:
   epochs: 20
   
   # Mixed precision training
-  use_amp: true
+  use_amp: false  # Temporarily disabled to debug hanging issue
   
   # Gradient accumulation
   gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
@@ -62,7 +62,7 @@ training:
   
   # Memory optimizations
   use_tf32: true
-  use_gradient_checkpointing: true
+  use_gradient_checkpointing: false  # Disabled - can cause hangs with certain models
   
   # Compilation mode for torch.compile
   # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
