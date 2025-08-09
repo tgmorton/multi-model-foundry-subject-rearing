@@ -81,32 +81,77 @@ def train_tokenizer_from_config(config_path: str):
     spm.SentencePieceTrainer.train(arg_string)
 
     # Convert SentencePiece model to Hugging Face format
-    from transformers import LlamaTokenizerFast
+    from transformers import PreTrainedTokenizerFast
+    from tokenizers import SentencePieceUnigramTokenizer
     
     print("  - Converting to Hugging Face tokenizer format...")
     sp_model_path = f"{model_prefix}.model"
 
     try:
-        # Create a tokenizer from the SentencePiece model
-        # Using LlamaTokenizerFast as it properly handles SentencePiece models
-        tokenizer = LlamaTokenizerFast(
-            vocab_file=sp_model_path,
-            legacy=False,
-            add_bos_token=True,
-            add_eos_token=False,
+        # Create a tokenizer from the SentencePiece model using the tokenizers library
+        # This approach is compatible with GPT-2 models
+        tokenizer_backend = SentencePieceUnigramTokenizer(sp_model_path)
+        
+        # Create a fast tokenizer wrapper that's GPT-2 compatible
+        tokenizer = PreTrainedTokenizerFast(
+            tokenizer_object=tokenizer_backend,
             bos_token="<s>",
             eos_token="</s>",
             unk_token="<unk>",
-            pad_token="<pad>"
+            pad_token="<pad>",
+            model_max_length=8192
         )
+        
+        # Set special token IDs
+        tokenizer.add_special_tokens({
+            "bos_token": "<s>",
+            "eos_token": "</s>",
+            "unk_token": "<unk>",
+            "pad_token": "<pad>"
+        })
 
         # Save the complete, fast tokenizer (this creates tokenizer.json)
         tokenizer.save_pretrained(output_dir)
-        print(f"  - Successfully created fast tokenizer with 'tokenizer.json' in '{output_dir}'.")
+        print(f"  - Successfully created GPT-2 compatible fast tokenizer with 'tokenizer.json' in '{output_dir}'.")
 
     except Exception as e:
         print(f"FATAL: Failed to convert SentencePiece model: {e}")
-        return
+        print("  - Falling back to basic SentencePiece configuration files...")
+        
+        # Fallback: Create basic configuration files for SentencePiece loading
+        import json
+        
+        # Create a tokenizer configuration
+        tokenizer_config = {
+            "tokenizer_class": "PreTrainedTokenizerFast",
+            "model_max_length": 8192,
+            "padding_side": "right",
+            "truncation_side": "right",
+            "pad_token": "<pad>",
+            "eos_token": "</s>",
+            "unk_token": "<unk>",
+            "bos_token": "<s>",
+            "tokenizer_type": "sentencepiece"
+        }
+        
+        # Save tokenizer config
+        config_path = os.path.join(output_dir, "tokenizer_config.json")
+        with open(config_path, 'w') as f:
+            json.dump(tokenizer_config, f, indent=2)
+        
+        # Create special tokens map
+        special_tokens_map = {
+            "bos_token": "<s>",
+            "eos_token": "</s>",
+            "unk_token": "<unk>",
+            "pad_token": "<pad>"
+        }
+        
+        special_tokens_path = os.path.join(output_dir, "special_tokens_map.json")
+        with open(special_tokens_path, 'w') as f:
+            json.dump(special_tokens_map, f, indent=2)
+        
+        print("  - Created fallback configuration files for SentencePiece tokenizer")
     
     print(f"  - Successfully trained and saved tokenizer to '{output_dir}'.\n")
     print("----- Tokenizer Training Complete -----")

@@ -1,0 +1,77 @@
+Bootstrap: docker
+From: nvidia/cuda:11.8-devel-ubuntu22.04
+
+%files
+    # Only copy the requirements.txt file, which is needed for the build.
+    requirements.txt /requirements.txt
+
+%environment
+    # Set standard environment variables inside the container
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PYTHONUNBUFFERED=1
+    # Set CUDA_HOME for flash-attention compilation
+    export CUDA_HOME=/usr/local/cuda
+    export PATH=${CUDA_HOME}/bin:${PATH}
+    export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+
+%post
+    # --- 1. Install System Dependencies ---
+    echo "Updating packages and installing system dependencies..."
+    apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        git \
+        wget \
+        ca-certificates \
+        software-properties-common \
+        python3.9 \
+        python3.9-dev \
+        python3.9-distutils \
+        python3-pip
+
+    # Set python3.9 as default python3
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+
+    # --- 2. Install Python Packages ---
+    echo "Upgrading pip..."
+    python3 -m pip install --upgrade pip wheel setuptools
+
+    echo "Installing PyTorch with CUDA support..."
+    pip install --no-cache-dir torch==2.1.0 --index-url https://download.pytorch.org/whl/cu118
+
+    echo "Installing Python requirements from /requirements.txt..."
+    pip install --no-cache-dir -r /requirements.txt
+
+    echo "Installing flash-attention..."
+    # Install flash-attention with proper CUDA environment
+    export CUDA_HOME=/usr/local/cuda
+    export PATH=${CUDA_HOME}/bin:${PATH}
+    export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+    pip install --no-cache-dir flash-attn --no-build-isolation
+
+    echo "Downloading NLTK data..."
+    python3 -m nltk.downloader punkt
+
+    # --- 3. Clean Up (but keep build tools for potential runtime compilation) ---
+    echo "Cleaning up package cache..."
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    pip cache purge
+
+    echo "Build post-install complete."
+
+%labels
+    Author Thomas Morton
+    Version 2.0-flash-attention
+    Python_Version 3.9
+    CUDA_Version 11.8
+    Flash_Attention Enabled
+
+%runscript
+   # This script runs when you execute `apptainer run <sif_file>`
+   echo "Italian LLM Training Environment Container with Flash Attention"
+   echo "-------------------------------------------------------------"
+   echo "This container provides the environment with Flash Attention support."
+   echo "Mount your project code to run it."
+   echo "Example: apptainer exec --nv --bind .:/workspace <sif_file> python -m model_foundry.cli run config.yaml"
