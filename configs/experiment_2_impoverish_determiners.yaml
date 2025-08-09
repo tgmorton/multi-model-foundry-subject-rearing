@@ -13,7 +13,7 @@ data:
   training_corpus: "data/processed/exp2_impoverish_determiners/"
   # Path to the test dataset.
   test_corpus: "data/raw/test_10M/"
-  batch_size: 32
+  batch_size: 8  # Reduced from 32 to fix OOM
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
@@ -52,17 +52,17 @@ training:
   epochs: 20
   
   # Mixed precision training
-  use_amp: false  # Temporarily disabled to debug hanging issue
+  use_amp: true  # Re-enabled to save memory
   
   # Gradient accumulation
-  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
+  gradient_accumulation_steps: 32  # Effective batch size: 8 × 32 = 256 (same as before)
   
   # Gradient clipping for training stability
   max_grad_norm: 1.0
   
   # Memory optimizations
   use_tf32: true
-  use_gradient_checkpointing: false  # Disabled - can cause hangs with certain models
+  use_gradient_checkpointing: true  # Re-enabled to save memory
   
   # Compilation mode for torch.compile
   # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
