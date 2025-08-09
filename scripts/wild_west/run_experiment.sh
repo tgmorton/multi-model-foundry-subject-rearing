@@ -160,7 +160,7 @@ run_in_container() {
   # Env to pass into container (we use multiple --env flags to avoid comma parsing issues)
   local env_flags=()
   env_flags+=(--env "CUDA_VISIBLE_DEVICES=${GPUS}")
-  env_flags+=(--env "PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb:512}")
+  env_flags+=(--env "PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:False,max_split_size_mb:512}")
   env_flags+=(--env "TORCH_CUDA_MEMORY_FRACTION=${TORCH_CUDA_MEMORY_FRACTION:-0.95}")
   env_flags+=(--env "CUDA_LAUNCH_BLOCKING=${CUDA_LAUNCH_BLOCKING:-0}")
   env_flags+=(--env "NCCL_DEBUG=${NCCL_DEBUG:-WARN}")
@@ -223,7 +223,7 @@ main() {
 
   # Set env in host (also passed inside container)
   export CUDA_VISIBLE_DEVICES="$GPUS"
-  export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb:512}"
+  export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:False,max_split_size_mb:512}"
   export TORCH_CUDA_MEMORY_FRACTION="${TORCH_CUDA_MEMORY_FRACTION:-0.95}"
   export CUDA_LAUNCH_BLOCKING="${CUDA_LAUNCH_BLOCKING:-0}"
 

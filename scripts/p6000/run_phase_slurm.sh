@@ -208,11 +208,11 @@ setup_slurm_environment() {
     # Set PyTorch CUDA allocator config based on phase
     if [ "$PHASE" == "run" ]; then
         # Training phase - maximize memory efficiency
-        export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
+        export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False,max_split_size_mb:512
         export TORCH_CUDA_MEMORY_FRACTION=0.95
     else
         # Preprocessing phases - standard allocation
-        export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+        export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
         export TORCH_CUDA_MEMORY_FRACTION=0.90
     fi
     

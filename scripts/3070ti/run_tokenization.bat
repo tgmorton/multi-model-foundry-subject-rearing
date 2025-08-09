@@ -37,7 +37,7 @@ REM Create logs directory if it doesn't exist
 if not exist "%PROJECT_DIR%\logs" mkdir "%PROJECT_DIR%\logs"
 
 REM Set PyTorch CUDA Allocator Config for better memory management
-set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
 
 REM --- Run Dataset Tokenization ---
 echo ========================================

@@ -53,7 +53,7 @@ echo "Starting preprocessing pipeline inside Singularity container..."
 echo "Using config file: ${CONTAINER_CONFIG_FILE}"
 
 # Set PyTorch CUDA Allocator Config for better memory management
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
 
 # Execute the preprocessing script inside the container
 singularity exec --nv \

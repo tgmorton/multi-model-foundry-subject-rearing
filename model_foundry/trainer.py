@@ -65,8 +65,9 @@ class Trainer:
             torch.cuda.set_per_process_memory_fraction(0.95)  # Use max 95% of GPU memory
             
             # Configure allocator for better performance
-            # os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True,max_split_size_mb:512'
-            os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
+            # Respect external setting if provided; otherwise set a conservative default
+            if 'PYTORCH_CUDA_ALLOC_CONF' not in os.environ or not os.environ['PYTORCH_CUDA_ALLOC_CONF']:
+                os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
             
             # Enable cudnn benchmarking for consistent memory usage
             torch.backends.cudnn.benchmark = True

@@ -210,7 +210,7 @@ setup_environment() {
     log "INFO" "CUDA_VISIBLE_DEVICES set to: $CUDA_VISIBLE_DEVICES"
     
     # Set PyTorch CUDA allocator config
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    export PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync
     
     # Load modules if available
     if command -v module &> /dev/null; then

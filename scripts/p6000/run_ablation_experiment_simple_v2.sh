@@ -71,7 +71,7 @@ run_in_container() {
     fi
     
     # Set PyTorch CUDA Allocator Config for better memory management
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
     
     # Execute the command inside the container with spaCy model download
     srun singularity exec --nv \

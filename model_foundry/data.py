@@ -51,6 +51,8 @@ class DataProcessor:
         self.tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name)
         self.chunked_data_dir = os.path.join(base_dir, "data", "chunked", config.experiment_name)
         self.test_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name, "test")
+        # Cache to avoid re-loading from disk repeatedly
+        self._cached_chunked_dataset: Optional[Dataset] = None
         
     def _validate_tokenized_dataset(self) -> bool:
         """Validate that the tokenized dataset exists and has the expected structure."""
@@ -189,6 +191,10 @@ class DataProcessor:
     
     def _load_chunked_dataset(self) -> Optional[Dataset]:
         """Load the chunked dataset from disk."""
+        # Return cached instance if available
+        if self._cached_chunked_dataset is not None:
+            return self._cached_chunked_dataset
+
         if not os.path.exists(self.chunked_data_dir):
             return None
             
@@ -200,8 +206,9 @@ class DataProcessor:
             
             # Convert to memory-mapped format to reduce RAM usage
             dataset.set_format(type=None)  # Remove any format to use memory mapping
-            
-            return dataset
+            # Cache for subsequent requests
+            self._cached_chunked_dataset = dataset
+            return self._cached_chunked_dataset
         except Exception as e:
             print(f"  ✗ Error loading chunked dataset: {e}")
             return None

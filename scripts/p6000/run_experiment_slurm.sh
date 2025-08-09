@@ -168,7 +168,7 @@ setup_slurm_environment() {
     module load singularity/4.1.1 cuda/11.8 2>/dev/null || log "WARN" "Could not load modules"
     
     # Set PyTorch CUDA allocator config for better memory management
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:512
+    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False,max_split_size_mb:512
     export TORCH_CUDA_MEMORY_FRACTION=0.95
     export CUDA_LAUNCH_BLOCKING=0
     

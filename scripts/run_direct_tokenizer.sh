@@ -54,7 +54,7 @@ fi
 mkdir -p "${HOST_PROJECT_DIR}/logs"
 
 # Set PyTorch CUDA Allocator Config for better memory management
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
 
 # === Execute Operations ===
 case $OPERATION in
