@@ -570,8 +570,8 @@ class Trainer:
             print("[DEBUG] Attempting to create model with Flash Attention 2...")
             self.model = create_model(
                 self.config,
-                attn_implementation="flash_attention_2",
-                torch_dtype=torch.bfloat16
+                attn_implementation="flash_attention_2"
+                # Don't specify torch_dtype - let it default to float32
             )
             print("[DEBUG] Model created, moving to device...")
             self.model = self.model.to(self.device)
@@ -580,15 +580,15 @@ class Trainer:
             # Fall back to standard attention if Flash Attention is not available
             print(f"  - Flash Attention 2 not available ({e}), falling back to standard attention")
             print("[DEBUG] Creating model with standard attention...")
-            # Use float16 for memory efficiency
-            print("[DEBUG] Creating model with float16 for memory efficiency...")
+            # Use float32 - AMP will handle mixed precision
+            print("[DEBUG] Creating model with float32 (AMP will handle mixed precision)...")
             self.model = create_model(
-                self.config,
-                torch_dtype=torch.float16  # Use float16 to save memory
+                self.config
+                # Don't specify torch_dtype - let it default to float32
             )
-            print("[DEBUG] Model created with float16, moving to device...")
+            print("[DEBUG] Model created with float32, moving to device...")
             self.model = self.model.to(self.device)
-            print("  - Model created with float16 for memory efficiency")
+            print("  - Model created with float32 (AMP enabled for mixed precision)")
         
         print(f"[DEBUG] Model created successfully, type: {type(self.model)}")
         print(f"[DEBUG] Model device: {next(self.model.parameters()).device}")
