@@ -81,24 +81,26 @@ def train_tokenizer_from_config(config_path: str):
     spm.SentencePieceTrainer.train(arg_string)
 
     # Convert SentencePiece model to Hugging Face format
-    from transformers import PreTrainedTokenizerFast
+    from transformers import LlamaTokenizerFast
     
     print("  - Converting to Hugging Face tokenizer format...")
     sp_model_path = f"{model_prefix}.model"
 
     try:
-        # Load the SentencePiece model into a fast tokenizer
-        tokenizer = PreTrainedTokenizerFast(tokenizer_file=sp_model_path)
+        # Create a tokenizer from the SentencePiece model
+        # Using LlamaTokenizerFast as it properly handles SentencePiece models
+        tokenizer = LlamaTokenizerFast(
+            vocab_file=sp_model_path,
+            legacy=False,
+            add_bos_token=True,
+            add_eos_token=False,
+            bos_token="<s>",
+            eos_token="</s>",
+            unk_token="<unk>",
+            pad_token="<pad>"
+        )
 
-        # Add the required special tokens
-        tokenizer.add_special_tokens({
-            "bos_token": "<s>",
-            "eos_token": "</s>",
-            "unk_token": "<unk>",
-            "pad_token": "<pad>"
-        })
-
-        # Save the complete, fast tokenizer
+        # Save the complete, fast tokenizer (this creates tokenizer.json)
         tokenizer.save_pretrained(output_dir)
         print(f"  - Successfully created fast tokenizer with 'tokenizer.json' in '{output_dir}'.")
 

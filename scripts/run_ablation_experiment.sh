@@ -83,11 +83,20 @@ run_in_container() {
     # Set PyTorch CUDA Allocator Config for better memory management
     export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False
     
+    # Build setup commands
+    local setup_commands="cd /workspace"
+    
+    # Add flash-attention installation for training commands
+    if [[ "$command" == *"run"* ]] || [[ "$description" == *"training"* ]]; then
+        echo "Installing flash-attention for training..."
+        setup_commands="$setup_commands && pip install flash-attn --no-build-isolation --quiet"
+    fi
+    
     # Execute the command inside the container
     srun singularity exec --nv \
         --bind "${HOST_PROJECT_DIR}":/workspace \
         "$container_path" \
-        bash -c "cd /workspace && $command"
+        bash -c "$setup_commands && $command"
 }
 
 # --- Phase-specific execution ---

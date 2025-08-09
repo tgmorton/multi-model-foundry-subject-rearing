@@ -239,11 +239,20 @@ run_in_container() {
         return 1
     fi
     
-    # Execute the command inside the container with spaCy model download
+    # Build setup commands
+    local setup_commands="cd /workspace && python -m spacy download en_core_web_sm --quiet"
+    
+    # Add flash-attention installation for training commands
+    if [[ "$command" == *"run"* ]] || [[ "$description" == *"training"* ]]; then
+        log "INFO" "Installing flash-attention for training..."
+        setup_commands="$setup_commands && pip install flash-attn --no-build-isolation --quiet"
+    fi
+    
+    # Execute the command inside the container
     singularity exec --nv \
         --bind "${PROJECT_DIR}":/workspace \
         "$container_path" \
-        bash -c "cd /workspace && python -m spacy download en_core_web_sm --quiet && $command"
+        bash -c "$setup_commands && $command"
 }
 
 # Function to build command with overrides

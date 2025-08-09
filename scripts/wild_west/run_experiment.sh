@@ -180,13 +180,21 @@ run_in_container() {
     env_flags+=(--env "RANK=${RANK}")
   fi
 
+  # Prepare setup commands
+  local setup_commands="set -euo pipefail; cd /workspace"
+  
+  # Add flash-attention installation for training commands
+  if [[ "$run_cmd" == *"run"* ]] || [[ "$desc" == *"training"* ]]; then
+    log INFO "Installing flash-attention for training..."
+    setup_commands="$setup_commands; pip install flash-attn --no-build-isolation --quiet"
+  fi
+
   # Launch in its own session so we can kill the whole PGID
   setsid "$CONTAINER_BIN" exec --nv --pid --contain --cleanenv \
     "${env_flags[@]}" \
     --bind "${PROJECT_DIR}":/workspace \
     "$sif" bash -lc "
-      set -euo pipefail
-      cd /workspace
+      $setup_commands
       # Avoid doing downloads on every run; ensure base image has these
       # python -m spacy download en_core_web_sm --quiet || true
       exec $run_cmd
