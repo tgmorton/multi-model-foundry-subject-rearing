@@ -556,11 +556,21 @@ class Trainer:
         self._calculate_training_parameters()
 
         # Initialize components with GPU accelerations
-        self.model = create_model(
-            self.config,
-            attn_implementation="flash_attention_2",
-            torch_dtype=torch.bfloat16
-        ).to(self.device)
+        try:
+            # Try to use Flash Attention 2 first
+            self.model = create_model(
+                self.config,
+                attn_implementation="flash_attention_2",
+                torch_dtype=torch.bfloat16
+            ).to(self.device)
+            print("  - Successfully initialized model with Flash Attention 2")
+        except (ImportError, ValueError) as e:
+            # Fall back to standard attention if Flash Attention is not available
+            print(f"  - Flash Attention 2 not available ({e}), falling back to standard attention")
+            self.model = create_model(
+                self.config,
+                torch_dtype=torch.bfloat16
+            ).to(self.device)
 
         # Apply torch.compile for JIT optimization
         print("  - Compiling model with torch.compile()...")

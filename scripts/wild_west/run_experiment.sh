@@ -186,7 +186,7 @@ run_in_container() {
   # Add flash-attention installation for training commands
   if [[ "$run_cmd" == *"run"* ]] || [[ "$desc" == *"training"* ]]; then
     log INFO "Installing flash-attention for training..."
-    setup_commands="$setup_commands; pip install flash-attn --no-build-isolation --quiet"
+    setup_commands="$setup_commands; (pip install flash-attn --no-build-isolation --quiet || echo 'Warning: Flash Attention installation failed, falling back to standard attention')"
   fi
 
   # Launch in its own session so we can kill the whole PGID
