@@ -2,7 +2,7 @@ from transformers import AutoConfig, AutoModelForCausalLM
 from .config import ExperimentConfig  # Use the new Pydantic model
 
 
-def create_model(config: ExperimentConfig) -> AutoModelForCausalLM:
+def create_model(config: ExperimentConfig, **kwargs) -> AutoModelForCausalLM:
     """
     Builds and returns a new GPT-2 model using a validated ExperimentConfig.
     """
@@ -28,7 +28,13 @@ def create_model(config: ExperimentConfig) -> AutoModelForCausalLM:
 
     print(f"  - Model vocabulary size set to: {model_config.vocab_size}")
 
-    model = AutoModelForCausalLM.from_config(model_config)
+    # Use attention implementation from kwargs if provided
+    if 'attn_implementation' in kwargs:
+        model_config.attn_implementation = kwargs['attn_implementation']
+        print(f"  - Set attention implementation to: {kwargs['attn_implementation']}")
+
+    # Pass all kwargs to the from_config method
+    model = AutoModelForCausalLM.from_config(model_config, **kwargs)
     print("  - Successfully created new GPT-2 model with random weights.")
 
     total_params = sum(p.numel() for p in model.parameters())

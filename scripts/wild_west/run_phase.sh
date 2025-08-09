@@ -253,6 +253,11 @@ build_command() {
     
     local command="$base_command $config_file"
     
+    # Add memory allocator configuration for training phase
+    if [[ "$base_command" == *"run"* ]]; then
+        command="export PYTORCH_CUDA_ALLOC_CONF=backend:cudaMallocAsync && $command"
+    fi
+    
     # Add batch size override if specified
     if [ -n "$BATCH_SIZE" ]; then
         command="$command --batch-size $BATCH_SIZE"

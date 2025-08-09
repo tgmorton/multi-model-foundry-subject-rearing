@@ -555,8 +555,16 @@ class Trainer:
         print("  - Calculating training parameters from dataset...")
         self._calculate_training_parameters()
 
-        # Initialize components
-        self.model = create_model(self.config).to(self.device)
+        # Initialize components with GPU accelerations
+        self.model = create_model(
+            self.config,
+            attn_implementation="flash_attention_2",
+            torch_dtype=torch.bfloat16
+        ).to(self.device)
+
+        # Apply torch.compile for JIT optimization
+        print("  - Compiling model with torch.compile()...")
+        self.model = torch.compile(self.model, mode="reduce-overhead")
         
         # Apply memory optimizations
         if self.config.training.use_tf32 and torch.cuda.is_available():

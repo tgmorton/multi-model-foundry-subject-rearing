@@ -311,10 +311,12 @@ class DataProcessor:
             pad_to_multiple_of=8  # For efficiency on modern hardware
         )
         
-        # Create DataLoader with memory optimizations
-        num_workers = getattr(self.config.data, 'num_workers', 2)  # Reduced default
-        pin_memory = getattr(self.config.data, 'pin_memory', False)  # Disabled by default
-        prefetch_factor = getattr(self.config.data, 'prefetch_factor', 1)  # Reduced prefetch
+        # Create DataLoader with high-performance optimizations
+        import os
+        # Set aggressive defaults for high-performance training
+        num_workers = getattr(self.config.data, 'num_workers', os.cpu_count() // 2 or 1)
+        pin_memory = getattr(self.config.data, 'pin_memory', True)
+        prefetch_factor = getattr(self.config.data, 'prefetch_factor', 2)
         
         dataloader = DataLoader(
             dataset,
@@ -327,6 +329,8 @@ class DataProcessor:
             worker_init_fn=_worker_init_fn
         )
         
+        print("  - DataLoader configured for high throughput:")
+        print(f"    - num_workers: {num_workers}, pin_memory: {pin_memory}, prefetch_factor: {prefetch_factor}")
         print(f"    - Batch size: {self.config.data.batch_size}")
         print(f"    - Sequence length: {self.config.data.max_sequence_length}")
         print(f"    - Batches per epoch: {len(dataloader)}")
