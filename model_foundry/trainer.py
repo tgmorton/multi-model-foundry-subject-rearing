@@ -573,8 +573,26 @@ class Trainer:
             ).to(self.device)
 
         # Apply torch.compile for JIT optimization
-        print("  - Compiling model with torch.compile()...")
-        self.model = torch.compile(self.model, mode="reduce-overhead")
+        # Use different modes based on availability and stability
+        compile_mode = getattr(self.config.training, 'compile_mode', 'default')
+        if compile_mode and compile_mode != 'none':
+            try:
+                print(f"  - Compiling model with torch.compile(mode='{compile_mode}')...")
+                # Use 'default' or 'reduce-overhead' mode with backend specification
+                if compile_mode == 'reduce-overhead':
+                    # This mode can be problematic, use with inductor backend
+                    self.model = torch.compile(self.model, mode="reduce-overhead", backend="inductor")
+                elif compile_mode == 'max-autotune':
+                    # Maximum performance but slower compilation
+                    self.model = torch.compile(self.model, mode="max-autotune", backend="inductor")
+                else:
+                    # Default mode is most stable
+                    self.model = torch.compile(self.model, mode="default")
+                print("  - Model compilation successful")
+            except Exception as e:
+                print(f"  - Warning: torch.compile failed ({e}), continuing without compilation")
+        else:
+            print("  - Skipping torch.compile (compile_mode='none' or not specified)")
         
         # Apply memory optimizations
         if self.config.training.use_tf32 and torch.cuda.is_available():

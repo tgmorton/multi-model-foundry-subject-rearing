@@ -64,6 +64,11 @@ training:
   use_tf32: true
   use_gradient_checkpointing: true
   
+  # Compilation mode for torch.compile
+  # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
+  # Use 'default' for stability, 'none' to disable
+  compile_mode: 'default'
+  
   # Checkpoint generation parameters
   auto_generate_checkpoints: true
   first_epoch_checkpoints: 20
