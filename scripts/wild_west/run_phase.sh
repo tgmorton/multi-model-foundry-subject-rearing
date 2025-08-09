@@ -239,14 +239,8 @@ run_in_container() {
         return 1
     fi
     
-    # Build setup commands
+    # Build setup commands (runtime installs disabled; flash-attn now built into SIF when needed)
     local setup_commands="cd /workspace && python -m spacy download en_core_web_sm --quiet"
-    
-    # Add flash-attention installation for training commands
-    if [[ "$command" == *"run"* ]] || [[ "$description" == *"training"* ]]; then
-        log "INFO" "Installing flash-attention for training..."
-        setup_commands="$setup_commands && (pip install flash-attn --no-build-isolation --quiet || echo 'Warning: Flash Attention installation failed, falling back to standard attention')"
-    fi
     
     # Execute the command inside the container
     singularity exec --nv \
@@ -283,13 +277,19 @@ build_command() {
 # Function to determine container based on phase
 get_container_path() {
     local phase="$1"
-    
+    # Allow selecting flash-attn-enabled training image via env var USE_FLASH_ATTN=1
+    local use_flash_attn="${USE_FLASH_ATTN:-0}"
+
     case $phase in
         "preprocess"|"train-tokenizer"|"tokenize-dataset"|"chunk-data")
             echo "$PROJECT_DIR/singularity/ablation.sif"
             ;;
         "run")
-            echo "$PROJECT_DIR/singularity/training.sif"
+            if [[ "$use_flash_attn" == "1" ]]; then
+                echo "$PROJECT_DIR/singularity/training_with_flash_attention.sif"
+            else
+                echo "$PROJECT_DIR/singularity/training.sif"
+            fi
             ;;
         *)
             log "ERROR" "Unknown phase: $phase"

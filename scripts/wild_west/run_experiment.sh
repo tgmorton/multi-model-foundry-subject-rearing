@@ -180,14 +180,8 @@ run_in_container() {
     env_flags+=(--env "RANK=${RANK}")
   fi
 
-  # Prepare setup commands
+  # Prepare setup commands (runtime installs disabled; flash-attn now built into SIF when needed)
   local setup_commands="set -euo pipefail; cd /workspace"
-  
-  # Add flash-attention installation for training commands
-  if [[ "$run_cmd" == *"run"* ]] || [[ "$desc" == *"training"* ]]; then
-    log INFO "Installing flash-attention for training..."
-    setup_commands="$setup_commands; (pip install flash-attn --no-build-isolation --quiet || echo 'Warning: Flash Attention installation failed, falling back to standard attention')"
-  fi
 
   # Launch in its own session so we can kill the whole PGID
   setsid "$CONTAINER_BIN" exec --nv --pid --contain --cleanenv \
@@ -237,7 +231,13 @@ main() {
 
   # Paths
   HOST_ABLATION_SIF_PATH="$PROJECT_DIR/singularity/ablation.sif"
-  HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training.sif"
+  # Toggle training image via env var USE_FLASH_ATTN=1
+  if [[ "${USE_FLASH_ATTN:-0}" == "1" ]]; then
+    HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training_with_flash_attention.sif"
+    log INFO "Using flash-attention training image: $HOST_TRAINING_SIF_PATH"
+  else
+    HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training.sif"
+  fi
   HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
   CONTAINER_CONFIG_FILE="configs/${CONFIG_NAME}.yaml"
 
