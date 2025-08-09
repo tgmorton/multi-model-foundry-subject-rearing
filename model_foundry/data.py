@@ -297,14 +297,18 @@ class DataProcessor:
             Configured DataLoader
         """
         print(f"  - Creating DataLoader...")
+        print(f"[DEBUG] Loading chunked dataset...")
         
         # Load chunked dataset
         dataset = self._load_chunked_dataset()
         if dataset is None:
             raise RuntimeError("Chunked dataset not found. Run preprocessing first.")
         
+        print(f"[DEBUG] Dataset loaded, size: {len(dataset)}")
+        
         # Set up data collator
         pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else -100
+        print(f"[DEBUG] Creating data collator with pad_token_id: {pad_token_id}")
         data_collator = DataCollatorForLanguageModeling(
             tokenizer=tokenizer,
             mlm=False,
@@ -318,6 +322,8 @@ class DataProcessor:
         pin_memory = getattr(self.config.data, 'pin_memory', True)
         prefetch_factor = getattr(self.config.data, 'prefetch_factor', 2)
         
+        print(f"[DEBUG] Creating DataLoader with num_workers={num_workers}, pin_memory={pin_memory}, prefetch_factor={prefetch_factor}")
+        
         dataloader = DataLoader(
             dataset,
             batch_size=self.config.data.batch_size,
@@ -328,6 +334,8 @@ class DataProcessor:
             prefetch_factor=prefetch_factor if num_workers > 0 else None,
             worker_init_fn=_worker_init_fn
         )
+        
+        print(f"[DEBUG] DataLoader created successfully, len={len(dataloader)}")
         
         print("  - DataLoader configured for high throughput:")
         print(f"    - num_workers: {num_workers}, pin_memory: {pin_memory}, prefetch_factor: {prefetch_factor}")

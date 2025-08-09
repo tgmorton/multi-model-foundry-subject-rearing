@@ -549,6 +549,7 @@ class Trainer:
     
     def _train_loop(self):
         """Internal training loop implementation."""
+        print("[DEBUG] Starting _train_loop")
         set_seed(self.config.random_seed)
 
         # Calculate training parameters based on dataset size
@@ -556,8 +557,10 @@ class Trainer:
         self._calculate_training_parameters()
 
         # Initialize components with GPU accelerations
+        print("[DEBUG] Creating model...")
         try:
             # Try to use Flash Attention 2 first
+            print("[DEBUG] Attempting to create model with Flash Attention 2...")
             self.model = create_model(
                 self.config,
                 attn_implementation="flash_attention_2",
@@ -567,17 +570,24 @@ class Trainer:
         except (ImportError, ValueError) as e:
             # Fall back to standard attention if Flash Attention is not available
             print(f"  - Flash Attention 2 not available ({e}), falling back to standard attention")
+            print("[DEBUG] Creating model with standard attention...")
             self.model = create_model(
                 self.config,
                 torch_dtype=torch.bfloat16
             ).to(self.device)
+        
+        print(f"[DEBUG] Model created successfully, type: {type(self.model)}")
+        print(f"[DEBUG] Model device: {next(self.model.parameters()).device}")
 
         # Apply torch.compile for JIT optimization
         # Use different modes based on availability and stability
         compile_mode = getattr(self.config.training, 'compile_mode', 'default')
+        print(f"[DEBUG] Compile mode from config: '{compile_mode}'")
+        
         if compile_mode and compile_mode != 'none':
             try:
                 print(f"  - Compiling model with torch.compile(mode='{compile_mode}')...")
+                print(f"[DEBUG] Starting torch.compile with mode='{compile_mode}'...")
                 # Use 'default' or 'reduce-overhead' mode with backend specification
                 if compile_mode == 'reduce-overhead':
                     # This mode can be problematic, use with inductor backend
@@ -589,18 +599,23 @@ class Trainer:
                     # Default mode is most stable
                     self.model = torch.compile(self.model, mode="default")
                 print("  - Model compilation successful")
+                print("[DEBUG] torch.compile completed successfully")
             except Exception as e:
                 print(f"  - Warning: torch.compile failed ({e}), continuing without compilation")
+                print(f"[DEBUG] torch.compile exception details: {type(e).__name__}: {str(e)}")
         else:
-            print("  - Skipping torch.compile (compile_mode='none' or not specified)")
+            print(f"  - Skipping torch.compile (compile_mode='{compile_mode}')")
+            print("[DEBUG] Skipped torch.compile")
         
         # Apply memory optimizations
+        print("[DEBUG] Applying memory optimizations...")
         if self.config.training.use_tf32 and torch.cuda.is_available():
             torch.backends.cuda.matmul.allow_tf32 = True
             torch.backends.cudnn.allow_tf32 = True
             print("  - TF32 enabled for faster training on Ampere+ GPUs")
         
         if self.config.training.use_gradient_checkpointing:
+            print("[DEBUG] Enabling gradient checkpointing...")
             self.model.gradient_checkpointing_enable()
             print("  - Gradient checkpointing enabled to save memory")
         
@@ -631,9 +646,12 @@ class Trainer:
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
 
+        print("[DEBUG] Preparing data...")
         self._prepare_data()
+        print("[DEBUG] Data preparation complete")
 
         # Initialize W&B logging
+        print("[DEBUG] Initializing W&B logging...")
         if self.config.logging.use_wandb:
             wandb.init(
                 project=self.config.logging.wandb_project,
@@ -658,9 +676,15 @@ class Trainer:
         
         self.model.train()
         
+        print("[DEBUG] Starting training loop...")
+        print(f"[DEBUG] Epochs to run: {self.epoch} to {self.config.training.epochs}")
+        print(f"[DEBUG] Current global_step: {self.global_step}, target: {self.config.training.train_steps}")
+        
         # Standard PyTorch training loop - no custom iterator management
         for epoch in range(self.epoch, self.config.training.epochs):
+            print(f"[DEBUG] Starting epoch {epoch + 1}")
             if self.global_step >= self.config.training.train_steps:
+                print(f"[DEBUG] Global step {self.global_step} >= target {self.config.training.train_steps}, breaking")
                 break
                 
             self.epoch = epoch
@@ -675,7 +699,12 @@ class Trainer:
             # Record start time using simple time tracking instead of CUDA events
             epoch_wall_start = time.time()
             
-            for batch in self.dataloader:
+            print(f"[DEBUG] Starting iteration over dataloader, length: {len(self.dataloader)}")
+            for batch_idx, batch in enumerate(self.dataloader):
+                if batch_idx == 0:
+                    print(f"[DEBUG] Got first batch! Shape: {batch['input_ids'].shape if 'input_ids' in batch else 'No input_ids'}")
+                    print(f"[DEBUG] Batch keys: {batch.keys()}")
+                
                 if self.global_step >= self.config.training.train_steps:
                     break
 
