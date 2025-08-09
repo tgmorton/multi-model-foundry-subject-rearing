@@ -709,13 +709,26 @@ class Trainer:
                     break
 
                 try:
+                    if batch_idx == 0:
+                        print(f"[DEBUG] Moving batch to device: {self.device}")
                     inputs = {k: v.to(self.device, non_blocking=True) for k, v in batch.items()}
+                    if batch_idx == 0:
+                        print(f"[DEBUG] Batch moved to device successfully")
+                        print(f"[DEBUG] Input shapes: input_ids={inputs['input_ids'].shape}, device={inputs['input_ids'].device}")
                     
                     # Forward pass with AMP
                     if self.amp_enabled:
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Starting forward pass with AMP...")
                         with torch.cuda.amp.autocast(dtype=torch.float16):
+                            if batch_idx == 0:
+                                print(f"[DEBUG] Calling model forward...")
                             outputs = self.model(**inputs)
+                            if batch_idx == 0:
+                                print(f"[DEBUG] Model forward completed!")
                             loss = outputs.loss / self.config.training.gradient_accumulation_steps
+                            if batch_idx == 0:
+                                print(f"[DEBUG] Loss calculated: {loss.item()}")
                         
                         # Backward with gradient scaling
                         self.scaler.scale(loss).backward()
@@ -749,9 +762,18 @@ class Trainer:
                             self.optimizer.zero_grad(set_to_none=True)  # More memory efficient
                     else:
                         # Non-AMP path
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Starting forward pass WITHOUT AMP...")
+                            print(f"[DEBUG] Calling model forward...")
                         outputs = self.model(**inputs)
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Model forward completed!")
                         loss = outputs.loss / self.config.training.gradient_accumulation_steps
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Loss calculated: {loss.item()}")
                         loss.backward()
+                        if batch_idx == 0:
+                            print(f"[DEBUG] Backward pass completed!")
                         
                         if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
                             max_grad_norm = getattr(self.config.training, 'max_grad_norm', None)
