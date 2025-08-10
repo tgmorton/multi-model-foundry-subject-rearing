@@ -1,0 +1,66 @@
+# ===================================================================
+# EVALUATION CONFIGURATION
+# Configuration for running the evaluation pipeline on trained models
+# ===================================================================
+
+evaluation:
+  # --- Model Configuration ---
+  # Path to the experiment directory containing checkpoints
+  model_checkpoint_dir: "models/exp0_baseline/"
+  
+  # Path to the tokenizer (should match the one used for training)
+  tokenizer_path: "tokenizers/exp0_baseline/"
+  
+  # --- Test Datasets ---
+  # Path to test corpus for perplexity evaluation
+  test_corpus: "data/raw/test_10M/"
+  
+  # Path to BLIMP stimuli directory
+  blimp_dir: "evaluation/stimuli/blimp/"
+  
+  # Path to null-subject stimuli directory  
+  null_subject_dir: "evaluation/stimuli/null-subj/"
+  
+  # --- Evaluation Settings ---
+  # Batch size for evaluation (adjust based on GPU memory)
+  batch_size: 64
+  
+  # Device to use for evaluation
+  device: "auto"  # "cuda", "cpu", or "auto"
+  
+  # Use mixed precision (fp16) for faster evaluation
+  use_fp16: true
+  
+  # Maximum sequence length for evaluation
+  max_length: 1000
+  
+  # --- Analysis Options ---
+  # Set to false to skip specific evaluations
+  run_perplexity: true
+  run_blimp: true
+  run_null_subject: true
+  
+  # --- Speed Optimizations ---
+  # Number of data loading workers
+  num_workers: 4
+  
+  # Pin memory for faster GPU transfer
+  pin_memory: true
+  
+  # Prefetch factor for data loading
+  prefetch_factor: 2
+  
+  # --- Testing/Debugging Options ---
+  # Uncomment these for faster testing runs
+  # max_samples: 100          # Limit samples per evaluation
+  # max_checkpoints: 3        # Limit number of checkpoints
+  
+  # --- Output Configuration ---
+  # Directory to save evaluation results
+  output_dir: "evaluation/results/exp0_baseline/"
+  
+  # Save detailed per-item results (larger files)
+  save_detailed: true
+  
+  # Output format for detailed results
+  save_format: "jsonl"  # or "csv"

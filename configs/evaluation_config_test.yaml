@@ -1,0 +1,40 @@
+# ===================================================================
+# TEST EVALUATION CONFIGURATION
+# Fast evaluation configuration for testing and debugging
+# ===================================================================
+
+evaluation:
+  # --- Model Configuration ---
+  model_checkpoint_dir: "models/exp0_baseline/"
+  tokenizer_path: "tokenizers/exp0_baseline/"
+  
+  # --- Test Datasets ---
+  test_corpus: "data/raw/test_10M/"
+  blimp_dir: "evaluation/stimuli/blimp/"
+  null_subject_dir: "evaluation/stimuli/null-subj/"
+  
+  # --- Evaluation Settings ---
+  batch_size: 32  # Smaller for testing
+  device: "auto"
+  use_fp16: true
+  max_length: 512  # Shorter sequences for speed
+  
+  # --- Analysis Options ---
+  run_perplexity: true
+  run_blimp: true
+  run_null_subject: true
+  
+  # --- Speed Optimizations ---
+  num_workers: 2
+  pin_memory: true
+  prefetch_factor: 1
+  
+  # --- Testing/Debugging Options ---
+  # Limited samples for fast testing
+  max_samples: 50           # Only 50 samples per task
+  max_checkpoints: 3        # Only evaluate first 3 checkpoints
+  
+  # --- Output Configuration ---
+  output_dir: "evaluation/results/test/"
+  save_detailed: false      # Skip detailed results for speed
+  save_format: "jsonl"

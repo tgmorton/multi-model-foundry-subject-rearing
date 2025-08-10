@@ -61,7 +61,7 @@ find_available_gpu() {
     
     if [[ -f "$gpu_monitor" ]]; then
         local available
-        available=$("$gpu_monitor" available 2>/dev/null | head -n1)
+        available=$("$gpu_monitor" available 2>/dev/null | grep -E '^[0-3]$' | head -n1)
         if [[ -n "$available" ]]; then
             echo "$available"
             return 0
@@ -74,7 +74,7 @@ find_available_gpu() {
         gpu_info=$(nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits 2>/dev/null || echo "")
         
         while IFS=', ' read -r gpu_id mem_free; do
-            if [[ $mem_free -gt 10000 ]]; then  # >10GB free
+            if [[ $gpu_id -ge 0 && $gpu_id -le 3 && $mem_free -gt 10000 ]]; then  # GPU 0-3 with >10GB free
                 echo "$gpu_id"
                 return 0
             fi
