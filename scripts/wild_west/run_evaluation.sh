@@ -389,6 +389,15 @@ main() {
     local fast_mode=false
     local verbose=false
     
+    # Global cleanup function
+    cleanup_main() {
+        if [[ "$lock_gpus_flag" == "true" ]] || [[ "$unlock_gpus_flag" == "true" ]]; then
+            unlock_gpus "$gpu_ids"
+        fi
+        # Clean up temp config if it exists  
+        [[ -n "${temp_config:-}" ]] && rm -f "$temp_config" 2>/dev/null || true
+    }
+    
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -510,15 +519,6 @@ main() {
     
     # Create temporary config in project directory (accessible to container)
     local temp_config="$PROJECT_DIR/.tmp_eval_config_${experiment}_$$.yaml"
-    
-    # Global cleanup function
-    cleanup_main() {
-        if [[ "$lock_gpus_flag" == "true" ]] || [[ "$unlock_gpus_flag" == "true" ]]; then
-            unlock_gpus "$gpu_ids"
-        fi
-        # Clean up temp config if it exists
-        rm -f "$temp_config" 2>/dev/null || true
-    }
     
     # Lock GPUs if requested
     if [[ "$lock_gpus_flag" == "true" ]]; then

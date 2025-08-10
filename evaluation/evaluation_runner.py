@@ -134,7 +134,8 @@ class EvaluationRunner:
         if self.config.save_detailed:
             output_file = self.output_dir / f"{checkpoint_name}_perplexity.json"
             with open(output_file, 'w') as f:
-                json.dump(results, f, indent=2)
+                safe_results = self._make_json_serializable(results)
+                json.dump(safe_results, f, indent=2)
         
         return results
     
