@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,6_long_distance_binding,1, luca orders a pizza ., luca says that he prepares dinner ., prepares
+2,6_long_distance_binding,1, the children watch a cartoon ., the children say that they finish their homework ., finish
+3,6_long_distance_binding,1, marta drinks a coffee ., marta claims that she reads the newspaper ., reads
+4,6_long_distance_binding,1, the director receives a message ., the director confirms that he signs the contract ., signs
+5,6_long_distance_binding,1, the students listen to a lecture ., the students maintain that they study the lesson ., study
+6,6_long_distance_binding,1, carla buys a book ., carla admits that she writes a letter ., writes
+7,6_long_distance_binding,1, the professor talks with a colleague ., the professor declares that he explains the theorem ., explains
+8,6_long_distance_binding,1, the girls dance in the living room ., the girls recount that they sing a song ., sing
+9,6_long_distance_binding,1, paolo runs in the park ., paolo argues that he solves the problem ., solves
+10,6_long_distance_binding,1, the doctors talk on the phone ., the doctors explain that they examine the patient ., examine
+11,6_long_distance_binding,1, elena bakes a cake ., elena reveals that she draws a portrait ., draws
+12,6_long_distance_binding,1, the engineer travels by train ., the engineer assures that he designs a bridge ., designs
+1,6_long_distance_binding,0, luca orders a pizza ., luca says that prepares dinner ., prepares
+2,6_long_distance_binding,0, the children watch a cartoon ., the children say that finish their homework ., finish
+3,6_long_distance_binding,0, marta drinks a coffee ., marta claims that reads the newspaper ., reads
+4,6_long_distance_binding,0, the director receives a message ., the director confirms that signs the contract ., signs
+5,6_long_distance_binding,0, the students listen to a lecture ., the students maintain that study the lesson ., study
+6,6_long_distance_binding,0, carla buys a book ., carla admits that writes a letter ., writes
+7,6_long_distance_binding,0, the professor talks with a colleague ., the professor declares that explains the theorem ., explains
+8,6_long_distance_binding,0, the girls dance in the living room ., the girls recount that sing a song ., sing
+9,6_long_distance_binding,0, paolo runs in the park ., paolo argues that solves the problem ., solves
+10,6_long_distance_binding,0, the doctors talk on the phone ., the doctors explain that examine the patient ., examine
+11,6_long_distance_binding,0, elena bakes a cake ., elena reveals that draws a portrait ., draws
+12,6_long_distance_binding,0, the engineer travels by train ., the engineer assures that designs a bridge ., designs

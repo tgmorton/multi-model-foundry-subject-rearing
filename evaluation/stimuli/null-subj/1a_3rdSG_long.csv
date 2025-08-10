@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,1a_3rdSG,1, marta won the award ., she shows pride ., shows
+2,1a_3rdSG,1, the professor grades assignments ., he respects deadlines ., respects
+3,1a_3rdSG,1, the car broke down ., it requires repairs ., requires
+4,1a_3rdSG,1, paolo missed his flight ., he looks for a taxi ., looks
+5,1a_3rdSG,1, the meeting ended ., it lasted three hours ., lasts
+6,1a_3rdSG,1, the dog barks ., he disturbs the neighbors ., disturbs
+7,1a_3rdSG,1, sofia buys a gift ., she keeps the gift ., keeps
+8,1a_3rdSG,1, the concert is canceled ., it costs a lot ., costs
+9,1a_3rdSG,1, the child breaks the vase ., he apologizes ., apologizes
+10,1a_3rdSG,1, the pizza burns ., it stays in the oven ., stays
+11,1a_3rdSG,1, luca forgets his keys ., he returns home ., returns
+12,1a_3rdSG,1, the letter arrives ., it contains information ., contains
+1,1a_3rdSG,0, marta won the award ., shows pride ., shows
+2,1a_3rdSG,0, the professor grades assignments ., respects deadlines ., respects
+3,1a_3rdSG,0, the car broke down ., requires repairs ., requires
+4,1a_3rdSG,0, paolo missed his flight ., looks for a taxi ., looks
+5,1a_3rdSG,0, the meeting ended ., lasts three hours ., lasts
+6,1a_3rdSG,0, the dog barks ., disturbs the neighbors ., disturbs
+7,1a_3rdSG,0, sofia buys a gift ., keeps the gift ., keeps
+8,1a_3rdSG,0, the concert is canceled ., costs a lot ., costs
+9,1a_3rdSG,0, the child breaks the vase ., apologizes ., apologizes
+10,1a_3rdSG,0, the pizza burns ., stays in the oven ., stays
+11,1a_3rdSG,0, luca forgets his keys ., returns home ., returns
+12,1a_3rdSG,0, the letter arrives ., contains information ., contains

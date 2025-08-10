@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,4a_subject_control,1, marco is shy but needs help ., marco dares him to ask help ., to ask
+2,4a_subject_control,1, the grandparents love exploring new places ., the grandparents prefer them to travel ., to travel
+3,4a_subject_control,1, laura urgently needs to speak with the boss ., laura attempts her to call ., to call
+4,4a_subject_control,1, the students are nervous about the exam ., the students avoid them to speak ., to speak
+5,4a_subject_control,1, the child is tired after crying for hours ., the child stops him to cry ., to cry
+6,4a_subject_control,1, we ’ re exhausted after the meeting ., we wish us to leave ., to leave
+7,4a_subject_control,1, giovanni wants to win the tournament ., giovanni hopes him to win ., to win
+8,4a_subject_control,1, the girls love singing together ., the girls start them to sing ., to sing
+9,4a_subject_control,1, mario is afraid of making mistakes ., mario tries him to correct the mistakes ., to correct
+10,4a_subject_control,1, the tourists want to avoid the crowd ., the tourists choose them to visit in the morning ., to visit
+11,4a_subject_control,1, lucia hates waking up early ., lucia refuses her to wake up at dawn ., to wake
+12,4a_subject_control,1, the athletes must train every day ., the athletes continue them to train ., to train
+1,4a_subject_control,0, marco is shy but needs help ., marco dares to ask help ., to ask
+2,4a_subject_control,0, the grandparents love exploring new places ., the grandparents prefer to travel ., to travel
+3,4a_subject_control,0, laura urgently needs to speak with the boss ., laura attempts to call ., to call
+4,4a_subject_control,0, the students are nervous about the exam ., the students avoid to speak ., to speak
+5,4a_subject_control,0, the child is tired after crying for hours ., the child stops to cry ., to cry
+6,4a_subject_control,0, we ’ re exhausted after the meeting ., we wish to leave ., to leave
+7,4a_subject_control,0, giovanni wants to win the tournament ., giovanni hopes to win ., to win
+8,4a_subject_control,0, the girls love singing together ., the girls start to sing ., to sing
+9,4a_subject_control,0, mario is afraid of making mistakes ., mario tries to correct the mistakes ., to correct
+10,4a_subject_control,0, the tourists want to avoid the crowd ., the tourists choose to visit in the morning ., to visit
+11,4a_subject_control,0, lucia hates waking up early ., lucia refuses to wake up at dawn ., to wake
+12,4a_subject_control,0, the athletes must train every day ., the athletes continue to train ., to train

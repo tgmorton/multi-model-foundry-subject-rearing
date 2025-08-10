@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,7b_conjunction_topic_shift,1, antonio is in the garden ., antonio calls the gardener and she plants the flowers for him ., plants
+2,7b_conjunction_topic_shift,1, laura is in the office ., laura contacts the lawyer and he prepares the contract for her ., prepares
+3,7b_conjunction_topic_shift,1, marco has a problem ., marco looks for the electrician and she fixes the lights for him ., fixes
+4,7b_conjunction_topic_shift,1, elena is going out tonight ., elena hires the babysitter and he watches the child for her ., watches
+5,7b_conjunction_topic_shift,1, paolo is in the garage ., paolo calls the mechanic and she checks the engine for him ., checks
+6,7b_conjunction_topic_shift,1, sara is launching a project ., sara hires the designer and he creates the logo for her ., creates
+7,7b_conjunction_topic_shift,1, luca is opening a restaurant ., luca hires the chef and she prepares the menu for him ., prepares
+8,7b_conjunction_topic_shift,1, anna is writing a book ., anna contacts the translator and he translates the text for her ., translates
+9,7b_conjunction_topic_shift,1, roberto has a blackout ., roberto calls the electrician and she fixes the lights for him ., fixes
+10,7b_conjunction_topic_shift,1, clara is organizing an event ., clara hires the photographer and he takes the photos for her ., takes
+11,7b_conjunction_topic_shift,1, giovanni is developing an app ., giovanni hires the programmer and she writes the code for him ., writes
+12,7b_conjunction_topic_shift,1, francesca is building a villa ., francesca consults the architect and he draws the plans for her ., draws
+1,7b_conjunction_topic_shift,0, antonio is in the garden ., antonio calls the gardener and plants the flowers for him ., plants
+2,7b_conjunction_topic_shift,0, laura is in the office ., laura contacts the lawyer and prepares the contract for her ., prepares
+3,7b_conjunction_topic_shift,0, marco has a problem ., marco looks for the electrician and fixes the lights for him ., fixes
+4,7b_conjunction_topic_shift,0, elena is going out tonight ., elena hires the babysitter and watches the child for her ., watches
+5,7b_conjunction_topic_shift,0, paolo is in the garage ., paolo calls the mechanic and checks the engine for him ., checks
+6,7b_conjunction_topic_shift,0, sara is launching a project ., sara hires the designer and creates the logo for her ., creates
+7,7b_conjunction_topic_shift,0, luca is opening a restaurant ., luca hires the chef and prepares the menu for him ., prepares
+8,7b_conjunction_topic_shift,0, anna is writing a book ., anna contacts the translator and translates the text for her ., translates
+9,7b_conjunction_topic_shift,0, roberto has a blackout ., roberto calls the electrician and fixes the lights for him ., fixes
+10,7b_conjunction_topic_shift,0, clara is organizing an event ., clara hires the photographer and takes the photos for her ., takes
+11,7b_conjunction_topic_shift,0, giovanni is developing an app ., giovanni hires the programmer and writes the code for him ., writes
+12,7b_conjunction_topic_shift,0, francesca is building a villa ., francesca consults the architect and draws the plans for her ., draws

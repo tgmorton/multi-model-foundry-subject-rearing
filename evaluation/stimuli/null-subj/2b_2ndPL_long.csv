@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,2b_2ndPL,1," guys , you leave the window open .", you all let the cat in ., let
+2,2b_2ndPL,1," students , you pass the final exam .", you all study all night ., study
+3,2b_2ndPL,1," team , you win the tournament .", you all play exceptionally ., play
+4,2b_2ndPL,1," colleagues , you submit the project .", you all you meet the deadline ., meet
+5,2b_2ndPL,1," friends , you book the restaurant .", you all choose a romantic spot ., choose
+6,2b_2ndPL,1," travelers , you miss the bus .", you all mix up the schedule ., mix up
+7,2b_2ndPL,1," customers , you receive the discount .", you all take advantage of the deal ., take advantage
+8,2b_2ndPL,1," parents , you sign the permission slip .", you all forget the date ., forget
+9,2b_2ndPL,1," tourists , you visit the museum .", you all prefer the modern artworks ., prefer
+10,2b_2ndPL,1," employees , you complete the training .", you all learn new techniques ., learn
+11,2b_2ndPL,1," fellow citizens , you protest in the streets .", you all demand more transparency ., demand
+12,2b_2ndPL,1," athletes , you run the marathon .", you all break the record ., break
+1,2b_2ndPL,0," guys , you leave the window open .", let the cat in ., let
+2,2b_2ndPL,0," students , you pass the final exam .", study all night ., study
+3,2b_2ndPL,0," team , you win the tournament .", play exceptionally ., play
+4,2b_2ndPL,0," colleagues , you submit the project .", meet the deadline ., meet
+5,2b_2ndPL,0," friends , you book the restaurant .", choose a romantic spot ., choose
+6,2b_2ndPL,0," travelers , you miss the bus .", mix up the schedule ., mix up
+7,2b_2ndPL,0," customers , you receive the discount .", take advantage of the deal ., take advantage
+8,2b_2ndPL,0," parents , you sign the permission slip .", forget the date ., forget
+9,2b_2ndPL,0," tourists , you visit the museum .", prefer the modern artworks ., prefer
+10,2b_2ndPL,0," employees , you complete the training .", learn new techniques ., learn
+11,2b_2ndPL,0," fellow citizens , you protest in the streets .", demand more transparency ., demand
+12,2b_2ndPL,0," athletes , you run the marathon .", break the record ., break

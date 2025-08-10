@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,5a_expletive_seems,1, the light turns off often ., it seems that the light turns off ., seems
+2,5a_expletive_seems,1, the results are clear ., it seems that the results are clear ., seems
+3,5a_expletive_seems,1, the noise increases ., it appears that the noise increases ., appears
+4,5a_expletive_seems,1, the situation worsens ., it turns out that the situation worsens ., turns out
+5,5a_expletive_seems,1, the prices rise ., it seems that the prices rise ., seems
+6,5a_expletive_seems,1, the temperature drops ., it seems that the temperature drops ., seems
+7,5a_expletive_seems,1, the project progresses ., it appears that the project progresses ., appears
+8,5a_expletive_seems,1, the discussions continue ., it turns out that the discussions continue ., turns out
+9,5a_expletive_seems,1, the traffic slows ., it seems that the traffic slows ., seems
+10,5a_expletive_seems,1, the requests grow ., it seems that the requests grow ., seems
+11,5a_expletive_seems,1, the problem persists ., it appears that the problem persists ., appears
+12,5a_expletive_seems,1, the deadlines approach ., it turns out that the deadlines approach ., turns out
+1,5a_expletive_seems,0, the light turns off often ., seems that the light turns off ., seems
+2,5a_expletive_seems,0, the results are clear ., seems that the results are clear ., seems
+3,5a_expletive_seems,0, the noise increases ., appears that the noise increases ., appears
+4,5a_expletive_seems,0, the situation worsens ., turns out that the situation worsens ., turns out
+5,5a_expletive_seems,0, the prices rise ., seems that the prices rise ., seems
+6,5a_expletive_seems,0, the temperature drops ., seems that the temperature drops ., seems
+7,5a_expletive_seems,0, the project progresses ., appears that the project progresses ., appears
+8,5a_expletive_seems,0, the discussions continue ., turns out that the discussions continue ., turns out
+9,5a_expletive_seems,0, the traffic slows ., seems that the traffic slows ., seems
+10,5a_expletive_seems,0, the requests grow ., seems that the requests grow ., seems
+11,5a_expletive_seems,0, the problem persists ., appears that the problem persists ., appears
+12,5a_expletive_seems,0, the deadlines approach ., turns out that the deadlines approach ., turns out

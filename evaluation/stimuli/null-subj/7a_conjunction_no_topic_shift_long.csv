@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,7a_conjunction_no_topic_shift,1, luca is hungry ., luca opens the fridge and he takes a sandwich ., takes
+2,7a_conjunction_no_topic_shift,1, maria is tired ., maria sits on the couch and she turns on the tv ., turns
+3,7a_conjunction_no_topic_shift,1, paolo is sleepy ., paolo turns off the light and he gets into bed ., gets
+4,7a_conjunction_no_topic_shift,1, elena is happy ., elena calls a friend and she shares the news ., shares
+5,7a_conjunction_no_topic_shift,1, marco is late ., marco runs to the stop and he jumps on the bus ., jumps
+6,7a_conjunction_no_topic_shift,1, sara is cold ., sara puts on a sweater and she moves near the fireplace ., moves
+7,7a_conjunction_no_topic_shift,1, antonio is nervous ., antonio takes a deep breath and he counts to ten ., counts
+8,7a_conjunction_no_topic_shift,1, laura is curious ., laura opens the package and she smiles ., smiles
+9,7a_conjunction_no_topic_shift,1, roberto is confused ., roberto reads the instructions and he nods ., nods
+10,7a_conjunction_no_topic_shift,1, giulia is thirsty ., giulia pours a glass of water and she drinks ., drinks
+11,7a_conjunction_no_topic_shift,1, carlo is bored ., carlo picks up a book and he starts reading ., reading
+12,7a_conjunction_no_topic_shift,1, francesca is surprised ., francesca raises her eyebrows and she whispers ., whispers
+1,7a_conjunction_no_topic_shift,0, luca is hungry ., luca opens the fridge and takes a sandwich ., takes
+2,7a_conjunction_no_topic_shift,0, maria is tired ., maria sits on the couch and turns on the tv ., turns
+3,7a_conjunction_no_topic_shift,0, paolo is sleepy ., paolo turns off the light and gets into bed ., gets
+4,7a_conjunction_no_topic_shift,0, elena is happy ., elena calls a friend and shares the news ., shares
+5,7a_conjunction_no_topic_shift,0, marco is late ., marco runs to the stop and jumps on the bus ., jumps
+6,7a_conjunction_no_topic_shift,0, sara is cold ., sara puts on a sweater and moves near the fireplace ., moves
+7,7a_conjunction_no_topic_shift,0, antonio is nervous ., antonio takes a deep breath and counts to ten ., counts
+8,7a_conjunction_no_topic_shift,0, laura is curious ., laura opens the package and smiles ., smiles
+9,7a_conjunction_no_topic_shift,0, roberto is confused ., roberto reads the instructions and nods ., nods
+10,7a_conjunction_no_topic_shift,0, giulia is thirsty ., giulia pours a glass of water and drinks ., drinks
+11,7a_conjunction_no_topic_shift,0, carlo is bored ., carlo picks up a book and starts reading ., reading
+12,7a_conjunction_no_topic_shift,0, francesca is surprised ., francesca raises her eyebrows and whispers ., whispers

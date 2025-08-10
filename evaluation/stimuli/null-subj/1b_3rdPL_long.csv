@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,1b_3rdPL,1, the tourists missed the bus ., they called a taxi ., called
+2,1b_3rdPL,1, the keys disappeared ., they were on the table yesterday ., were
+3,1b_3rdPL,1, the students protested ., they want more resources ., want
+4,1b_3rdPL,1, the documents are ready ., they will be signed tomorrow ., will
+5,1b_3rdPL,1, the children finished their homework ., they can play now ., can
+6,1b_3rdPL,1, the plants wilted ., they didn ’ t get water ., didn ' t
+7,1b_3rdPL,1, the colleagues criticized the plan ., they prefer another option ., prefer
+8,1b_3rdPL,1, the windows were open ., they let the cold in ., let
+9,1b_3rdPL,1, the guests have arrived ., they are waiting in the lounge ., are
+10,1b_3rdPL,1, the emails contain mistakes ., they need to be corrected ., need
+11,1b_3rdPL,1, the books fell ., they were on the high shelf ., were
+12,1b_3rdPL,1, the shoes are wet ., they got caught in the rain ., got
+1,1b_3rdPL,0, the tourists missed the bus ., called a taxi ., called
+2,1b_3rdPL,0, the keys disappeared ., were on the table yesterday ., were
+3,1b_3rdPL,0, the students protested ., want more resources ., want
+4,1b_3rdPL,0, the documents are ready ., will be signed tomorrow ., will
+5,1b_3rdPL,0, the children finished their homework ., can play now ., can
+6,1b_3rdPL,0, the plants wilted ., didn ’ t get water ., didn ' t
+7,1b_3rdPL,0, the colleagues criticized the plan ., prefer another option ., prefer
+8,1b_3rdPL,0, the windows were open ., let the cold in ., let
+9,1b_3rdPL,0, the guests have arrived ., are waiting in the lounge ., are
+10,1b_3rdPL,0, the emails contain mistakes ., need to be corrected ., need
+11,1b_3rdPL,0, the books fell ., were on the high shelf ., were
+12,1b_3rdPL,0, the shoes are wet ., got caught in the rain ., got

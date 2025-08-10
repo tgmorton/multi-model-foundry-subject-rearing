@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,3b_1stPL,1, we reviewed the contract ., we agree with the terms ., agree
+2,3b_1stPL,1, we visited the new office ., we appreciate the modern space ., appreciate
+3,3b_1stPL,1, we listened to the presentation ., we share his conclusions ., share
+4,3b_1stPL,1, we tried the restaurant ., we prefer the traditional dishes ., prefer
+5,3b_1stPL,1, we discussed the project ., we support this strategy ., support
+6,3b_1stPL,1, we received the feedback ., we accept the constructive criticism ., accept
+7,3b_1stPL,1, we finished the workout ., we feel our muscles tired ., feel
+8,3b_1stPL,1, we analyzed the data ., we confirm the initial trends ., confirm
+9,3b_1stPL,1, we watched the documentary ., we believe in its message ., believe
+10,3b_1stPL,1, we met the team ., we notice great teamwork ., notice
+11,3b_1stPL,1, we overcame the obstacles ., we celebrate this success ., celebrate
+12,3b_1stPL,1, we planned the meeting ., we suggest a different time ., suggest
+1,3b_1stPL,0, we reviewed the contract ., agree with the terms ., agree
+2,3b_1stPL,0, we visited the new office ., appreciate the modern space ., appreciate
+3,3b_1stPL,0, we listened to the presentation ., share his conclusions ., share
+4,3b_1stPL,0, we tried the restaurant ., prefer the traditional dishes ., prefer
+5,3b_1stPL,0, we discussed the project ., support this strategy ., support
+6,3b_1stPL,0, we received the feedback ., accept the constructive criticism ., accept
+7,3b_1stPL,0, we finished the workout ., feel our muscles tired ., feel
+8,3b_1stPL,0, we analyzed the data ., confirm the initial trends ., confirm
+9,3b_1stPL,0, we watched the documentary ., believe in its message ., believe
+10,3b_1stPL,0, we met the team ., notice great teamwork ., notice
+11,3b_1stPL,0, we overcame the obstacles ., celebrate this success ., celebrate
+12,3b_1stPL,0, we planned the meeting ., suggest a different time ., suggest

@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,4b_object_control,1, the patient is exhausted after surgery ., the doctor urges the patient him to rest ., lui
+2,4b_object_control,1, the witness is afraid to tell the truth ., the lawyer forces the witness him to lie ., lui
+3,4b_object_control,1, the children are distracted during homework ., the mom obliges the children them to focus ., loro
+4,4b_object_control,1, the employees work too slowly ., the boss encourages the employees them to speed up ., loro
+5,4b_object_control,1, the students don ’ t participate in discussions ., the professor invites the students them to participate ., loro
+6,4b_object_control,1, the suspects are trying to flee ., the policeman forbids the suspects them to flee ., loro
+7,4b_object_control,1, the coach wants to improve the team ., the coach persuades the players them to train ., loro
+8,4b_object_control,1, the client hesitates to sign the contract ., the agent pushes the client him to sign ., lui
+9,4b_object_control,1, the citizens ignore the new rules ., the government obliges the citizens them to respect them ., loro
+10,4b_object_control,1, the volunteers refuse to clean the park ., the organizer persuades the volunteers them to cooperate ., loro
+11,4b_object_control,1, the artist doesn ’ t want to show their paintings ., the gallery owner induces the artist him to exhibit ., lui
+12,4b_object_control,1, the prisoners are trying to rebel ., the guard prevents the prisoners them to react ., loro
+1,4b_object_control,0, the patient is exhausted after surgery ., the doctor urges the patient to rest ., lui
+2,4b_object_control,0, the witness is afraid to tell the truth ., the lawyer forces the witness to lie ., lui
+3,4b_object_control,0, the children are distracted during homework ., the mom obliges the children to focus ., loro
+4,4b_object_control,0, the employees work too slowly ., the boss encourages the employees to speed up ., loro
+5,4b_object_control,0, the students don ’ t participate in discussions ., the professor invites the students to participate ., loro
+6,4b_object_control,0, the suspects are trying to flee ., the policeman forbids the suspects to flee ., loro
+7,4b_object_control,0, the coach wants to improve the team ., the coach persuades the players to train ., loro
+8,4b_object_control,0, the client hesitates to sign the contract ., the agent pushes the client to sign ., lui
+9,4b_object_control,0, the citizens ignore the new rules ., the government obliges the citizens to respect them ., loro
+10,4b_object_control,0, the volunteers refuse to clean the park ., the organizer persuades the volunteers to cooperate ., loro
+11,4b_object_control,0, the artist doesn ’ t want to show their paintings ., the gallery owner induces the artist to exhibit ., lui
+12,4b_object_control,0, the prisoners are trying to rebel ., the guard prevents the prisoners to react ., loro

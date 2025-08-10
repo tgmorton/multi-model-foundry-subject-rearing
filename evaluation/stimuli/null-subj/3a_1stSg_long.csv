@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,3a_1stSg,1, i just finished the project ., i believe that the result is satisfactory ., believe
+2,3a_1stSg,1, i saw the new movie ., i think that the plot is original ., think
+3,3a_1stSg,1, i read your message ., i understand your concerns ., understand
+4,3a_1stSg,1, i listened to your proposal ., i accept your terms ., accept
+5,3a_1stSg,1, i visited the art exhibition ., i appreciate the artist ' s style ., appreciate
+6,3a_1stSg,1, i checked the data ., i confirm the accuracy of the numbers ., confirm
+7,3a_1stSg,1, i prepared dinner ., i hope that the taste is good ., hope
+8,3a_1stSg,1, i received the package ., i check the contents ., check
+9,3a_1stSg,1, i completed the exercise ., i feel that i have improved ., feel
+10,3a_1stSg,1, i met the new colleague ., i find his presence motivating ., find
+11,3a_1stSg,1, i analyzed the problem ., i suggest an alternative solution ., suggest
+12,3a_1stSg,1, i took the online course ., i learn many new things ., learn
+1,3a_1stSg,0, i just finished the project ., believe that the result is satisfactory ., believe
+2,3a_1stSg,0, i saw the new movie ., think that the plot is original ., think
+3,3a_1stSg,0, i read your message ., understand your concerns ., understand
+4,3a_1stSg,0, i listened to your proposal ., accept your terms ., accept
+5,3a_1stSg,0, i visited the art exhibition ., appreciate the artist ' s style ., appreciate
+6,3a_1stSg,0, i checked the data ., confirm the accuracy of the numbers ., confirm
+7,3a_1stSg,0, i prepared dinner ., hope that the taste is good ., hope
+8,3a_1stSg,0, i received the package ., check the contents ., check
+9,3a_1stSg,0, i completed the exercise ., feel that have improved ., feel
+10,3a_1stSg,0, i met the new colleague ., find his presence motivating ., find
+11,3a_1stSg,0, i analyzed the problem ., suggest an alternative solution ., suggest
+12,3a_1stSg,0, i took the online course ., learn many new things ., learn

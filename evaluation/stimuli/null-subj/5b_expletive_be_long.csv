@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,5b_expletive_be,1,  were you looking for someone ?,  it is the guy you were looking for ., is
+2,5b_expletive_be,1,  did you lose something ?,  it is the key that was missing ., is
+3,5b_expletive_be,1,  volunteers are needed .,  it is he who can help ., is
+4,5b_expletive_be,1,  there ’ s noise in the street .,  it is a car honking its horn ., is
+5,5b_expletive_be,1,  a document is missing .,  it is the passport that ’ s needed ., is
+6,5b_expletive_be,1,  a solution is needed .,  it is this the best idea ., is
+7,5b_expletive_be,1,  are you looking for a restaurant ?,  it is the one you like ., is
+8,5b_expletive_be,1,  more time is needed .,  it is today the right day ., is
+9,5b_expletive_be,1,  there ’ s a problem .,  it is luca who can fix it ., is
+10,5b_expletive_be,1,  an expert is needed .,  it is marco who knows everything ., is
+11,5b_expletive_be,1,  some signatures are missing .,  it is the director who must sign ., is
+12,5b_expletive_be,1,  there ’ s confusion .,  it is her who made a mistake ., is
+1,5b_expletive_be,0,  were you looking for someone ?,  is the guy you were looking for ., is
+2,5b_expletive_be,0,  did you lose something ?,  is the key that was missing ., is
+3,5b_expletive_be,0,  volunteers are needed .,  is he who can help ., is
+4,5b_expletive_be,0,  there ’ s noise in the street .,  is a car honking its horn ., is
+5,5b_expletive_be,0,  a document is missing .,  is the passport that ’ s needed ., is
+6,5b_expletive_be,0,  a solution is needed .,  is this the best idea ., is
+7,5b_expletive_be,0,  are you looking for a restaurant ?,  is the one you like ., is
+8,5b_expletive_be,0,  more time is needed .,  is today the right day ., is
+9,5b_expletive_be,0,  there ’ s a problem .,  is luca who can fix it ., is
+10,5b_expletive_be,0,  an expert is needed .,  is marco who knows everything ., is
+11,5b_expletive_be,0,  some signatures are missing .,  is the director who must sign ., is
+12,5b_expletive_be,0,  there ’ s confusion .,  is her who made a mistake ., is

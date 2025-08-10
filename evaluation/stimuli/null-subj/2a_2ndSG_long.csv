@@ -1,0 +1,25 @@
+item,item_group,pronoun_status,c_english,target,hotspot_english
+1,2a_2ndSG,1," luca , you forget the keys often .", you take the keys before leaving ., take
+2,2a_2ndSG,1," marco , you see the new movie tonight .", you prefer complex plots ., prefer
+3,2a_2ndSG,1," sara , you cook dinner quickly .", you use too many spices ., use
+4,2a_2ndSG,1," giulia , you finish the report today .", you include all the data ., include
+5,2a_2ndSG,1," paolo , you choose the gift tonight .", you consider their tastes ., consider
+6,2a_2ndSG,1," elena , you listen to the new song .", you appreciate the rhythm ., appreciate
+7,2a_2ndSG,1," roberto , you read the recommended book .", you find the ending surprising ., find
+8,2a_2ndSG,1," laura , you order the food for the party .", you select vegetarian dishes ., select
+9,2a_2ndSG,1," matteo , you complete the puzzle today .", you take only an hour ., take
+10,2a_2ndSG,1," chiara , you organize the event tomorrow .", you coordinate all the details ., coordinate
+11,2a_2ndSG,1," antonio , you fix the bicycle .", you replace the broken chain ., replace
+12,2a_2ndSG,1," francesca , you plant the flowers today .", you choose bright colors ., choose
+1,2a_2ndSG,0," luca , you forget the keys often .", take the keys before leaving ., take
+2,2a_2ndSG,0," marco , you see the new movie tonight .", prefer complex plots ., prefer
+3,2a_2ndSG,0," sara , you cook dinner quickly .", use too many spices ., use
+4,2a_2ndSG,0," giulia , you finish the report today .", include all the data ., include
+5,2a_2ndSG,0," paolo , you choose the gift tonight .", consider their tastes ., consider
+6,2a_2ndSG,0," elena , you listen to the new song .", appreciate the rhythm ., appreciate
+7,2a_2ndSG,0," roberto , you read the recommended book .", find the ending surprising ., find
+8,2a_2ndSG,0," laura , you order the food for the party .", select vegetarian dishes ., select
+9,2a_2ndSG,0," matteo , you complete the puzzle today .", take only an hour ., take
+10,2a_2ndSG,0," chiara , you organize the event tomorrow .", coordinate all the details ., coordinate
+11,2a_2ndSG,0," antonio , you fix the bicycle .", replace the broken chain ., replace
+12,2a_2ndSG,0," francesca , you plant the flowers today .", choose bright colors ., choose
