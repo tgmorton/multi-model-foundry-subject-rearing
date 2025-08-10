@@ -80,6 +80,11 @@ training:
   min_checkpoint_interval: 100
   min_checkpoints_per_epoch: 5
 
+  # Compilation mode for torch.compile
+  # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
+  # Use 'default' for stability, 'none' to disable
+  compile_mode: 'default'
+
 # --- Logging & Reproducibility ---
 logging:
   # Integrate with Weights & Biases as per the proposal.
