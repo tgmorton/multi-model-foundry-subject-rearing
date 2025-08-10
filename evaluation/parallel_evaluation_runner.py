@@ -15,7 +15,7 @@ import time
 
 from .model_loader import ModelLoader, clear_gpu_cache
 from .surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
-from .parallel_blimp_evaluator import ParallelBLIMPEvaluator
+from .threaded_blimp_evaluator import ThreadedBLIMPEvaluator
 from .null_subject_evaluator import NullSubjectEvaluator
 from .perplexity_evaluator import PerplexityEvaluator
 from .evaluation_runner import EvaluationConfig
@@ -116,18 +116,21 @@ class ParallelEvaluationRunner:
         return results
     
     def run_parallel_blimp_evaluation(self, checkpoint_path: str, checkpoint_name: str) -> Dict:
-        """Run BLIMP evaluation in parallel across multiple GPUs."""
+        """Run BLIMP evaluation using threading."""
         if not self.config.run_blimp or not self.config.blimp_dir:
             return {}
         
-        logger.info(f"Running parallel BLIMP evaluation with {self.parallel_workers} workers...")
+        logger.info(f"Running threaded BLIMP evaluation with {self.parallel_workers} threads...")
         
-        # Create parallel evaluator
-        evaluator = ParallelBLIMPEvaluator(
+        # Use first GPU for threaded evaluation
+        device_id = self.gpu_ids[0] if self.gpu_ids else 0
+        
+        # Create threaded evaluator
+        evaluator = ThreadedBLIMPEvaluator(
             model_checkpoint=checkpoint_path,
             tokenizer_path=self.config.tokenizer_path,
-            num_workers=self.parallel_workers,
-            device_ids=self.gpu_ids,
+            num_threads=self.parallel_workers,
+            device_id=device_id,
             use_fp16=self.config.use_fp16,
             batch_size=self.config.batch_size
         )

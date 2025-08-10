@@ -17,6 +17,13 @@ from .model_loader import ModelLoader
 from .surprisal_calculator import SurprisalCalculator
 from .blimp_evaluator import BLIMPEvaluator
 
+# Set multiprocessing start method to 'spawn' for CUDA compatibility
+try:
+    mp.set_start_method('spawn', force=True)
+except RuntimeError:
+    # Already set, that's fine
+    pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,9 +84,13 @@ class ParallelBLIMPEvaluator:
         Returns:
             List of (filename, results_dataframe) tuples
         """
-        # Set device for this worker
-        device = f"cuda:{device_id}" if torch.cuda.is_available() else "cpu"
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(device_id)
+        # Set device for this worker - be more careful about device selection
+        if torch.cuda.is_available() and device_id < torch.cuda.device_count():
+            device = f"cuda:{device_id}"
+            os.environ['CUDA_VISIBLE_DEVICES'] = str(device_id)
+        else:
+            device = "cpu"
+            logger.warning(f"Worker {worker_id}: GPU {device_id} not available, using CPU")
         
         # Load model and tokenizer for this worker
         model_loader = ModelLoader(device=device)
