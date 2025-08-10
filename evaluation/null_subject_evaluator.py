@@ -279,10 +279,14 @@ class NullSubjectEvaluator:
             
             # Combined item_group and form statistics
             if 'item_group' in results_df.columns:
-                combo_stats = results_df.groupby(['item_group', 'form']).agg({
+                combo_stats_raw = results_df.groupby(['item_group', 'form']).agg({
                     'prefers_overt': 'mean',
                     'surprisal_difference': 'mean'
                 }).to_dict('index')
+                
+                # Convert tuple keys to strings for JSON serialization
+                combo_stats = {f"{item_group}_{form}": stats 
+                              for (item_group, form), stats in combo_stats_raw.items()}
                 
                 summary['by_condition_and_form'] = combo_stats
         
