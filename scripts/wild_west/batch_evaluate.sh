@@ -264,6 +264,35 @@ EOF
 }
 
 # Main function
+# Global process tracking
+declare -a CHILD_PIDS=()
+declare -a CHILD_PGIDS=()
+
+# Global cleanup function
+cleanup_all_processes() {
+    local sig="${1:-TERM}"
+    
+    if [[ ${#CHILD_PGIDS[@]} -gt 0 ]]; then
+        log INFO "Cleaning up ${#CHILD_PGIDS[@]} process groups with signal: $sig"
+        
+        for pgid in "${CHILD_PGIDS[@]}"; do
+            if [[ -n "$pgid" ]]; then
+                kill -"$sig" -"$pgid" 2>/dev/null || true
+            fi
+        done
+        
+        if [[ "$sig" == "TERM" ]]; then
+            sleep 3
+            cleanup_all_processes "KILL"
+        fi
+    fi
+}
+
+# Set up global signal handling
+trap 'cleanup_all_processes TERM; exit 130' INT
+trap 'cleanup_all_processes TERM; exit 143' TERM
+trap 'cleanup_all_processes KILL' EXIT
+
 main() {
     local experiments=()
     local experiments_file=""
@@ -430,9 +459,20 @@ main() {
         
         # Start evaluation in background if parallel > 1
         if [[ $parallel -gt 1 ]]; then
-            run_single_evaluation "$exp" "$gpu_id" "$tasks" "$max_samples" "$max_checkpoints" "$output_base" "$fast_mode" "$verbose" "$i" &
-            pids+=($!)
-            log INFO "Started background evaluation of $exp on GPU $gpu_id (PID: $!)"
+            # Launch with timeout protection in own session
+            (
+                timeout --preserve-status --signal=TERM --kill-after=30s 4h \
+                    run_single_evaluation "$exp" "$gpu_id" "$tasks" "$max_samples" "$max_checkpoints" "$output_base" "$fast_mode" "$verbose" "$i"
+            ) &
+            local child_pid=$!
+            local child_pgid
+            child_pgid=$(ps -o pgid= "$child_pid" 2>/dev/null | tr -d ' ' || echo "")
+            
+            pids+=("$child_pid")
+            CHILD_PIDS+=("$child_pid")
+            CHILD_PGIDS+=("$child_pgid")
+            
+            log INFO "Started background evaluation of $exp on GPU $gpu_id (PID: $child_pid, PGID: $child_pgid)"
         else
             # Run synchronously
             if run_single_evaluation "$exp" "$gpu_id" "$tasks" "$max_samples" "$max_checkpoints" "$output_base" "$fast_mode" "$verbose" "$i"; then

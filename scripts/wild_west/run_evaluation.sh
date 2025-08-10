@@ -196,7 +196,7 @@ EOF
     log INFO "Configuration updated for experiment: $experiment"
 }
 
-# Run evaluation
+# Run evaluation with proper process management and cleanup
 run_evaluation() {
     local config_file="$1"
     local gpu_ids="$2"
@@ -204,10 +204,6 @@ run_evaluation() {
     local verbose="$4"
     
     log INFO "Starting evaluation with config: $config_file"
-    
-    # Set up environment
-    export CUDA_VISIBLE_DEVICES="$gpu_ids"
-    export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
     
     # Build command
     local cmd_args=("--config" "$config_file")
@@ -220,23 +216,102 @@ run_evaluation() {
         cmd_args+=("--debug")
     fi
     
-    # Use Singularity container if available
-    local container_cmd=""
-    if [[ -f "$PROJECT_DIR/singularity/training.sif" ]]; then
-        container_cmd="singularity exec --nv --bind $PROJECT_DIR:/workspace $PROJECT_DIR/singularity/training.sif"
-        log INFO "Using Singularity container for evaluation"
-    else
-        log WARN "Singularity container not found, running directly"
-    fi
+    # Environment variables for containers
+    local env_flags=(
+        --env "CUDA_VISIBLE_DEVICES=${gpu_ids}"
+        --env "PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb:512}"
+        --env "TORCH_CUDA_MEMORY_FRACTION=${TORCH_CUDA_MEMORY_FRACTION:-0.95}"
+        --env "CUDA_LAUNCH_BLOCKING=${CUDA_LAUNCH_BLOCKING:-0}"
+        --env "NCCL_ASYNC_ERROR_HANDLING=1"
+        --env "WANDB_MODE=${WANDB_MODE:-offline}"
+        --env "OMP_NUM_THREADS=${OMP_NUM_THREADS:-4}"
+        --env "MKL_NUM_THREADS=${MKL_NUM_THREADS:-4}"
+    )
     
-    # Run evaluation
+    # Process cleanup function
+    local CHILD_PID=""
+    local CHILD_PGID=""
+    
+    cleanup_processes() {
+        if [[ -n "$CHILD_PGID" ]]; then
+            log INFO "Cleaning up process group: $CHILD_PGID"
+            kill -TERM -"$CHILD_PGID" 2>/dev/null || true
+            sleep 2
+            kill -KILL -"$CHILD_PGID" 2>/dev/null || true
+        fi
+    }
+    
+    # Set up signal trapping for process cleanup
+    trap cleanup_processes INT TERM
+    
     cd "$PROJECT_DIR"
     
-    if [[ -n "$container_cmd" ]]; then
-        $container_cmd python evaluation/evaluation_runner.py "${cmd_args[@]}"
+    # Use Singularity container if available
+    if [[ -f "$PROJECT_DIR/singularity/training.sif" ]]; then
+        log INFO "Using Singularity container for evaluation"
+        
+        # Pick container runtime
+        local runtime="singularity"
+        if command -v apptainer >/dev/null 2>&1; then
+            runtime="apptainer"
+        fi
+        
+        # Launch in own session with timeout protection
+        set +e
+        timeout --preserve-status --signal=TERM --kill-after=30s 2h \
+            setsid "$runtime" exec --nv --pid --contain --cleanenv \
+            "${env_flags[@]}" \
+            --bind "$PROJECT_DIR":/workspace \
+            "$PROJECT_DIR/singularity/training.sif" \
+            bash -lc "set -euo pipefail; cd /workspace; exec python evaluation/evaluation_runner.py ${cmd_args[*]}" &
+        
+        CHILD_PID=$!
+        CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
+        
+        log INFO "Evaluation started: PID=$CHILD_PID PGID=$CHILD_PGID"
+        
+        wait "$CHILD_PID"
+        local exit_code=$?
+        set -e
+        
     else
-        python evaluation/evaluation_runner.py "${cmd_args[@]}"
+        log WARN "Singularity container not found, running directly"
+        
+        # Set environment for direct execution
+        export CUDA_VISIBLE_DEVICES="$gpu_ids"
+        export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True,max_split_size_mb=512}"
+        export TORCH_CUDA_MEMORY_FRACTION="${TORCH_CUDA_MEMORY_FRACTION:-0.95}"
+        export CUDA_LAUNCH_BLOCKING="${CUDA_LAUNCH_BLOCKING:-0}"
+        export NCCL_ASYNC_ERROR_HANDLING=1
+        export WANDB_MODE="${WANDB_MODE:-offline}"
+        export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
+        export MKL_NUM_THREADS="${MKL_NUM_THREADS:-4}"
+        
+        # Launch with timeout protection
+        set +e
+        timeout --preserve-status --signal=TERM --kill-after=30s 2h \
+            setsid python evaluation/evaluation_runner.py "${cmd_args[@]}" &
+        
+        CHILD_PID=$!
+        CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
+        
+        log INFO "Evaluation started: PID=$CHILD_PID PGID=$CHILD_PGID"
+        
+        wait "$CHILD_PID"
+        local exit_code=$?
+        set -e
     fi
+    
+    # Clean up signal handlers
+    trap - INT TERM
+    
+    if [[ $exit_code -ne 0 ]]; then
+        log ERROR "Evaluation failed with exit code: $exit_code"
+        return $exit_code
+    fi
+    
+    log INFO "Evaluation completed successfully"
+    return 0
 }
 
 # Export results for R
@@ -421,13 +496,20 @@ main() {
         exit 1
     fi
     
+    # Global cleanup function
+    cleanup_main() {
+        if [[ "$lock_gpus_flag" == "true" ]] || [[ "$unlock_gpus_flag" == "true" ]]; then
+            unlock_gpus "$gpu_ids"
+        fi
+    }
+    
     # Lock GPUs if requested
     if [[ "$lock_gpus_flag" == "true" ]]; then
         if ! lock_gpus "$gpu_ids"; then
             log ERROR "Failed to lock GPUs"
             exit 1
         fi
-        trap "unlock_gpus '$gpu_ids'" EXIT
+        trap cleanup_main INT TERM EXIT
     fi
     
     # Create temporary config
