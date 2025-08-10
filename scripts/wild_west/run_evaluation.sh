@@ -483,6 +483,27 @@ main() {
         experiment=$(basename "$(dirname "$checkpoint_path")")
     fi
     
+    # Auto-detect config file if not specified and using default
+    if [[ "$config" == "$DEFAULT_CONFIG" ]] && [[ -n "$experiment" ]]; then
+        # Try to find a matching eval config file
+        local auto_config=""
+        
+        # Case 1: experiment is like "exp0_baseline" -> look for "configs/eval_exp0_baseline.yaml"
+        if [[ -f "configs/eval_${experiment}.yaml" ]]; then
+            auto_config="configs/eval_${experiment}.yaml"
+        # Case 2: experiment is like "eval_exp0_baseline" -> look for "configs/eval_exp0_baseline.yaml"  
+        elif [[ "$experiment" =~ ^eval_ ]] && [[ -f "configs/${experiment}.yaml" ]]; then
+            auto_config="configs/${experiment}.yaml"
+        fi
+        
+        if [[ -n "$auto_config" ]]; then
+            config="$auto_config"
+            log INFO "Auto-detected config file: $config"
+        else
+            log WARN "No matching config found for experiment '$experiment', using default: $config"
+        fi
+    fi
+    
     # Handle fast mode
     if [[ "$fast_mode" == "true" ]]; then
         max_samples="${max_samples:-100}"
