@@ -29,6 +29,7 @@ evaluation:
   # --- QUICK EVALUATION SETTINGS ---
   max_samples: 50           # Limit samples for fast testing
   max_checkpoints: 3        # Only evaluate recent checkpoints
+  # perplexity_sample_ratio: 0.1  # Alternative: use ratio instead of fixed count
   
   # --- Speed Optimizations ---
   num_workers: 4

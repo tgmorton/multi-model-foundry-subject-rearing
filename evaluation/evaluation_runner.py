@@ -55,6 +55,7 @@ class EvaluationConfig(BaseModel):
     
     # Testing/debugging options
     max_samples: Optional[int] = Field(None, description="Maximum samples per evaluation (for testing)")
+    perplexity_sample_ratio: Optional[float] = Field(None, description="Fraction of data to sample for perplexity (e.g., 0.1 for 10%)")
     max_checkpoints: Optional[int] = Field(None, description="Maximum checkpoints to evaluate")
     
     # Output configuration
@@ -124,10 +125,27 @@ class EvaluationRunner:
         corpus_path = Path(self.config.test_corpus)
         is_directory = corpus_path.is_dir()
         
+        # Calculate max_samples based on sample ratio if provided
+        max_samples = self.config.max_samples
+        if self.config.perplexity_sample_ratio is not None and max_samples is None:
+            # Count total lines/samples in corpus
+            if is_directory:
+                total_samples = 0
+                for pattern in ['*.train', '*.test', '*.txt']:
+                    for filepath in corpus_path.glob(pattern):
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            total_samples += sum(1 for line in f if line.strip())
+            else:
+                with open(corpus_path, 'r', encoding='utf-8') as f:
+                    total_samples = sum(1 for line in f if line.strip())
+            
+            max_samples = int(total_samples * self.config.perplexity_sample_ratio)
+            logger.info(f"Sampling {max_samples} out of {total_samples} total samples ({self.config.perplexity_sample_ratio:.1%})")
+        
         results = evaluator.calculate_corpus_perplexity(
             corpus_source=str(corpus_path),
             is_directory=is_directory,
-            max_samples=self.config.max_samples
+            max_samples=max_samples
         )
         
         # Save detailed results if requested

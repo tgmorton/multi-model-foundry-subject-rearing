@@ -29,6 +29,9 @@ evaluation:
   pin_memory: true
   prefetch_factor: 2
   
+  
+  # --- Perplexity Sampling ---
+  perplexity_sample_ratio: 0.1  # Sample 10% of data for faster perplexity evaluation
   # --- Output Configuration ---
   output_dir: "evaluation/results/exp0_baseline_90M/"
   save_detailed: true
