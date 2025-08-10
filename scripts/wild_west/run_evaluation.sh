@@ -54,6 +54,7 @@ Options:
   -u, --unlock-gpus          Unlock GPUs after running
   -f, --fast                 Fast evaluation (reduced samples)
   -r, --force-rerun          Re-evaluate checkpoints even if results exist
+  -S, --serial               Use original serial evaluation (no parallelization)
   -v, --verbose              Verbose output
   -h, --help                 Show this help
 
@@ -75,6 +76,9 @@ Examples:
 
   # Force re-evaluation of existing checkpoints
   $0 -r exp0_baseline
+
+  # Use original serial evaluation (no parallelization, no timeout)
+  $0 -S exp0_baseline
 
   # Evaluate specific checkpoint
   $0 -k models/exp0_baseline/epoch_10/ exp0_baseline
@@ -217,6 +221,7 @@ run_evaluation() {
     local force_rerun="$5"
     local parallel_workers="$6"
     local parallel_gpu_ids="$7"
+    local use_serial="$8"
     
     log INFO "Starting evaluation with config: $config_file"
     
@@ -290,11 +295,19 @@ run_evaluation() {
         
         # Launch in own session
         set +e
-        setsid "$runtime" exec --nv --pid --contain --cleanenv \
-            "${env_flags[@]}" \
-            --bind "$PROJECT_DIR":/workspace \
-            "$PROJECT_DIR/singularity/training.sif" \
-            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.parallel_evaluation_runner ${container_cmd_args[*]} --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids" &
+        if [[ "$use_serial" == "true" ]]; then
+            setsid "$runtime" exec --nv --pid --contain --cleanenv \
+                "${env_flags[@]}" \
+                --bind "$PROJECT_DIR":/workspace \
+                "$PROJECT_DIR/singularity/training.sif" \
+                bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.evaluation_runner ${container_cmd_args[*]}" &
+        else
+            setsid "$runtime" exec --nv --pid --contain --cleanenv \
+                "${env_flags[@]}" \
+                --bind "$PROJECT_DIR":/workspace \
+                "$PROJECT_DIR/singularity/training.sif" \
+                bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.parallel_evaluation_runner ${container_cmd_args[*]} --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids" &
+        fi
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
@@ -320,7 +333,11 @@ run_evaluation() {
         
         # Launch evaluation
         set +e
-        setsid python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids &
+        if [[ "$use_serial" == "true" ]]; then
+            setsid python -m evaluation.evaluation_runner "${cmd_args[@]}" &
+        else
+            setsid python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids &
+        fi
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
@@ -404,6 +421,7 @@ main() {
     local output_dir=""
     local parallel_workers="4"
     local parallel_gpu_ids="0,1"
+    local use_serial=false
     local lock_gpus_flag=false
     local unlock_gpus_flag=false
     local fast_mode=false
@@ -476,6 +494,10 @@ main() {
                 ;;
             -r|--force-rerun)
                 force_rerun=true
+                shift
+                ;;
+            -S|--serial)
+                use_serial=true
                 shift
                 ;;
             -v|--verbose)
@@ -596,7 +618,7 @@ else:
     create_eval_config "$experiment" "$config" "$temp_config" "$checkpoint_path" "$tasks" "$max_samples" "$max_checkpoints" "$output_dir"
     
     # Run evaluation
-    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose" "$force_rerun" "$parallel_workers" "$parallel_gpu_ids"; then
+    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose" "$force_rerun" "$parallel_workers" "$parallel_gpu_ids" "$use_serial"; then
         log SUCCESS "Evaluation completed successfully"
         
         # Export results
