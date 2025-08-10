@@ -27,6 +27,7 @@ evaluation:
   # --- Speed Optimizations ---
   num_workers: 4
   pin_memory: true
+  max_samples: 50
   prefetch_factor: 2
   
   # --- Perplexity Sampling ---
