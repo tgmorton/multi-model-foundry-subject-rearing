@@ -1,0 +1,35 @@
+# ===================================================================
+# EVALUATION CONFIGURATION - Experiment 6: Combined Ablations
+# Configuration for evaluating the model with impoverished determiners + lemmatized verbs
+# ===================================================================
+
+evaluation:
+  # --- Model Configuration ---
+  model_checkpoint_dir: "models/exp6_impoverish_determiners_lemmatize_verbs/"
+  tokenizer_path: "tokenizers/exp6_impoverish_determiners_lemmatize_verbs/"
+  
+  # --- Test Datasets ---
+  test_corpus: "data/raw/test_10M/"
+  blimp_dir: "evaluation/stimuli/blimp/"
+  null_subject_dir: "evaluation/stimuli/null-subj/"
+  
+  # --- Evaluation Settings ---
+  batch_size: 64
+  device: "auto"
+  use_fp16: true
+  max_length: 1000
+  
+  # --- Analysis Options ---
+  run_perplexity: true
+  run_blimp: true  # Critical for both determiner and verb morphology
+  run_null_subject: true
+  
+  # --- Speed Optimizations ---
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  
+  # --- Output Configuration ---
+  output_dir: "evaluation/results/exp6_impoverish_determiners_lemmatize_verbs/"
+  save_detailed: true
+  save_format: "jsonl"

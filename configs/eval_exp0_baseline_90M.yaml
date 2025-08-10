@@ -1,0 +1,35 @@
+# ===================================================================
+# EVALUATION CONFIGURATION - Experiment 0: Baseline 90M
+# Configuration for evaluating the 90M parameter baseline model
+# ===================================================================
+
+evaluation:
+  # --- Model Configuration ---
+  model_checkpoint_dir: "models/exp0_baseline_90M/"
+  tokenizer_path: "tokenizers/exp0_baseline_90M/"
+  
+  # --- Test Datasets ---
+  test_corpus: "data/raw/test_10M/"
+  blimp_dir: "evaluation/stimuli/blimp/"
+  null_subject_dir: "evaluation/stimuli/null-subj/"
+  
+  # --- Evaluation Settings ---
+  batch_size: 32  # Smaller batch for 90M model
+  device: "auto"
+  use_fp16: true
+  max_length: 1000
+  
+  # --- Analysis Options ---
+  run_perplexity: true
+  run_blimp: true
+  run_null_subject: true
+  
+  # --- Speed Optimizations ---
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  
+  # --- Output Configuration ---
+  output_dir: "evaluation/results/exp0_baseline_90M/"
+  save_detailed: true
+  save_format: "jsonl"

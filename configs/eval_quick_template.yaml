@@ -1,0 +1,41 @@
+# ===================================================================
+# QUICK EVALUATION TEMPLATE
+# Template for fast evaluation runs (testing/debugging)
+# Copy and modify experiment paths as needed
+# ===================================================================
+
+evaluation:
+  # --- Model Configuration ---
+  # MODIFY THESE PATHS FOR YOUR EXPERIMENT:
+  model_checkpoint_dir: "models/EXPERIMENT_NAME/"
+  tokenizer_path: "tokenizers/EXPERIMENT_NAME/"
+  
+  # --- Test Datasets ---
+  test_corpus: "data/raw/test_10M/"
+  blimp_dir: "evaluation/stimuli/blimp/"
+  null_subject_dir: "evaluation/stimuli/null-subj/"
+  
+  # --- Evaluation Settings ---
+  batch_size: 64
+  device: "auto"
+  use_fp16: true
+  max_length: 1000
+  
+  # --- Analysis Options ---
+  run_perplexity: true
+  run_blimp: true
+  run_null_subject: true
+  
+  # --- QUICK EVALUATION SETTINGS ---
+  max_samples: 50           # Limit samples for fast testing
+  max_checkpoints: 3        # Only evaluate recent checkpoints
+  
+  # --- Speed Optimizations ---
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+  
+  # --- Output Configuration ---
+  output_dir: "evaluation/results/EXPERIMENT_NAME/"
+  save_detailed: true
+  save_format: "jsonl"

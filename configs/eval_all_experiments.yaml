@@ -1,0 +1,52 @@
+# ===================================================================
+# BATCH EVALUATION CONFIGURATION - All Experiments
+# Configuration for batch evaluating all experiments
+# ===================================================================
+
+batch_evaluation:
+  # List of experiments to evaluate
+  experiments:
+    - name: "exp0_baseline"
+      config: "configs/eval_exp0_baseline.yaml"
+      description: "Baseline model with full linguistic input"
+      
+    - name: "exp0_baseline_90M" 
+      config: "configs/eval_exp0_baseline_90M.yaml"
+      description: "Larger baseline model (90M parameters)"
+      
+    - name: "exp1_remove_expletives"
+      config: "configs/eval_exp1_remove_expletives.yaml"
+      description: "Model trained without expletive constructions"
+      
+    - name: "exp2_impoverish_determiners"
+      config: "configs/eval_exp2_impoverish_determiners.yaml"
+      description: "Model with impoverished determiner morphology"
+      
+    - name: "exp3_remove_articles"
+      config: "configs/eval_exp3_remove_articles.yaml"
+      description: "Model trained without articles (a, an, the)"
+      
+    - name: "exp4_lemmatize_verbs"
+      config: "configs/eval_exp4_lemmatize_verbs.yaml"
+      description: "Model with lemmatized verb forms"
+      
+    - name: "exp5_remove_subject_pronominals"
+      config: "configs/eval_exp5_remove_subject_pronominals.yaml"
+      description: "Model without subject pronouns (key manipulation)"
+      
+    - name: "exp6_impoverish_determiners_lemmatize_verbs"
+      config: "configs/eval_exp6_impoverish_determiners_lemmatize_verbs.yaml"
+      description: "Combined determiner + verb ablations"
+      
+    - name: "exp7_all_ablations"
+      config: "configs/eval_exp7_all_ablations.yaml"
+      description: "All linguistic manipulations combined"
+
+  # Global settings for batch evaluation
+  parallel_jobs: 2  # Number of experiments to run simultaneously
+  gpu_allocation: "round_robin"  # How to distribute GPUs
+  
+  # Output settings
+  batch_output_dir: "evaluation/results/batch_comparison/"
+  generate_comparison_report: true
+  export_for_r: true
