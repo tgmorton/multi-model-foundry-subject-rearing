@@ -1,0 +1,10 @@
+{
+  "perplexity": 20395.32171614714,
+  "num_sequences": 100,
+  "total_tokens": 1204,
+  "avg_log_prob": -9.923060825892858,
+  "total_log_prob": -11947.365234375,
+  "mean_sequence_perplexity": 26604.014021461568,
+  "median_sequence_perplexity": 21240.058638938383,
+  "std_sequence_perplexity": 17723.908408266216
+}

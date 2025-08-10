@@ -1,10 +1,10 @@
 {
-  "perplexity": 59693.32275220021,
-  "num_sequences": 50,
-  "total_tokens": 700,
-  "avg_log_prob": -10.996975446428571,
-  "total_log_prob": -7697.8828125,
-  "mean_sequence_perplexity": 58890.566900502825,
-  "median_sequence_perplexity": 58632.23854118821,
-  "std_sequence_perplexity": 9520.441586966179
+  "perplexity": 59626.39742820981,
+  "num_sequences": 100,
+  "total_tokens": 1204,
+  "avg_log_prob": -10.99585366486711,
+  "total_log_prob": -13239.0078125,
+  "mean_sequence_perplexity": 59334.5864675476,
+  "median_sequence_perplexity": 59327.04098462309,
+  "std_sequence_perplexity": 10493.189330996349
 }
