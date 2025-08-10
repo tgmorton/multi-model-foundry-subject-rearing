@@ -1,0 +1,5 @@
+checkpoint,timestamp,step,metric,value,n_samples,n_tokens,phenomenon,condition
+checkpoint-0,2025-08-10T00:26:58.317908,0,blimp_overall,0.5370149253731343,3350.0,,,
+checkpoint-0,2025-08-10T00:26:58.317908,0,null_subject_overt_pref,0.46794871794871795,156.0,,,
+checkpoint-0,2025-08-10T00:26:58.317908,0,null_subject_surprisal_diff,-0.026785045453484424,156.0,,,
+checkpoint-0,2025-08-10T00:26:58.317908,0,perplexity,59693.32275220021,50.0,700.0,,
