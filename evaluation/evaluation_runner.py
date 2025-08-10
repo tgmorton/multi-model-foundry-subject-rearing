@@ -67,14 +67,16 @@ class EvaluationConfig(BaseModel):
 class EvaluationRunner:
     """Main evaluation pipeline runner."""
     
-    def __init__(self, config: EvaluationConfig):
+    def __init__(self, config: EvaluationConfig, force_rerun: bool = False):
         """
         Initialize the evaluation runner.
         
         Args:
             config: Evaluation configuration
+            force_rerun: If True, re-evaluate checkpoints even if results exist
         """
         self.config = config
+        self.force_rerun = force_rerun
         self.results = {}
         
         # Set up output directory
@@ -221,6 +223,51 @@ class EvaluationRunner:
         
         return summary
     
+    def checkpoint_has_results(self, checkpoint_name: str) -> bool:
+        """
+        Check if a checkpoint already has evaluation results.
+        
+        Args:
+            checkpoint_name: Name of the checkpoint
+            
+        Returns:
+            True if all requested evaluations exist for this checkpoint
+        """
+        existing_files = []
+        missing_files = []
+        
+        # Check for each type of evaluation result
+        if self.config.run_perplexity:
+            perplexity_file = self.output_dir / f"{checkpoint_name}_perplexity.json"
+            if perplexity_file.exists():
+                existing_files.append("perplexity")
+            else:
+                missing_files.append("perplexity")
+        
+        if self.config.run_blimp:
+            blimp_file = self.output_dir / f"{checkpoint_name}_blimp_detailed.jsonl"
+            if blimp_file.exists():
+                existing_files.append("blimp")
+            else:
+                missing_files.append("blimp")
+        
+        if self.config.run_null_subject:
+            null_subject_file = self.output_dir / f"{checkpoint_name}_null_subject_detailed.jsonl"
+            if null_subject_file.exists():
+                existing_files.append("null_subject")
+            else:
+                missing_files.append("null_subject")
+        
+        # All requested evaluations must exist
+        has_all_results = len(missing_files) == 0 and len(existing_files) > 0
+        
+        if has_all_results:
+            logger.info(f"Checkpoint {checkpoint_name} already has results for: {', '.join(existing_files)}")
+        elif existing_files:
+            logger.info(f"Checkpoint {checkpoint_name} has partial results. Existing: {', '.join(existing_files)}, Missing: {', '.join(missing_files)}")
+        
+        return has_all_results
+    
     def evaluate_checkpoint(self, checkpoint_path: str) -> Dict:
         """
         Evaluate a single checkpoint.
@@ -232,6 +279,17 @@ class EvaluationRunner:
             Dictionary with all evaluation results
         """
         checkpoint_name = Path(checkpoint_path).name
+        
+        # Check if checkpoint already has results
+        if not self.force_rerun and self.checkpoint_has_results(checkpoint_name):
+            logger.info(f"Skipping checkpoint {checkpoint_name} - results already exist (use --force-rerun to override)")
+            return {
+                'checkpoint': checkpoint_name,
+                'checkpoint_path': str(checkpoint_path),
+                'skipped': True,
+                'reason': 'Results already exist'
+            }
+        
         logger.info(f"Evaluating checkpoint: {checkpoint_name}")
         
         # Load model and tokenizer
@@ -384,6 +442,7 @@ def main():
     parser = argparse.ArgumentParser(description="Evaluate language models")
     parser.add_argument("--config", required=True, help="Path to configuration file")
     parser.add_argument("--checkpoint", help="Evaluate specific checkpoint only")
+    parser.add_argument("--force-rerun", action="store_true", help="Re-evaluate checkpoints even if results exist")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     
     args = parser.parse_args()
@@ -400,7 +459,7 @@ def main():
         config.max_checkpoints = 1
     
     # Run evaluation
-    runner = EvaluationRunner(config)
+    runner = EvaluationRunner(config, force_rerun=args.force_rerun)
     results = runner.run()
     
     print(f"Evaluation complete. Results saved to {runner.output_dir}")
