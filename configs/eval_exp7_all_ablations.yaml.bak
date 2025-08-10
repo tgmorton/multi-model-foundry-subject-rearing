@@ -14,7 +14,7 @@ evaluation:
   null_subject_dir: "evaluation/stimuli/null-subj/"
   
   # --- Evaluation Settings ---
-  batch_size: 256  # Increased for better GPU utilization
+  batch_size: 64
   device: "auto"
   use_fp16: true
   max_length: 1000
