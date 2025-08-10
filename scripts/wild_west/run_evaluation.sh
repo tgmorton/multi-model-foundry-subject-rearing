@@ -208,7 +208,8 @@ run_evaluation() {
     # Build command
     local cmd_args=("--config" "$config_file")
     
-    if [[ -n "$checkpoint_path" ]]; then
+    # Only pass --checkpoint if it's a specific checkpoint directory (not experiment directory)
+    if [[ -n "$checkpoint_path" ]] && [[ $(basename "$checkpoint_path") =~ ^checkpoint- ]]; then
         cmd_args+=("--checkpoint" "$checkpoint_path")
     fi
     
