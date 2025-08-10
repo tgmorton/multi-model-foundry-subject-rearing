@@ -185,7 +185,12 @@ class EvaluationRunner:
         # Save detailed results if requested
         if self.config.save_detailed:
             output_file = self.output_dir / f"{checkpoint_name}_null_subject_detailed.jsonl"
-            detailed_results.to_json(output_file, orient='records', lines=True)
+            # Convert any non-JSON-serializable values in detailed results
+            detailed_clean = detailed_results.copy()
+            for col in detailed_clean.columns:
+                if detailed_clean[col].dtype == 'object':
+                    detailed_clean[col] = detailed_clean[col].apply(lambda x: str(x) if isinstance(x, tuple) else x)
+            detailed_clean.to_json(output_file, orient='records', lines=True)
         
         # Get summary statistics
         summary = evaluator.get_summary_statistics(detailed_results)
