@@ -496,11 +496,16 @@ main() {
         exit 1
     fi
     
+    # Create temporary config in project directory (accessible to container)
+    local temp_config="$PROJECT_DIR/.tmp_eval_config_${experiment}_$$.yaml"
+    
     # Global cleanup function
     cleanup_main() {
         if [[ "$lock_gpus_flag" == "true" ]] || [[ "$unlock_gpus_flag" == "true" ]]; then
             unlock_gpus "$gpu_ids"
         fi
+        # Clean up temp config if it exists
+        rm -f "$temp_config" 2>/dev/null || true
     }
     
     # Lock GPUs if requested
@@ -512,8 +517,7 @@ main() {
         trap cleanup_main INT TERM EXIT
     fi
     
-    # Create temporary config
-    local temp_config="/tmp/eval_config_${experiment}_$$.yaml"
+    # Create the evaluation config
     create_eval_config "$experiment" "$config" "$temp_config" "$checkpoint_path" "$tasks" "$max_samples" "$max_checkpoints" "$output_dir"
     
     # Run evaluation
@@ -530,7 +534,7 @@ main() {
         exit 1
     fi
     
-    # Cleanup
+    # Cleanup temporary files
     rm -f "$temp_config"
     
     # Unlock GPUs if requested
