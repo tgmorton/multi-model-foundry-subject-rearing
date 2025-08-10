@@ -512,17 +512,26 @@ main() {
         log INFO "Fast mode enabled: max_samples=$max_samples, max_checkpoints=$max_checkpoints"
     fi
     
-    # Set checkpoint path if not provided
-    if [[ -z "$checkpoint_path" ]]; then
-        checkpoint_path="models/$experiment/"
-    fi
-    
-    # Validate paths
+    # Validate config file exists first
     if [[ ! -f "$config" ]]; then
         log ERROR "Config file not found: $config"
         exit 1
     fi
     
+    # Set checkpoint path if not provided - read from config file
+    if [[ -z "$checkpoint_path" ]]; then
+        checkpoint_path=$(python3 -c "
+import yaml
+with open('$config', 'r') as f:
+    config = yaml.safe_load(f)
+if 'evaluation' in config:
+    print(config['evaluation']['model_checkpoint_dir'])
+else:
+    print(config['model_checkpoint_dir'])
+" 2>/dev/null || echo "models/$experiment/")
+    fi
+    
+    # Validate checkpoint path
     if [[ ! -d "$checkpoint_path" ]]; then
         log ERROR "Checkpoint directory not found: $checkpoint_path"
         exit 1
