@@ -162,9 +162,9 @@ if 'evaluation' not in config:
 
 eval_config = config['evaluation']
 
-# Update paths
+# Update paths  
 eval_config['model_checkpoint_dir'] = "$checkpoint_path"
-eval_config['tokenizer_path'] = "tokenizers/$experiment/"
+# Keep original tokenizer_path from config file (don't override it)
 
 if "$output_dir":
     eval_config['output_dir'] = "$output_dir"
