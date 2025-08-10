@@ -36,7 +36,7 @@ evaluation:
   
   # --- Analysis Options ---
   # Set to false to skip specific evaluations
-  run_perplexity: true
+  run_perplexity: false
   run_blimp: true
   run_null_subject: true
   

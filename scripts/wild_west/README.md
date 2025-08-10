@@ -263,6 +263,122 @@ You can modify the default values in the script files:
 - `DEFAULT_PHASE` in `run_experiment.sh`
 - `MASTER_PORT` in `run_distributed.sh`
 
+## Evaluation Pipeline
+
+### Running Model Evaluation
+
+The evaluation pipeline now supports **parallel processing** across multiple GPUs for faster evaluation, especially for BLIMP tasks.
+
+#### Basic Evaluation Commands
+```bash
+# Evaluate a single experiment (runs in parallel by default)
+# Automatically skips checkpoints that already have complete results
+./scripts/wild_west/run_evaluation.sh experiment_0_baseline
+
+# Force re-evaluation of all checkpoints (even if results exist)
+./scripts/wild_west/run_evaluation.sh -r experiment_0_baseline
+
+# Evaluate multiple experiments
+./scripts/wild_west/run_evaluation.sh experiment_1_remove_expletives
+./scripts/wild_west/run_evaluation.sh experiment_2_baseline
+
+# Quick test evaluation (limited samples)
+./scripts/wild_west/quick_eval.sh experiment_0_baseline
+```
+
+#### Checkpoint Skipping Behavior
+
+**By default**, the evaluation pipeline will:
+- Check if results already exist for each checkpoint before evaluating
+- Skip checkpoints that have complete results for all requested tasks (BLIMP, null-subject)
+- Only evaluate checkpoints that are missing results
+
+**To force re-evaluation**, use the `-r` or `--force-rerun` flag:
+```bash
+# Force re-evaluation of all checkpoints
+./scripts/wild_west/run_evaluation.sh -r experiment_0_baseline
+
+# Or with Python directly
+python -m evaluation.parallel_evaluation_runner \
+    --config configs/eval_exp0_baseline.yaml \
+    --force-rerun
+```
+
+This is useful when:
+- You want to re-run evaluation with updated code
+- You need to regenerate results after fixing issues
+- You want to benchmark performance changes
+
+#### Parallel Evaluation Configuration
+
+The evaluation now runs in parallel using multiple workers across GPUs. Default configuration:
+- **4 workers** distributed across **2 GPUs** (GPUs 0 and 1)
+- Workers are assigned to GPUs in round-robin fashion
+- Each worker processes a batch of BLIMP files independently
+
+#### Customizing Parallel Evaluation
+
+To run with different parallel configurations, modify the command in `run_evaluation.sh`:
+
+```bash
+# Run 4 workers on a single GPU (GPU 0)
+python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers 4 --gpu-ids 0
+
+# Run 8 workers across 2 GPUs
+python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers 8 --gpu-ids 0 1
+
+# Run 2 workers per GPU on 4 GPUs
+python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers 8 --gpu-ids 0 1 2 3
+```
+
+#### Direct Python Command
+
+You can also run evaluation directly without the shell script:
+
+```bash
+# Basic evaluation with defaults
+python -m evaluation.parallel_evaluation_runner --config configs/eval_exp0_baseline.yaml
+
+# Custom parallel configuration
+python -m evaluation.parallel_evaluation_runner \
+    --config configs/eval_exp0_baseline.yaml \
+    --parallel-workers 4 \
+    --gpu-ids 0
+
+# Evaluate specific checkpoint only
+python -m evaluation.parallel_evaluation_runner \
+    --config configs/eval_exp0_baseline.yaml \
+    --checkpoint models/exp0_baseline/checkpoint-27 \
+    --parallel-workers 4 \
+    --gpu-ids 0 1
+```
+
+### Evaluation Components
+
+The evaluation pipeline evaluates:
+1. **BLIMP** - 67 linguistic minimal pair tasks (runs in parallel)
+2. **Null Subject** - Custom null-subject stimuli
+3. **Perplexity** - Currently disabled in configs to save time
+
+### Performance Notes
+
+- **Serial evaluation**: ~12-13 seconds per BLIMP file = ~14 minutes for 67 files
+- **Parallel evaluation (4 workers)**: ~3-4 minutes for all 67 files
+- **No timeout**: The evaluation runs until completion (timeout has been removed)
+
+### GPU Memory Considerations
+
+When running multiple workers on a single GPU:
+- Each worker loads the model independently
+- With 48GB A6000 GPUs, you can typically run 4-6 workers per GPU
+- Monitor GPU memory with `nvidia-smi` or `./scripts/wild_west/gpu_monitor.sh`
+
+### Troubleshooting Evaluation
+
+1. **Out of Memory**: Reduce `--parallel-workers` or spread across more GPUs
+2. **Slow evaluation**: Increase `--parallel-workers` if GPU memory allows
+3. **Process killed**: Check system logs, likely OOM killer (reduce workers)
+
 ## Integration with Existing Workflow
 
 ### From SLURM Scripts

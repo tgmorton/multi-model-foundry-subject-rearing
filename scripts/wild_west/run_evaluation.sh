@@ -48,21 +48,33 @@ Options:
   -s, --samples <num>        Max samples per task (for testing)
   -m, --max-checkpoints <n>  Max checkpoints to evaluate
   -o, --output <dir>         Output directory override
+  -w, --workers <num>        Number of parallel workers (default: 4)
+  -i, --gpu-ids <ids>        GPU IDs for parallel eval (default: 0,1)
   -l, --lock-gpus            Lock GPUs before running
   -u, --unlock-gpus          Unlock GPUs after running
   -f, --fast                 Fast evaluation (reduced samples)
+  -r, --force-rerun          Re-evaluate checkpoints even if results exist
   -v, --verbose              Verbose output
   -h, --help                 Show this help
 
 Examples:
-  # Evaluate exp0_baseline experiment
+  # Evaluate exp0_baseline experiment (default: 4 workers on GPUs 0,1)
   $0 exp0_baseline
+
+  # Run with 4 workers on single GPU
+  $0 -w 4 -i 0 exp0_baseline
+
+  # Run with 8 workers across GPUs 0 and 1
+  $0 -w 8 -i 0,1 exp0_baseline
 
   # Evaluate with specific config
   $0 -c configs/eval_exp1.yaml exp1_remove_expletives
 
   # Fast evaluation for testing
   $0 -f -s 100 -m 3 exp0_baseline
+
+  # Force re-evaluation of existing checkpoints
+  $0 -r exp0_baseline
 
   # Evaluate specific checkpoint
   $0 -k models/exp0_baseline/epoch_10/ exp0_baseline
@@ -202,6 +214,9 @@ run_evaluation() {
     local gpu_ids="$2"
     local checkpoint_path="$3"
     local verbose="$4"
+    local force_rerun="$5"
+    local parallel_workers="$6"
+    local parallel_gpu_ids="$7"
     
     log INFO "Starting evaluation with config: $config_file"
     
@@ -215,6 +230,10 @@ run_evaluation() {
     
     if [[ "$verbose" == "true" ]]; then
         cmd_args+=("--debug")
+    fi
+    
+    if [[ "$force_rerun" == "true" ]]; then
+        cmd_args+=("--force-rerun")
     fi
     
     # Environment variables for containers
@@ -269,14 +288,13 @@ run_evaluation() {
             fi
         done
         
-        # Launch in own session with timeout protection
+        # Launch in own session
         set +e
-        timeout --preserve-status --signal=TERM --kill-after=30s 2h \
-            setsid "$runtime" exec --nv --pid --contain --cleanenv \
+        setsid "$runtime" exec --nv --pid --contain --cleanenv \
             "${env_flags[@]}" \
             --bind "$PROJECT_DIR":/workspace \
             "$PROJECT_DIR/singularity/training.sif" \
-            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.evaluation_runner ${container_cmd_args[*]}" &
+            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.parallel_evaluation_runner ${container_cmd_args[*]} --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids" &
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
@@ -300,10 +318,9 @@ run_evaluation() {
         export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
         export MKL_NUM_THREADS="${MKL_NUM_THREADS:-4}"
         
-        # Launch with timeout protection
+        # Launch evaluation
         set +e
-        timeout --preserve-status --signal=TERM --kill-after=30s 2h \
-            setsid python -m evaluation.evaluation_runner "${cmd_args[@]}" &
+        setsid python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids &
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
@@ -385,9 +402,12 @@ main() {
     local max_samples=""
     local max_checkpoints=""
     local output_dir=""
+    local parallel_workers="4"
+    local parallel_gpu_ids="0,1"
     local lock_gpus_flag=false
     local unlock_gpus_flag=false
     local fast_mode=false
+    local force_rerun=false
     local verbose=false
     
     # Global cleanup function
@@ -434,6 +454,14 @@ main() {
                 output_dir="$2"
                 shift 2
                 ;;
+            -w|--workers)
+                parallel_workers="$2"
+                shift 2
+                ;;
+            -i|--gpu-ids)
+                parallel_gpu_ids="$2"
+                shift 2
+                ;;
             -l|--lock-gpus)
                 lock_gpus_flag=true
                 shift
@@ -444,6 +472,10 @@ main() {
                 ;;
             -f|--fast)
                 fast_mode=true
+                shift
+                ;;
+            -r|--force-rerun)
+                force_rerun=true
                 shift
                 ;;
             -v|--verbose)
@@ -564,7 +596,7 @@ else:
     create_eval_config "$experiment" "$config" "$temp_config" "$checkpoint_path" "$tasks" "$max_samples" "$max_checkpoints" "$output_dir"
     
     # Run evaluation
-    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose"; then
+    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose" "$force_rerun" "$parallel_workers" "$parallel_gpu_ids"; then
         log SUCCESS "Evaluation completed successfully"
         
         # Export results

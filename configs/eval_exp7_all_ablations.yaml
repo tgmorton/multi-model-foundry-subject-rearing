@@ -20,7 +20,7 @@ evaluation:
   max_length: 1000
   
   # --- Analysis Options ---
-  run_perplexity: true
+  run_perplexity: false
   run_blimp: true  # All grammatical phenomena affected
   run_null_subject: true  # Critical comparison point
   

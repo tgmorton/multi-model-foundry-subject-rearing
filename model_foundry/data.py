@@ -357,9 +357,9 @@ class DataProcessor:
             raise RuntimeError("Chunked dataset not found. Run preprocessing first.")
         
         num_chunks = len(dataset)
-        # Calculate effective batch size including gradient accumulation
-        effective_batch_size = self.config.data.batch_size * self.config.training.gradient_accumulation_steps
-        steps_per_epoch = math.ceil(num_chunks / effective_batch_size)
+        # Steps per epoch is the number of batches in the dataloader
+        # This does NOT include gradient accumulation - that's handled separately
+        steps_per_epoch = math.ceil(num_chunks / self.config.data.batch_size)
         
         return steps_per_epoch
     
