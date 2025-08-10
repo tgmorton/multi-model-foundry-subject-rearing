@@ -231,14 +231,29 @@ main() {
 
   # Paths
   HOST_ABLATION_SIF_PATH="$PROJECT_DIR/singularity/ablation.sif"
-  # Toggle training image via env var USE_FLASH_ATTN=1
-  if [[ "${USE_FLASH_ATTN:-0}" == "1" ]]; then
+  HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
+  
+  # Check config for flash attention setting
+  local use_flash_attention=""
+  if [[ -f "$HOST_CONFIG_FILE" ]]; then
+    use_flash_attention=$(python3 -c "
+import yaml
+try:
+    with open('$HOST_CONFIG_FILE', 'r') as f:
+        config = yaml.safe_load(f)
+    print(config.get('training', {}).get('use_flash_attention', False))
+except:
+    print(False)
+" 2>/dev/null)
+  fi
+  
+  # Toggle training image based on config or env var (env var takes precedence)
+  if [[ "${USE_FLASH_ATTN:-0}" == "1" ]] || [[ "$use_flash_attention" == "True" ]]; then
     HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training_with_flash_attention.sif"
     log INFO "Using flash-attention training image: $HOST_TRAINING_SIF_PATH"
   else
     HOST_TRAINING_SIF_PATH="$PROJECT_DIR/singularity/training.sif"
   fi
-  HOST_CONFIG_FILE="$PROJECT_DIR/configs/${CONFIG_NAME}.yaml"
   CONTAINER_CONFIG_FILE="configs/${CONFIG_NAME}.yaml"
 
   [[ -f "$HOST_CONFIG_FILE" ]] || { log ERROR "Config file not found: $HOST_CONFIG_FILE"; exit 1; }

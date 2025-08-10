@@ -69,6 +69,9 @@ training:
   use_tf32: true
   use_gradient_checkpointing: true
   
+  # Flash Attention optimization
+  use_flash_attention: true
+  
   # Checkpoint generation parameters
   auto_generate_checkpoints: true
   first_epoch_checkpoints: 20

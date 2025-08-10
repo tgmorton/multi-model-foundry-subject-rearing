@@ -62,7 +62,10 @@ training:
   
   # Memory optimizations
   use_tf32: true
-  use_gradient_checkpointing: true  # Re-enabled to save memory
+  use_gradient_checkpointing: true
+  
+  # Flash Attention optimization
+  use_flash_attention: true  # Re-enabled to save memory
   
   # Compilation mode for torch.compile
   # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
