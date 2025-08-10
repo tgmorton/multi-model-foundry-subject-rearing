@@ -570,19 +570,12 @@ class Trainer:
             print("[DEBUG] Attempting to create model with Flash Attention 2...")
             self.model = create_model(
                 self.config,
-                attn_implementation="flash_attention_2",
-                torch_dtype=torch.float16  # Flash Attention requires float16 or bfloat16
+                attn_implementation="flash_attention_2"
+                # Keep model in float32, use AMP for mixed precision
             )
             print("[DEBUG] Model created, moving to device...")
             self.model = self.model.to(self.device)
-            print("  - Successfully initialized model with Flash Attention 2")
-            
-            # Disable AMP when using Flash Attention with FP16 model
-            # as the model is already in FP16 and doesn't need mixed precision
-            if self.amp_enabled:
-                print("  - Disabling AMP scaler for Flash Attention FP16 model")
-                self.amp_enabled = False
-                self.scaler = None
+            print("  - Successfully initialized model with Flash Attention 2 (using AMP for mixed precision)")
                 
         except (ImportError, ValueError) as e:
             # Fall back to standard attention if Flash Attention is not available
