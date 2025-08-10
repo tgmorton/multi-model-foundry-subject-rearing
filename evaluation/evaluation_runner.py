@@ -197,10 +197,10 @@ class EvaluationRunner:
         surprisal_calc = NullSubjectSurprisalCalculator(model, tokenizer, self.model_loader.device)
         evaluator = NullSubjectEvaluator(surprisal_calc)
         
-        # Run evaluation
+        # Run evaluation - always use all samples for null-subject
         detailed_results = evaluator.evaluate_all(
             stimuli_dir=self.config.null_subject_dir,
-            max_items_per_file=self.config.max_samples
+            max_items_per_file=None  # Always use all samples
         )
         
         # Save detailed results if requested
@@ -222,6 +222,131 @@ class EvaluationRunner:
             summary['linguistic_analysis'] = linguistic_analysis
         
         return summary
+    
+    def save_task_summaries(self, all_results: list):
+        """
+        Save individual task summaries with detailed statistics.
+        
+        Args:
+            all_results: List of per-checkpoint results
+        """
+        import numpy as np
+        
+        # Filter out skipped results
+        valid_results = [r for r in all_results if 'skipped' not in r]
+        
+        if not valid_results:
+            logger.warning("No valid results to summarize")
+            return
+        
+        # Perplexity summary
+        if self.config.run_perplexity:
+            perplexities = []
+            checkpoint_names = []
+            for result in valid_results:
+                if 'perplexity' in result and result['perplexity'].get('perplexity'):
+                    perplexities.append(result['perplexity']['perplexity'])
+                    checkpoint_names.append(result['checkpoint'])
+            
+            if perplexities:
+                perp_array = np.array(perplexities)
+                perp_summary = {
+                    'task': 'perplexity',
+                    'n_checkpoints': len(perplexities),
+                    'checkpoints': checkpoint_names,
+                    'values': perplexities,
+                    'statistics': {
+                        'mean': float(np.mean(perp_array)),
+                        'std': float(np.std(perp_array, ddof=1)) if len(perp_array) > 1 else 0.0,
+                        'se': float(np.std(perp_array, ddof=1) / np.sqrt(len(perp_array))) if len(perp_array) > 1 else 0.0,
+                        'min': float(np.min(perp_array)),
+                        'max': float(np.max(perp_array)),
+                        'median': float(np.median(perp_array)),
+                        'initial': perplexities[0] if perplexities else None,
+                        'final': perplexities[-1] if perplexities else None
+                    }
+                }
+                
+                # Save perplexity summary
+                perp_file = self.output_dir / "perplexity_summary.json"
+                with open(perp_file, 'w') as f:
+                    json.dump(perp_summary, f, indent=2)
+                logger.info(f"Saved perplexity summary to {perp_file}")
+        
+        # BLIMP summary
+        if self.config.run_blimp:
+            accuracies = []
+            checkpoint_names = []
+            for result in valid_results:
+                if 'blimp' in result and result['blimp'].get('overall_accuracy'):
+                    accuracies.append(result['blimp']['overall_accuracy'])
+                    checkpoint_names.append(result['checkpoint'])
+            
+            if accuracies:
+                acc_array = np.array(accuracies)
+                blimp_summary = {
+                    'task': 'blimp',
+                    'n_checkpoints': len(accuracies),
+                    'checkpoints': checkpoint_names,
+                    'values': accuracies,
+                    'statistics': {
+                        'mean': float(np.mean(acc_array)),
+                        'std': float(np.std(acc_array, ddof=1)) if len(acc_array) > 1 else 0.0,
+                        'se': float(np.std(acc_array, ddof=1) / np.sqrt(len(acc_array))) if len(acc_array) > 1 else 0.0,
+                        'min': float(np.min(acc_array)),
+                        'max': float(np.max(acc_array)),
+                        'median': float(np.median(acc_array)),
+                        'initial': accuracies[0] if accuracies else None,
+                        'final': accuracies[-1] if accuracies else None
+                    }
+                }
+                
+                # Save BLIMP summary
+                blimp_file = self.output_dir / "blimp_summary.json"
+                with open(blimp_file, 'w') as f:
+                    json.dump(blimp_summary, f, indent=2)
+                logger.info(f"Saved BLIMP summary to {blimp_file}")
+        
+        # Null-subject summary
+        if self.config.run_null_subject:
+            # Extract null-subject accuracies (could be overall or specific metrics)
+            null_subj_data = []
+            checkpoint_names = []
+            for result in valid_results:
+                if 'null_subject' in result:
+                    # Try to get overall accuracy or a representative metric
+                    ns_result = result['null_subject']
+                    if 'overall_accuracy' in ns_result:
+                        null_subj_data.append(ns_result['overall_accuracy'])
+                        checkpoint_names.append(result['checkpoint'])
+                    elif 'accuracy' in ns_result:
+                        null_subj_data.append(ns_result['accuracy'])
+                        checkpoint_names.append(result['checkpoint'])
+            
+            if null_subj_data:
+                ns_array = np.array(null_subj_data)
+                ns_summary = {
+                    'task': 'null_subject',
+                    'n_checkpoints': len(null_subj_data),
+                    'checkpoints': checkpoint_names,
+                    'values': null_subj_data,
+                    'statistics': {
+                        'mean': float(np.mean(ns_array)),
+                        'std': float(np.std(ns_array, ddof=1)) if len(ns_array) > 1 else 0.0,
+                        'se': float(np.std(ns_array, ddof=1) / np.sqrt(len(ns_array))) if len(ns_array) > 1 else 0.0,
+                        'min': float(np.min(ns_array)),
+                        'max': float(np.max(ns_array)),
+                        'median': float(np.median(ns_array)),
+                        'initial': null_subj_data[0] if null_subj_data else None,
+                        'final': null_subj_data[-1] if null_subj_data else None
+                    }
+                }
+                
+                # Save null-subject summary
+                ns_file = self.output_dir / "null_subject_summary.json"
+                with open(ns_file, 'w') as f:
+                    json.dump(ns_summary, f, indent=2)
+                logger.info(f"Saved null-subject summary to {ns_file}")
     
     def checkpoint_has_results(self, checkpoint_name: str) -> bool:
         """
@@ -360,6 +485,19 @@ class EvaluationRunner:
                 safe_result = self._make_json_serializable(result)
                 json.dump(safe_result, f)
                 f.write('\n')
+        
+        # Generate and save individual task summaries
+        self.save_task_summaries(all_results)
+        
+        # Generate comprehensive summaries
+        from .summary_generator import SummaryGenerator
+        from .item_level_aggregator import ItemLevelAggregator
+        
+        experiment_name = self.output_dir.name
+        SummaryGenerator.save_comprehensive_summaries(self.output_dir, experiment_name)
+        
+        # Generate item-level datasets for mixed effects models
+        ItemLevelAggregator.create_mixed_effects_datasets(self.output_dir)
         
         logger.info(f"Evaluation complete. Results saved to {output_file}")
         
