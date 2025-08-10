@@ -190,7 +190,7 @@ run_in_container() {
     "$sif" bash -lc "
       $setup_commands
       # Avoid doing downloads on every run; ensure base image has these
-      # python -m spacy download en_core_web_sm --quiet || true
+      python -m spacy download en_core_web_sm --quiet || true
       exec $run_cmd
     " &
 
