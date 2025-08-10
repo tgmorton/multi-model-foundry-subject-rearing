@@ -115,7 +115,8 @@ class NullSubjectEvaluator:
         
         if max_items:
             groups = list(groups)[:max_items]
-            groups = dict(groups)
+        else:
+            groups = list(groups)
         
         # Process each item group
         results = []

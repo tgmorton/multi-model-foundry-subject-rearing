@@ -14,7 +14,7 @@ import torch
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from .model_loader import ModelLoader
+from .model_loader import ModelLoader, clear_gpu_cache
 from .surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
 from .blimp_evaluator import BLIMPEvaluator
 from .null_subject_evaluator import NullSubjectEvaluator
@@ -240,7 +240,7 @@ class EvaluationRunner:
             if hasattr(model, 'cpu'):
                 model.cpu()
             del model, tokenizer
-            self.model_loader.clear_gpu_cache()
+            clear_gpu_cache()
         
         return results
     
