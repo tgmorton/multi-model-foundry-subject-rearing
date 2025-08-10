@@ -263,7 +263,7 @@ run_evaluation() {
             "${env_flags[@]}" \
             --bind "$PROJECT_DIR":/workspace \
             "$PROJECT_DIR/singularity/training.sif" \
-            bash -lc "set -euo pipefail; cd /workspace; exec python evaluation/evaluation_runner.py ${cmd_args[*]}" &
+            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.evaluation_runner ${cmd_args[*]}" &
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
@@ -290,7 +290,7 @@ run_evaluation() {
         # Launch with timeout protection
         set +e
         timeout --preserve-status --signal=TERM --kill-after=30s 2h \
-            setsid python evaluation/evaluation_runner.py "${cmd_args[@]}" &
+            setsid python -m evaluation.evaluation_runner "${cmd_args[@]}" &
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
