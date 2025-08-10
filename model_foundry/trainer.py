@@ -570,8 +570,8 @@ class Trainer:
             print("[DEBUG] Attempting to create model with Flash Attention 2...")
             self.model = create_model(
                 self.config,
-                attn_implementation="flash_attention_2"
-                # Don't specify torch_dtype - let it default to float32
+                attn_implementation="flash_attention_2",
+                torch_dtype=torch.float16  # Flash Attention requires float16 or bfloat16
             )
             print("[DEBUG] Model created, moving to device...")
             self.model = self.model.to(self.device)
