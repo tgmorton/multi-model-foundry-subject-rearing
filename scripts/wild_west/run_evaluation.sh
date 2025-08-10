@@ -256,6 +256,18 @@ run_evaluation() {
             runtime="apptainer"
         fi
         
+        # Convert absolute paths to container paths for command args
+        local container_cmd_args=()
+        for arg in "${cmd_args[@]}"; do
+            if [[ "$arg" == "$PROJECT_DIR"* ]]; then
+                # Replace project dir path with /workspace
+                container_arg="/workspace${arg#$PROJECT_DIR}"
+                container_cmd_args+=("$container_arg")
+            else
+                container_cmd_args+=("$arg")
+            fi
+        done
+        
         # Launch in own session with timeout protection
         set +e
         timeout --preserve-status --signal=TERM --kill-after=30s 2h \
@@ -263,7 +275,7 @@ run_evaluation() {
             "${env_flags[@]}" \
             --bind "$PROJECT_DIR":/workspace \
             "$PROJECT_DIR/singularity/training.sif" \
-            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.evaluation_runner ${cmd_args[*]}" &
+            bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.evaluation_runner ${container_cmd_args[*]}" &
         
         CHILD_PID=$!
         CHILD_PGID=$(ps -o pgid= "$CHILD_PID" 2>/dev/null | tr -d ' ' || echo "")
