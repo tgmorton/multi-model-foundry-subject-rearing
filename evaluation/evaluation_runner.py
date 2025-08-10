@@ -279,12 +279,33 @@ class EvaluationRunner:
         output_file = self.output_dir / "evaluation_results.jsonl"
         with open(output_file, 'w') as f:
             for result in all_results:
-                json.dump(result, f)
+                # Ensure JSON serializable
+                safe_result = self._make_json_serializable(result)
+                json.dump(safe_result, f)
                 f.write('\n')
         
         logger.info(f"Evaluation complete. Results saved to {output_file}")
         
         return {'results': all_results, 'summary': self.generate_summary(all_results)}
+    
+    def _make_json_serializable(self, obj):
+        """
+        Recursively convert any tuple keys or non-serializable values to JSON-safe format.
+        """
+        if isinstance(obj, dict):
+            return {
+                str(key) if isinstance(key, tuple) else key: 
+                self._make_json_serializable(value) 
+                for key, value in obj.items()
+            }
+        elif isinstance(obj, list):
+            return [self._make_json_serializable(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return str(obj)  # Convert tuples to strings
+        elif hasattr(obj, '__dict__'):
+            return str(obj)  # Convert complex objects to strings
+        else:
+            return obj
     
     def generate_summary(self, all_results: list) -> Dict:
         """
