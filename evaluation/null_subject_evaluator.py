@@ -37,8 +37,14 @@ class NullSubjectEvaluator:
         """
         df = pd.read_csv(filepath)
         
-        # Validate required columns
-        required_cols = ['item', 'item_group', 'pronoun_status', 'c_english', 'target', 'hotspot_english']
+        # Check if this is the master file with extended columns
+        if 'form' in df.columns:
+            # Master file format - validate required columns
+            required_cols = ['item', 'item_group', 'form', 'pronoun_status', 'c_english', 'target', 'hotspot_english']
+        else:
+            # Individual file format - validate required columns  
+            required_cols = ['item', 'item_group', 'pronoun_status', 'c_english', 'target', 'hotspot_english']
+            
         missing_cols = [col for col in required_cols if col not in df.columns]
         if missing_cols:
             raise ValueError(f"Missing required columns: {missing_cols}")
@@ -85,6 +91,11 @@ class NullSubjectEvaluator:
         # Add metadata
         result['item'] = int(overt_row['item'])
         result['item_group'] = overt_row['item_group']
+        
+        # Add form information if available (master file)
+        if 'form' in overt_row:
+            result['form'] = overt_row['form']
+            
         result['context'] = context
         result['overt_target'] = overt_target
         result['null_target'] = null_target
@@ -110,8 +121,13 @@ class NullSubjectEvaluator:
         # Load stimuli
         df = self.load_stimuli_file(filepath)
         
-        # Group by item to get pairs
-        groups = df.groupby('item')
+        # Group by appropriate columns depending on file format
+        if 'form' in df.columns:
+            # Master file: group by item, item_group, and form to get pairs within each form
+            groups = df.groupby(['item', 'item_group', 'form'])
+        else:
+            # Individual file: group by item only
+            groups = df.groupby('item')
         
         if max_items:
             groups = list(groups)[:max_items]
@@ -120,7 +136,7 @@ class NullSubjectEvaluator:
         
         # Process each item group
         results = []
-        for item_num, group_df in tqdm(groups, desc=f"Evaluating {Path(filepath).stem}"):
+        for group_key, group_df in tqdm(groups, desc=f"Evaluating {Path(filepath).stem}"):
             result = self.process_item_group(group_df)
             if result:  # Only add non-empty results
                 results.append(result)
@@ -164,19 +180,26 @@ class NullSubjectEvaluator:
         if not stimuli_dir.exists():
             raise FileNotFoundError(f"Stimuli directory not found: {stimuli_dir}")
         
-        # Find all CSV files
-        csv_files = sorted(stimuli_dir.glob("*.csv"))
+        # Look for master file first, then fall back to individual files
+        master_file = stimuli_dir / "master_stimuli_transformed.csv"
         
-        if not csv_files:
-            raise FileNotFoundError(f"No CSV files found in {stimuli_dir}")
-        
-        # Filter out master file if present
-        csv_files = [f for f in csv_files if 'master' not in f.name.lower()]
-        
-        if max_files:
-            csv_files = csv_files[:max_files]
-        
-        logger.info(f"Found {len(csv_files)} null-subject files to evaluate")
+        if master_file.exists():
+            csv_files = [master_file]
+            logger.info("Using master stimuli file: master_stimuli_transformed.csv")
+        else:
+            # Find all individual CSV files
+            csv_files = sorted(stimuli_dir.glob("*.csv"))
+            
+            if not csv_files:
+                raise FileNotFoundError(f"No CSV files found in {stimuli_dir}")
+            
+            # Filter out master file if present
+            csv_files = [f for f in csv_files if 'master' not in f.name.lower()]
+            
+            if max_files:
+                csv_files = csv_files[:max_files]
+            
+            logger.info(f"Found {len(csv_files)} individual null-subject files to evaluate")
         
         # Evaluate each file
         all_results = []
@@ -242,8 +265,28 @@ class NullSubjectEvaluator:
             }).to_dict('index')
             
             summary['by_condition'] = condition_stats
+            
+        # Per-form statistics (if using master file)
+        if 'form' in results_df.columns:
+            form_stats = results_df.groupby('form').agg({
+                'prefers_overt': 'mean',
+                'surprisal_difference': 'mean',
+                'overt_mean_surprisal': 'mean', 
+                'null_mean_surprisal': 'mean'
+            }).to_dict('index')
+            
+            summary['by_form'] = form_stats
+            
+            # Combined item_group and form statistics
+            if 'item_group' in results_df.columns:
+                combo_stats = results_df.groupby(['item_group', 'form']).agg({
+                    'prefers_overt': 'mean',
+                    'surprisal_difference': 'mean'
+                }).to_dict('index')
+                
+                summary['by_condition_and_form'] = combo_stats
         
-        # Per-file statistics
+        # Per-file statistics (for individual files)
         if 'filename' in results_df.columns:
             file_stats = results_df.groupby('filename').agg({
                 'prefers_overt': 'mean',
