@@ -308,7 +308,25 @@ class NullSubjectEvaluator:
                 'n_hotspot_pairs': len(hotspot_results)
             }
         
+        # Ensure JSON serializable by converting any remaining tuple keys
+        summary = self._make_json_serializable(summary)
+        
         return summary
+    
+    def _make_json_serializable(self, obj):
+        """
+        Recursively convert any tuple keys to strings for JSON serialization.
+        """
+        if isinstance(obj, dict):
+            return {
+                str(key) if isinstance(key, tuple) else key: 
+                self._make_json_serializable(value) 
+                for key, value in obj.items()
+            }
+        elif isinstance(obj, list):
+            return [self._make_json_serializable(item) for item in obj]
+        else:
+            return obj
     
     def analyze_by_person_number(self, results_df: pd.DataFrame) -> Dict:
         """
