@@ -829,8 +829,8 @@ class Trainer:
                     # Calculate and log metrics
                     current_lr = self.lr_scheduler.get_last_lr()[0]
                     avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
-                    # Current epoch is the actual epoch we're in (0-based converted to 1-based for display)
-                    current_epoch = epoch + 1
+                    # Calculate current epoch based on step progress
+                    current_epoch = min(self.config.training.epochs, (self.global_step // steps_per_epoch) + 1)
                     
                     # Calculate ETA
                     steps_remaining = self.config.training.train_steps - self.global_step
