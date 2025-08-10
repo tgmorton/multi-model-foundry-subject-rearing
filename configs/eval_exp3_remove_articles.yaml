@@ -5,8 +5,8 @@
 
 evaluation:
   # --- Model Configuration ---
-  model_checkpoint_dir: "models/exp3_remove_articles/"
-  tokenizer_path: "tokenizers/exp3_remove_articles/"
+  model_checkpoint_dir: "models/exp3_no_expletives_no_articles/"
+  tokenizer_path: "tokenizers/exp3_no_expletives_no_articles/"
   
   # --- Test Datasets ---
   test_corpus: "data/raw/test_10M/"

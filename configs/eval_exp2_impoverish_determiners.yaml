@@ -5,8 +5,8 @@
 
 evaluation:
   # --- Model Configuration ---
-  model_checkpoint_dir: "models/exp2_impoverish_determiners/"
-  tokenizer_path: "tokenizers/exp2_impoverish_determiners/"
+  model_checkpoint_dir: "models/exp2_no_expletives_poor_determiners/"
+  tokenizer_path: "tokenizers/exp2_no_expletives_poor_determiners/"
   
   # --- Test Datasets ---
   test_corpus: "data/raw/test_10M/"

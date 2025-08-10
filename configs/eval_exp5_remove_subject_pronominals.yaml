@@ -5,8 +5,8 @@
 
 evaluation:
   # --- Model Configuration ---
-  model_checkpoint_dir: "models/exp5_remove_subject_pronominals/"
-  tokenizer_path: "tokenizers/exp5_remove_subject_pronominals/"
+  model_checkpoint_dir: "models/exp5_no_expletives_remove_subject_pronominals/"
+  tokenizer_path: "tokenizers/exp5_no_expletives_remove_subject_pronominals/"
   
   # --- Test Datasets ---
   test_corpus: "data/raw/test_10M/"

@@ -5,8 +5,8 @@
 
 evaluation:
   # --- Model Configuration ---
-  model_checkpoint_dir: "models/exp4_lemmatize_verbs/"
-  tokenizer_path: "tokenizers/exp4_lemmatize_verbs/"
+  model_checkpoint_dir: "models/exp4_no_expletives_lemmatize_verbs/"
+  tokenizer_path: "tokenizers/exp4_no_expletives_lemmatize_verbs/"
   
   # --- Test Datasets ---
   test_corpus: "data/raw/test_10M/"
