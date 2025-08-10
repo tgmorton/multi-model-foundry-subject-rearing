@@ -72,19 +72,15 @@ Examples:
 EOF
 }
 
-# GPU management functions
+# GPU management functions - simplified without gpu_monitor
 GPU_MONITORING=true
-source "$SCRIPT_DIR/gpu_monitor.sh" 2>/dev/null || {
-    log WARN "Cannot source gpu_monitor.sh - GPU management disabled"
-    GPU_MONITORING=false
-}
 
-# Check GPU availability
+# Check GPU availability using nvidia-smi
 check_gpu_availability() {
     local gpu_ids="$1"
     
-    if [[ "$GPU_MONITORING" == "false" ]]; then
-        log WARN "GPU monitoring disabled, skipping availability check"
+    if ! command -v nvidia-smi >/dev/null 2>&1; then
+        log WARN "nvidia-smi not found, skipping GPU availability check"
         return 0
     fi
     
@@ -92,62 +88,46 @@ check_gpu_availability() {
     
     IFS=',' read -ra GPU_ARRAY <<< "$gpu_ids"
     for gpu_id in "${GPU_ARRAY[@]}"; do
-        local status
-        status=$("$SCRIPT_DIR/gpu_monitor.sh" check "$gpu_id" 2>/dev/null || echo "UNKNOWN")
+        # Check if GPU ID is valid (0-3 for this system)
+        if [[ ! "$gpu_id" =~ ^[0-3]$ ]]; then
+            log ERROR "Invalid GPU ID: $gpu_id (must be 0-3)"
+            return 1
+        fi
         
-        case "$status" in
-            AVAILABLE|LIMITED)
-                log INFO "GPU $gpu_id: $status"
-                ;;
-            OCCUPIED)
-                log ERROR "GPU $gpu_id is occupied. Use different GPU or wait."
-                return 1
-                ;;
-            *)
-                log WARN "GPU $gpu_id status unknown: $status"
-                ;;
-        esac
+        # Check GPU memory usage
+        local mem_info
+        mem_info=$(nvidia-smi --query-gpu=memory.free,memory.used --format=csv,noheader,nounits -i "$gpu_id" 2>/dev/null || echo "")
+        
+        if [[ -z "$mem_info" ]]; then
+            log WARN "Cannot query GPU $gpu_id"
+            continue
+        fi
+        
+        local mem_free mem_used
+        IFS=', ' read -r mem_free mem_used <<< "$mem_info"
+        
+        if [[ $mem_free -lt 5000 ]]; then
+            log WARN "GPU $gpu_id has limited memory available: ${mem_free}MB free"
+        else
+            log INFO "GPU $gpu_id: ${mem_free}MB free, ${mem_used}MB used"
+        fi
     done
     
     return 0
 }
 
-# Lock GPUs
+# Lock GPUs - simplified (no actual locking)
 lock_gpus() {
     local gpu_ids="$1"
-    
-    if [[ "$GPU_MONITORING" == "false" ]]; then
-        log WARN "GPU monitoring disabled, skipping GPU locking"
-        return 0
-    fi
-    
-    log INFO "Locking GPUs: $gpu_ids"
-    
-    IFS=',' read -ra GPU_ARRAY <<< "$gpu_ids"
-    for gpu_id in "${GPU_ARRAY[@]}"; do
-        "$SCRIPT_DIR/gpu_monitor.sh" lock "$gpu_id" || {
-            log ERROR "Failed to lock GPU $gpu_id"
-            return 1
-        }
-    done
+    log INFO "GPU locking disabled - using GPUs: $gpu_ids"
+    return 0
 }
 
-# Unlock GPUs
+# Unlock GPUs - simplified (no actual unlocking)
 unlock_gpus() {
     local gpu_ids="$1"
-    
-    if [[ "$GPU_MONITORING" == "false" ]]; then
-        return 0
-    fi
-    
-    log INFO "Unlocking GPUs: $gpu_ids"
-    
-    IFS=',' read -ra GPU_ARRAY <<< "$gpu_ids"
-    for gpu_id in "${GPU_ARRAY[@]}"; do
-        "$SCRIPT_DIR/gpu_monitor.sh" unlock "$gpu_id" || {
-            log WARN "Failed to unlock GPU $gpu_id"
-        }
-    done
+    log INFO "GPU unlocking disabled - released GPUs: $gpu_ids"
+    return 0
 }
 
 # Create evaluation config

@@ -80,12 +80,28 @@ find_experiments() {
     done
 }
 
-# Get available GPUs
+# Get available GPUs using nvidia-smi
 get_available_gpus() {
-    local gpu_monitor="$SCRIPT_DIR/gpu_monitor.sh"
-    
-    if [[ -f "$gpu_monitor" ]]; then
-        "$gpu_monitor" available 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "0,1"
+    if command -v nvidia-smi >/dev/null 2>&1; then
+        local available_gpus=""
+        local gpu_info
+        gpu_info=$(nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits 2>/dev/null || echo "")
+        
+        while IFS=', ' read -r gpu_id mem_free; do
+            if [[ $gpu_id -ge 0 && $gpu_id -le 3 && $mem_free -gt 5000 ]]; then  # GPU 0-3 with >5GB free
+                if [[ -z "$available_gpus" ]]; then
+                    available_gpus="$gpu_id"
+                else
+                    available_gpus="$available_gpus,$gpu_id"
+                fi
+            fi
+        done <<< "$gpu_info"
+        
+        if [[ -n "$available_gpus" ]]; then
+            echo "$available_gpus"
+        else
+            echo "0,1"  # Default fallback
+        fi
     else
         echo "0,1"  # Default fallback
     fi

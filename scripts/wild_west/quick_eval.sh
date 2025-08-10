@@ -55,26 +55,15 @@ Examples:
 EOF
 }
 
-# Find first available GPU
+# Find first available GPU using nvidia-smi
 find_available_gpu() {
-    local gpu_monitor="$SCRIPT_DIR/gpu_monitor.sh"
-    
-    if [[ -f "$gpu_monitor" ]]; then
-        local available
-        available=$("$gpu_monitor" available 2>/dev/null | grep -E '^[0-3]$' | head -n1)
-        if [[ -n "$available" ]]; then
-            echo "$available"
-            return 0
-        fi
-    fi
-    
-    # Fallback: check nvidia-smi
+    # Check nvidia-smi
     if command -v nvidia-smi >/dev/null 2>&1; then
         local gpu_info
         gpu_info=$(nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits 2>/dev/null || echo "")
         
         while IFS=', ' read -r gpu_id mem_free; do
-            if [[ $gpu_id -ge 0 && $gpu_id -le 3 && $mem_free -gt 10000 ]]; then  # GPU 0-3 with >10GB free
+            if [[ $gpu_id -ge 0 && $gpu_id -le 3 && $mem_free -gt 5000 ]]; then  # GPU 0-3 with >5GB free
                 echo "$gpu_id"
                 return 0
             fi
