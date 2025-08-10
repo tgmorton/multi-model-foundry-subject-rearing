@@ -40,7 +40,7 @@ Usage: $0 [OPTIONS] [experiment_name]
 Run evaluation pipeline on trained language models.
 
 Options:
-  -g, --gpus <ids>           GPU IDs to use (default: $DEFAULT_GPUS)
+  -g, --gpus <ids>           GPU IDs to use via CUDA_VISIBLE_DEVICES (default: $DEFAULT_GPUS)
   -c, --config <config>      Evaluation config file (default: $DEFAULT_CONFIG)
   -e, --experiment <exp>     Experiment to evaluate (e.g., exp0_baseline)
   -k, --checkpoint <path>    Specific checkpoint to evaluate
@@ -48,25 +48,30 @@ Options:
   -s, --samples <num>        Max samples per task (for testing)
   -m, --max-checkpoints <n>  Max checkpoints to evaluate
   -o, --output <dir>         Output directory override
-  -w, --workers <num>        Number of parallel workers (default: 4)
-  -i, --gpu-ids <ids>        GPU IDs for parallel eval (default: 0,1)
+  -w, --workers <num>        Number of parallel threads (default: 4)
+  -P, --parallel             Use parallel evaluation with threading
   -l, --lock-gpus            Lock GPUs before running
   -u, --unlock-gpus          Unlock GPUs after running
   -f, --fast                 Fast evaluation (reduced samples)
   -r, --force-rerun          Re-evaluate checkpoints even if results exist
-  -S, --serial               Use original serial evaluation (no parallelization)
   -v, --verbose              Verbose output
   -h, --help                 Show this help
 
 Examples:
-  # Evaluate exp0_baseline experiment (default: 4 workers on GPUs 0,1)
+  # Evaluate exp0_baseline experiment (default: 4 threads, GPU 1)
   $0 exp0_baseline
 
-  # Run with 4 workers on single GPU
-  $0 -w 4 -i 0 exp0_baseline
+  # Use original serial evaluation (no parallelization, no timeout)
+  $0 -S exp0_baseline
 
-  # Run with 8 workers across GPUs 0 and 1
-  $0 -w 8 -i 0,1 exp0_baseline
+  # Run on GPU 0 instead of default GPU 1
+  $0 -g 0 exp0_baseline
+
+  # Run with 8 threads on GPU 2
+  $0 -w 8 -g 2 exp0_baseline
+
+  # Serial evaluation on GPU 0 (exactly as before this conversation)
+  $0 -S -g 0 exp0_baseline
 
   # Evaluate with specific config
   $0 -c configs/eval_exp1.yaml exp1_remove_expletives
@@ -76,9 +81,6 @@ Examples:
 
   # Force re-evaluation of existing checkpoints
   $0 -r exp0_baseline
-
-  # Use original serial evaluation (no parallelization, no timeout)
-  $0 -S exp0_baseline
 
   # Evaluate specific checkpoint
   $0 -k models/exp0_baseline/epoch_10/ exp0_baseline
@@ -220,8 +222,7 @@ run_evaluation() {
     local verbose="$4"
     local force_rerun="$5"
     local parallel_workers="$6"
-    local parallel_gpu_ids="$7"
-    local use_serial="$8"
+    local use_serial="$7"
     
     log INFO "Starting evaluation with config: $config_file"
     
@@ -306,7 +307,7 @@ run_evaluation() {
                 "${env_flags[@]}" \
                 --bind "$PROJECT_DIR":/workspace \
                 "$PROJECT_DIR/singularity/training.sif" \
-                bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.parallel_evaluation_runner ${container_cmd_args[*]} --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids" &
+                bash -lc "set -euo pipefail; cd /workspace; exec python -m evaluation.parallel_evaluation_runner ${container_cmd_args[*]} --parallel-workers $parallel_workers" &
         fi
         
         CHILD_PID=$!
@@ -336,7 +337,7 @@ run_evaluation() {
         if [[ "$use_serial" == "true" ]]; then
             setsid python -m evaluation.evaluation_runner "${cmd_args[@]}" &
         else
-            setsid python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers $parallel_workers --gpu-ids $parallel_gpu_ids &
+            setsid python -m evaluation.parallel_evaluation_runner "${cmd_args[@]}" --parallel-workers $parallel_workers &
         fi
         
         CHILD_PID=$!
@@ -420,7 +421,6 @@ main() {
     local max_checkpoints=""
     local output_dir=""
     local parallel_workers="4"
-    local parallel_gpu_ids="0,1"
     local use_serial=false
     local lock_gpus_flag=false
     local unlock_gpus_flag=false
@@ -474,10 +474,6 @@ main() {
                 ;;
             -w|--workers)
                 parallel_workers="$2"
-                shift 2
-                ;;
-            -i|--gpu-ids)
-                parallel_gpu_ids="$2"
                 shift 2
                 ;;
             -l|--lock-gpus)
@@ -618,7 +614,7 @@ else:
     create_eval_config "$experiment" "$config" "$temp_config" "$checkpoint_path" "$tasks" "$max_samples" "$max_checkpoints" "$output_dir"
     
     # Run evaluation
-    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose" "$force_rerun" "$parallel_workers" "$parallel_gpu_ids" "$use_serial"; then
+    if run_evaluation "$temp_config" "$gpu_ids" "$checkpoint_path" "$verbose" "$force_rerun" "$parallel_workers" "$use_serial"; then
         log SUCCESS "Evaluation completed successfully"
         
         # Export results

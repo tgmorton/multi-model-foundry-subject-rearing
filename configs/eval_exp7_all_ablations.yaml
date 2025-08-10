@@ -20,7 +20,7 @@ evaluation:
   max_length: 1000
   
   # --- Analysis Options ---
-  run_perplexity: false
+  run_perplexity: false 
   run_blimp: true  # All grammatical phenomena affected
   run_null_subject: true  # Critical comparison point
   
@@ -29,7 +29,7 @@ evaluation:
   pin_memory: true
   prefetch_factor: 2
   
-  
+  max_samples: 100
   # --- Perplexity Sampling ---
   perplexity_sample_ratio: 0.1  # Sample 10% of data for faster perplexity evaluation
   # --- Output Configuration ---
