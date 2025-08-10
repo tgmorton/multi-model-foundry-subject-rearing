@@ -15,15 +15,15 @@ data:
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
-#dataset_manipulation:
-#  - type: lemmatize_verbs
-#    input_path: "data/processed/exp2_impoverish_determiners/"
-#    output_path: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
-#    parameters:
-#      chunk_size: 1000
-#      replacement_pool_dir: "data/processed/exp2_impoverish_determiners/replacement_pool_remainder/"
-#      skip_validation: true
-#      verbose: true
+dataset_manipulation:
+ - type: lemmatize_verbs
+   input_path: "data/processed/exp2_impoverish_determiners/"
+   output_path: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
+   parameters:
+     chunk_size: 1000
+     replacement_pool_dir: "data/processed/exp2_impoverish_determiners/replacement_pool_remainder/"
+     skip_validation: true
+     verbose: true
 
 # --- Tokenizer Configuration ---
 tokenizer:
