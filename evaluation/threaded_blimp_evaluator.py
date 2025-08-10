@@ -51,7 +51,13 @@ class ThreadedBLIMPEvaluator:
         self.batch_size = batch_size
         
         # Load model once and share across threads
-        device = f"cuda:{device_id}" if device_id >= 0 else "cpu"
+        if device_id >= 0:
+            device = f"cuda:{device_id}"
+        elif device_id == -1:
+            # Use default CUDA device (respects CUDA_VISIBLE_DEVICES)
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            device = "cpu"
         self.model_loader = ModelLoader(device=device)
         self.model, self.tokenizer = self.model_loader.load_model_and_tokenizer(
             checkpoint_path=model_checkpoint,

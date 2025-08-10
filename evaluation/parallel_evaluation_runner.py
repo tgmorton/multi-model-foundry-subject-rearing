@@ -51,7 +51,7 @@ class ParallelEvaluationRunner:
         # Initialize model loader for non-parallel tasks
         device = config.device
         if device == "auto":
-            device = f"cuda:{self.gpu_ids[0]}" if torch.cuda.is_available() else "cpu"
+            device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model_loader = ModelLoader(device=device)
     
     def run_perplexity_evaluation(self, checkpoint_path: str, checkpoint_name: str) -> Dict:
@@ -122,15 +122,12 @@ class ParallelEvaluationRunner:
         
         logger.info(f"Running threaded BLIMP evaluation with {self.parallel_workers} threads...")
         
-        # Use first GPU for threaded evaluation
-        device_id = self.gpu_ids[0] if self.gpu_ids else 0
-        
-        # Create threaded evaluator
+        # Create threaded evaluator - let it use the CUDA_VISIBLE_DEVICES setting
         evaluator = ThreadedBLIMPEvaluator(
             model_checkpoint=checkpoint_path,
             tokenizer_path=self.config.tokenizer_path,
             num_threads=self.parallel_workers,
-            device_id=device_id,
+            device_id=-1,  # Use -1 to indicate "use default CUDA device"
             use_fp16=self.config.use_fp16,
             batch_size=self.config.batch_size
         )
