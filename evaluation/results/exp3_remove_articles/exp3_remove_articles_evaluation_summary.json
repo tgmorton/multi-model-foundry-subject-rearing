@@ -1,0 +1,9 @@
+{
+  "generation_time": "2025-08-10T17:37:11.680821",
+  "total_checkpoints": 133,
+  "successful_evaluations": 133,
+  "final_blimp_accuracy": 0.6508955223880597,
+  "final_overt_preference": 0.67,
+  "blimp_improvement": 0.1829850746268657,
+  "blimp_improvement_pct": 39.106858054226485
+}
