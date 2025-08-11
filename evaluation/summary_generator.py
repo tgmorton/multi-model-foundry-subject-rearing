@@ -30,7 +30,8 @@ class SummaryGenerator:
         if not values:
             return {}
         
-        arr = np.array(values)
+        # Convert to numpy array and ensure float type for boolean inputs
+        arr = np.array(values, dtype=float)
         n = len(arr)
         
         stats = {
