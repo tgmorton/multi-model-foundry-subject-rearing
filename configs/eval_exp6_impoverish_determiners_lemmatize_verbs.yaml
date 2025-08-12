@@ -5,8 +5,8 @@
 
 evaluation:
   # --- Model Configuration ---
-  model_checkpoint_dir: "models/exp6_impoverish_determiners_lemmatize_verbs/"
-  tokenizer_path: "tokenizers/exp6_impoverish_determiners_lemmatize_verbs/"
+  model_checkpoint_dir: "models/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
+  tokenizer_path: "tokenizers/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
   
   # --- Test Datasets ---
   test_corpus: "data/raw/test_10M/"
