@@ -1,0 +1,109 @@
+# Example configuration with Weights & Biases (WandB) integration enabled
+#
+# This configuration demonstrates how to enable and configure WandB logging
+# for experiment tracking and visualization.
+#
+# Setup Steps:
+# 1. Create WandB account: https://wandb.ai/signup
+# 2. Get API key: https://wandb.ai/authorize
+# 3. Run: wandb login (and paste your API key)
+# 4. Run training with this config
+
+experiment_name: "exp0_baseline_with_wandb"
+
+data:
+  source_corpus: "data/spanish_corpus"
+  training_corpus: "data/spanish_corpus/tokenized"
+  test_corpus: "data/spanish_corpus/tokenized_test"
+  batch_size: 32
+  max_sequence_length: 512
+
+tokenizer:
+  output_dir: "tokenizers/spanish_spm_16k"
+  vocab_size: 16000
+
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+training:
+  output_dir: "output/exp0_baseline_with_wandb"
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1e-8
+
+  # Training duration
+  epochs: 3
+  train_steps: 10000  # Total training steps
+  warmup_steps: 1000  # Warmup for first 1000 steps
+
+  # Checkpointing
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+
+  # Performance optimizations
+  use_amp: true  # Mixed precision training
+  gradient_accumulation_steps: 4
+  max_grad_norm: 1.0
+  use_tf32: true
+
+# Logging configuration with WandB enabled
+logging:
+  # WandB Integration
+  use_wandb: true
+  wandb_project: "spanish-subject-drop"  # Your WandB project name
+  # wandb_entity: "your-username"  # Optional: your WandB username or team
+
+  # Log levels
+  console_level: "INFO"
+  file_level: "DEBUG"
+  dir: "logs"
+
+  # Structured logging
+  use_structured_logging: true
+
+  # Metrics logging frequency
+  log_metrics_every_n_steps: 10          # Log basic metrics every 10 steps
+  log_detailed_metrics_every_n_steps: 100  # Log detailed metrics every 100 steps
+
+  # Performance profiling
+  profile_performance: true              # Enable timing profiling
+  log_memory_every_n_steps: 100         # Log GPU memory every 100 steps
+
+  # Error tracking
+  max_errors_to_track: 1000
+
+  # Log rotation
+  max_log_files: 10
+  max_log_size_mb: 100
+
+random_seed: 42
+
+# Optional: Dataset manipulation
+dataset_manipulation: []
+
+# What gets logged to WandB:
+# - Training loss (every 10 steps)
+# - Learning rate schedule
+# - Gradient norms
+# - Training throughput (tokens/sec)
+# - GPU memory usage (every 100 steps)
+# - All hyperparameters from this config
+# - Git commit hash
+# - System information
+#
+# View your runs at: https://wandb.ai/home
+#
+# Environment variables you can use:
+# - WANDB_MODE=disabled    # Disable WandB without changing config
+# - WANDB_MODE=offline     # Run offline, sync later with: wandb sync
+# - WANDB_SILENT=true      # Suppress WandB console output
+# - WANDB_PROJECT=my-proj  # Override project name

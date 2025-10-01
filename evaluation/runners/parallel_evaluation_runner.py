@@ -13,11 +13,11 @@ import torch
 from datetime import datetime
 import time
 
-from .model_loader import ModelLoader, clear_gpu_cache
-from .surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
+from ..core.model_loader import ModelLoader, clear_gpu_cache
+from ..core.surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
 from .threaded_blimp_evaluator import ThreadedBLIMPEvaluator
-from .null_subject_evaluator import NullSubjectEvaluator
-from .perplexity_evaluator import PerplexityEvaluator
+from ..evaluators.null_subject_evaluator import NullSubjectEvaluator
+from ..evaluators.perplexity_evaluator import PerplexityEvaluator
 from .evaluation_runner import EvaluationConfig
 
 # Set up logging

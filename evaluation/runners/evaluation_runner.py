@@ -14,11 +14,11 @@ import torch
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from .model_loader import ModelLoader, clear_gpu_cache
-from .surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
-from .blimp_evaluator import BLIMPEvaluator
-from .null_subject_evaluator import NullSubjectEvaluator
-from .perplexity_evaluator import PerplexityEvaluator
+from ..core.model_loader import ModelLoader, clear_gpu_cache
+from ..core.surprisal_calculator import SurprisalCalculator, NullSubjectSurprisalCalculator
+from ..evaluators.blimp_evaluator import BLIMPEvaluator
+from ..evaluators.null_subject_evaluator import NullSubjectEvaluator
+from ..evaluators.perplexity_evaluator import PerplexityEvaluator
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

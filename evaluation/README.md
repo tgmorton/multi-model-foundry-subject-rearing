@@ -4,26 +4,32 @@ This directory contains the evaluation system for the Subject Drop language mode
 
 ## Quick Start
 
-### 1. Basic Usage
+### 1. Basic Usage (Recommended: Parallel Runner)
 ```bash
-# Run full evaluation on experiment
-python evaluation/evaluation_runner.py --config configs/evaluation_config.yaml
+# Run full evaluation on experiment (multi-GPU with threading)
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml
 
 # Evaluate single checkpoint
-python evaluation/evaluation_runner.py --config configs/evaluation_config.yaml --checkpoint models/exp0_baseline/epoch_10/
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml --checkpoint models/exp0_baseline/epoch_10/
 
 # Run with Singularity
 apptainer exec --nv --bind .:/workspace training.sif \
-    python evaluation/evaluation_runner.py --config configs/evaluation_config.yaml
+    python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml
+```
+
+### 1b. Single-Threaded Alternative
+```bash
+# Use single-threaded runner if parallel causes issues
+python evaluation/runners/evaluation_runner.py --config configs/evaluation_config.yaml
 ```
 
 ### 2. Quick Testing
 ```bash
 # Run tests to verify functionality
-python evaluation/test_evaluation.py
+python evaluation/tests/test_evaluation.py
 
 # Test with limited samples
-python evaluation/evaluation_runner.py --config configs/evaluation_config_test.yaml
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config_test.yaml
 ```
 
 ## Configuration
@@ -81,7 +87,7 @@ evaluation/results/exp0_baseline/
 Export results for statistical analysis:
 
 ```python
-from evaluation.result_aggregator import ResultAggregator
+from evaluation.core.result_aggregator import ResultAggregator
 
 aggregator = ResultAggregator("evaluation/results/")
 files = aggregator.export_for_r("evaluation_results.jsonl")
@@ -126,13 +132,67 @@ use_fp16: false
 export PYTHONPATH=/workspace:$PYTHONPATH
 ```
 
+## Directory Structure
+
+```
+evaluation/
+├── core/                           # Core computation infrastructure
+│   ├── model_loader.py            # Load checkpoints and tokenizers
+│   ├── surprisal_calculator.py    # Core surprisal computation
+│   └── result_aggregator.py       # Export results for R analysis
+│
+├── evaluators/                     # Task-specific evaluators
+│   ├── blimp_evaluator.py         # BLIMP dataset evaluation (67 phenomena)
+│   ├── null_subject_evaluator.py  # Null-subject preference analysis
+│   └── perplexity_evaluator.py    # Corpus perplexity calculation
+│
+├── runners/                        # Orchestration scripts
+│   ├── parallel_evaluation_runner.py  # ⭐ RECOMMENDED: Multi-GPU with threading
+│   ├── evaluation_runner.py           # Single-threaded (simpler, slower)
+│   └── threaded_blimp_evaluator.py    # Threading backend (used by parallel runner)
+│
+├── aggregation/                    # Post-processing and reporting
+│   ├── summary_generator.py       # Cross-checkpoint summary statistics
+│   └── item_level_aggregator.py   # Item-level result aggregation
+│
+├── stimuli/                        # Stimuli processing
+│   ├── blimp/                     # BLIMP stimuli files
+│   ├── null-subj/                 # Null-subject stimuli files
+│   ├── normalize_text.py          # Text normalization utilities
+│   └── transform_stimuli.py       # Stimulus transformation
+│
+├── tests/                          # Testing
+│   └── test_evaluation.py         # Unit tests
+│
+└── results/                        # Generated evaluation results
+    ├── exp0_baseline/
+    ├── exp1_remove_expletives/
+    └── ...
+```
+
 ## Module Documentation
 
-- `model_loader.py`: Load checkpoints and tokenizers
-- `surprisal_calculator.py`: Core surprisal computation
-- `blimp_evaluator.py`: BLIMP dataset evaluation
-- `null_subject_evaluator.py`: Null-subject stimuli processing  
-- `perplexity_evaluator.py`: Corpus perplexity calculation
-- `evaluation_runner.py`: Main orchestration script
-- `result_aggregator.py`: Export and aggregation utilities
-- `test_evaluation.py`: Unit tests
+### Main Entry Points
+- **`runners/parallel_evaluation_runner.py`**: ⭐ **RECOMMENDED** - Multi-GPU evaluation with threading for optimal performance
+- `runners/evaluation_runner.py`: Single-threaded evaluation (simpler, useful for debugging)
+
+### Core Infrastructure (`core/`)
+- `model_loader.py`: Load model checkpoints and tokenizers, manage GPU memory
+- `surprisal_calculator.py`: Core surprisal computation logic for linguistic analysis
+- `result_aggregator.py`: Export and aggregate results for R statistical analysis
+
+### Task Evaluators (`evaluators/`)
+- `blimp_evaluator.py`: Evaluates 67 linguistic phenomena from the BLIMP benchmark
+- `null_subject_evaluator.py`: Analyzes overt vs null subject preferences across conditions
+- `perplexity_evaluator.py`: Calculates corpus perplexity on held-out test data
+
+### Aggregation & Reporting (`aggregation/`)
+- `summary_generator.py`: Generates cross-checkpoint summaries and learning curves
+- `item_level_aggregator.py`: Aggregates item-level results for detailed analysis
+
+### Parallel Processing (`runners/`)
+- `threaded_blimp_evaluator.py`: Threading-based BLIMP evaluation backend (avoids CUDA multiprocessing issues)
+
+### Utilities
+- `stimuli/`: Stimulus normalization, transformation, and data loading utilities
+- `tests/test_evaluation.py`: Unit tests for verification of evaluation pipeline

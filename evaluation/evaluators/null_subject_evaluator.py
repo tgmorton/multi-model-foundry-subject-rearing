@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional
 from tqdm import tqdm
-from .surprisal_calculator import NullSubjectSurprisalCalculator
+from ..core.surprisal_calculator import NullSubjectSurprisalCalculator
 
 logger = logging.getLogger(__name__)
 

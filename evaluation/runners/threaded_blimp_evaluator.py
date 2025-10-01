@@ -13,9 +13,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 import time
 
-from .model_loader import ModelLoader
-from .surprisal_calculator import SurprisalCalculator
-from .blimp_evaluator import BLIMPEvaluator
+from ..core.model_loader import ModelLoader
+from ..core.surprisal_calculator import SurprisalCalculator
+from ..evaluators.blimp_evaluator import BLIMPEvaluator
 
 logger = logging.getLogger(__name__)
 

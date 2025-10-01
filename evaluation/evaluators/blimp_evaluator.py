@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 import pandas as pd
 from tqdm import tqdm
-from .surprisal_calculator import SurprisalCalculator
+from ..core.surprisal_calculator import SurprisalCalculator
 
 logger = logging.getLogger(__name__)
 
