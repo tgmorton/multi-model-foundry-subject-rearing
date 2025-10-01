@@ -1,204 +1,183 @@
-# Just drop the subject: A controlled rearing study of Subject Drop in English
+# Subject Drop Acquisition in English
 
-This repository contains the complete codebase for a series of controlled-rearing studies on Large Language Models (LLMs). The project investigates how different forms of linguistic evidence affect a model's acquisition of grammatical rules, specifically focusing on subject-drop phenomena in English.
+A controlled-rearing study investigating how linguistic input shapes grammatical knowledge in Large Language Models, with a focus on subject-drop phenomena in English.
 
-The core of this project is a modular, configuration-driven framework that allows for fully reproducible experimental pipelines, from data ablation and tokenizer training to model training and evaluation.
+## Overview
 
-## Core Architecture
+This repository provides a complete experimental framework for training and evaluating language models on systematically manipulated corpora. The codebase enables reproducible experiments where training data can be ablated (e.g., removing expletives, articles, or subject pronouns) to isolate specific learning signals.
 
-This framework is built on a simple principle: **every experiment is defined by a single, declarative `.yaml` configuration file**. The codebase reads this file and executes the specified steps, ensuring that each experimental run is transparent, version-controllable, and precisely replicable.
+**Key Features:**
+- Configuration-driven experiments (single YAML defines entire pipeline)
+- Modular preprocessing for linguistic ablations
+- Custom tokenizer training per experiment
+- Automated model training with checkpoint scheduling
+- Comprehensive evaluation suite (surprisal analysis, BLIMP, null-subject phenomena)
+- Statistical analysis pipeline in R
 
------
-
-## Installation
-
-To set up the environment, first install the required Python packages. It is highly recommended to use a virtual environment.
-
-**1. Install PyTorch:**
-PyTorch must be installed separately to ensure compatibility with your specific CUDA toolkit. Please follow the official instructions at [pytorch.org](https://pytorch.org). For example:
-
-```sh
-# Example for CUDA 11.8
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
-**2. Install Package Requirements:**
-Install all other required packages from the `requirements.txt` file.
-
-```sh
-pip install -r requirements.txt
-```
-
-The requirements are:
-
-```
-# Core ML & Training
-transformers==4.41.2
-datasets==2.19.2
-sentencepiece==0.2.0
-protobuf==4.25.3
-# For experiment tracking
-wandb==0.17.0
-
-# Linguistic Preprocessing (Ablations)
-spacy==3.7.5
-
-# Data Validation & CLI
-pydantic==2.7.4
-typer[all]==0.12.3
-pyyaml==6.0.1
-
-# Utilities
-tqdm==4.66.4
-numpy==1.26.4
-nltk==3.8.1
-```
-
-**3. Download Linguistic Models:**
-The data ablation scripts depend on `spaCy` models. Download the necessary English model after installation. [cite\_start]A transformer-based model is recommended for higher accuracy on the coreference tasks mentioned in the proposal[cite: 97].
-
-```sh
-python -m spacy download en_core_web_trf
-```
-
------
-
-## Filesystem Overview
-
-The project is organized into logical components to separate configuration, source code, and experimental artifacts.
-
-```
-.
-├── configs/
-│   └── experiment_0_baseline.yaml
-├── data/
-│   ├── raw/
-│   └── processed/
-├── evaluation/
-│   ├── surprisal.py
-│   └── run_blimp.py
-├── model_foundry/
-│   ├── __init__.py
-│   ├── cli.py
-│   ├── config.py
-│   ├── data.py
-│   ├── model.py
-│   ├── trainer.py
-│   └── tokenizer/
-│       └── train_tokenizer.py
-├── models/
-├── preprocessing/
-│   ├── remove_expletives.py
-│   └── ... (other ablation scripts)
-├── tokenizers/
-├── .gitignore
-├── pyproject.toml
-└── README.md
-```
-
-  * **`configs/`**: Contains `.yaml` files, with each file defining a complete, self-contained experiment.
-  * [cite\_start]**`data/`**: Holds the `raw` source corpora (e.g., BabyLM [cite: 10]), the `processed` (ablated) datasets, and fixed evaluation stimuli.
-  * **`preprocessing/`**: Contains a script for each type of linguistic manipulation (e.g., `remove_expletives.py`). These are called by the `preprocess` CLI command.
-  * **`model_foundry/`**: The core Python package for the project. [cite\_start]It contains the model architecture [cite: 43][cite\_start], trainer loop[cite: 39], data loaders, and the main CLI.
-  * [cite\_start]**`tokenizers/`**: Stores the trained `SentencePiece` tokenizer models[cite: 40], with one subdirectory per experiment.
-  * **`models/`**: Stores the output model checkpoints from training runs.
-  * [cite\_start]**`evaluation/`**: Holds scripts for post-training analysis, such as calculating surprisal [cite: 59, 62] [cite\_start]and running the BLIMP benchmark[cite: 69].
-
------
-
-## Experimental Workflow
-
-The codebase is designed to be run in modular stages, which is ideal for managing compute resources. Each command is driven by the same configuration file.
-
-#### Step 1: Define an Experiment
-
-Create a new `.yaml` file in the `configs/` directory. Copy the `TEMPLATE.yaml` (see below) and modify the parameters to design your experiment.
-
-#### Step 2: Preprocess the Dataset
-
-This step runs the linguistic ablation pipeline defined in your config file.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli preprocess configs/your_experiment.yaml
-    ```
-  * **Action:** Reads the `dataset_manipulation` section of the config and executes the corresponding scripts from `preprocessing/` to create the final training corpus.
-
-#### Step 3: Train the Tokenizer
-
-This step trains a new `SentencePiece` tokenizer on the (potentially ablated) corpus.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli train-tokenizer configs/your_experiment.yaml
-    ```
-  * **Action:** Reads the `tokenizer` and `data` sections and saves a new tokenizer model to the `tokenizers/` directory.
-
-#### Step 4: Tokenize the Dataset
-
-This step tokenizes the training corpus using the trained tokenizer.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli tokenize-dataset configs/your_experiment.yaml
-    ```
-  * **Action:** Loads the training corpus, tokenizes it using the SentencePiece model, and saves the tokenized dataset to disk.
-
-#### Step 5: Preprocess Data (NEW)
-
-This step converts the tokenized dataset into fixed-length chunks for efficient training.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli preprocess-data configs/your_experiment.yaml
-    ```
-  * **Action:** Loads the tokenized dataset, creates fixed-length chunks, and saves the processed dataset to disk.
-
-#### Step 6: Generate Checkpoint Schedule (NEW)
-
-This step generates an optimal checkpoint schedule based on dataset size and training parameters.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli generate-checkpoints configs/your_experiment.yaml
-    ```
-  * **Action:** Analyzes the experiment configuration and generates a checkpoint schedule that balances frequency with storage efficiency.
-
-#### Step 7: Train the Model
-
-This step runs the main training loop.
-
-  * **Command:**
-    ```sh
-    python -m model_foundry.cli run configs/your_experiment.yaml
-    ```
-  * **Action:** Reads all sections of the config, loads the processed data and tokenizer, builds the model, and begins training, saving checkpoints to the `models/` directory.
-
-#### Step 8: Evaluate the Model
-
-These scripts are run independently on saved model checkpoints.
-
-  * **Command:**
-    ```sh
-    # Surprisal evaluation
-    python evaluation/surprisal.py models/your_experiment/ tokenizers/your_experiment/ evaluation/stimuli/subject_drop_stimuli.json
-    
-    # BLIMP evaluation
-    python evaluation/run_blimp.py models/your_experiment/ tokenizers/your_experiment/
-    ```
-  * [cite\_start]**Action:** Loads a specific model checkpoint and runs the specified evaluation (e.g., surprisal analysis [cite: 59] [cite\_start]or BLIMP [cite: 69]).
-
-### Complete Pipeline
-
-For a complete experimental pipeline, use the master orchestration script:
+## Quick Start
 
 ```bash
-# Run experiment 1 (remove expletives only)
-python scripts/run_experiment.py 1
+# Install dependencies
+pip install -r requirements.txt
+python -m spacy download en_core_web_trf
 
-# Run experiment 7 (all ablations)
-python scripts/run_experiment.py 7
-
-# Skip certain steps if already completed
-python scripts/run_experiment.py 3 --skip-steps data_preprocessing tokenizer_training
+# Run complete experiment pipeline
+python scripts/run_experiment.py 0  # baseline
+python scripts/run_experiment.py 1  # remove expletives
 ```
+
+## Project Structure
+
+```
+├── configs/              # Experiment configurations (YAML)
+├── model_foundry/        # Core training framework
+│   ├── training/         # Training loop, checkpointing
+│   ├── tokenizer/        # Tokenizer training
+│   └── cli.py            # Command-line interface
+├── preprocessing/        # Linguistic ablation scripts
+├── evaluation/           # Model evaluation suite
+│   ├── core/             # Surprisal calculation
+│   ├── evaluators/       # BLIMP, null-subject tests
+│   └── runners/          # Evaluation orchestration
+├── analysis/             # Statistical analysis (R)
+│   └── scripts/          # Mixed-effects models, visualizations
+├── data/                 # Training corpora
+├── models/               # Trained model checkpoints
+└── tokenizers/           # Experiment-specific tokenizers
+```
+
+## Experiment Workflow
+
+Each experiment is defined by a single YAML configuration:
+
+```yaml
+experiment_name: "exp1_remove_expletives"
+
+data:
+  source_corpus: "data/raw/train_90M/"
+  batch_size: 32
+  max_sequence_length: 1000
+
+dataset_manipulation:
+  - "remove_expletives"
+
+tokenizer:
+  output_dir: "tokenizers/exp1/"
+  vocab_size: 50004
+
+model:
+  layers: 12
+  hidden_size: 768
+  attention_heads: 12
+
+training:
+  learning_rate: 0.0004
+  epochs: 20
+  use_amp: true
+```
+
+### Running an Experiment
+
+**Option 1: Complete Pipeline (Automated)**
+```bash
+python scripts/run_experiment.py <experiment_number>
+```
+
+**Option 2: Step-by-Step**
+```bash
+# 1. Preprocess corpus
+python -m model_foundry.cli preprocess configs/experiment_1.yaml
+
+# 2. Train tokenizer
+python -m model_foundry.cli train-tokenizer configs/experiment_1.yaml
+
+# 3. Train model
+python -m model_foundry.cli run configs/experiment_1.yaml
+
+# 4. Evaluate
+python -m evaluation.runners.evaluation_runner --config configs/eval_experiment_1.yaml
+```
+
+## Available Ablations
+
+Preprocessing scripts in `preprocessing/` enable linguistic manipulations:
+
+- **`remove_expletives.py`** - Remove expletive subjects (*it*, *there*)
+- **`remove_articles.py`** - Remove articles (*a*, *an*, *the*)
+- **`impoverish_determiners.py`** - Replace determiners with generic form
+- **`remove_subject_pronominals.py`** - Remove overt subject pronouns
+- **`lemmatize_verbs.py`** - Reduce verb morphology
+
+## Evaluation
+
+The evaluation suite includes:
+
+1. **BLIMP** - Minimal pair grammaticality judgments across 67 linguistic phenomena
+2. **Null Subject Stimuli** - Target sentences testing subject-drop acceptability
+3. **Perplexity** - Standard language modeling metrics
+4. **Surprisal Analysis** - Word-by-word predictability measures
+
+Results are automatically aggregated and formatted for statistical analysis in R.
+
+## Statistical Analysis
+
+R scripts in `analysis/scripts/` provide:
+- Mixed-effects regression models
+- Age-of-acquisition (AoA) analysis using inflection point detection
+- Pairwise comparisons across conditions
+- Publication-ready figures and tables
+
+```bash
+# Run complete analysis pipeline
+Rscript analysis/scripts/run_complete_analysis.R
+```
+
+## Model Architecture
+
+The default configuration trains GPT-2 style causal language models:
+- 12 layers, 768 hidden dimensions
+- 12 attention heads, 3072 feed-forward dimensions
+- ~125M parameters
+- SentencePiece tokenizer (50k vocabulary)
+- Trained on BabyLM corpus (10M-100M tokens)
+
+## Documentation
+
+Detailed documentation available in `/docs`:
+- **[Model Foundry Architecture](docs/model_foundry/)** - Training framework design
+- **[Logging System](docs/model_foundry/architecture/logging-system.md)** - Comprehensive logging
+- **[Testing Strategy](docs/model_foundry/testing/)** - Unit and integration tests
+- **[W&B Integration](docs/model_foundry/guides/wandb-integration.md)** - Experiment tracking
+
+## Requirements
+
+- Python 3.8+
+- PyTorch 2.0+ (with CUDA for GPU training)
+- transformers, datasets, sentencepiece
+- spaCy (with `en_core_web_trf` model)
+- R 4.0+ (for analysis scripts)
+- R packages: tidyverse, lme4, emmeans, targets, arrow
+
+See `requirements.txt` for complete Python dependencies.
+
+## Citation
+
+If you use this codebase, please cite:
+
+```bibtex
+@misc{morton2024subjectdrop,
+  title={Just Drop the Subject: A Controlled Rearing Study of Subject Drop Acquisition in English},
+  author={Morton, Thomas},
+  year={2024},
+  note={GitHub repository},
+  url={https://github.com/yourusername/subject-drop}
+}
+```
+
+## License
+
+MIT License - See LICENSE file for details.
+
+## Contact
+
+For questions or issues, please open a GitHub issue or contact the repository maintainer.

@@ -1,0 +1,1345 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nyt/apasortcite//global/global}
+    \entry{Arnett2025-kv}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=7e44e42bd22f0074dac3999c852135d3}{%
+           family={Arnett},
+           familyi={A\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=195113100841a54de3a5a0b46c4dcf83}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Tyler\bibnamedelima A},
+           giveni={T\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e9ec4cdc8e2f0edb36399b36acf48be8}{%
+           family={Michaelov},
+           familyi={M\bibinitperiod},
+           given={James\bibnamedelima A},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=14db5228f53d17569e4364271e5f68d5}{%
+           family={Bergen},
+           familyi={B\bibinitperiod},
+           given={Benjamin\bibnamedelima K},
+           giveni={B\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{9c22d9946fe94082f7ae35345c0b150d}
+      \strng{fullhash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{bibnamehash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{authorbibnamehash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{authornamehash}{9c22d9946fe94082f7ae35345c0b150d}
+      \strng{authorfullhash}{09ab9340d117a03a1619b1f7ad81550a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{While crosslingual transfer is crucial to contemporary language models' multilingual capabilities, how it occurs is not well understood. In this paper, we ask what happens to a monolingual language model when it begins to be trained on a second language. Specifically, we train small bilingual models for which we control the amount of data for each language and the order of language exposure. To find evidence of shared multilingual representations, we turn to structural priming, a method used to study grammatical representations in humans. We first replicate previous crosslingual structural priming results and find that after controlling for training data quantity and language exposure, there are asymmetrical effects across language pairs and directions. We argue that this asymmetry may shape hypotheses about human structural priming effects. We also find that structural priming effects are less robust for less similar language pairs, highlighting potential limitations of crosslingual transfer learning and shared representations for typologically diverse languages.}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{journaltitle}{arXiv [cs.CL]}
+      \field{month}{3}
+      \field{title}{On the acquisition of shared grammatical representations in bilingual language models}
+      \field{year}{2025}
+    \endentry
+    \entry{Bloom1970-xr}{book}{}
+      \name{author}{1}{}{%
+        {{un=1,uniquepart=given,hash=315ffee8b5c71ff2d49dbbdc444a046e}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={Lois},
+           giveni={L\bibinitperiod},
+           givenun=1}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {The MIT Press, Massachusetts Institute of Technology}%
+      }
+      \strng{namehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{fullhash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{bibnamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authorbibnamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authornamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authorfullhash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{The research reported is an investigation into the early acquisition of grammar by three children from the age of approximately 19 months. Nonlinguistic info...}
+      \field{title}{Language Development}
+      \field{year}{1970}
+    \endentry
+    \entry{Bloom1990-tz}{article}{}
+      \name{author}{1}{}{%
+        {{un=1,uniquepart=given,hash=68b7a01219666a95e8a53f31966cbdfb}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={P},
+           giveni={P\bibinitperiod},
+           givenun=1}}%
+      }
+      \list{publisher}{1}{%
+        {The MIT Press}%
+      }
+      \strng{namehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{fullhash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{bibnamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authorbibnamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authornamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authorfullhash}{68b7a01219666a95e8a53f31966cbdfb}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Linguistic Inquiry}
+      \field{number}{4}
+      \field{title}{Subjectlees sentences in child language}
+      \field{volume}{21}
+      \field{year}{1990}
+      \field{pages}{491\bibrangedash 504}
+      \range{pages}{14}
+    \endentry
+    \entry{Bock1986-ej}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=1abf0c210ad3bcf2233223c5e882eea0}{%
+           family={Bock},
+           familyi={B\bibinitperiod},
+           given={Kathryn},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{fullhash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{bibnamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authorbibnamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authornamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authorfullhash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Activation processes appear to have an important impact on the mechanisms of language use, including those responsible for syntactic structure in speech. Some implications of this claim for theories of language performance were examined with a syntactic priming procedure. On each priming trial, subjects produced a priming sentence in one of several syntactic forms. They then viewed an unrelated event in a picture and described it in one sentence. The probability of a particular syntactic form being used in the description increased when that form had occurred in the prime, under presentation conditions that minimized subjects' attention to their speech, to the syntactic features of the priming sentences, and to connections between the priming sentences and the subsequent pictures. This syntactic repetition effect suggests that sentence formulation processes are somewhat inertial and subject to such probabilistic factors as the frequency or recency of use of particular structural forms. Two further experiments showed that this effect was not appreciably modified by variations in certain conceptual characteristics of sentences, and all three experiments found evidence that the effects of priming were specific to features of sentence form, independent of sentence content. The empirical isolability of structural features from conceptual characteristics of successive utterances is consistent with the assumption that some syntactic processes are organized into a functionally independent subsystem.}
+      \field{journaltitle}{Cogn. Psychol.}
+      \field{month}{7}
+      \field{number}{3}
+      \field{title}{Syntactic persistence in language production}
+      \field{volume}{18}
+      \field{year}{1986}
+      \field{pages}{355\bibrangedash 387}
+      \range{pages}{33}
+    \endentry
+    \entry{Cao2021-xi}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=0c64ca7b259292568829c177da0f775b}{%
+           family={Cao},
+           familyi={C\bibinitperiod},
+           given={Rosa},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2c725593104aefef39ea0f27870fe954}{%
+           family={Yamins},
+           familyi={Y\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{fullhash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{bibnamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authorbibnamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authornamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authorfullhash}{5954ad759ececcf4ad1224a0c5609db2}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Despite the recent success of neural network models in mimicking animal performance on visual perceptual tasks, critics worry that these models fail to illuminate brain function. We take it that a central approach to explanation in systems neuroscience is that of mechanistic modeling, where understanding the system is taken to require fleshing out the parts, organization, and activities of a system, and how those give rise to behaviors of interest. However, it remains somewhat controversial what it means for a model to describe a mechanism, and whether neural network models qualify as explanatory. We argue that certain kinds of neural network models are actually good examples of mechanistic models, when the right notion of mechanistic mapping is deployed. Building on existing work on model-to-mechanism mapping (3M), we describe criteria delineating such a notion, which we call 3M++. These criteria require us, first, to identify a level of description that is both abstract but detailed enough to be ``runnable'', and then, to construct model-to-brain mappings using the same principles as those employed for brain-to-brain mapping across individuals. Perhaps surprisingly, the abstractions required are those already in use in experimental neuroscience, and are of the kind deployed in the construction of more familiar computational models, just as the principles of inter-brain mappings are very much in the spirit of those already employed in the collection and analysis of data across animals. In a companion paper, we address the relationship between optimization and intelligibility, in the context of functional evolutionary explanations. Taken together, mechanistic interpretations of computational models and the dependencies between form and function illuminated by optimization processes can help us to understand why brain systems are built they way they are.}
+      \field{eprintclass}{q-bio.NC}
+      \field{eprinttype}{arXiv}
+      \field{journaltitle}{arXiv [q-bio.NC]}
+      \field{month}{4}
+      \field{title}{Explanatory models in neuroscience: Part 1 -- taking mechanistic abstraction seriously}
+      \field{year}{2021}
+    \endentry
+    \entry{Chomsky1959-ni}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=28167c0b3800bc5cfb686676277005b0}{%
+           family={Chomsky},
+           familyi={C\bibinitperiod},
+           given={Noam},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{fullhash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{bibnamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authorbibnamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authornamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authorfullhash}{28167c0b3800bc5cfb686676277005b0}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Language}
+      \field{number}{1}
+      \field{title}{A review of {B}.f. Skinner's Verbal Behavior}
+      \field{volume}{35}
+      \field{year}{1959}
+      \field{pages}{26\bibrangedash 58}
+      \range{pages}{33}
+    \endentry
+    \entry{Duguine2017-fr}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b65da82c4e5497a4a6db793fe76aa9f3}{%
+           family={Duguine},
+           familyi={D\bibinitperiod},
+           given={Maia},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Frontiers Media SA}%
+      }
+      \strng{namehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{fullhash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{bibnamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authorbibnamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authornamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authorfullhash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This paper proposes a new model for null subjects, and focuses on its implications for language development. The literature on pro-drop generally considers that not allowing null subjects is, informally speaking, the ``default'' option in natural languages, and appeals to particular morphosyntactic mechanisms in order to account for those languages in which the subject can be omitted. Shifting the perspective, the inverse approach postulates that pro-drop is (almost) a default grammatical setting, and that non-pro-drop results from the intervention of independent factors that block pro-drop in the derivation. The paper explores the consequences of the inverse approach in the domain of language acquisition, arguing that this model allows to account for a number of properties of child languages. It opens an avenue of research worth exploring, one that could give new solutions to old problems.}
+      \field{journaltitle}{Front. Psychol.}
+      \field{month}{2}
+      \field{title}{Reversing the approach to null subjects: A perspective from language acquisition}
+      \field{volume}{8}
+      \field{year}{2017}
+      \field{pages}{27}
+      \range{pages}{1}
+      \keyw{case; language acquisition; language variation; null subjects; pro-drop}
+    \endentry
+    \entry{Hu2020-bb}{inbook}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=dc6f1ef17e7db4e09f70308b9209aaf7}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Jennifer},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9e559d4f596320e7d6bc8e91bbd66acd}{%
+           family={Gauthier},
+           familyi={G\bibinitperiod},
+           given={Jon},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=761438a7357071a9f6987c3bdc67ed5f}{%
+           family={Qian},
+           familyi={Q\bibinitperiod},
+           given={Peng},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7ce2edda3b2abe33680cc22f0dfc1517}{%
+           family={Wilcox},
+           familyi={W\bibinitperiod},
+           given={Ethan},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2e20881923b91d44e8f1ba7e0f38f42c}{%
+           family={Levy},
+           familyi={L\bibinitperiod},
+           given={Roger},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{4}{}{%
+        {{hash=3147296c99a3f829087becd1a4eaec08}{%
+           family={Jurafsky},
+           familyi={J\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=b8d8d0f2eea7025356be957bed3afa4e}{%
+           family={Chai},
+           familyi={C\bibinitperiod},
+           given={Joyce},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6c764a5e5416742214465472b4fc6729}{%
+           family={Schluter},
+           familyi={S\bibinitperiod},
+           given={Natalie},
+           giveni={N\bibinitperiod}}}%
+        {{hash=32d9493b21c7debeff93b29d5110a8d0}{%
+           family={Tetreault},
+           familyi={T\bibinitperiod},
+           given={Joel},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Stroudsburg, PA, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computational Linguistics}%
+      }
+      \strng{namehash}{c14fa22c710ea8e08b07d4e8665a1e6d}
+      \strng{fullhash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{bibnamehash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{authorbibnamehash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{authornamehash}{c14fa22c710ea8e08b07d4e8665a1e6d}
+      \strng{authorfullhash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{editorbibnamehash}{8963a8861ceffaa780e4ca5c344a8653}
+      \strng{editornamehash}{b54aeb64c9e09184a85a84910f037e3c}
+      \strng{editorfullhash}{8963a8861ceffaa780e4ca5c344a8653}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics}
+      \field{title}{A systematic assessment of syntactic generalization in neural language models}
+      \field{year}{2020}
+      \field{pages}{1725\bibrangedash 1744}
+      \range{pages}{20}
+    \endentry
+    \entry{Hyams1986-ae}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=0779c823344edcaae00de2be0274452a}{%
+           family={Hyams},
+           familyi={H\bibinitperiod},
+           given={Nina},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{location}{1}{%
+        {Dordrecht, Netherlands}%
+      }
+      \list{publisher}{1}{%
+        {Kluwer Academic}%
+      }
+      \strng{namehash}{0779c823344edcaae00de2be0274452a}
+      \strng{fullhash}{0779c823344edcaae00de2be0274452a}
+      \strng{bibnamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authorbibnamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authornamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authorfullhash}{0779c823344edcaae00de2be0274452a}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{8}
+      \field{series}{Studies in Theoretical Psycholinguistics}
+      \field{title}{Language acquisition and the theory of parameters}
+      \field{year}{1986}
+    \endentry
+    \entry{Hyams1993-zk}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=0779c823344edcaae00de2be0274452a}{%
+           family={Hyams},
+           familyi={H\bibinitperiod},
+           given={Nina},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0f84973f8d4e7af508aa4558f9a6b611}{%
+           family={Wexler},
+           familyi={W\bibinitperiod},
+           given={Kenneth},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{fullhash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{bibnamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authorbibnamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authornamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authorfullhash}{017fc39e6b4b35f5ee557b88962751bb}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Linguist. Inq.}
+      \field{number}{3}
+      \field{title}{On the grammatical basis of null subjects in child language}
+      \field{volume}{24}
+      \field{year}{1993}
+      \field{pages}{421\bibrangedash 459}
+      \range{pages}{39}
+    \endentry
+    \entry{Michaelov2023-bg}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=af566afaef23856fa40c1c16a0529e22}{%
+           family={Michaelov},
+           familyi={M\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7e44e42bd22f0074dac3999c852135d3}{%
+           family={Arnett},
+           familyi={A\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=30cd619474af9baa047625755945ccac}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Tyler},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8d1c743b7a01462816be6e13a283faa8}{%
+           family={Bergen},
+           familyi={B\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Stroudsburg, PA, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computational Linguistics}%
+      }
+      \strng{namehash}{10306457fc70822f3bc0d9eb9bbc4d36}
+      \strng{fullhash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{bibnamehash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{authorbibnamehash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{authornamehash}{10306457fc70822f3bc0d9eb9bbc4d36}
+      \strng{authorfullhash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{James Michaelov, Catherine Arnett, Tyler Chang, Ben Bergen. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing. 2023.}
+      \field{journaltitle}{Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing}
+      \field{month}{12}
+      \field{title}{Structural priming demonstrates abstract grammatical representations in multilingual language models}
+      \field{year}{2023}
+      \field{pages}{3703\bibrangedash 3720}
+      \range{pages}{18}
+    \endentry
+    \entry{Momma2018-dl}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=6a0d8d7f345943813dd29ec63e9e17fc}{%
+           family={Momma},
+           familyi={M\bibinitperiod},
+           given={Shota},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=61c12d5d2000670f31e99fb4a1575fce}{%
+           family={Slevc},
+           familyi={S\bibinitperiod},
+           given={L\bibnamedelima Robert},
+           giveni={L\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6fd6c9e8e81273c684e8799a212e8c7b}{%
+           family={Phillips},
+           familyi={P\bibinitperiod},
+           given={Colin},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {MIT Press - Journals}%
+      }
+      \strng{namehash}{13e885bff48ac77a111f93e92a75ae04}
+      \strng{fullhash}{af5b682ca873969158a452ec7353b341}
+      \strng{bibnamehash}{af5b682ca873969158a452ec7353b341}
+      \strng{authorbibnamehash}{af5b682ca873969158a452ec7353b341}
+      \strng{authornamehash}{13e885bff48ac77a111f93e92a75ae04}
+      \strng{authorfullhash}{af5b682ca873969158a452ec7353b341}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Linguistic analyses suggest that there are two types of intransitive verbs: unaccusatives, whose sole argument is a patient or theme (e.g., fall), and unergatives, whose sole argument is an agent (e.g., jump). 1 Past psycholinguistic experiments suggest that this distinction affects how sentences are processed: for example, it modulates both comprehension processes ( Bever and Sanz 1997 , Friedmann et al. 2008 ) and production processes ( Kegl 1995 , Kim 2006 , M. Lee and Thompson 2004 , J. Lee and Thompson 2011 , McAllister et al. 2009 ). Given this body of evidence, it is reasonable to assume, as we do here, that this distinction is directly relevant to psycholinguistic theorizing. However, especially in production, exactly how this distinction affects processing is unknown, beyond the suggestion that unaccusatives somehow involve more complex processing than unergatives (see J. Lee and Thompson 2011 ). Here we examine how real-time planning processes in production differ for unaccusatives and unergatives. We build on previous studies on lookahead effects in sentence planning that show that verbs are planned before a deep object is uttered but not before a deep subject is uttered ( Momma, Slevc, and Phillips 2015 , 2016 ). (We use terms like deep subject in a theory-neutral fashion, with no intended commitment to a specific syntactic encoding.) This line of research sheds light on the broader issue of how the theory of argument structure relates to sentence production.}
+      \field{journaltitle}{Linguist. Inq.}
+      \field{month}{1}
+      \field{number}{1}
+      \field{title}{Unaccusativity in sentence production}
+      \field{volume}{49}
+      \field{year}{2018}
+      \field{pages}{181\bibrangedash 194}
+      \range{pages}{14}
+    \endentry
+    \entry{Rizzi1994-tm}{inbook}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=3a9997806c8053ebfb136c367b21844b}{%
+           family={Rizzi},
+           familyi={R\bibinitperiod},
+           given={Luigi},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=b05feed426ceb730a9d87d8c48d68b7f}{%
+           family={Lust},
+           familyi={L\bibinitperiod},
+           given={Barbara},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Amsterdam}%
+      }
+      \list{publisher}{1}{%
+        {John Benjamins Publishing Company}%
+      }
+      \strng{namehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{fullhash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{bibnamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authorbibnamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authornamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authorfullhash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{editorbibnamehash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \strng{editornamehash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \strng{editorfullhash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{around the age of 2, children freely drop subjects, irrespective of whether or not the target language is a null subject language / [examine] this state of affairs in terms of the Null Subject Parameter / the initial setting is the null subject value / a number of structural properties of the early null subjects are emerging that suggest that this phenomenon is quite different from the drop of subjects in an adult grammatical system like Italian / discuss . . . such properties and identify the major configurational constraint: by and large, the early null subject is possible in the 1st position of the structure, that is, in the specifier of the root / then claim that such a configurational constraint is not specific to transitional systems in acquisition: instances of root null subjects can be found in adult grammatical systems; hence they represent a genuine option of Universal Grammar various questions are raised by the existence of root null subjects in acquisition, in special registers, and in normal adult languages / what is the status of the null element involved / how is it licensed and identified / how does it differ from a discourse-bound null operator / why is this option lost in the course of the acquisition of English and many other languages / try to provide a partial answer to these questions by developing an analysis of root null subjects based on the typology of null elements proposed by H. Lasnik and T. Stowell (1991) (PsycINFO Database Record (c) 2016 APA, all rights reserved)}
+      \field{booktitle}{Language Acquisition Studies in Generative Grammar}
+      \field{title}{Early null subjects and root null subjects}
+      \field{volume}{2}
+      \field{year}{1994}
+      \field{pages}{151}
+      \range{pages}{1}
+    \endentry
+    \entry{Warstadt2020-yx}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=d97b53c2cf0e9705139aa82b343c3d1d}{%
+           family={Warstadt},
+           familyi={W\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=fc3587de57b6b9868eab5cb9c8efc3fb}{%
+           family={Bowman},
+           familyi={B\bibinitperiod},
+           given={Samuel\bibnamedelima R},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{fullhash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{bibnamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authorbibnamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authornamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authorfullhash}{f234218e21b4709805f6ab90a777b78e}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the 42nd Annual Conference of the Cognitive Science Society.}
+      \field{title}{Can neural networks acquire a structural bias from raw linguistic data?}
+      \field{year}{2020}
+    \endentry
+    \entry{Yang2003-fn}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=9c6246636b7324c8244256394407d269}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Charles\bibnamedelima D},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{location}{1}{%
+        {London, England}%
+      }
+      \list{publisher}{1}{%
+        {Oxford University Press}%
+      }
+      \strng{namehash}{9c6246636b7324c8244256394407d269}
+      \strng{fullhash}{9c6246636b7324c8244256394407d269}
+      \strng{bibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorbibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authornamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorfullhash}{9c6246636b7324c8244256394407d269}
+      \field{extraname}{1}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{2}
+      \field{title}{Knowledge and learning in natural language}
+      \field{year}{2003}
+    \endentry
+    \entry{Yang2004-wk}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=9c6246636b7324c8244256394407d269}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Charles\bibnamedelima D},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier BV}%
+      }
+      \strng{namehash}{9c6246636b7324c8244256394407d269}
+      \strng{fullhash}{9c6246636b7324c8244256394407d269}
+      \strng{bibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorbibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authornamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorfullhash}{9c6246636b7324c8244256394407d269}
+      \field{extraname}{2}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Recent demonstrations of statistical learning in infants have reinvigorated the innateness versus learning debate in language acquisition. This article addresses these issues from both computational and developmental perspectives. First, I argue that statistical learning using transitional probabilities cannot reliably segment words when scaled to a realistic setting (e.g. child-directed English). To be successful, it must be constrained by knowledge of phonological structure. Then, turning to the bona fide theory of innateness--the Principles and Parameters framework--I argue that a full explanation of children's grammar development must abandon the domain-specific learning model of triggering, in favor of probabilistic learning mechanisms that might be domain-general but nevertheless operate in the domain-specific space of syntactic parameters.}
+      \field{journaltitle}{Trends Cogn. Sci.}
+      \field{month}{10}
+      \field{number}{10}
+      \field{title}{Universal Grammar, statistics or both?}
+      \field{volume}{8}
+      \field{year}{2004}
+      \field{pages}{451\bibrangedash 456}
+      \range{pages}{6}
+    \endentry
+  \enddatalist
+  \datalist[entry]{nyt/global//global/global}
+    \entry{Arnett2025-kv}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=7e44e42bd22f0074dac3999c852135d3}{%
+           family={Arnett},
+           familyi={A\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=195113100841a54de3a5a0b46c4dcf83}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Tyler\bibnamedelima A},
+           giveni={T\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e9ec4cdc8e2f0edb36399b36acf48be8}{%
+           family={Michaelov},
+           familyi={M\bibinitperiod},
+           given={James\bibnamedelima A},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=14db5228f53d17569e4364271e5f68d5}{%
+           family={Bergen},
+           familyi={B\bibinitperiod},
+           given={Benjamin\bibnamedelima K},
+           giveni={B\bibinitperiod\bibinitdelim K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{9c22d9946fe94082f7ae35345c0b150d}
+      \strng{fullhash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{bibnamehash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{authorbibnamehash}{09ab9340d117a03a1619b1f7ad81550a}
+      \strng{authornamehash}{9c22d9946fe94082f7ae35345c0b150d}
+      \strng{authorfullhash}{09ab9340d117a03a1619b1f7ad81550a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{While crosslingual transfer is crucial to contemporary language models' multilingual capabilities, how it occurs is not well understood. In this paper, we ask what happens to a monolingual language model when it begins to be trained on a second language. Specifically, we train small bilingual models for which we control the amount of data for each language and the order of language exposure. To find evidence of shared multilingual representations, we turn to structural priming, a method used to study grammatical representations in humans. We first replicate previous crosslingual structural priming results and find that after controlling for training data quantity and language exposure, there are asymmetrical effects across language pairs and directions. We argue that this asymmetry may shape hypotheses about human structural priming effects. We also find that structural priming effects are less robust for less similar language pairs, highlighting potential limitations of crosslingual transfer learning and shared representations for typologically diverse languages.}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{journaltitle}{arXiv [cs.CL]}
+      \field{month}{3}
+      \field{title}{On the acquisition of shared grammatical representations in bilingual language models}
+      \field{year}{2025}
+    \endentry
+    \entry{Bloom1970-xr}{book}{}
+      \name{author}{1}{}{%
+        {{un=1,uniquepart=given,hash=315ffee8b5c71ff2d49dbbdc444a046e}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={Lois},
+           giveni={L\bibinitperiod},
+           givenun=1}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {The MIT Press, Massachusetts Institute of Technology}%
+      }
+      \strng{namehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{fullhash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{bibnamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authorbibnamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authornamehash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \strng{authorfullhash}{315ffee8b5c71ff2d49dbbdc444a046e}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{The research reported is an investigation into the early acquisition of grammar by three children from the age of approximately 19 months. Nonlinguistic info...}
+      \field{title}{Language Development}
+      \field{year}{1970}
+    \endentry
+    \entry{Bloom1990-tz}{article}{}
+      \name{author}{1}{}{%
+        {{un=1,uniquepart=given,hash=68b7a01219666a95e8a53f31966cbdfb}{%
+           family={Bloom},
+           familyi={B\bibinitperiod},
+           given={P},
+           giveni={P\bibinitperiod},
+           givenun=1}}%
+      }
+      \list{publisher}{1}{%
+        {The MIT Press}%
+      }
+      \strng{namehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{fullhash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{bibnamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authorbibnamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authornamehash}{68b7a01219666a95e8a53f31966cbdfb}
+      \strng{authorfullhash}{68b7a01219666a95e8a53f31966cbdfb}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Linguistic Inquiry}
+      \field{number}{4}
+      \field{title}{Subjectlees sentences in child language}
+      \field{volume}{21}
+      \field{year}{1990}
+      \field{pages}{491\bibrangedash 504}
+      \range{pages}{14}
+    \endentry
+    \entry{Bock1986-ej}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=1abf0c210ad3bcf2233223c5e882eea0}{%
+           family={Bock},
+           familyi={B\bibinitperiod},
+           given={Kathryn},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{fullhash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{bibnamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authorbibnamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authornamehash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \strng{authorfullhash}{1abf0c210ad3bcf2233223c5e882eea0}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Activation processes appear to have an important impact on the mechanisms of language use, including those responsible for syntactic structure in speech. Some implications of this claim for theories of language performance were examined with a syntactic priming procedure. On each priming trial, subjects produced a priming sentence in one of several syntactic forms. They then viewed an unrelated event in a picture and described it in one sentence. The probability of a particular syntactic form being used in the description increased when that form had occurred in the prime, under presentation conditions that minimized subjects' attention to their speech, to the syntactic features of the priming sentences, and to connections between the priming sentences and the subsequent pictures. This syntactic repetition effect suggests that sentence formulation processes are somewhat inertial and subject to such probabilistic factors as the frequency or recency of use of particular structural forms. Two further experiments showed that this effect was not appreciably modified by variations in certain conceptual characteristics of sentences, and all three experiments found evidence that the effects of priming were specific to features of sentence form, independent of sentence content. The empirical isolability of structural features from conceptual characteristics of successive utterances is consistent with the assumption that some syntactic processes are organized into a functionally independent subsystem.}
+      \field{journaltitle}{Cogn. Psychol.}
+      \field{month}{7}
+      \field{number}{3}
+      \field{title}{Syntactic persistence in language production}
+      \field{volume}{18}
+      \field{year}{1986}
+      \field{pages}{355\bibrangedash 387}
+      \range{pages}{33}
+    \endentry
+    \entry{Cao2021-xi}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=0c64ca7b259292568829c177da0f775b}{%
+           family={Cao},
+           familyi={C\bibinitperiod},
+           given={Rosa},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2c725593104aefef39ea0f27870fe954}{%
+           family={Yamins},
+           familyi={Y\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{fullhash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{bibnamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authorbibnamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authornamehash}{5954ad759ececcf4ad1224a0c5609db2}
+      \strng{authorfullhash}{5954ad759ececcf4ad1224a0c5609db2}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Despite the recent success of neural network models in mimicking animal performance on visual perceptual tasks, critics worry that these models fail to illuminate brain function. We take it that a central approach to explanation in systems neuroscience is that of mechanistic modeling, where understanding the system is taken to require fleshing out the parts, organization, and activities of a system, and how those give rise to behaviors of interest. However, it remains somewhat controversial what it means for a model to describe a mechanism, and whether neural network models qualify as explanatory. We argue that certain kinds of neural network models are actually good examples of mechanistic models, when the right notion of mechanistic mapping is deployed. Building on existing work on model-to-mechanism mapping (3M), we describe criteria delineating such a notion, which we call 3M++. These criteria require us, first, to identify a level of description that is both abstract but detailed enough to be ``runnable'', and then, to construct model-to-brain mappings using the same principles as those employed for brain-to-brain mapping across individuals. Perhaps surprisingly, the abstractions required are those already in use in experimental neuroscience, and are of the kind deployed in the construction of more familiar computational models, just as the principles of inter-brain mappings are very much in the spirit of those already employed in the collection and analysis of data across animals. In a companion paper, we address the relationship between optimization and intelligibility, in the context of functional evolutionary explanations. Taken together, mechanistic interpretations of computational models and the dependencies between form and function illuminated by optimization processes can help us to understand why brain systems are built they way they are.}
+      \field{eprintclass}{q-bio.NC}
+      \field{eprinttype}{arXiv}
+      \field{journaltitle}{arXiv [q-bio.NC]}
+      \field{month}{4}
+      \field{title}{Explanatory models in neuroscience: Part 1 -- taking mechanistic abstraction seriously}
+      \field{year}{2021}
+    \endentry
+    \entry{Chomsky1959-ni}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=28167c0b3800bc5cfb686676277005b0}{%
+           family={Chomsky},
+           familyi={C\bibinitperiod},
+           given={Noam},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{fullhash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{bibnamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authorbibnamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authornamehash}{28167c0b3800bc5cfb686676277005b0}
+      \strng{authorfullhash}{28167c0b3800bc5cfb686676277005b0}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Language}
+      \field{number}{1}
+      \field{title}{A review of {B}.f. Skinner's Verbal Behavior}
+      \field{volume}{35}
+      \field{year}{1959}
+      \field{pages}{26\bibrangedash 58}
+      \range{pages}{33}
+    \endentry
+    \entry{Duguine2017-fr}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b65da82c4e5497a4a6db793fe76aa9f3}{%
+           family={Duguine},
+           familyi={D\bibinitperiod},
+           given={Maia},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Frontiers Media SA}%
+      }
+      \strng{namehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{fullhash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{bibnamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authorbibnamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authornamehash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \strng{authorfullhash}{b65da82c4e5497a4a6db793fe76aa9f3}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This paper proposes a new model for null subjects, and focuses on its implications for language development. The literature on pro-drop generally considers that not allowing null subjects is, informally speaking, the ``default'' option in natural languages, and appeals to particular morphosyntactic mechanisms in order to account for those languages in which the subject can be omitted. Shifting the perspective, the inverse approach postulates that pro-drop is (almost) a default grammatical setting, and that non-pro-drop results from the intervention of independent factors that block pro-drop in the derivation. The paper explores the consequences of the inverse approach in the domain of language acquisition, arguing that this model allows to account for a number of properties of child languages. It opens an avenue of research worth exploring, one that could give new solutions to old problems.}
+      \field{journaltitle}{Front. Psychol.}
+      \field{month}{2}
+      \field{title}{Reversing the approach to null subjects: A perspective from language acquisition}
+      \field{volume}{8}
+      \field{year}{2017}
+      \field{pages}{27}
+      \range{pages}{1}
+      \keyw{case; language acquisition; language variation; null subjects; pro-drop}
+    \endentry
+    \entry{Hu2020-bb}{inbook}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=dc6f1ef17e7db4e09f70308b9209aaf7}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Jennifer},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9e559d4f596320e7d6bc8e91bbd66acd}{%
+           family={Gauthier},
+           familyi={G\bibinitperiod},
+           given={Jon},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=761438a7357071a9f6987c3bdc67ed5f}{%
+           family={Qian},
+           familyi={Q\bibinitperiod},
+           given={Peng},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7ce2edda3b2abe33680cc22f0dfc1517}{%
+           family={Wilcox},
+           familyi={W\bibinitperiod},
+           given={Ethan},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2e20881923b91d44e8f1ba7e0f38f42c}{%
+           family={Levy},
+           familyi={L\bibinitperiod},
+           given={Roger},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{4}{}{%
+        {{hash=3147296c99a3f829087becd1a4eaec08}{%
+           family={Jurafsky},
+           familyi={J\bibinitperiod},
+           given={Dan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=b8d8d0f2eea7025356be957bed3afa4e}{%
+           family={Chai},
+           familyi={C\bibinitperiod},
+           given={Joyce},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6c764a5e5416742214465472b4fc6729}{%
+           family={Schluter},
+           familyi={S\bibinitperiod},
+           given={Natalie},
+           giveni={N\bibinitperiod}}}%
+        {{hash=32d9493b21c7debeff93b29d5110a8d0}{%
+           family={Tetreault},
+           familyi={T\bibinitperiod},
+           given={Joel},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Stroudsburg, PA, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computational Linguistics}%
+      }
+      \strng{namehash}{c14fa22c710ea8e08b07d4e8665a1e6d}
+      \strng{fullhash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{bibnamehash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{authorbibnamehash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{authornamehash}{c14fa22c710ea8e08b07d4e8665a1e6d}
+      \strng{authorfullhash}{76e512f2b9bef11f3772965a5d02ee1c}
+      \strng{editorbibnamehash}{8963a8861ceffaa780e4ca5c344a8653}
+      \strng{editornamehash}{b54aeb64c9e09184a85a84910f037e3c}
+      \strng{editorfullhash}{8963a8861ceffaa780e4ca5c344a8653}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics}
+      \field{title}{A systematic assessment of syntactic generalization in neural language models}
+      \field{year}{2020}
+      \field{pages}{1725\bibrangedash 1744}
+      \range{pages}{20}
+    \endentry
+    \entry{Hyams1986-ae}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=0779c823344edcaae00de2be0274452a}{%
+           family={Hyams},
+           familyi={H\bibinitperiod},
+           given={Nina},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{location}{1}{%
+        {Dordrecht, Netherlands}%
+      }
+      \list{publisher}{1}{%
+        {Kluwer Academic}%
+      }
+      \strng{namehash}{0779c823344edcaae00de2be0274452a}
+      \strng{fullhash}{0779c823344edcaae00de2be0274452a}
+      \strng{bibnamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authorbibnamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authornamehash}{0779c823344edcaae00de2be0274452a}
+      \strng{authorfullhash}{0779c823344edcaae00de2be0274452a}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{8}
+      \field{series}{Studies in Theoretical Psycholinguistics}
+      \field{title}{Language acquisition and the theory of parameters}
+      \field{year}{1986}
+    \endentry
+    \entry{Hyams1993-zk}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=0779c823344edcaae00de2be0274452a}{%
+           family={Hyams},
+           familyi={H\bibinitperiod},
+           given={Nina},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0f84973f8d4e7af508aa4558f9a6b611}{%
+           family={Wexler},
+           familyi={W\bibinitperiod},
+           given={Kenneth},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{fullhash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{bibnamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authorbibnamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authornamehash}{017fc39e6b4b35f5ee557b88962751bb}
+      \strng{authorfullhash}{017fc39e6b4b35f5ee557b88962751bb}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Linguist. Inq.}
+      \field{number}{3}
+      \field{title}{On the grammatical basis of null subjects in child language}
+      \field{volume}{24}
+      \field{year}{1993}
+      \field{pages}{421\bibrangedash 459}
+      \range{pages}{39}
+    \endentry
+    \entry{Michaelov2023-bg}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=af566afaef23856fa40c1c16a0529e22}{%
+           family={Michaelov},
+           familyi={M\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7e44e42bd22f0074dac3999c852135d3}{%
+           family={Arnett},
+           familyi={A\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=30cd619474af9baa047625755945ccac}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Tyler},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8d1c743b7a01462816be6e13a283faa8}{%
+           family={Bergen},
+           familyi={B\bibinitperiod},
+           given={Ben},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Stroudsburg, PA, USA}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computational Linguistics}%
+      }
+      \strng{namehash}{10306457fc70822f3bc0d9eb9bbc4d36}
+      \strng{fullhash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{bibnamehash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{authorbibnamehash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \strng{authornamehash}{10306457fc70822f3bc0d9eb9bbc4d36}
+      \strng{authorfullhash}{57dcd19b7478d7ff9e0a2ee5aca311d3}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{James Michaelov, Catherine Arnett, Tyler Chang, Ben Bergen. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing. 2023.}
+      \field{journaltitle}{Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing}
+      \field{month}{12}
+      \field{title}{Structural priming demonstrates abstract grammatical representations in multilingual language models}
+      \field{year}{2023}
+      \field{pages}{3703\bibrangedash 3720}
+      \range{pages}{18}
+    \endentry
+    \entry{Momma2018-dl}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=6a0d8d7f345943813dd29ec63e9e17fc}{%
+           family={Momma},
+           familyi={M\bibinitperiod},
+           given={Shota},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=61c12d5d2000670f31e99fb4a1575fce}{%
+           family={Slevc},
+           familyi={S\bibinitperiod},
+           given={L\bibnamedelima Robert},
+           giveni={L\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6fd6c9e8e81273c684e8799a212e8c7b}{%
+           family={Phillips},
+           familyi={P\bibinitperiod},
+           given={Colin},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {MIT Press - Journals}%
+      }
+      \strng{namehash}{13e885bff48ac77a111f93e92a75ae04}
+      \strng{fullhash}{af5b682ca873969158a452ec7353b341}
+      \strng{bibnamehash}{af5b682ca873969158a452ec7353b341}
+      \strng{authorbibnamehash}{af5b682ca873969158a452ec7353b341}
+      \strng{authornamehash}{13e885bff48ac77a111f93e92a75ae04}
+      \strng{authorfullhash}{af5b682ca873969158a452ec7353b341}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Linguistic analyses suggest that there are two types of intransitive verbs: unaccusatives, whose sole argument is a patient or theme (e.g., fall), and unergatives, whose sole argument is an agent (e.g., jump). 1 Past psycholinguistic experiments suggest that this distinction affects how sentences are processed: for example, it modulates both comprehension processes ( Bever and Sanz 1997 , Friedmann et al. 2008 ) and production processes ( Kegl 1995 , Kim 2006 , M. Lee and Thompson 2004 , J. Lee and Thompson 2011 , McAllister et al. 2009 ). Given this body of evidence, it is reasonable to assume, as we do here, that this distinction is directly relevant to psycholinguistic theorizing. However, especially in production, exactly how this distinction affects processing is unknown, beyond the suggestion that unaccusatives somehow involve more complex processing than unergatives (see J. Lee and Thompson 2011 ). Here we examine how real-time planning processes in production differ for unaccusatives and unergatives. We build on previous studies on lookahead effects in sentence planning that show that verbs are planned before a deep object is uttered but not before a deep subject is uttered ( Momma, Slevc, and Phillips 2015 , 2016 ). (We use terms like deep subject in a theory-neutral fashion, with no intended commitment to a specific syntactic encoding.) This line of research sheds light on the broader issue of how the theory of argument structure relates to sentence production.}
+      \field{journaltitle}{Linguist. Inq.}
+      \field{month}{1}
+      \field{number}{1}
+      \field{title}{Unaccusativity in sentence production}
+      \field{volume}{49}
+      \field{year}{2018}
+      \field{pages}{181\bibrangedash 194}
+      \range{pages}{14}
+    \endentry
+    \entry{Rizzi1994-tm}{inbook}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=3a9997806c8053ebfb136c367b21844b}{%
+           family={Rizzi},
+           familyi={R\bibinitperiod},
+           given={Luigi},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{1}{}{%
+        {{hash=b05feed426ceb730a9d87d8c48d68b7f}{%
+           family={Lust},
+           familyi={L\bibinitperiod},
+           given={Barbara},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Amsterdam}%
+      }
+      \list{publisher}{1}{%
+        {John Benjamins Publishing Company}%
+      }
+      \strng{namehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{fullhash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{bibnamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authorbibnamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authornamehash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{authorfullhash}{3a9997806c8053ebfb136c367b21844b}
+      \strng{editorbibnamehash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \strng{editornamehash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \strng{editorfullhash}{b05feed426ceb730a9d87d8c48d68b7f}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{around the age of 2, children freely drop subjects, irrespective of whether or not the target language is a null subject language / [examine] this state of affairs in terms of the Null Subject Parameter / the initial setting is the null subject value / a number of structural properties of the early null subjects are emerging that suggest that this phenomenon is quite different from the drop of subjects in an adult grammatical system like Italian / discuss . . . such properties and identify the major configurational constraint: by and large, the early null subject is possible in the 1st position of the structure, that is, in the specifier of the root / then claim that such a configurational constraint is not specific to transitional systems in acquisition: instances of root null subjects can be found in adult grammatical systems; hence they represent a genuine option of Universal Grammar various questions are raised by the existence of root null subjects in acquisition, in special registers, and in normal adult languages / what is the status of the null element involved / how is it licensed and identified / how does it differ from a discourse-bound null operator / why is this option lost in the course of the acquisition of English and many other languages / try to provide a partial answer to these questions by developing an analysis of root null subjects based on the typology of null elements proposed by H. Lasnik and T. Stowell (1991) (PsycINFO Database Record (c) 2016 APA, all rights reserved)}
+      \field{booktitle}{Language Acquisition Studies in Generative Grammar}
+      \field{title}{Early null subjects and root null subjects}
+      \field{volume}{2}
+      \field{year}{1994}
+      \field{pages}{151}
+      \range{pages}{1}
+    \endentry
+    \entry{Warstadt2020-yx}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=d97b53c2cf0e9705139aa82b343c3d1d}{%
+           family={Warstadt},
+           familyi={W\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=fc3587de57b6b9868eab5cb9c8efc3fb}{%
+           family={Bowman},
+           familyi={B\bibinitperiod},
+           given={Samuel\bibnamedelima R},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{fullhash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{bibnamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authorbibnamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authornamehash}{f234218e21b4709805f6ab90a777b78e}
+      \strng{authorfullhash}{f234218e21b4709805f6ab90a777b78e}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the 42nd Annual Conference of the Cognitive Science Society.}
+      \field{title}{Can neural networks acquire a structural bias from raw linguistic data?}
+      \field{year}{2020}
+    \endentry
+    \entry{Yang2003-fn}{book}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=9c6246636b7324c8244256394407d269}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Charles\bibnamedelima D},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{location}{1}{%
+        {London, England}%
+      }
+      \list{publisher}{1}{%
+        {Oxford University Press}%
+      }
+      \strng{namehash}{9c6246636b7324c8244256394407d269}
+      \strng{fullhash}{9c6246636b7324c8244256394407d269}
+      \strng{bibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorbibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authornamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorfullhash}{9c6246636b7324c8244256394407d269}
+      \field{extraname}{1}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{2}
+      \field{title}{Knowledge and learning in natural language}
+      \field{year}{2003}
+    \endentry
+    \entry{Yang2004-wk}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=9c6246636b7324c8244256394407d269}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Charles\bibnamedelima D},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier BV}%
+      }
+      \strng{namehash}{9c6246636b7324c8244256394407d269}
+      \strng{fullhash}{9c6246636b7324c8244256394407d269}
+      \strng{bibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorbibnamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authornamehash}{9c6246636b7324c8244256394407d269}
+      \strng{authorfullhash}{9c6246636b7324c8244256394407d269}
+      \field{extraname}{2}
+      \field{sortinit}{Y}
+      \field{sortinithash}{fd67ad5a9ef0f7456bdd9aab10fe1495}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \true{uniqueprimaryauthor}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Recent demonstrations of statistical learning in infants have reinvigorated the innateness versus learning debate in language acquisition. This article addresses these issues from both computational and developmental perspectives. First, I argue that statistical learning using transitional probabilities cannot reliably segment words when scaled to a realistic setting (e.g. child-directed English). To be successful, it must be constrained by knowledge of phonological structure. Then, turning to the bona fide theory of innateness--the Principles and Parameters framework--I argue that a full explanation of children's grammar development must abandon the domain-specific learning model of triggering, in favor of probabilistic learning mechanisms that might be domain-general but nevertheless operate in the domain-specific space of syntactic parameters.}
+      \field{journaltitle}{Trends Cogn. Sci.}
+      \field{month}{10}
+      \field{number}{10}
+      \field{title}{Universal Grammar, statistics or both?}
+      \field{volume}{8}
+      \field{year}{2004}
+      \field{pages}{451\bibrangedash 456}
+      \range{pages}{6}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

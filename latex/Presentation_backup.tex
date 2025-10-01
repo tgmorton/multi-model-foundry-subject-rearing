@@ -1,0 +1,1686 @@
+% For draft mode without transitions, uncomment the next line:
+%\documentclass[aspectratio=169,handout]{beamer}
+% For presentation mode with transitions, use this line:
+\documentclass[aspectratio=169]{beamer}
+
+% --- Theme (manual import if you have the .sty locally) ---
+% Either:
+\usepackage{beamerthemeCleanEasy}
+% or, if installed via TeX Live/MiKTeX:
+% \usetheme{CleanEasy}
+
+% --- Language & APA bibliography ---
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[backend=biber, style=apa, sorting=nyt, doi=true, url=true]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Jul10.bib} % <-- point to your .bib file
+
+% --- Table packages ---
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{makecell}  % for \thead command
+\usepackage{pifont}    % for \ding symbols
+
+% --- Linguistic examples ---
+% Using standard LaTeX for examples to avoid package conflicts
+
+% --- Figure/caption tuning ---
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\footnotesize}
+\setbeamercolor{caption name}{fg=gray}
+
+% --- Graphics search paths (shorten your include paths) ---
+\graphicspath{{../analysis/paper_figures/main/}{../analysis/paper_figures/wide/}{../analysis/paper_figures/supplementary/}}
+
+\title{Small Language Models as a tool to investigate the acquisition of the Null-Subject constraint}
+\author{Thomas Morton}
+\date{August 21, 2025}
+
+\begin{document}
+
+% Content
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \centering
+  \Large
+  
+  \vspace{1em}
+  
+  I want to investigate \textbf{how humans learn syntactic generalizations} from linguistic evidence.
+  
+  \vspace{0.8em}
+  
+  I seek to use \textbf{large language models as candidate models} of a language learner that we can \textbf{intervene on and investigate} the representations of.
+  
+  \vspace{0.8em}
+  
+  I chose to use the \textbf{acquisition and representation of null subjects} as a case study in this investigation.
+  
+\end{frame}
+
+% Introduction: Theoretical Foundation
+\begin{frame}
+  \frametitle{The Null-Subject Constraint in Language Acquisition}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Cross-Linguistic Variation}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Languages differ in whether they allow phonologically null subjects
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{English (Non-pro-drop):}
+      \begin{itemize}
+        \item \textit{She/*$\emptyset$ runs}
+        \item \textit{It/*$\emptyset$ rains}
+        \item Overt subjects required
+      \end{itemize}
+      
+    \column{0.48\textwidth}
+      \textbf{Italian (Pro-drop):}
+      \begin{itemize}
+        \item \textit{(Lei) corre} '(She) runs'
+        \item \textit{$\emptyset$/*Ci piove} '(It) rains'
+        \item Rich verbal agreement
+      \end{itemize}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \textbf{Acquisition Challenge \parencite{Hyams1986-ae,Rizzi1994-tm} :}
+  \begin{itemize}
+    \item Children show early null subjects across languages
+    \item Must learn when overt subjects are required vs. optional
+  \end{itemize}
+\end{frame}
+
+% Poverty of Stimulus and Learnability
+\begin{frame}
+  \frametitle{The Poverty of Stimulus Problem}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Learnability Challenge}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    How do children learn from positive evidence alone? \parencite{Hyams1993-zk}
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{The Problem:}
+  \begin{itemize}
+    \item<1-> Children rarely receive negative evidence (*"$\emptyset$ runs" is ungrammatical)
+    \item<2-> Yet they successfully acquire language-specific constraints
+    \item<3-> \textbf{Poverty of Stimulus:} Input seems insufficient for learning \parencite{Chomsky1959-ni}
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Competing Accounts:}
+  \begin{itemize}
+    \item<4-> \textbf{Indirect distributional evidence:} Orthogonal grammatical information guides linguistic generalizations \parencite{Yang2004-wk}
+    \item<5-> \textbf{Direct evidence:} Overt forms signal constraints \parencite{Hyams1993-zk}
+  \end{itemize}
+  }
+\end{frame}
+
+% Large Language Models as Learners
+\begin{frame}
+  \frametitle{Large Language Models as Candidate Learners}
+  
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+%    \textbf{A New Test Case}
+%  \end{beamercolorbox}
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+%    Do LLMs learn the null-subject constraint like child learners?
+%  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Key Advantages:}
+  \begin{itemize}
+    \item<1-> \textbf{Controlled input:} Manipulate training data systematically
+    \item<2-> \textbf{Developmental tracking:} Observe learning over time
+    \item<3-> \textbf{Multiple architectures:} Test different learning mechanisms
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Recent Evidence \parencite{Warstadt2020-yx,Hu2020-bb}:}
+  \begin{itemize}
+    \item<4-> LLMs acquire many syntactic generalizations
+    \item<5-> Show human-like developmental trajectories
+    \item<6-> BUT: Trained on massive datasets ($>>$child input)
+  \end{itemize}
+  }
+  
+  \vspace{0.8em}
+  
+  \onslide<7->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    \textbf{This Work:} Train models on developmentally-plausible corpora to test questions of sufficiency of the language input.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% Contravariance Principle
+\begin{frame}
+  \frametitle{The Contravariance Principle}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Why Do Models and Humans Converge? \parencite{Cao2021-xi}}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Hard computational problems constrain possible solutions
+  \end{beamercolorbox}
+  
+  \vspace{1em}
+  
+  \textbf{Core Insight:}
+  \begin{itemize}
+    \item<1-> \textbf{Hard problems} require satisfying multiple competing constraints
+    \item<2-> \textbf{Few viable solutions} exist under such constraints
+    \item<3-> \textbf{Different systems} solving the same hard problem converge
+  \end{itemize}
+  
+  \vspace{1em}
+  
+  \onslide<4->{
+  \textbf{Applied to Language:}
+  \begin{itemize}
+    \item<4-> Null-subject acquisition involves multiple competing constraints
+    \item<5-> Flexible learners (models and humans) should converge to similar solutions
+    \item<6-> Convergence toward the simplest viable explanation
+  \end{itemize}
+  }
+\end{frame}
+
+% Planonic Representation Hypothesis
+\begin{frame}
+  \frametitle{The Planonic Representation Hypothesis}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Linking Theory: Internal Representations $\leftrightarrow$ Linguistic Competence}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Abstract syntactic knowledge should be observable in model representations
+  \end{beamercolorbox}
+  
+  \vspace{1em}
+  
+  \textbf{Key Claims:}
+  \begin{itemize}
+    \item<1-> \textbf{Structural priming} reveals abstract grammatical representations \parencite{Bock1986-ej}
+    \item<2-> \textbf{Cross-linguistic effects} suggest language-independent structure \parencite{Michaelov2023-bg,Arnett2025-kv}
+    \item<3-> \textbf{Null elements} can be positively represented \parencite{Momma2018-dl}
+  \end{itemize}
+  
+  \vspace{1em}
+  
+  \onslide<4->{
+  \textbf{Methodological Innovation:}
+  \begin{itemize}
+    \item<4-> Use structural priming to probe model competence
+    \item<5-> Test representations beyond surface performance
+    \item<6-> Bridge psycholinguistics and computational modeling
+  \end{itemize}
+  }
+\end{frame}
+
+% Predictions and Applications
+\begin{frame}
+  \frametitle{Predictions for Null-Subject Learning}
+  
+  \textbf{Theoretical Prediction:}
+  \begin{itemize}
+    \item<1-> Models solving the hard null-subject problem should converge to human-like representations
+    \item<2-> The Model's generalizations should effect language learning in the same way that it effects human multilingual learning
+    \item<3-> Abstract representations should transcend surface linguistic differences
+  \end{itemize}
+  
+  \vspace{1em}
+  
+  \onslide<4->{
+  \textbf{Empirical Tests:}
+  \begin{itemize}
+    \item<1-> \textbf{Chapter 1:} Do models learn null-subject constraints like humans?
+    \item<2-> \textbf{Chapter 2:} Do bilingual models show human-like transfer effects?
+    \item<3-> \textbf{Chapter 3:} Do models exhibit cross-linguistic structural priming?
+  \end{itemize}
+  }
+ 
+\end{frame}
+
+\begin{frame}{Contents}
+  % Chapter 1
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Chapter 1: A controlled rearing study of the null-subject constraint in English}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    {\footnotesize Investigate the contribution of individual sources of evidence in the acquisition of the null-subject constraint by performing ablative experiments on the datasets}
+  \end{beamercolorbox}
+  
+  \vspace{0.5em}
+  
+  % Chapter 2
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title alerted}
+    \textbf{Chapter 2: Transfer effects in bilingual acquisition of the null-subject constraint}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+    {\footnotesize Investigate the cross-language transfer effects of learning competing null-subject generalizations in sequential language learning}
+  \end{beamercolorbox}
+  
+  \vspace{0.5em}
+  
+  % Chapter 3
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title example}
+    \textbf{Chapter 3: The syntactic priming of null-subjects cross-linguistically}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    {\footnotesize Investigate models abstract representations using syntactic priming effects as a measure.}
+  \end{beamercolorbox}
+\end{frame}
+
+
+% ==================================================================
+% CHAPTER 1: A controlled rearing study of the null-subject constraint in English
+% ==================================================================
+
+% Chapter 1 overview
+\begin{frame}
+  \frametitle{Chapter 1: A controlled rearing study of the null-subject constraint in English}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block body}
+    \textbf{Research Questions:}
+    \begin{itemize}
+    	\item<1-> Do English Small Language Models learn the null-subject constraint in a human-like way?
+
+    	\item<2-> What kind of linguistic information contributes to the learning of that constraint?
+
+    	\item<3-> Do model's show human-like behavior in contexts with higher processing demands?
+    \end{itemize}
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Approach:}
+  \begin{itemize}
+    \item<4-> Controlled rearing experiments with ablated training data
+    \item<5-> Systematic removal of specific linguistic evidence types
+    \item<6-> Manipulation of evaluation stimuli to examine contextual processing effects
+  \end{itemize}
+  }
+  
+  \vspace{0.5em}
+\end{frame}
+
+
+% The null-subject constraint
+\begin{frame}
+  \frametitle{The Null-Subject Constraint in English}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{What is the null-subject constraint?}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    English requires overt subjects in finite clauses (unlike Spanish, Italian, etc.)
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Adult English Constraint:}
+  \begin{itemize}
+    \item[\textcolor{red}{\textbf{*}}] \emph{$\emptyset$ Finished the book} (ungrammatical)
+    \item[\textcolor{green}{\checkmark}] \emph{She finished the book} (grammatical)
+  \end{itemize}
+  
+  \vspace{0.5em}
+  
+  \textbf{Child Null-Subject Use Examples:}
+  \begin{itemize}
+    \item \textit{Shake hands.}
+    \item \textit{Turn light off.}
+    \item \textit{Want go get it.}
+    \item \textit{Show mommy that.}
+    \item \textit{Now making muffins.}
+  \end{itemize}
+  
+  
+  
+  
+ \end{frame}
+
+% Accounts of Subject Drop
+\begin{frame}
+  \frametitle{Performance vs. Competence Accounts}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Why Do Children Drop Subjects?}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Two competing explanations for child null-subject patterns
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{Performance Account \parencite{Bloom1970-xr,Bloom1990-tz}:}
+      \begin{itemize}
+        \item Children drop subjects under processing load
+        \item Cognitive resource limitations
+        \item More drops with negation, longer sentences
+        \item Subject/object asymmetry due to planning
+      \end{itemize}
+      
+    \column{0.48\textwidth}
+      \textbf{Competence Account \parencite{Hyams1986-ae,Hyams1993-zk}:}
+      \begin{itemize}
+        \item Children initially set null-subject parameter
+        \item Must learn overt subject requirement
+        \item Grammatical learning, not performance
+        \item Direct evidence from overt pronouns
+      \end{itemize}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \textbf{Key Debate:} Processing limitation vs. grammatical parameter setting
+\end{frame}
+
+\begin{frame}
+  \frametitle{Specific Theoretical Accounts}
+  
+  \textbf{Yang's Variational Learning \parencite{Yang2003-fn,Yang2004-wk}:}
+  \begin{itemize}
+    \item<1-> \textbf{Expletives} are crucial unambiguous evidence
+    \item<2-> Probabilistic grammar competition 
+    \item<3-> Rarity of expletives explains slow English acquisition
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Hyams' Triggering Theory \parencite{Hyams1993-zk}:}
+  \begin{itemize}
+    \item<4-> \textbf{Non-uniform verbal morphology} triggers parameter reset
+    \item<5-> Italian: uniformly rich, Mandarin: uniformly poor $\rightarrow$ null subjects
+    \item<6-> English: inconsistent system $\rightarrow$ overt subjects required
+  \end{itemize}
+  }
+  
+  \vspace{0.8em}
+  
+  \onslide<7->{
+  \textbf{Duguine's Inverse Approach \parencite{Duguine2017-fr}:}
+  \begin{itemize}
+    \item<7-> \textbf{Rich determiners + weak agreement} $\rightarrow$ overt subjects
+    \item<8-> Nominal domain provides indirect evidence
+    \item<9-> Focus shifts from verbal to determiner system
+  \end{itemize}`	
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Experimental Design Rationale}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Testing Causal Contributions}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Each experiment targets specific theoretical predictions
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Theory-Experiment Mapping:}
+  \begin{itemize}
+    \item<1-> \textbf{Exp 1 - Remove Expletives:} Tests Yang's prediction about expletive evidence
+    \item<2-> \textbf{Exp 2 - Impoverish Determiners:} Tests Duguine's rich determiner hypothesis  
+    \item<3-> \textbf{Exp 3 - Remove Articles:} Further tests determiner system importance
+    \item<4-> \textbf{Exp 4 - Lemmatize Verbs:} Tests Hyams' verbal morphology prediction
+    \item<5-> \textbf{Exp 5 - Remove Pronouns:} Tests direct vs. indirect evidence accounts
+  \end{itemize}
+  
+\end{frame}
+
+%% Sources of evidence
+%\begin{frame}
+%  \frametitle{Sources of Evidence for the Null-Subject Constraint}
+%  
+%  \textbf{What linguistic evidence might inform acquisition?}
+%  
+%  \vspace{0.8em}
+%  
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.48\textwidth}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Positive Evidence}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        \begin{itemize}
+%          \item Expletive subjects: \emph{It rains}
+%          \item Pronominal subjects: \emph{She left}
+%          \item Full DP subjects: \emph{The cat slept}
+%        \end{itemize}
+%      \end{beamercolorbox}
+%      
+%    \column{0.48\textwidth}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Morphological Cues}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        \begin{itemize}
+%          \item Verbal agreement: \emph{-s} marking
+%          \item Determiner system: \emph{a/the}
+%          \item Case marking (limited in English)
+%        \end{itemize}
+%      \end{beamercolorbox}
+%  \end{columns}
+%  
+%  \vspace{0.8em}
+%  
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+%    \textbf{Research Question:} Which of these evidence sources are \emph{necessary} vs. \emph{sufficient} for acquiring the constraint?
+%  \end{beamercolorbox}
+%\end{frame}
+
+% Experimental design
+\begin{frame}
+  \frametitle{Experimental Design: Controlled Rearing}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Controlled Rearing Paradigm}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Train models on systematically modified datasets to isolate evidence contributions
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Ablation Experiments:}
+  \begin{enumerate}
+    \item[0] \textbf{Baseline:} Full training corpus
+    \item[1] \textbf{Remove Expletives:} No \emph{it/there} expletive constructions
+    \item[2] \textbf{Impoverish Determiners:} Reduce \emph{a/the} to \emph{DET}
+    \item[3] \textbf{Remove Articles:} No \emph{a/the} entirely
+    \item[4] \textbf{Lemmatize Verbs:} Remove \emph{-s/-ed/-ing} morphology  
+    \item[5] \textbf{Remove Subject Pronominals:} No \emph{I/you/he/she/it/we/they}
+  \end{enumerate}
+  
+  \vspace{0.5em}
+  
+  \textbf{Evaluation:} Null vs. overt subject preferences in controlled contexts
+\end{frame}
+
+% Experimental conditions
+%\begin{frame}
+%  \frametitle{Experimental Conditions: Ablation Studies}
+%  
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.48\textwidth}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 0: Baseline}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Control condition with complete linguistic evidence}
+%      \end{beamercolorbox}
+%      
+%      \vspace{0.4em}
+%      
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 1: Remove Expletives}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Eliminate dummy subjects to test direct evidence importance}
+%      \end{beamercolorbox}
+%      
+%      \vspace{0.4em}
+%      
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 2: Impoverish Determiners}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Reduce morphological richness while preserving structure}
+%      \end{beamercolorbox}
+%      
+%    \column{0.48\textwidth}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 3: Remove Articles}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Create article-less environment like some languages}
+%      \end{beamercolorbox}
+%      
+%      \vspace{0.4em}
+%      
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 4: Lemmatize Verbs}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Eliminate verbal morphology and agreement markers}
+%      \end{beamercolorbox}
+%      
+%      \vspace{0.4em}
+%      
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Experiment 5: Remove Subject Pronouns}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Eliminate direct evidence for obligatory subjects}
+%      \end{beamercolorbox}
+%  \end{columns}
+%  
+%  \vspace{0.5em}
+%  
+%\end{frame}
+
+% Examples
+
+% MEASUREMENT AND ANALYSIS
+
+\begin{frame}{Measures and Analysis: Overview}
+  \begin{block}{Data and Coding}
+    \begin{itemize}
+      \item Binary outcome: \texttt{correct} = 1 when \textit{null} $<$ \textit{overt} surprisal
+      \item Factors: \texttt{model}, \texttt{form\_type}, \texttt{item\_group}, \texttt{form}
+      \item Training progress: $\log_{10}(\texttt{checkpoint}+1)$
+      \item Baseline condition as reference level
+    \end{itemize}
+  \end{block}
+  
+  \begin{block}{Outcome Definition}
+    \begin{itemize}
+      \item Minimal pairs: \textit{null} vs. \textit{overt} subject realization
+      \item Binary response $Y \in \{0,1\}$ encodes preference
+      \item End-state: \textit{overt} preference (probability scale)
+      \item Acquisition-time: \textit{null} preference
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Logistic Models: Learning Curves and Splines}
+  \begin{block}{GLMMs}
+    $$\operatorname{logit}\Pr(Y=1) = \beta_0 + \operatorname{ns}\bigl(\log_{10}(t+1),\,k\bigr) + u_i$$
+    \begin{itemize}
+      \item Natural spline over log-checkpoint, complexity $k$
+      \item Random intercept: $u_{\texttt{item}} \sim \mathcal{N}(0,\sigma^2)$
+      \item Spline selection: AIC over $K \in \{3,\ldots,7\}$
+    \end{itemize}
+  \end{block}
+  
+  \begin{block}{Training Progress}
+    \begin{itemize}
+      \item Log$_{10}$ scale: $\{0, 10, 100, 1\mathrm{K}, 10\mathrm{K}\}$
+      \item Reflects neural network log-learning dynamics
+      \item Uniform checkpointing across conditions
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Age of Acquisition (AoA) Analysis}
+  \begin{block}{$t_{50}$ (Chance-Level Acquisition)}
+    \begin{itemize}
+      \item Last crossing of 0.50 after burn-in ($\geq 100$ checkpoints)
+      \item Linear interpolation between fitted points
+      \item Right-censored if no crossing
+      \item Bootstrap 95\% CIs ($n=500$)
+    \end{itemize}
+  \end{block}
+  
+  \begin{block}{AoA$_{1/2}$ (Halfway-to-Asymptote)}
+    \begin{itemize}
+      \item End-state $p_{\infty}$ from last 10\% of training
+      \item Threshold: $\theta = (p_{\infty} + 0.5)/2$
+      \item First post-burn-in crossing of $\theta$
+      \item Between-model $\Delta$AoA$_{1/2}$ via paired bootstrap
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Materials: BabyLM Dataset}
+  \textbf{Training Corpus}
+  \begin{itemize}
+    \item 90M word corpus designed for human-sized models
+    \item Linguistically diverse with child-directed speech
+    \item Models linguistic input of 10-14 year old child
+    \item 10M word held-out test set
+    \item 10M word ablation replacement set
+  \end{itemize}
+  
+  \vspace{1em}
+  \textbf{Dataset Composition}
+  \begin{itemize}
+    \item CHILDES (child-directed speech): 29M words
+    \item Project Gutenberg (children's stories): 26M words  
+    \item OpenSubtitles (movie subtitles): 20M words
+    \item Simple English Wikipedia: 15M words
+    \item BNC dialogue + Switchboard: 9M words
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Evaluation Stimuli: Null vs. Overt Subjects}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+    \textbf{Core Contrasts (English non-pro-drop)}
+    \begin{itemize}
+      \item \textbf{Person/Number}: Anna finished. She/*$\emptyset$ thinks... 
+      \item \textbf{Control}: Maria convinced her brother $\emptyset$/*him to leave
+      \item \textbf{Expletives}: *$\emptyset$/It seems that students passed
+      \item \textbf{Topic shift}: Anna called Mark and *$\emptyset$/he refused
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+    \textbf{Minimal Pairs Design}
+    \begin{itemize}
+      \item Sentences differ only in subject realization
+      \item Lexical and contextual content held constant
+      \item Testsfamilies
+      \item Evaluates grammatical vs. processing accounts
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Processing Manipulations}
+  \textbf{Context Complexity (Bloom 1990)}
+  \begin{enumerate}
+    \item \textbf{Simple}: The dog barked. He/*$\emptyset$ scared...
+    \item \textbf{Long NPs}: The large brown dog with red collar barked...
+    \item \textbf{Embedded}: The dog that lived in the house...
+  \end{enumerate}
+  
+  \vspace{1em}
+  \textbf{Negation Effects (Bloom 1970)}
+  \begin{enumerate}
+    \item \textbf{Target negation}: She/*$\emptyset$ doesn't think...
+    \item \textbf{Context negation}: Anna didn't finish. She/*$\emptyset$ thinks...
+    \item \textbf{Double negation}: Both context and target negated
+  \end{enumerate}
+  
+  \vspace{0.5em}
+  \textit{Tests processing load effects on subject drop preferences}
+\end{frame}
+
+% RESULTS
+
+\begin{frame}{Baseline Model -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.50\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1.1\linewidth]{analysis/paper_figures/main/model_baseline.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics for Experiment 0 - Baseline} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that baseline achieved \textbf{AoA at checkpoint 727} \\{\small (95\% CI [664, 791])}. 
+        \item<4-> A \textbf{63.4\% preference for null subjects over first epoch} \\ {\small (95\% CI [62.7, 64.1], \textit{p}$<$.001)}
+        \item<5-> a \textbf{69.6\% preference for overt subjects in the last two epochs of training} \\ {\small (95\% CI [66.5\%, 72.5\%], \textit{p} $<$ .001)}
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exp 1: `Remove Expletives' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/wide/comparison_vs_baseline_overt_only_remove_expletives.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that baseline achieved \textbf{AoA at checkpoint 767} \\{\small (95\% CI [709, 821])}. 
+        \begin{itemize}
+        	\item Which is significantly later than the baseline model {\small ($\Delta$AoA = 39 epochs, 95\% CI [24, 55], p$<$.001)}
+        \end{itemize}
+        \medskip
+        \item<4-> Start-performance and end-performance did not significantly differ from base model.
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exp 2: `Impoverish Determiners' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/wide/comparison_vs_baseline_overt_only_impoverish_determiners.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that baseline achieved \textbf{AoA at checkpoint 3400} \\{\small (95\% CI [3307, 3499])}. 
+        \begin{itemize}
+        	\item Which is significantly later than baseline {\small ($\Delta$AoA = 2672 epochs, 95\% CI [2620, 2724], p$<$.001)}
+        \end{itemize}
+        \medskip
+        \item<4-> The model had a significant, but smaller preference for null subjects by the end of the first epoch.
+        \item<5-> By the end of the final two epochs, it has the strongest preference of all models for overt subjects
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exp 3: `Remove Articles' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/wide/comparison_vs_baseline_overt_only_remove_articles.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 3.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that this model achieved \textbf{AoA at checkpoint 807} \\{\small (95\% CI [758, 861])}. 
+        \begin{itemize}
+        	\item Which is significantly later than baseline {\small ($\Delta$AoA = 80 epochs, 95\% CI [81, 108], p$<$.001)}
+        \end{itemize}
+        \medskip
+        \item<4-> Shows significantly stronger null preference in first epoch (71.7\%) compared to baseline.
+        \item<5-> End-state overt preference (68.2\%) is significantly lower than baseline model.
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exp 4: `Lemmatize Verbs' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/wide/comparison_vs_baseline_overt_only_lemmatize_verbs.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 4.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that this model achieved \textbf{AoA at checkpoint 705} \\{\small (95\% CI [660, 748])}. 
+        \begin{itemize}
+        	\item Which is significantly \textbf{earlier} than baseline {\small ($\Delta$AoA = -22 epochs, 95\% CI [-43, -1.65], p = .034)}
+        \end{itemize}
+        \medskip
+        \item<4-> Fastest acquisition among all interventions.
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Exp 5: `Remove Subject Pronominals' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/wide/comparison_vs_baseline_overt_only_remove_subject_pronominals.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 5.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Age of Acquisition analysis revealed that this model achieved \textbf{AoA at checkpoint 774} \\{\small (95\% CI [706, $>$5000])}. 
+        \begin{itemize}
+        	\item Slightly later than baseline {\small ($\Delta$AoA = 47 epochs, p$<$.05)}
+        \end{itemize}
+        \medskip
+        \item<4-> Weakest overall overt preference (54.4\%) among all models.
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Cross-Model Comparison}
+%  Prior work suggests a modest baseline effect \parencite{einstein1905}. 
+%  We follow the reporting recommendations of \textcite{doe2020guidelines}.
+%  \medskip
+
+  \begin{figure}
+    \centering
+    \vspace{-1em}
+    \caption{Cross-model comparison of null subject acquisition trajectories (log scale)}
+    \vspace{-.5em}
+    \includegraphics[width=.9\linewidth]{analysis/paper_figures/wide/all_models_comparison_log.pdf}
+  \end{figure}
+\end{frame}
+
+% ==================================================================
+% PROCESSING ACCOUNT RESULTS
+% ==================================================================
+
+% Processing account overview
+\begin{frame}
+  \frametitle{Processing Account: Predicted vs. Observed}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Bloom's Processing Account Prediction}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Under increased processing load, children should drop subjects MORE frequently
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{Processing Manipulations:}
+      \begin{itemize}
+        \item Long noun phrases
+        \item Embedded relative clauses  
+        \item Negation contexts
+        \item Target vs. context negation
+      \end{itemize}
+      
+    \column{0.48\textwidth}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+%        \textbf{Our Findings}
+%      \end{beamercolorbox}
+%      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+%        {\footnotesize Models show INCREASED overt subject use under complexity - opposite of prediction}
+%      \end{beamercolorbox}
+  \end{columns}
+  
+  \vspace{1em}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    \textbf{Implication:} Do LLMs omit more subjects in contexts with heavy processing load?
+  \end{beamercolorbox}
+\end{frame}
+
+\begin{frame}{Exp 5: `Remove Subject Pronominals' -- Training Curves}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{analysis/paper_figures/supplementary/forest_form_baseline.pdf}
+		}
+		\vspace{-1.5em}
+		\caption{Model overt preference over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 5.} 
+      \end{figure}
+      
+    \column{0.46\textwidth}
+      \raggedright
+      \begin{itemize}
+        \item<3-> Negation shows the strongest influence on models' choice for overt subjects.
+        \item<4-> The model under these contexts show increased overt preference
+        \item<5-> This is counter to the reported human pattern of higher null subject use in negation contexts.
+      \end{itemize}
+      \medskip
+  \end{columns}
+\end{frame}
+
+% /Users/thomasmorton/subject-drop/analysis/paper_figures/supplementary/forest_form_baseline.pdf
+
+% Processing results by manipulation
+\begin{frame}
+  \frametitle{Processing Effects Across All Models}
+  
+  \centering
+  \resizebox{0.95\textwidth}{!}{%
+    \input{../analysis/tables/latex_tables/forms_vs_default_checkmarks}%
+  }
+  
+  \vspace{0.4em}
+  \addtocounter{table}{1}
+  {\footnotesize \textbf{Table \thetable:} Syntactic forms showing significant deviation from default performance by experimental model}
+  
+
+  \begin{itemize}
+    \item<2-> \textbf{Target/Both negation:} Universally increases overt preference
+    \item<3-> \textbf{Complex syntax:} Largely does not increase overt preference  
+    \item<4-> \textbf{Context negation:} No effect across models
+  \end{itemize}
+\end{frame}
+
+% Theoretical implications
+\begin{frame}
+  \frametitle{Implications for Processing Theories}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+        \textbf{Traditional View}
+      \end{beamercolorbox}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+        \begin{itemize}
+          \item Processing load $\rightarrow$ omit subjects
+          \item "Good enough" processing
+          \item Resource limitation effects
+        \end{itemize}
+      \end{beamercolorbox}
+      
+    \column{0.48\textwidth}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+        \textbf{Model Behavior}
+      \end{beamercolorbox}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+        \begin{itemize}
+          \item Processing load $\rightarrow$ \emph{insert} subjects
+          \item More explicit under complexity
+          \item Robust to context effects
+        \end{itemize}
+      \end{beamercolorbox}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \textbf{Possible Explanations:}
+  \begin{itemize}
+    \item Models and children process complexity fundamentally differently
+    \item Processing accounts may not fully explain child null subject errors
+    \item Need empirical validation of processing effects in human production
+  \end{itemize}
+\end{frame}
+
+% ==================================================================
+% DISCUSSION: MODEL LEARNING BEHAVIOR
+% ==================================================================
+
+% Early null subject stage
+\begin{frame}
+  \frametitle{Universal Early Null Subject Stage}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Surprising Finding: All Models Show Initial Null Subject Preference}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Despite English being overt-subject, ALL models prefer null subjects early in training
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Theoretical Implications:}
+  \begin{itemize}
+    \item<2-> Consistent with some child acquisition patterns (null-first accounts)
+    \item<3-> Contradicts Bloom's prediction that English children default to overt subjects
+    \item<4-> Could reflect model architecture bias OR environmental evidence
+    \item<5-> Most models acquire English-like preferences after approx. 1.5 epochs. 
+  \end{itemize}
+  
+  \vspace{0.5em}
+  
+  \onslide<6->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    \textbf{Question:} Is this a learning bias or evidence from the input environment?
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% Evidence hierarchy and grokking
+\begin{frame}
+  \frametitle{Evidence Types: Shortcuts vs. Deep Learning}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+        \textbf{Direct Evidence}
+      \end{beamercolorbox}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+        \begin{itemize}
+          \item \textbf{Subject pronouns:} Critical
+          \item Remove pronouns $\rightarrow$ near-chance performance
+          \item Supports Hyams' direct evidence account
+        \end{itemize}
+      \end{beamercolorbox}
+      
+    \column{0.48\textwidth}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block title}
+        \textbf{Indirect Evidence}
+      \end{beamercolorbox}
+      \begin{beamercolorbox}[wd=\textwidth,sep=0.2em,colsep=0pt]{block body}
+        \begin{itemize}
+          \item \textbf{Determiners:} Provide "shortcuts"
+          \item \textbf{Verbal morphology:} Affects final strength
+          \item \textbf{Expletives:} Minimal effect
+        \end{itemize}
+      \end{beamercolorbox}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Grokking Hypothesis}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Removing shortcuts (determiners) forces slower but potentially more robust generalization
+  \end{beamercolorbox}
+\end{frame}
+
+% Person hierarchy
+%\begin{frame}
+%  \frametitle{Person Hierarchies: Universal Grammatical Patterns}
+%  
+%  \textbf{Robust Pattern Across All Models:}
+%  
+%  \vspace{0.5em}
+%  
+%  \begin{center}
+%    \Large
+%    \textbf{1st person} $>$ \textbf{2nd person} $\approx$ \textbf{3rd person}
+%    
+%    \vspace{0.3em}
+%    
+%    {\footnotesize (More likely to produce overt subjects)}
+%  \end{center}
+%  
+%  %\vspace{0.8em}
+%  
+%  \textbf{Cross-Linguistic Evidence:}
+%  \begin{itemize}
+%    \item Mirrors person hierarchies in pro-drop languages (Spanish, Italian)
+%    \item Suggests models capture universal grammatical principles
+%    \item 3rd person singular behaves more like determiners in some conditions
+%  \end{itemize}
+%  
+%  \vspace{0.5em}
+%  
+%  \textbf{Theoretical Support:}
+%  \begin{itemize}
+%    \item Carminati (2005): Person-based processing differences
+%    \item Bonet (1991): 3rd person pronouns as determiners
+%  \end{itemize}
+%\end{frame}
+
+% Theoretical implications
+\begin{frame}
+  \frametitle{Broader Theoretical Implications}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{What This Study Challenges}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Multiple acquisition theories need revision based on these findings
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{Challenges:}
+      \begin{itemize}
+        \item Yang's variational learning
+        \item Processing-based accounts
+        \item Simple parameter-setting
+      \end{itemize}
+      
+    \column{0.48\textwidth}
+      \textbf{Supports:}
+      \begin{itemize}
+        \item Hyams' direct evidence account
+        \item Universal grammar constraints
+        \item Gradual, evidence-based learning
+      \end{itemize}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    \textbf{Future Work:} Test these patterns with human participants and cross-linguistic data
+  \end{beamercolorbox}
+\end{frame}
+
+% /Users/thomasmorton/subject-drop/analysis/paper_figures/wide/comparison_vs_baseline_overt_only_impoverish_determiners.pdf
+
+% /Users/thomasmorton/subject-drop/analysis/paper_figures/wide/comparison_vs_baseline_overt_only_remove_expletives.pdf
+
+%\begin{frame}{Forest plot overview}
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.42\textwidth}
+%      \begin{figure}
+%      \onslide<2->{
+%      	\vspace{-1.5em}
+%        \includegraphics[height=0.6\textheight]{forest_item_group_baseline.pdf}}
+%        \vspace{-1.5em}
+%        \caption{Model preferences for overt subjects by processing manipulation at final checkpoint for Experiment 0 - Baseline}
+%      \end{figure}
+%    \column{0.4\textwidth}
+%      \raggedright
+%      \begin{itemize}
+%        \item Effects cluster near zero; two groups stand out \parencite{smith2021effects}.
+%      \end{itemize}
+%  \end{columns}
+%\end{frame}
+
+
+
+%% ------------------------------------------------------------------
+%% Example: Model preferences table
+%% ------------------------------------------------------------------
+%\begin{frame}{Model Preference Summary}
+%  \centering
+%  \begin{table}
+%  	\vspace{-2em}
+%    \include{analysis/tables/latex_tables/simple_aoa_table}
+%    \caption{Null vs. Overt Subject Preferences by Model}
+%  \end{table}
+%  \footnotesize All models show overt preference, with Remove Subject Pronominals showing the smallest bias.
+%\end{frame}
+%
+%% ------------------------------------------------------------------
+%% Example: Acquisition timing table
+%% ------------------------------------------------------------------
+%\begin{frame}{Age of Acquisition Comparison}
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.55\textwidth}
+%      \resizebox{0.9\textwidth}{!}{%
+%        \input{analysis/tables/latex_tables/simple_aoa_table}%
+%      }
+%      
+%      \vspace{0.3em}
+%      {\footnotesize \textbf{Table:} Crossover Points by Model}
+%    \column{0.4\textwidth}
+%      \raggedright
+%      \textbf{Key findings:}
+%      \begin{itemize}
+%        \item Lemmatize Verbs achieves earliest acquisition
+%        \item Impoverish Determiners shows dramatically delayed acquisition
+%        \item Most interventions cluster around 700-800 checkpoints
+%      \end{itemize}
+%  \end{columns}
+%\end{frame}
+%
+%% ------------------------------------------------------------------
+%% Example: cite in text while showing a full-width figure
+%% ------------------------------------------------------------------
+%\begin{frame}{Baseline model at a glance}
+%  Prior work suggests a modest baseline effect \parencite{einstein1905}. 
+%  We follow the reporting recommendations of \textcite{doe2020guidelines}.
+%  \medskip
+%
+%  \begin{figure}
+%    \centering
+%    \includegraphics[width=.6\linewidth]{model_baseline.pdf}
+%    \caption{Model baseline (vector PDF keeps labels crisp on projector).}
+%  \end{figure}
+%\end{frame}
+%
+%% ------------------------------------------------------------------
+%% Example: tall figure LEFT, commentary RIGHT, with citations
+%% ------------------------------------------------------------------
+%\begin{frame}{Forest plot overview \hfill \normalsize Notes}
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.42\textwidth}
+%      \begin{figure}
+%        \includegraphics[height=0.6\textheight]{forest_item_group_baseline.pdf}
+%        \caption{Item-group baseline.}
+%      \end{figure}
+%    \column{0.4\textwidth}
+%      \raggedright
+%      \textbf{Key takeaways}
+%      \begin{itemize}
+%        \item Effects cluster near zero; two groups stand out \parencite{smith2021effects}.
+%      \end{itemize}
+%      \medskip
+%      \textbf{Reading tips}
+%      \begin{itemize}
+%        \item Align axis/units with other slides for fast comparison.
+%        \item Legends: show once; avoid duplicates to reduce clutter.
+%      \end{itemize}
+%  \end{columns}
+%\end{frame}
+%
+%% ------------------------------------------------------------------
+%% Example: side-by-side comparison with citations in bullets
+%% ------------------------------------------------------------------
+%\begin{frame}{Before vs. After (by form)}
+%  \begin{columns}[T,onlytextwidth]
+%    \column{0.5\textwidth}
+%      \begin{figure}
+%        \includegraphics[width=\linewidth]{baseline_by_form.pdf}
+%        \caption{Baseline by form.}
+%      \end{figure}
+%    \column{0.5\textwidth}
+%      \begin{figure}
+%        \includegraphics[width=\linewidth]{remove_expletives_by_form.pdf}
+%        \caption{After removing expletives.}
+%      \end{figure}
+%  \end{columns}
+%  \vspace{0.4em}
+%  \begin{itemize}
+%    \item Removing expletives reduces variance in sparse categories \parencite{roe2022power}.
+%    \item Visual comparison follows best practices for paired panels \parencite{tufte1990}.
+%  \end{itemize}
+%\end{frame}
+
+% ==================================================================
+% CHAPTER 2: Transfer effects in bilingual acquisition of the null-subject constraint
+% ==================================================================
+
+% Chapter 2 overview
+\begin{frame}
+  \frametitle{Chapter 2: Transfer Effects in Bilingual Acquisition}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block body alerted}
+    \textbf{Core Research Questions:}
+    \begin{itemize}
+    	\item<1-> Are large language models capable of maintaining competence when trained multilingually?
+    	\item<2-> Does the order of language presentation impact learnability of subject drop?
+    	\item<3-> Do L1 transfer effects vary based on evidence strength?
+    \end{itemize}
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Approach:}
+  \begin{itemize}
+    \item<4-> Sequential bilingual training: English $\leftrightarrow$ Italian
+    \item<5-> 2 x 2 design: L1 language x Training duration
+    \item<6-> Evaluate null-subject competence in both languages
+  \end{itemize}
+  }
+  
+  \vspace{0.5em}
+\end{frame}
+
+% Chapter 2 Experiments Overview
+\begin{frame}
+  \frametitle{Chapter 2: Four Bilingual Training Experiments}
+  
+  \textbf{Training Protocol: 90M Dataset} \\
+  \textit{L1 training (1 or 2 epochs) $\rightarrow$ L2 training (5 epochs opposite language)}
+  
+  \vspace{1em}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+    \textbf{English First Models:}
+    \begin{enumerate}
+      \setcounter{enumi}{0}
+      \item \textbf{Experiment 0:} English 1 epoch $\rightarrow$ Italian 5 epochs
+      \item \textbf{Experiment 1:} English 2 epochs $\rightarrow$ Italian 5 epochs
+    \end{enumerate}
+    
+    \column{0.48\textwidth}
+    \textbf{Italian First Models:}
+    \begin{enumerate}
+      \setcounter{enumi}{2}
+      \item \textbf{Experiment 2:} Italian 1 epoch $\rightarrow$ English 5 epochs
+      \item \textbf{Experiment 3:} Italian 2 epochs $\rightarrow$ English 5 epochs
+    \end{enumerate}
+  \end{columns}
+  
+  \vspace{0.8em}
+  
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+    \textbf{Key Question:} Is there asymmetric transfer/impairment between languages?
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+\begin{frame}{Italian Stimuli: Pro-Drop Language}
+  \textbf{Core Contrasts (Italian pro-drop)}
+  
+  \textbf{Person/Number}: Anna ha finito il libro. $\emptyset$/\%Lei pensa che il finale sia perfetto. \\
+  \textit{Anna has finished the book. $\emptyset$/She thinks that the ending is perfect.}
+  
+  \vspace{0.5em}
+  \textbf{Control}: Maria ha convinto suo fratello $\emptyset$/*lui a partire presto. \\
+  \textit{Maria convinced her brother $\emptyset$/*him to leave early.}
+  
+  \vspace{0.5em}
+  \textbf{Expletives}: $\emptyset$/*Sembra che gli studenti abbiano superato l'esame. \\
+  \textit{$\emptyset$/*It seems that the students have passed the exam.}
+  
+  \vspace{0.5em}
+  \textbf{Conjunctions}: Giovanni si è svegliato tardi e $\emptyset$/lui ha perso il treno. \\
+  \textit{Giovanni woke up late and $\emptyset$/he missed the train.}
+  
+  \vspace{1em}
+  \textit{Italian allows null subjects where English requires overt realization}
+\end{frame}
+
+% Default Account and Predictions
+\begin{frame}
+  \frametitle{The 'Default' Account and Predictions}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title alerted}
+    \textbf{Theoretical Background}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+    Children initially default to null subjects, then learn overt subject requirements
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Asymmetry Prediction:}
+  \begin{itemize}
+    \item<1-> \textbf{Italian$\rightarrow$English:} Pro-drop L1 should not differentially impact English L2 learning
+    \item<2-> \textbf{English$\rightarrow$Italian:} Non-pro-drop L1 should impair Italian L2 learning
+    \item<3-> \textbf{Result:} Italian-first models outperform English-first models
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+    \textbf{Critical Test:} Do we see greater transfer benefits vs. interference costs?
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% Chapter 2 Methodology
+\begin{frame}
+  \frametitle{Training Methodology: Four Bilingual Models}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title alerted}
+    \textbf{Training Protocol}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+    Four models trained for 6-7 epochs total with systematic checkpointing
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Checkpoint Strategy:}
+  \begin{itemize}
+    \item<1-> \textbf{Log-step checkpoints} within first epoch: 1, 2, 4, 8, 16, 32...
+    \item<2-> \textbf{Regular checkpoints} throughout L1 and L2 training
+    \item<3-> \textbf{Final 5 epochs} (L2 phase) densely sampled for analysis
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Evaluation Across Training:}
+  \begin{itemize}
+    \item<4-> Models evaluated on both English and Italian stimuli
+    \item<5-> Learning curves constructed for L1 and L2 acquisition
+    \item<6-> Age of Acquisition (AoA) and end-state performance measured
+  \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Predictions: Asymmetric Transfer Effects}
+  
+  \textbf{Key Hypothesis:}
+  \begin{itemize}
+    \item<1-> \textbf{English background} should \emph{impair} Italian L2 learning
+    \item<2-> \textbf{Italian background} should \emph{not impair} English L2 learning
+    \item<3-> Asymmetry reflects different constraint directions
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Specific Predictions:}
+  
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{English L1 Models:}
+      \begin{itemize}
+        \item More English training $\rightarrow$ slower Italian L2
+        \item Delayed AoA for Italian null subjects
+        \item Stronger interference effects
+      \end{itemize}
+      
+    \column{0.48\textwidth}
+      \textbf{Italian L1 Models:}
+      \begin{itemize}
+        \item Amount of Italian training has minimal effect
+        \item Consistent English L2 acquisition
+        \item No systematic interference
+      \end{itemize}
+  \end{columns}
+  }
+  
+%  \vspace{0.8em}
+%  
+%  \onslide<7->{
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body alerted}
+%    \textbf{Test:} Compare L2 learning curves across 1 vs. 2 epoch L1 conditions
+%  \end{beamercolorbox}
+%  }
+\end{frame}
+
+
+% ==================================================================
+% CHAPTER 3: The syntactic priming of null-subjects cross-linguistically
+% ==================================================================
+
+% Chapter 3 overview
+\begin{frame}
+  \frametitle{Chapter 3: Cross-Linguistic Priming of Null Subjects}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block body example}
+    \textbf{Research Questions:}
+    \begin{itemize}
+    	\item<1-> Do large language models form cross-linguistic abstract representations?
+    	\item<2-> Can structural priming reveal competence beyond performance?
+    	\item<3-> How do bilingual models represent the 'absence' of subjects?
+    \end{itemize}
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Method:}
+  \begin{itemize}
+    \item<4-> Prime with null/overt subjects in Language A
+    \item<5-> Measure surprisal on target verbs in Language B
+    \item<6-> Compare cross-linguistic priming effects
+  \end{itemize}
+  }
+  
+  \vspace{0.5em}
+\end{frame}
+
+% Chapter 3 background
+\begin{frame}
+  \frametitle{Cross-Linguistic Structural Priming}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title example}
+    \textbf{Theoretical Motivation}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    If models have abstract syntactic representations, they should show cross-linguistic priming
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Key Innovation:}
+  \begin{itemize}
+    \item<1-> Priming reveals representations that performance tasks cannot
+    \item<2-> Cross-linguistic design eliminates lexical confounds
+    \item<3-> Measures abstract 'absence' of subjects across languages
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Prediction:}
+  \begin{itemize}
+    \item<4-> Null subjects in Language A prime null preference in Language B
+    \item<5-> Overt subjects in Language A prime overt preference in Language B
+    \item<6-> Effects independent of lexical overlap or surface similarity
+  \end{itemize}
+  }
+\end{frame}
+
+% Priming Method Frame
+\begin{frame}
+  \frametitle{Structural Priming Methodology}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title example}
+    \textbf{Surprisal-Based Measurement}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    Following Sinclair et al. (2022) and Momma et al. (2025)
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Calculation:}
+  \begin{itemize}
+    \item<1-> Prime: Null/overt subject in Language A
+    \item<2-> Target: Verb prediction in Language B
+    \item<3-> Compare: -logProb(verb|null\_prime) - -logProb(verb|overt\_prime)
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Critical Insight:}
+  \begin{itemize}
+    \item<4-> No lexical overlap between prime and target
+    \item<5-> No shared surface structure between languages
+    \item<6-> Pure test of abstract syntactic representation
+  \end{itemize}
+  }
+  
+  \vspace{0.5em}
+  
+%  \onslide<7->{
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+%    \textbf{Result:} Competence measurable even when performance tasks fail
+%  \end{beamercolorbox}
+%  }
+\end{frame}
+
+% Cross-Linguistic Priming Design
+\begin{frame}
+  \frametitle{From Parallel Stimuli to Cross-Linguistic Priming}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title example}
+    \textbf{Leveraging Bilingual Evaluation Sets}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    Transform parallel English/Italian stimuli into priming experiments
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Standard Parallel Evaluation:}
+  \begin{itemize}
+    \item<1-> English: \textit{Anna finished. She/*$\emptyset$ thinks...}
+    \item<2-> Italian: \textit{Anna ha finito. $\emptyset$/Lei pensa...}
+    \item<3-> Separate within-language comparisons
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Cross-Linguistic Priming Design:}
+  \begin{itemize}
+    \item<4-> \textbf{Cross-join} English and Italian sentences
+    \item<5-> Prime with Italian \textit{null} $\rightarrow$ Target English verb
+    \item<6-> Prime with Italian \textit{overt} $\rightarrow$ Target English verb
+    \item<7-> Compare surprisal differences across prime conditions
+  \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cross-Linguistic Priming Matrix}
+  
+  \textbf{Experimental Design:}
+  
+  \vspace{0.5em}
+  
+  \begin{center}
+  \begin{tabular}{l|c|c}
+    \textbf{Prime Language} & \textbf{Target Language} & \textbf{Measurement} \\
+    \hline
+    Italian null & English & Surprisal on English verb \\
+    Italian overt & English & Surprisal on English verb \\
+    \hline
+    English null & Italian & Surprisal on Italian verb \\
+    English overt & Italian & Surprisal on Italian verb \\
+  \end{tabular}
+  \end{center}
+  
+  \vspace{0.8em}
+  
+  \textbf{Key Advantages:}
+  \begin{itemize}
+    \item<1-> Syntactic priming should occur with \textbf{no lexical overlap} between prime and target
+    \item<2-> Simple stimuli construction, as we can use any parallel eval set to assess abstract representations as well as preferences
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Priming as a Window into Abstract Syntax}
+  
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title example}
+    \textbf{What Cross-Linguistic Priming Reveals}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    Abstract syntactic knowledge that transcends surface linguistic differences
+  \end{beamercolorbox}
+  
+  \vspace{0.8em}
+  
+  \textbf{Theoretical Predictions:}
+  \begin{itemize}
+    \item<1-> If the model's are not showing robust cross-linguistic priming effects, that indicates that they are developing generalizations in a shallow, concrete way.
+    \item<2-> If the model is forming strong syntactic generalizations, but these are not in the same direction as would be expected for human learners, that is problematic for an approach relying on a Platonic assumption
+  \end{itemize}
+  
+  \vspace{0.8em}
+  
+  \onslide<4->{
+  \textbf{Expected Results:}
+  \begin{itemize}
+    \item<4-> Italian null subjects prime English null preference
+    \item<5-> Italian overt subjects prime English overt preference  
+    \item<6-> and Vice Versa
+  \end{itemize}
+  }
+  
+  \vspace{0.5em}
+  
+  \onslide<8->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body example}
+    \textbf{Innovation:} First test of cross-linguistic null-subject priming in LLMs
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ------------------------------------------------------------------
+% References slide (auto-breaks across slides if long)
+% ------------------------------------------------------------------
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography
+\end{frame}
+
+\end{document}

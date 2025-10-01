@@ -1,0 +1,2044 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% kaobook
+% LaTeX Template
+% Version 1.3 (18/2/20)
+%
+% This template originates from:
+% https://www.LaTeXTemplates.com
+%
+% For the latest template development version and to make contributions:
+% https://github.com/fmarotta/kaobook
+%
+% Authors:
+% Federico Marotta (federicomarotta@mail.com)
+% Giuseppe Silano (g.silano89@gmail.com)
+% Based on the doctoral thesis of Ken Arroyo Ohori (https://3d.bk.tudelft.nl/ken/en)
+% and on the Tufte-LaTeX class.
+% Modified for LaTeX Templates by Vel (vel@latextemplates.com)
+%
+% License:
+% CC0 1.0 Universal (see included MANIFEST.md file)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+	%fontsize=10pt, % Base font size
+	twoside=false, % If true, use different layouts for even and odd pages (in particular, if twoside=true, the margin column will be always on the outside)
+	secnumdepth=0, % How deep to number headings. Defaults to 2 (subsections)
+	%abstract=true, % Uncomment to print the title of the abstract
+	numbers=auto, % Comment to output dots after section numbers; the most common values for this option are: enddot, noenddot and auto (see the KOMAScript documentation for an in-depth explanation)
+	%draft=true, % If uncommented, rulers will be added in the header and footer
+	%overfullrule=true, % If uncommented, overly long lines will be marked by a black box; useful for correcting spacing problems
+]{kaohandt}
+
+
+
+\usepackage{fontspec}
+
+% --- FONT SETUP ---
+% Set the sans-serif font to Helvetica (to replace the old 'helvet' package)
+\setsansfont{Helvetica} 
+
+% Set the monospaced font to Menlo to fix the "LiberationMono not found" error
+\setmonofont{Menlo}
+
+% Your document uses Libertinus for math, so we'll set the main roman font to match.
+\setmainfont{Libertinus Serif}
+
+\addtokomafont{section}{\sffamily}
+
+\setcounter{section}{-1}
+\renewcommand{\thesubsection}{\thesection.\number\numexpr\value{subsection}-1\relax}
+\renewcommand{\thesubsubsection}{\thesubsection.\number\numexpr\value{subsubsection}-1\relax}
+
+
+\newcommand{\hmwkTitle}{Just drop the subject: A controlled rearing study of Subject Drop in English}
+\newcommand{\hmwkDueDate}{In the times before common dating}
+\newcommand{\hmwkClass}{Aug 15, 2025}
+\newcommand{\hmwkClassInstructor}{Kyle Johnson}
+\newcommand{\hmwkAuthorName}{Thomas Morton}
+\newcommand{\problemDenotation}{Question}
+
+% Choose the language
+\usepackage[english]{babel} % Load characters and hyphenation
+
+% Load packages for testing
+\usepackage{blindtext}
+%\usepackage{showframe} % Uncomment to show boxes around the text area, margin, header and footer
+%\usepackage{showlabels} % Uncomment to output the content of \label commands to the document where they are used
+
+%\graphicspath{{images/}{./}} % Paths where images are looked for
+
+% Load mathematical packages for theorems and related environments. NOTE: choose only one between 'mdftheorems' and 'plaintheorems'.
+% \usepackage{styles/mdftheorems}
+\usepackage{styles/mdftheorems}
+
+% Load the bibliography package
+\usepackage[backend=biber]{styles/kaobiblio}
+\addbibresource{Jul10.bib} % Bibliography file
+
+% Load the package for hyperreferences
+\usepackage{styles/kaorefs}
+
+\usepackage[linguistics]{forest}
+\usepackage{extramarks}
+\usepackage{tipa}
+\usepackage{setspace}
+\usepackage{soul}
+\usepackage{pifont}
+\usepackage{csquotes}
+\usepackage{expex}
+\usepackage{thomasling}
+\usepackage{leipzig}
+\usepackage{bigstrut}
+\usepackage{csquotes} % Use the 'english' style for quotes
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage{mathastext}
+\usepackage{makecell}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.16}
+\usepackage{emoji}
+\usepackage{langsci-gb4e}
+\newcommand{\set}[1]{\{#1\}}
+\newcommand{\brac}[1]{{[}#1{]}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\newcommand{\redx}{\textcolor{red}{\sffamily x}}
+
+\setemojifont{Apple Color Emoji}
+\renewcommand{\familydefault}{\sfdefault} % Sets Helvetica as the default font
+
+\newcounter{procedure}
+
+\begin{document}
+
+\pagelayout{margin}
+
+%\pagelayout{wide}
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{widepar}
+{\sffamily % <-- CHANGE THIS
+	\noindent\textbf{\Huge{\hmwkTitle}}\\[-.5em]
+
+	\indent\Large{\textsc{\hmwkClass}}\\[-.5em]
+
+	\noindent\LARGE{\hmwkAuthorName}
+}
+\end{widepar}
+
+\addtokomafont{pagenumber}{\fontfamily{phv}}
+\setlength{\columnseprule}{0pt}
+\pagestyle{myheadings}
+
+%\margintoc
+
+%\vspace{-1.5em}
+
+%----------------------------------------------------------------------------------------
+%	MAIN BODY
+%----------------------------------------------------------------------------------------
+
+%\section{Introduction}
+%How do humans learn, process, and represent Language?
+%
+%	\begin{enumerate}
+%		\item Given the linguistic input available to children, how do they perceive and infer the processes and representations of their particular Language?
+%		\item Given the complexity of linguistic input, by what mechanisms are we able to quickly and effortlessly comprehend and produce Language?
+%		\item Given how we process through and intuit about linguistic content, how do humans represent linguistic content and structure: from top to bottom.
+%	\end{enumerate}
+%	
+%%\marginnote{\textbf{So this is just a draft version of a document that will `eventually' become the proposal. Lots of things are being worked on in parallel here, so while some things may not appear fully thought out, I have intentions to cross the bridges over the other sides of thinking to coherent research questions.\\\\ Paragraphs here are not necessarily where I expect they will end up, as this document was originally written witch each paragraph as essentially a point on an outline, but it was already close enough to prose I'm working some less thought through sections still with bullet points.}}
+%	
+%These three questions are core to how we question the nature of language in science.
+%
+%As we will discuss, many approaches, theories, and models have all been used to address these questions over a period of time that extends back as far as any other fundamental question we have about ourselves and reality.
+%
+%The world and every field of science, but especially linguistics, cognitive science, and psychology are faced with new questions, mysteries, and problems as a result of the overwhelming success of contemporary Large Language Models (LLMs) as models of language learning, comprehension, and production, but also reaching further as models of reasoning and action.
+%
+%The success of these models shows that deep learning methods and next-word prediction can get you much further than before on capturing `something' that can approach all of these three problems at once.
+%
+%However, using these models to ask questions about human psychology is not simple, these are still black-boxes, we know the algorithms, tasks, and signals they use to learn, but it takes much more work to know the result of that learning. How do they learn, how do they behave, and what about their internal states allows that to happen. As we will discuss, there is reason to believe there is more than meets the eye to these models, in much the same way as us.
+%
+%Contemporary research on these models now seeks to use them as models of human language users while attending to these core questions:
+%
+%	\begin{enumerate}
+%		\item When faced with the same learning problems as human learners, do LLMs succeed? How do they succeed? Do they succeed in the same way as humans do? What is sufficient for them to learn, and is it sufficient for us?
+%		\item When comprehending or producing language (a task that is contestably different for humans, but incontestably the same for language models) are there mechanisms that evolve beyond the model's task (next-word prediction) that lead to more human-like linguistic behavior or abilities.
+%		\item When linguistic content is learned, how is it represented concretely and abstractly? What do those representations tell us about how to investigate human representations?
+%	\end{enumerate}
+%	
+%Before proposing the chapters of this Thesis, I will detail the rise of neural networks and their use in psychological science, with a primary contemporary focus on Transformer models and how they have been integrated into new avenues of psycholinguistic research. Then, I offer a brief review of the three questions above in the lens of psychological research on neural networks, I will refer to as the learning problem, the processing problem, and the representation problem.
+%
+%
+%\subsection[LLMs in Science]{Neural Networks in Science and the Transformer Architecture}
+%
+%\blockquote[Noam Shazeer \citeyear{Shazeer2020-dv}]{We offer no explanation as to why these architectures seem to work; we attribute their success, as all else, to divine benevolence}
+%
+%
+%While contemporary Transformers are the most widely known and commercially successful architectures of LLMs, using neural networks and theories of information processes on the task of sequential processing of symbols, is not new new, and in fact precedes Chomskyan approaches to linguistic theory.
+%
+%While the field of Machine Translation is massive, and inexhaustible in terms of contentful discussion, the modern ideas that are core to sufficient linguistic processing comes from Warren Weaver's \citeyear{Weaver1949-wn} short chapter calling for the enhancement of contemporary word-by-word translation to include contextual information to better improve translation \sidecite{Weaver1949-wn}. This comes from the idea that languages in general seem to share many of the same logical structures as each other. This introduces a stochastic, usage-based account to linguistic processing that is represented in the Bloomfieldian approach to linguistics called distributionalism \sidecite{Harris1952-wi}.
+%
+%However, distributional accounts were not alone in proposing that tasks of linguistic processing can be solved in mechanistic ways. Despite the promise of distributional accounts, symbolic approaches to behavioral modeling were still very effective in lieu of extensive statistical theories on how to actually capture language distributionally. Explicit, symbolic approaches fill this void of creating functional, explanatory systems. 
+%
+%A fundamental paper approaching the processing of symbolic information comes from Newell and Simon's \citeyear{Newell1956-va} fundamental work on the specification of computer logic machines \sidecite{Newell1956-va}.
+%
+%
+%In their work they specify two `problems' that information processing problems must address: the specification problem, and the realization problem.
+%
+%The Specification problem requires that to study an information-processing system, it must be specified in such a way that it's behavior can be determined once the requisite conditions are given. Complex systems can be understood in this way in terms that seem very familiar under todays discussions of neural networks:
+%
+%  \begin{enumerate}
+%  \item ``There is a large number of different kinds of processes, all of which are important, although not necessarily essential, to the performance of the total system.''
+%  \item ``The uses of the processes are not fixed and invariable, but are highly contingent upon the outcomes of previous processes and on information received from the environment.''
+%  \item ``The same processes are used in many different contexts to accomplish similar functions towards different ends, and this often results in organizations of processes that are heirarchical, iterative, and recursive in nature.''
+%\end{enumerate}
+%
+%However, the natural use of this system allows for realization of their systems of rules, both in the physical sense of the execution of the rules, but also, although not explicitly stated, in the realization of the specification itself, in the sense that their specification can only exist in context with the world in which it is realized.
+%
+%The kind of system that Newell and Simon theorize about, is something that acts upon and generates the specification of itself. This, like many other problems when approaching behavior computationally (e.g. the attempt at computer vision narrated in Marr, \citeyear{Marr1982-lc}) as if it can be simplified, is not easily or immediately solved.
+%
+%One of the first highly effective models that allows for capturing distributional patterns in linguistics is the DRAGON model introduced in James Baker's \citeyear{Baker1975-wm} dissertation, which introduces a markovian system that: uses the sequential nature of the markov network to model language,  takes in distributional information about linguistic environments to better capture speech perception, and introduces explicit hierarchical, iterative, and recursive subroutines outside of the markovian process to enhance knowledge access and higher perceptual performance \sidecite{Baker1975-wm}. While very effective, such approaches still require strong explicit assumptions as to the function of the system.
+%
+%A more general approach can be found in Brown et. al.'s \citeyear{Brown1991-fh} French to English, sentence-to-sentence translation model which states ``we can recast the language modelling problem as one of computing the probability of a single word given of the words that precede it in a sentence. \sidecite{Brown1991-fh}'' This approach takes a very simple bigram approach to language modeling, showing that a small model with fairly few architectural assumptions can do simple, although largely imperfect, translational work with unsupervised training on transitional probabilities. They end their paper suggesting that this is the correct task to continue forward with, but that architectural specifics, like the size of their model, might need to differ depending on the problem and translational needs.
+%
+%This approach, attending to transitional probabilities becomes the de-facto approach for many simple natural language processing tasks \sidecite{Manning1999-od}.
+%
+%However, while in a simple n-gram model the stochastic chain that leads from one symbol to the next is interpretable, it is the information contributed by each of the preceeding considered items, more complex statistical methods were proposed that include \emph{hidden} biases, that either hard-coded or derived from some training procedure, became essential to building richer -- though less interpretable -- models. This approach, introduced by Rumehart and McClelland \citeyear{Rumelhart1986-bo} called Parallel Distributed Processing (PDP), or connectionism. It proposes that cognitive behavior, in this case the processing of language, can be explained through general stochastic processes that through the task of learning via neural networks can form appropriate generalizations to approach these task in an unsupervised empirical way, and that experimental work with these models can suggest to us that human cognition operates in similar ways.
+%
+%However, these approaches despite their effectiveness still struggle to overcome simple n-gram or bag-of-word approaches to language modeling \sidecite{Wang2012-od, Arora2017-pj}
+%
+%Jeffrey Elman's \citeyear{Elman1990-me} article `Finding Structure in Time,' introduces the Recursive Neural Network (RNN) architecture. This architecture, amongst those we've discussed, is the first to introduce a hidden layer within its architecture, that when trained on a task like next-word prediction develops task-specific weightings. In addition, in the RNN, the hidden layer maps temporal information (positional information of linguistic/items/tokens) over time onto the context. This allows for a model that is highly effective at finding solutions within the serial ordering of tokens (they include nonlinguistic tasks as well), but also creating solutions that are sensitive to temporal (positional) structure across the context, which creates a network more capable of maintaining long-distance dependencies. In this work, Elman finds within the representational space of the word embeddings groupings structure that seem to align with intuitions of superordinate and subordinate lexical heirarchy, as well as animate/inanimate splits, among others. He suggests that connectionist models of this kind are capable of holding rich linguistic representations that it can derive from the data. He states, ``One of the things which feedforward PDP models have shown is that simple networks are capable of discovering interesting internal representations of many tasks ... and representations in tasks which unfold over time.''
+%
+%
+%Of course, this approach is not without it's distractors, for instance, Pinker and Price's \citeyear{Pinker1988-tl} response to the connectionist approach. They suggest that models of this kind do well at forming the kinds of associations that make them powerful at performing their trained task, but they fail to generalize in ways that suggest they've learned a rule, necessarily.
+%
+%However competing accounts suggest that networks when faced with learning fairly abstract rules within grammatical structure are in fact converging on fairly generalizable rules \sidecite[][a.o.]{Shultz2001-tb,Shultz2006-pz}.
+%
+%
+%
+%\subsection[Learning Problem]{The Learning Problem}
+%
+%\blockquote[St. Augustine, \textit{Confessions}, c. 400AD]{
+%\textit{
+%%This I remember; and have since observed how I learned to speak. It was not that my elders taught me words (as, soon after, other learning) in any set method; but I, longing by cries and broken accents and various motions of my limbs to express my thoughts, that so I might have my will, and yet unable to express all I willed, or to whom I willed, did myself, by the understanding which Thou, my God, gavest me, practise the sounds in my memory
+%\dots And thus by constantly hearing words, as they occurred in various sentences, I collected gradually for what they stood; and having broken in my mouth to these signs, I thereby gave utterance to my will.}
+%}
+%
+%\begin{itemize}
+%  \item I will talk about problems of learnability in language, specifically, I will address research that investigates large language models as models of language learners.
+%  \item \emph{Innate acquisition devices and universal representations allow for learning language despite input and sufficiency problems} \sidecite{Chomsky1957-sr, Chomsky1965-vo}
+%  \item Connectionist approaches to language learning suggested that stochastic evidence available in the environment, and domain-general systems of learning are responsible for the learning of language and shape of language \sidecite{Saffran1996-ay, Elman1990-me, Rumelhart1986-bo}
+%  \item However, implementations of these theories were left with fairly limited capabilities, although the lack of a role that formal linguistic theory contributed to these questions, when approached from a stochastic point of view left the two fields in a bad place to communicate \sidecite{Jelinek2005-mq}
+%  \item Large Language Models have re-ignited debates on whether Language can be sufficiently learned from the environment\sidecite{Piantadosi2024-or}.
+%  \item Although there are those who claim that the success of LLMs does not offer a problem for the existing theories of universal grammar \cite[a.o.]{Chomsky2023-hp, Bolhuis2024-qv}
+%  %\item Give an example of sufficiency for learning, maybe use something like `how do we know we're speaking English and not italian, kind of thing' (Ana Pérez's work)
+%  \item General review on models as language learners \sidecite{Warstadt2022-gt}
+%   \item The important part though, is to argue the case that when we test Large Language Models on learning problems, we're creating test environments where we can introduce causal interventions in ways impossible when investigating children's language. These experimental manipulations and tasks allow us to ask questions about what is learnable, what theories of human learning are viable in purely stochastic systems, what kind of implicit information being present can contribute to learning, and how can we take the behavior of models and when capturing their behavior create hypotheses and predictions to investigate in human behavior as new directions. (a kind of in-vivo hypothesis generator of the kind Dave mentioned)
+%\end{itemize}
+%
+%
+%%\begin{enumerate}
+%%%	\item In Ancient Rome, there were many household gods that were considered responsible for familial, sexual, and developmental stages or events. Among these were the god Fabulinus, for the Latin \emph{fabulari}, `to speak.' Fabulinus is responsible exclusively for a child's first word, a miraculous event. The question is, what is the source of the \emph{nature} of human children that allows them to learn language. Human children are especially useless and vulnerable, due in part to our massive cranial volume relative to the rest of our body. Yet, despite this, or maybe more correctly because of it, we learn our parents language, or languages, and begin expressing it as soon as we are able. Children learning spoken languages can speak their first words from ten to twelve months of age \cite{Brown1973-ud, Chomsky1957-sr}, roughly when they begin to take their first steps. Children are able to sign their first words several months before that \cite{Newport1995-mb}, and many children can recognize nearly 50 words before saying their first word \cite{shipley2023assessment}. 
+%%\end{enumerate}
+%
+%
+%\subsection[Processing Problem]{The Processing Problem}
+%
+%\blockquote[Aristotle, \textit{De Anima, on the Soul, Book II, Chapter 8}, c. 350BC, Translated by E.M. Edghill]{
+%\textit{Not every sound, as we said, made by an animal is voice (even with the tongue we may merely make a sound which is not voice, or
+%without the tongue as in coughing); what produces the impact must have soul in it and must be
+%accompanied by an act of imagination, for voice is a sound with a meaning}
+%}
+%
+%\begin{itemize}
+%	\item Central to this section, and the common thread going through these sections is that while large language models can only serve as candidate models of the language system, processes and circuitry that have been proposed to underly some aspects of the language mechanisms in humans may be reflected in these models.
+%	\item Specifically, this section will discuss the very preliminary work that discuss the investigation of linguistic processes in large language models, and their relationship to theories of human processing
+%	\item The core to this kind of work will be the mechanistic interpretability field, which seeks to find processes, circuitry, and interpretable mechanisms within large language models by using methods that causally investigate such processes with ablative and patching methods \sidecite{Wang2022-ui}.
+%	\item Some other papers that I will cite include (these are just some important papers, this will be a more exhaustive review): \sidecite{Geiger2023-fk,Duan2024-fa,Arora2024-iw,Victoria2025-bv, Lampinen2022-mm}. Still there is still substantial open space in terms of the kind of work that has been done. 
+%\end{itemize}
+%
+%\subsection[Representation Problem]{The Representation Problem}
+%
+%\blockquote[Richard Taylor on Averroes' (1126 -- 1198AD) \textit{Short Commentary on the De Anima}]{\textit{In human beings, there are activities of conceptualization and assent by which abstraction and judgment take place.  What are apprehended in some way in human knowing are forms insofar as these are intelligible, universal, and free from matter.  This abstraction, also described by the phrase, <<intellectual conceptualization,>> (at-ta\d{s}awwur bi-l-\textrevapostrophe aql) <<\dots the freeing of the universal intention from matter, not insofar as it has an individual and material relation in its substance.>>}}
+%
+%\begin{itemize}
+%	\item The core of this section will be arguing that the way we can look at investigating human linguistic representations is by leaning on some of the core characteristics of both the assumptions of Minimalist theory in linguistics, and the Platonic Representations Hypothesis in LLM-space.
+%	\item One way of wanting to approach this problem is by arguing that linguists, and their theories, have been taking highly-constrained approaches that seek to minimize the explanation space of linguistic theory \sidecite{Futrell2025-fb, Chomsky1995-yv}
+%	\item In similar ways, Large Language Models are general statistical approximations, that, across trainings, environments, architectures, etc. converges on similar solutions to explain linguistic data, and these explanations are rich in linguistic structure, because the environmental strimuli themselves are rich, in the Elman sense \sidecite{Elman1990-me,McGrath2024-qb,Milliere2024-nw,Potts2025-in}.
+%	\item Thus, when we investigate representations in large language models, we're testing the hypothesis of linguistic theories as minimal descriptors of phenomena. For instance, agreement phenomena, island effects, binding effects can be explained under fairly simple terms of c-command, or similarly in terms of the Minimalist Probe-Goal system, which aligns very closely with the kind of heirarchical attractive seeking behaviors that are demonstrated in the attentional representations of large language models.
+%\end{itemize}
+
+\vspace{1em}
+
+\blockquote[St. Augustine, \textit{Confessions}, c. 400AD]{
+\textit{
+%This I remember; and have since observed how I learned to speak. It was not that my elders taught me words (as, soon after, other learning) in any set method; but I, longing by cries and broken accents and various motions of my limbs to express my thoughts, that so I might have my will, and yet unable to express all I willed, or to whom I willed, did myself, by the understanding which Thou, my God, gavest me, practise the sounds in my memory
+\dots And thus by constantly hearing words, as they occurred in various sentences, I collected gradually for what they stood; and having broken in my mouth to these signs, I thereby gave utterance to my will.}}
+
+It's one of the primary goals of linguistics to look at complex phenomena in language and ask how children acquire such behavior. Along the way to adult performance, children exhibit linguistic behavior unlike the language they are learning. Before mastering some phenomena, children's language can exhibit behavior similar to other languages in content. The question becomes, do children exhibit linguistic behavior unlike their target language because they have yet to settle on the single target generalization, or that they have learned the target language but processing constraints shape linguistic outputs in ways that appear outside of distribution. 
+
+A classic case of this appears in the study of children's acquisition of non-null-subject languages. In these languages, like English, omitting a subject pronoun is unacceptable in nearly all cases, unlike Italian which allows for dropped subjects in many, if not most, cases. In Languages like Italian, children tend to preference towards omitting subjects rather quickly, the optional preference seeming fairly easy to learn. On the other hand, English children persist in omitting subjects (despite being illicit in their language) up until nearly three years old. Although English-speaking children drop their subjects at rates much lower than Italian-speaking children, the appearance of subject dropping in English children begs the question whether they content-fully believe they speak a language that allows for subject-dropping; or, despite knowing such a rule that dropped subjects are illicit in English, such artifacts appear as a result of their language processor. In this case a processor that omits subjects as a result of capacity constraints or economic principles overtaking grammatical principles.
+
+There is a rich literature investigating both sides of this question, one side investigating the path that children taken in acquiring grammatical generalizations and another that looks to explain the artifacts of early learning as processing effects. The study proposed here looks to ask these questions again, using Large Language Models (LLMs) as a new tool in the psycholinguistic arsenal for asking questions about the learning and processing of language. Specifically, we wish to investigate what role specific sources of linguistic evidence contribute to the direct and indirect learning of the English overt subject constraint. 
+
+LLMs are specifically well-served to ask these questions, as it is prohibitively difficult to know what a child's linguistic input looks like, or even more to manipulate the kind of input available to children while investigating their learning. In this way, we can manipulate the sources of information available to models and compare the causal effect that different sources of linguistic information (or their lack there-of) have on acquire linguistic generalizations. 
+
+Further, in asking questions of children's linguistic processing, exposing children to linguistic stimuli longitudinally to test changes in children's performance would surely introduce confounds of exposure and learning. Meanwhile, LLMs offer us the ability to sample a model's performance throughout training without influencing future performance of the model. Further, we can investigate the model on a wider range of evaluation stimuli without worrying about effects of fatigue. 
+
+The goal then, is to investigate large language models as candidate learners of the overt subject constraint and compare theories of learning and processing to see which theories best capture the performance of models when learning and processing sentences with and without subjects. 
+
+\section{Statistical Language Models in Psycholinguistics}
+
+%While contemporary Transformers are the most widely known and commercially successful architectures of LLMs, using neural networks and theories of information processes on the task of sequential processing of symbols, is not new new, and in fact precedes Chomskyan approaches to linguistic theory.
+%
+%While the field of Machine Translation is massive, and inexhaustible in terms of contentful discussion, the modern ideas that are core to sufficient linguistic processing comes from Warren Weaver's \citeyear{Weaver1949-wn} short chapter calling for the enhancement of contemporary word-by-word translation to include contextual information to better improve translation \sidecite{Weaver1949-wn}. This comes from the idea that languages in general seem to share many of the same logical structures as each other. This introduces a stochastic, usage-based account to linguistic processing that is represented in the Bloomfieldian approach to linguistics called distributionalism \sidecite{Harris1952-wi}.
+%
+%However, distributional accounts were not alone in proposing that tasks of linguistic processing can be solved in mechanistic ways. Despite the promise of distributional accounts, symbolic approaches to behavioral modeling were still very effective in lieu of extensive statistical theories on how to actually capture language distributionally. Explicit, symbolic approaches fill this void of creating functional, explanatory systems. 
+%
+%A fundamental paper approaching the processing of symbolic information comes from Newell and Simon's \citeyear{Newell1956-va} fundamental work on the specification of computer logic machines \sidecite{Newell1956-va}.
+%
+%In their work they specify two `problems' that information processing problems must address: the specification problem, and the realization problem.
+%
+%The Specification problem requires that to study an information-processing system, it must be specified in such a way that it's behavior can be determined once the requisite conditions are given. Complex systems can be understood in this way in terms that seem very familiar under todays discussions of neural networks:
+%
+%  \begin{enumerate}
+%  \item ``There is a large number of different kinds of processes, all of which are important, although not necessarily essential, to the performance of the total system.''
+%  \item ``The uses of the processes are not fixed and invariable, but are highly contingent upon the outcomes of previous processes and on information received from the environment.''
+%  \item ``The same processes are used in many different contexts to accomplish similar functions towards different ends, and this often results in organizations of processes that are heirarchical, iterative, and recursive in nature.''
+%\end{enumerate}
+%
+%However, the natural use of this system allows for realization of their systems of rules, both in the physical sense of the execution of the rules, but also, although not explicitly stated, in the realization of the specification itself, in the sense that their specification can only exist in context with the world in which it is realized.
+%
+%The kind of system that Newell and Simon theorize about, is something that acts upon and generates the specification of itself. This, like many other problems when approaching behavior computationally (e.g. the attempt at computer vision narrated in Marr, \citeyear{Marr1982-lc}) as if it can be simplified, is not easily or immediately solved.
+%
+%One of the first highly effective models that allows for capturing distributional patterns in linguistics is the DRAGON model introduced in James Baker's \citeyear{Baker1975-wm} dissertation, which introduces a markovian system that: uses the sequential nature of the markov network to model language,  takes in distributional information about linguistic environments to better capture speech perception, and introduces explicit hierarchical, iterative, and recursive subroutines outside of the markovian process to enhance knowledge access and higher perceptual performance \sidecite{Baker1975-wm}. While very effective, such approaches still require strong explicit assumptions as to the function of the system.
+%
+%A more general approach can be found in Brown et. al.'s \citeyear{Brown1991-fh} French to English, sentence-to-sentence translation model which states ``we can recast the language modelling problem as one of computing the probability of a single word given of the words that precede it in a sentence. \sidecite{Brown1991-fh}'' This approach takes a very simple bigram approach to language modeling, showing that a small model with fairly few architectural assumptions can do simple, although largely imperfect, translational work with unsupervised training on transitional probabilities. They end their paper suggesting that this is the correct task to continue forward with, but that architectural specifics, like the size of their model, might need to differ depending on the problem and translational needs.
+%
+%This approach, attending to transitional probabilities becomes the de-facto approach for many simple natural language processing tasks \sidecite{Manning1999-od}.
+%
+%However, while in a simple n-gram model the stochastic chain that leads from one symbol to the next is interpretable, it is the information contributed by each of the preceeding considered items, more complex statistical methods were proposed that include \emph{hidden} biases, that either hard-coded or derived from some training procedure, became essential to building richer -- though less interpretable -- models. This approach, introduced by Rumehart and McClelland \citeyear{Rumelhart1986-bo} called Parallel Distributed Processing (PDP), or connectionism. It proposes that cognitive behavior, in this case the processing of language, can be explained through general stochastic processes that through the task of learning via neural networks can form appropriate generalizations to approach these task in an unsupervised empirical way, and that experimental work with these models can suggest to us that human cognition operates in similar ways.
+%
+%However, these approaches despite their effectiveness still struggle to overcome simple n-gram or bag-of-word approaches to language modeling \sidecite{Wang2012-od, Arora2017-pj}
+
+Jeffrey Elman's \citeyear{Elman1990-me} article `Finding Structure in Time,' introduces the Recursive Neural Network (RNN) architecture. This architecture is the first to introduce a hidden layer within its architecture, that when trained on a task like next-word prediction develops task-specific weightings. In addition, in the RNN, the hidden layer maps temporal information (positional information of linguistic/items/tokens) over time onto the context. This allows for a model that is highly effective at finding solutions within the serial ordering of tokens (they include nonlinguistic tasks as well), but also creating solutions that are sensitive to temporal (positional) structure across the context, which creates a network more capable of maintaining long-distance dependencies. In this work, Elman finds within the representational space of the word embeddings groupings structure that seem to align with intuitions of superordinate and subordinate lexical heirarchy, as well as animate/inanimate splits, among others. He suggests that connectionist models of this kind are capable of holding rich linguistic representations that it can derive from the data. He states, ``One of the things which feedforward PDP models have shown is that simple networks are capable of discovering interesting internal representations of many tasks ... and representations in tasks which unfold over time.''
+
+Elman's \cite{Elman1990-me} RNN model and Rumelhart and McCleland's \sidecite{Rumelhart1986-bo} connectionist program brought a new perspective to looking at language modeling. Such neural network approaches became very important tools to creating interpretable statistical models of language learning and language processing \sidecite{Levelt1999-gl,Chang2002-vi,Chang2006-wd}. However, despite the effectiveness of such approaches, they still struggle to overcome simple n-gram or bag-of-word approaches to language modeling \sidecite{Wang2012-od, Arora2017-pj}.
+
+The overwhelming success of Large Language Models (LLMs), in the form of causal and bi-direction autoregressive Transformers, like BERT\sidecite{Tenney2019-fw} and GPT \cite{Radford2019-pm}, has revolutionized the field of computational psycholinguistics.   LLMs seem capable of acquiring linguistic generalizations in emergent, robust, and surprising ways \sidecite{Manning2020-jo, Potts2025-in}.
+
+Despite the fact that transformers are general enough in their learning, that building a model to learn language doesn't require engaging with linguistic theory. In some cases, authors have proposed that linguistic theory shouldn't play a role in our investigation of LLMs\sidecite{Piantadosi2024-or}. However, many still argue that traditional analyses of language should still inform how we investigate LLMs, and that even more, LLMs can be used as tools to investigate human learning and cognition \cite{Frank2025-vl,Futrell2025-fb,Pater2019-hh}. And work since the emergence of Transformers has continued to integrate linguistic theory into the study of LLMs to better understand human behavior \cite{Pater2019-hh,Warstadt2020-yx,McGrath2024-qb,Portelance2024-yn,Milliere2024-nw,Linzen2016-ly,Gulordava2018-yb,Marvin2018-oy,Hu2020-bb,Wilcox2018-hl,Wilcox2023-ek}
+
+We can use LLMs as tools to investigate learning, but the question remains how to link human learning and model learning — if they are to serve as candidate learners. One way of thinking about this problem is in terms how humans and LLMs may both converge towards similar representations, and what that means for both's learning. That is, maybe humans and LLMs converge towards similar, simple representations of grammatical theories. Biased learners are at times necessary to make new inductions from data \sidecite{Mitchell1980-gn}. One way that a learner can be biased is to be biased towards a reductive center, by looking to form simplest explanations for problems. One can think that introducing explicit architectures like the kind found in early computational linguistics models might be one way towards this goal \cite{Baker1975-wm, Newell1956-va}. However recent work investigating the learning of neural networks shows that, counter to intuition, less restrictive networks tend towards simpler solutions \sidecite{Valle-Perez2018-zb,Belkin2019-gx,Zhang2021-iy,Henighan2023-ng,Attias2024-lw,Maloney2022-rb,Goyal2022-va}
+
+These simplicity-first ideas are not new in the study of linguistics or psycholinguistics. In some areas of linguistics, `minimalist,' innate representations and operations make up simple-as-possible combinatorial systems \cite{Chomsky1995-yv}. Under the views of construction grammars, linguistic structures reduce through use into idiomatic phrases which are iteratively and recursively constructed into a usage-based representational system of language \cite{Goldberg2010-cc}. In psycholinguistics, work on the shape of language production proposes that one's one preference to maintain short distances between dependencies as a pressure both necessitates optimal linguistic representations in use, but also introduces such biases into linguistic data that can be processed and guide processing \cite{Macdonald2013-iq}. As well as computation models that explicitly introduce such parameters \cite{Hsu2011-jg,Perfors2011-cg,Rasin2021-xh,Voita2020-eb}
+
+This also helps to account for the fact that across many different training contexts, model configurations, languages, etc. LLMs seem to converge towards similar representations between each other. This has become a popular view of learning in LLMs called the `Platonic Representational Hypothesis. \sidecite{Huh2024-qr}' Essentially, content that models can learn on are inherently rich with information, this information leads general learning models towards solutions that are similarly simple. Work on LLMs as they exist now fairly agree that many of the representations that LLMs demonstrate are similar to their human counterparts \cite{Manning2020-jo,Geiger2023-fk,Ravfogel2021-tl,Arnett2025-kv,Michaelov2023-bg}. Modern techniques investigate LLMs using similar measures as human participants \cite{Futrell2019-qo,Wilcox2023-ek,Warstadt2020-yd}. 
+
+\newpage Similarly, modern studies investigating LLMs as candidate learners of language demonstrate that LLMs utilize direct and indirect sources in human-like ways \sidecite{Jumelet2021-ix,Ahuja2024-go,Patil2024-gw,Misra2024-mr,Feng2024-iz,Yao2025-dl}. It is important to ask questions about learning with LLMs, as they are currently at the center around discussions about what is learnable from linguistic input and what is not via general statistical learning system \cite{Piantadosi2024-or,Chomsky2023-hp,Kallini2024-fw,Hahn2024-rx,Merrill2021-di,Merrill2024-nq,Strobl2023-kp}.
+
+This study seeks to use LLMs as tools to investigate human language learning, under the thesis that the kinds of information available for human learners to acquire specific theories of linguistic grammar are also available to LLMs as evident in their success at a broad range of linguistic tasks. Our goal is to use such models as candidate learners to investigate how linguistic information guides models in a causal way towards developing rules. Our hope is that these models can give us insight into how human learners utilize linguistic information available to them in their environment, and to ask also what is not available in their environment that might bias language users to certain generalizations. We do not express that language learners and LLMs are the same, but that we can see both as fairly general learners within similar problems spaces, and that investigating one can give us insights into the other. 
+
+
+
+%Of course, this approach is not without it's distractors, for instance, Pinker and Price's \citeyear{Pinker1988-tl} response to the connectionist approach. They suggest that models of this kind do well at forming the kinds of associations that make them powerful at performing their trained task, but they fail to generalize in ways that suggest they've learned a rule, necessarily.
+%
+%However competing accounts suggest that networks when faced with learning fairly abstract rules within grammatical structure are in fact converging on fairly generalizable rules \sidecite[][a.o.]{Shultz2001-tb,Shultz2006-pz}.
+
+
+\section[Accounts of subject drop]{Accounts of subject drop}
+
+Corpus work has widely attested subject drop in English children's speech\cite{Bloom1970-xr,Bloom1975-uy}. Examples like:
+
+\begin{exe}
+
+	\ex Shake hands. \\ Turn light off. \\ Want go get it. \\ Show mommy that. \\ Now making muffins
+	
+\end{exe}
+
+Bloom \sidecite{Bloom1970-xr} put forward the claim that English children drop their subjects for performance reason. Bloom more subjects were dropped in sentences with negation. Under this account, when children encounter contexts with heavy cognitive load, they are prone to omit information that may be less important or otherwise contextually recoverable. Evidence for such cases come from cases where children from even very early ages, before when they could have possibly acquired such a rule, show distributional features of their target language. For example Valian \sidecite{Valian1991-di} reports that English children still produce substantially more overt subjects than Italian children before averaging over a mean length utterance of 2. One caveat to this account is the asymmetry between subject and object pronouns, such that subject pronouns are much more likely to be dropped than object pronouns. 
+
+\sidecite{Bloom1990-tz} proposes that this can be contended for if such processing asymmetries can be found in orthogonal contexts. For example, longer names are omitted more than shorter names, across both the subject and object positions. The case isn't necessarily that such accounts are not about learning, except that there is some learning process that is occurring during children's development that interacts with this processing element and that accounts of this effect that are purely grammatical in explanation lose out explanatorily. The idea that our linguistic output is determined by the interplay between resource-limited processors guided by more abstract representations is not a new one \sidecite{Bock1982-ft}.
+
+They propose that there must be some particular processing difficulty in speaking a subject as compared to speaking the object. This kind of account is criticized by Hyams and Wexler \cite{Hyams1989-mu,Hyams1993-zk} argue that there is not sufficient evidence to suggest that there should be a difference in the processing of a subject that should lead to such start assymetries between the subject and object position. They suggest that children are not considering grammars where objects can be dropped, but they are where subjects can be dropped, and so this is an artifact of their competence, not performance.
+
+For example, one assumption that must be made by a performance account allowing for this asymmetry is subjects are inherently more difficult to produce than objects, whereas work in the area of sentence production would suggest that in-fact the subject should require less work to process, because it can be planned separately from the verb \sidecite{Momma2018-dl}. Further, initiating speech altogether requires fairly little planning, with some experimental evidence suggesting that adults can begin speaking before even fully planning the first word \cite{Schriefers1998-hz,Schriefers1999-af}. Further, work by McDaniel \cite{McDaniel2010-en} on the development of children's language planning suggests that children restart more in the lower half of the sentence than the first half, counter to P. Bloom's \cite{Bloom1990-tz} predictions.
+
+% TODO \cite{Bertolino2024-xf}
+
+Hyams et. al. \sidecite{Hyams1986-ae,Hyams1989-mu, yams1993-zk} proposed an alternative account to this phenomena. Hyams claimed that this asymmetry suggests that children's behavior in these cases are reflective of children's learning of grammatical rules. Their work falls under the popular of-the-time principles and parameters framework in generative linguistics (see \cite{Lasnik2010-uw}, c.f. \cite{Newmeyer2004-oj}). Under this account, children initially set the null-subject parameter to the positive value (allowing null subjects), and must learn from positive evidence in the input that their language requires overt subjects. Specifically, Hyams' Triggering theory \cite{Hyams1993-zk} proposes that it is the non-uniform nature of English verbal morphology that serves as the crucial trigger for resetting this parameter. Languages with uniform verbal agreement (either consistently rich like Italian, or consistently poor like Mandarin) allow null subjects, while English's inconsistent system triggers the obligatory subject requirement.
+
+Building on parametric approaches, Yang \sidecite{Yang2003-fn,Yang2004-wk} developed the Variational Learning theory, which provides a probabilistic account of parameter setting. Under this theory, children entertain multiple grammatical hypotheses simultaneously and update their probabilities based on input frequency. Yang argues that expletive subjects (like "it" and "there") serve as the critical unambiguous evidence for the [-null subject] parameter in English. The relative rarity of expletives in child-directed speech explains why English-learning children take longer to converge on the adult grammar compared to children learning null-subject languages.
+
+More recently, Duguine \sidecite{Duguine2017-fr} proposed an Inverse approach that shifts focus from verbal morphology to the nominal domain. This account suggests that the crucial evidence comes from the interaction between determiner richness and verbal agreement weakness, among other factors. In Duguine's framework, a rich determiner system combined with weak verbal agreement (as in English) provides indirect evidence against null subjects, while languages with poor determiner systems or rich verbal agreement allow subject drop.
+
+Bertolino \cite{Bertolino2024-xf} extends this line of reasoning by examining the role of bare singular count nouns as potential evidence for partial subject drop, suggesting that even subtle distributional patterns in the input may influence children's hypotheses about their target grammar.
+
+Despite decades of research, the debate between performance-based and competence-based accounts remains unresolved. A key challenge has been the difficulty of manipulating children's linguistic input to test causal hypotheses about what evidence drives the acquisition of the overt subject constraint. The current study addresses this limitation by using Large Language Models as experimental models of language acquisition, allowing us to systematically manipulate different sources of linguistic evidence and measure their causal contribution to learning the English subject requirement.
+
+\section{Methods}
+
+\subsection{Materials}
+
+Large Language Models will be trained on the BabyLM dataset \sidecite{Warstadt2023-qd,Warstadt2022-gt}. The BabyLM dataset is a 100 million word corpus designed to train human-sized models on a linguistically diverse sample which includes a larger-than-average proportion of child-directed speech. The corpus is sized roughly to model the linguistic input of a ten to fourteen year old child. Seperate from the 100 million word training corpus, a 10 million word test set is held out to test the model's memorization of the dataset.
+
+\begin{table*}[h!]
+\caption{Word counts for the strict track of the 2nd BabyLM Challenge.}
+\label{tab:babylm_strict_track}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Dataset} & \textbf{Description} & \textbf{\# Words (strict track)} \\
+\midrule
+CHILDES & Child-directed speech & 29M \\
+British National Corpus (BNC), dialogue portion & Dialogue & 8M \\
+Project Gutenberg (children's stories) & Written English & 26M \\
+OpenSubtitles & Movie subtitles & 20M \\
+Simple English Wikipedia & Written Simple English & 15M \\
+Switchboard Dialog Act Corpus  & Dialogue & 1M \\
+\midrule
+\textbf{Total} &  & \textbf{100M} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{widepar}
+\begin{exe}
+    \ex \textit{Third person singular and plural (English is a non-pro-drop language)}
+    \begin{xlist}
+        \ex Anna finished the book. She/*\O\ thinks the ending is perfect.
+        \ex The clients saw the proposal. They/*\O\ think the budget is acceptable.
+    \end{xlist}
+
+    \ex \textit{Second person singular and plural}
+    \begin{xlist}
+        \ex Marco, you read the email. You/*\O\ think we need more time.
+        \ex Students, you heard the news. You all/*\O\ think the decision is fair.
+    \end{xlist}
+
+    \ex \textit{First person singular and plural}
+    \begin{xlist}
+        \ex I reviewed the agenda. I/*\O\ think the schedule is too tight.
+        \ex My team and I saw the demo. We/*\O\ think the product has potential.
+    \end{xlist}
+
+    \ex \textit{Subject and Object Control (PRO in non-finite clauses)}
+    \begin{xlist}
+        \ex Maria convinced her brother \O/*him to leave the party early.
+        \ex The director promised the actors \O/*he to revise the script.
+    \end{xlist}
+
+    \ex \textit{Expletive constructions}
+    \begin{xlist}
+        \ex *\O/It seems that the students passed the exam easily.
+    \end{xlist}
+
+    \ex \textit{Distant antecedent in embedded finite clauses}
+    \begin{xlist}
+        \ex The waiter mentioned that *\O/he had waited over an hour.
+    \end{xlist}
+
+    \ex \textit{Coordinate structures with and without topic shift}
+    \begin{xlist}
+        \ex Giovanni woke up late and \O/he missed the train completely.
+        \ex Anna called Mark and *\O/he refused to answer her questions.
+    \end{xlist}
+\end{exe}
+\end{widepar}
+
+\paragraph{Stimulus Manipulations for Testing Processing Accounts}
+
+In addition to the ablative interventions that test grammatical-learning theories, we will manipulate features of the evaluation stimuli to test processing-based accounts of subject drop. These manipulations allow us to investigate whether models exhibit the same processing constraints that have been proposed to explain children's early subject omissions, following work by Michaelov and Bergen \sidecite{Michaelov2022-gy} on processing biases in language models.
+
+Each evaluation stimulus pair will be tested under multiple processing conditions:
+
+\paragraph{Context Complexity Manipulation}
+To test whether increased processing load leads to more subject drop preferences (as predicted by Bloom \citeyear{Bloom1990-tz}), we will vary the complexity of the context preceding our target sentences: \\
+
+\begin{widepar}
+\begin{exe}
+    \ex \textit{Simple Context}
+    \begin{xlist}
+        \ex The dog barked. He/*\O\ scared the mailman away.
+    \end{xlist}
+    
+    \ex \textit{Complex Context (longer NPs)}
+    \begin{xlist}
+        \ex The large brown dog with the red collar barked. He/*\O\ scared the mailman away.
+    \end{xlist}
+    
+    \ex \textit{Complex Context (embedded clauses)}
+    \begin{xlist}
+        \ex The dog that lived in the house at the end of the street barked. He/*\O\ scared the mailman away.
+    \end{xlist}
+\end{exe}
+\end{widepar}
+
+\paragraph{Negation Manipulation}
+Following Bloom's \citeyear{Bloom1970-xr} observation that negation increases subject drop in child speech, we will test whether negation in either the target sentence or context affects subject realization: \newline
+
+\begin{widepar}
+\begin{exe}
+    \ex \textit{Target Sentence Negation}
+    \begin{xlist}
+        \ex Anna finished the book. She/*\O\ doesn't think the ending is perfect.
+        \ex The clients saw the proposal. They/*\O\ don't think the budget is acceptable.
+    \end{xlist}
+    
+    \ex \textit{Context Sentence Negation}
+    \begin{xlist}
+        \ex Anna didn't finish the book. She/*\O\ thinks the ending is perfect.
+        \ex The clients didn't see the proposal. They/*\O\ think the budget is acceptable.
+    \end{xlist}
+    
+    \ex \textit{Double Negation}
+    \begin{xlist}
+        \ex Anna didn't finish the book. She/*\O\ doesn't think the ending is perfect.
+    \end{xlist}
+\end{exe}
+\end{widepar}
+
+Im total, for each item group (2-8), 12 base pairs, a preferred and unprepared sentences are constructed. Each sentence consists of a context sentence, and a target sentence. This made 13 different item groups and to a total of 153 language pairs. Sentences were generated using Deepseek AI to generate pairs, and were hand-checked by the author as a native English speaker. Further, each of the 153 languages pairs was manipulated with 5 processing manipulations, again, the pairs were run through Deepseek's transformer model to generate the proper manipulations. These were then checked and edited by hand by the author. In total, 918 sentence pairs were constructed across the 13 item groups.
+
+%\paragraph{Measurement Points}
+%For each stimulus configuration, we will measure surprisal at multiple hotspots to capture processing asymmetries:\newline
+%
+%\begin{enumerate}
+%    \item \textbf{Subject position}: Surprisal measured at the subject pronoun (or its absence)
+%    \item \textbf{Verb position}: Surprisal at the main verb following the subject position
+%    \item \textbf{Object position}: Surprisal at object pronouns when present
+%    \item \textbf{Spillover regions}: One and two words following the critical regions
+%\end{enumerate}
+
+\subsection{Ablative Interventions}
+
+In this study, we will use experimental ablation interventions on LLM training corpora in order to derive the causal role that individual linguistic evidence has on learning \sidecite{Misra2024-mr,Yao2025-dl,Jumelet2021-ix,Feng2024-iz,Ahuja2024-go, Patil2024-gw,Leong2023-gu}. Each of these ablative techniques are designed to alter the English dataset to make it like a language unlike English. During and after training, performance is assessed on evaluation stimuli designed to target knowledge of grammatical constructions involved in preferences for null and overt subjects, expletives, and determiner morphology.
+
+Following other studies \cite[e.g.]{Misra2024-mr, Yao2025-dl}, we will perform ablations before training by breaking up the training corpora into sentences using the spaCy \cite{Honnibal_spaCy_Industrial-strength_Natural_2020} library POS and sentence parser. From there, each ablative task has a specific method of performing the target ablation. After ablation, a subset of modified sentences will be checked by the researcher to ensure that the implementation is correct. For interventions where words are being removed, an appropriate amount of additional stimuli will be added back to the training set to allow for equal amounts of training tokens for each model. Those additional stimuli will be intervened on and the process will be repeated until a complete dataset is constructed for each model.
+
+\begin{table*}[h!]
+\centering
+\caption{Ablative Controlled Rearing Study Design}
+\begin{tabular}{
+  >{\raggedright\arraybackslash}p{3.2cm} 
+  >{\raggedright\arraybackslash}p{6cm} 
+  >{\raggedright\arraybackslash}p{6cm}
+}
+\toprule
+\textbf{Ablation} & \textbf{Un-ablated Example} & \textbf{Modified Example} \\
+\midrule
+No Expletives & It is raining and there is a puddle on the street. & Is raining and a puddle is on the street. \\
+\addlinespace
+Poor Determiner Morphology & Some people saw the one car and a truck. & The people saw the the car and the truck. \\
+\addlinespace
+No Articles & A dog chased the cat up the tree. & Dog chased cat up tree. \\
+\addlinespace
+Infinitive Verbal Morphology & She walked to the store because he is driving. & She walk to the store because he be drive. \\
+\addlinespace
+No Spoken Pronominal Subjects & He went to the park after she finished the work. & Went to the park after finished the work. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsubsection{No Expletives}
+
+Pleonastic subjects, or Expletives, like \emph{it} or \emph{there} are required in certain contexts where a clause lacks an appropriate subject, but one is nonetheless required. In this case, a dummy pronoun that has no direct reference is required. We will use the SpaCy POS parser, which very accurately marks expletive pronouns, to detect expletives in context, see Procedure.
+
+% ALGORITHM 1
+\begin{figure}[H]
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:find_dummy}    % Label for Algorithm 1
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} FindDummyPronouns(\textit{corpus})} \\
+\hline
+1. & Load SpaCy NLP model with a dependency parser \\
+2. & Initialize $D \gets \text{an empty list for dummy pronouns}$ \\
+3. & \textbf{for} each \textit{sentence} in \textit{corpus} \textbf{do} \\
+4. & \quad $doc \gets \text{process}(\textit{sentence}, \text{NLP model})$ \\
+5. & \quad \textbf{for} each \textit{token} in \textit{doc} \textbf{do} \\
+6. & \quad \quad \textbf{if} \texttt{token.dep\_label} = `expl' \textbf{and} \texttt{token.head.pos\_tag} = `VERB' \textbf{then} \\
+7. & \quad \quad \quad Add \textit{token} to $D$ \\
+8. & \quad \quad \textbf{end if} \\
+9. & \quad \textbf{end for} \\
+10.& \textbf{end for} \\
+11.& \textbf{return} $D$ \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+Then, in order to be sure that those pronouns are not in fact referential, we will use SpaCy's experimental coreferrant component to determine whether, given the now detected expletives, if they belong to a reference cluster, if so, we do not omit them as they may not be empty subjects, but if they do, we ablate them. We will use the previous two sentences of the detected dummy words to determine whether they have potential referential properties.
+
+% ALGORITHM 2
+\begin{figure}[H]
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:confirm_dummy}   % Label for Algorithm 2
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} ConfirmNonReferential(\textit{corpus})} \\
+\hline
+1. & Load SpaCy NLP model with parser and coreference resolver \\
+2. & Initialize $D_{\text{confirmed}} \gets \text{an empty list}$ \\
+3. & $potential\_dummies \gets \text{FindDummyPronouns}(\textit{corpus})$ \quad \textit{// Call Procedure \ref{proc:find_dummy}} \\
+4. & \textbf{for} each \textit{token} in \textit{potential\_dummies} \textbf{do} \\
+5. & \quad \textit{context} $\gets$ sentence containing \textit{token} + preceding sentence \\
+6. & \quad $doc \gets \text{process}(\textit{context}, \text{NLP model})$ \\
+7. & \quad $clusters \gets \texttt{doc.coreference\_clusters}$ \\
+8. & \quad \textit{has\_referent} $\gets$ False \\
+9. & \quad \textbf{for} each \textit{cluster} in \textit{clusters} \textbf{do} \\
+10. & \quad \quad \textbf{if} \textit{token} is in \textit{cluster} \textbf{then} \\
+11. & \quad \quad \quad \textit{has\_referent} $\gets$ True \\
+12. & \quad \quad \quad \textbf{break} \\
+13. & \quad \quad \textbf{end if} \\
+14. & \quad \textbf{end for} \\
+15. & \quad \textbf{if not} \textit{has\_referent} \textbf{then} \\
+16. & \quad \quad Add \textit{token} to $D_{\text{confirmed}}$ \\
+17. & \quad \textbf{end if} \\
+18. & \textbf{end for} \\
+19. & \textbf{return} $D_{\text{confirmed}}$ \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\subsubsection{Poor Determiner Morphology}
+
+English itself has fairly poor determiner morphology, in the sense that it contains little information about the nominal features of its associated noun. For instance, English lacks the kind of gender concord found in gendered language, or markings for plurality, instead largely marking definiteness. We propose an ablation that removes all further richness from the determiner morphology, marking all determiners as `the.' Very simply we will use SpaCy to find all determiners, and replace them with a single token `the'.
+
+% PROCEDURE 3
+\begin{figure}[H]
+
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:neuter_determiners} % Label for this procedure
+\begin{flushleft}
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} ImpovershDeterminers(\textit{text})} \\
+\hline
+1. & Load spaCy NLP model with a POS tagger \\
+2. & Initialize $modified\_parts \gets \text{an empty list}$ \\
+3. & $doc \gets \text{process}(\textit{text}, \text{NLP model})$ \\
+4. & \textbf{for} each \textit{token} in \textit{doc} \textbf{do} \\
+5. & \quad \textbf{if} \texttt{token.pos\_} = `DET' \textbf{then} \\
+6. & \quad \quad append `the' to $modified\_parts$ \\
+7. & \quad \textbf{else} \\
+8. & \quad \quad append \texttt{token.text} to $modified\_parts$ \\
+9. & \quad \textbf{end if} \\
+10.& \textbf{end for} \\
+11.& $result \gets \text{join\_with\_spaces}(modified\_parts)$ \\
+12.& \textbf{return} $result$ \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{flushleft}
+\end{figure}
+
+
+\subsubsection{No Articles}
+
+Some languages lack articles altogether. English finds determiners optional in circumstances such as with plural subjects and mass nouns. This intervention finds all definite and indefinite basic articles such as `a' or `the' and removes them entirely. This leaves articles like `some,' `all,' `these,' etc. but those remain in much lower frequency. In this case SpaCy uses a POS tagger to find all tokens marked as determiners and removes basic determiners in the modified corpus\sidenote[][*-7]{While this is a fairly rough cutting of fairly basic parts of the corpus, you could potentially run a similar intervention on a smaller subset of linguistic content. Some work suggests specifically bare singular count nouns could be evidence for learners that their language allows for partial subject drop \cite{Bertolino2024-xf}.}. 
+
+\begin{figure}[H]
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:remove_articles} % Label for this procedure
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} RemoveArticles(\texttt{text})} \\
+\hline
+1. & Load spaCy NLP model with a POS tagger \\
+2. & Initialize \texttt{modified\_parts} $\gets$ an empty list \\
+3. & \texttt{doc} $\gets$ process(\texttt{text}, NLP model) \\
+4. & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+5. & \quad \texttt{is\_article} $\gets$ \texttt{token.pos\_} = `DET' \textbf{and} \texttt{token.lower\_} in [`a', `an', `the'] \\
+6. & \quad \textbf{if not} \texttt{is\_article} \textbf{then} \\
+7. & \quad \quad append \texttt{token.text\_with\_ws} to \texttt{modified\_parts} \\
+8. & \quad \textbf{end if} \\
+9. & \textbf{end for} \\
+10.& \texttt{result} $\gets$ join(\texttt{modified\_parts}) \\
+11.& \textbf{return} \texttt{result} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\subsubsection{Infinitival verbs}
+
+In English, in addition to subject plural marking on the verb, some tenses and aspect are marked on the verb while others are marked via modals. However, there is fairly poor morphology when it comes to marking other aspects of nominal features, for instance, person is not marked on nouns. Some theories of subject dropping predict that it is \emph{consistent} morphology that allows for subject dropping, and not necessarily only rich morphology \sidecite{Hyams1993-zk}. So, while we could try to modify the corpus such that English has rich agreement morphology, in which case we would do our best to extract the feature space of the subject and artificially mark the verb with additional person marking, we choose to instead remove all rich morphology on the verb, using SpaCy's POS tagger, which includes identification of word lemmas to convert verbs to their infinitival form. 
+
+% ALGORITHM 5
+\begin{figure}[H]
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:lemmatize_verbs} % Label for this procedure
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} LemmatizeVerbs(\texttt{text})} \\
+\hline
+1. & Load spaCy NLP model with POS tagger and lemmatizer \\
+2. & Initialize \texttt{modified\_parts} $\gets$ an empty list \\
+3. & \texttt{doc} $\gets$ process(\texttt{text}, NLP model) \\
+4. & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+5. & \quad \textbf{if} \texttt{token.pos\_} = `VERB' \textbf{then} \\
+6. & \quad \quad append \texttt{token.lemma\_} to \texttt{modified\_parts} \\
+7. & \quad \textbf{else} \\
+8. & \quad \quad append \texttt{token.text} to \texttt{modified\_parts} \\
+9. & \quad \textbf{end if} \\
+10.& \textbf{end for} \\
+11.& \texttt{result} $\gets$ join\_with\_spaces(\texttt{modified\_parts}) \\
+12.& \textbf{return} \texttt{result} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\subsubsection{No Subject Pronominals}
+
+Finally, while we have previously attended to fairly indirect evidence for subject-drop, in this case, we specifically target direct evidence for subject-drop, which is the presence of subject pronouns in the dataset in the subject position. In this case, we use SpaCy across sentences to first annotate parts of speech on each token, then we parse it with a dependency parser to determiner basic syntactic roles of words in a sentence. In this case, we remove all pronouns that are acting as nominal subjects. This also creates evidence for the learner that explicit subjects in general are not neccessary.
+
+% ALGORITHM 6
+\begin{figure}[H]
+\refstepcounter{procedure} % Increments counter for referencing
+\label{proc:remove_subj_pronouns} % Label for this procedure
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} RemoveSubjectPronominals(\texttt{text})} \\
+\hline
+1. & Load spaCy NLP model with POS tagger and dependency parser \\
+2. & Initialize \texttt{modified\_parts} $\gets$ an empty list \\
+3. & \texttt{doc} $\gets$ process(\texttt{text}, NLP model) \\
+4. & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+5. & \quad \texttt{is\_subj\_pronoun} $\gets$ \texttt{token.pos\_} = `PRON' \textbf{and} \texttt{token.dep\_} = `nsubj' \\
+6. & \quad \textbf{if not} \texttt{is\_subj\_pronoun} \textbf{then} \\
+7. & \quad \quad append \texttt{token.text\_with\_ws} to \texttt{modified\_parts} \\
+8. & \quad \textbf{end if} \\
+9. & \textbf{end for} \\
+10.& \texttt{result} $\gets$ join(\texttt{modified\_parts}) \\
+11.& \textbf{return} \texttt{result} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\subsubsection{Planned Experiments}
+
+\begin{table*}[h!]
+\centering
+\caption{Experimental Design for Ablation Studies}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Exp.} & \textbf{No Expletives} & \textbf{Poor Determiner} & \textbf{No Articles} & \textbf{Infinitive Verbal} & \textbf{No Pronominal} \\
+& & \textbf{Morphology} & & \textbf{Morphology} & \textbf{Subjects} \\
+\midrule
+1 & \ding{51} & \redx & \redx & \redx & \redx \\
+2 & \ding{51} & \ding{51} & \redx & \redx & \redx \\
+3 & \ding{51} & \redx & \ding{51} & \redx & \redx \\
+4 & \ding{51} & \redx & \redx & \ding{51} & \redx \\
+5 & \ding{51} & \redx & \redx & \redx & \ding{51} \\
+%6 & \ding{51} & \ding{51} & \redx & \ding{51} & \redx \\
+%7 & \ding{51} & \ding{51} & \redx & \ding{51} & \ding{51} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The selected experiments have been chosen to both, individually test the causal contribution of each piece of evidence as completely as possible while also training an appropriate and viable number of models\sidenote[][]{Maybe we end up being more thorough with the combinatorial choices later on when there's more time \emoji{shrug}}. In addition to testing these ablative techniques in isolation, the ablative interventions have been chosen to assess specific theories of linguistic theory proposed in the literature, each of which predict specific contributions of each of linguistic evidence of different kinds and combination.
+
+Charles Yang's \sidecite{Yang2003-fn,Yang2004-wk,Yang2011-ur} Variational Learning theory predicts that expletives are the key evidence that children use to acquire obligatory null subjects, and that the small portion that these tokens make up of the linguistic input is the reason why English children take much longer to acquire a strict generalization of obligatory subjects. Experiment 1, in this case tests this theory by only removing expletive subjects and testing the model's ability to acquire such a generalization. 
+
+Other primary theories in this field propose that expletive subjects are crucial to the learning of such structures, including Hyam's \sidecite{Hyams1993-zk} Triggering theory of parameterization in learning and Duguine's \sidecite{Duguine2017-fr} Inverse approach. Duguine's \cite{Duguine2017-fr} approach specifically implicates a richer determiner system in combination with weak verbal agreement. Whereas Hyam's \cite{Hyams1993-zk} theory suggests that it is a non-uniform verbal system that primarily contributes this generalization. In Hyam's account, a language like Italian is uniformly marked for gender and person, while Mandarin is uniformly unmarked, both of which contribute to languages that allow for null-subjects, whereas English's inconsistency triggers the opposite generalization. Experiment 2/3 captures a case where only determiner information is insufficient, which should impair learning under Duquine's theory but not Hyam's. Hyam would predict that in Experiment 4, there should be insufficient evidence to acquire the null-subject parameter; whereas Duquine would point to a rich determiner system still present with a weak (but still uniform verbal system) providing sufficient evidence for an English-like generalization. 
+
+Likewise, while Duguine's \cite{Duguine2017-fr} theory points primarily to indirect evidence in acquiring such a rule, Hyam's \cite{Hyams1993-zk} Theory states directly that the use of an overt pronoun is positive evidence for a non-null-subject language under the assumption that speakers avoid the use of overt pronouns in non-discourse-necessary, non-emphatic contexts. Experiment 5 seeks to assess the role of direct evidence in ablating all pronominal subjects on learning an English-like generalization.
+
+%while Experiment 6 does the opposite: testing the primary artifacts of indirect evidence reported to lead to English-like behavior. Finally, as a kind-of all-cards-on-the-table example, Experiment 7 removes all strong leads to an English-like rule to determine, in the case that such a generalization still appears, whether other, yet un-proposed evidence can be used by the learner to acquire such rules. Perhaps further experiments can be done on this final corpus to determine the individual contribution of different sources of evidence. 
+
+I've summarizes the points made in this paragraph in Table \ref{tab:exp_predictions}.
+
+\begin{table*}[h!]
+\centering
+\caption{Predictions and Contributions of Ablation Experiments}
+\label{tab:exp_predictions}
+\begin{tabular}{
+    l
+    >{\raggedright\arraybackslash}p{3cm}
+    >{\raggedright\arraybackslash}p{5.7cm}
+    >{\raggedright\arraybackslash}p{5.5cm}
+}
+\toprule
+\textbf{Exp.} & \textbf{Primary Theory Tested} & \textbf{Predicted Outcome for Learning Obligatory Subjects} & \textbf{Contribution to Understanding} \\
+\midrule
+
+1 & Yang & Learning should be significantly impaired. & Tests the causal role of expletives as the key (albeit rare) evidence for the English rule. \\
+\addlinespace
+
+2 \& 3 & Duguine vs. Hyams & \textbf{Duguine:} Learning should be impaired, as a key piece of evidence (rich determiner system) is removed. \newline \textbf{Hyams:} Learning should be largely unaffected, as the primary trigger (non-uniform verbal morphology) remains intact. & Differentiates theories that prioritize determiner morphology (Duguine/BCC) from those that prioritize verbal morphology (Hyams). \\
+\addlinespace
+
+4 & Hyams vs. Duguine (Inverse/BCC) & \textbf{Hyams:} Learning should be severely impaired or fail, as the main trigger (non-uniform verbs) is removed. \newline \textbf{Duguine:} Learning should still succeed, as the crucial evidence (rich determiner system) remains. & Acts as the inverse of Exp. 2 \& 3, testing whether verbal morphology (Hyams) or determiner morphology (Duguine/BCC) is the critical input. \\
+\addlinespace
+
+5 & Hyams (Direct Evidence) & Learning should be impaired, as the direct positive evidence of hearing overt pronouns is ablated. & Assesses the role of direct evidence (hearing overt pronouns) versus the indirect evidence favored by other theories. \\
+\addlinespace
+
+%6 & Duguine \& Hyams (Indirect Evidence) & Learning should be severely impaired, as the key sources of indirect evidence for both major theories are removed simultaneously. & Tests whether the model can acquire the rule when the main proposed grammatical cues are absent, isolating other potential learning factors. \\
+%\addlinespace
+%
+%7 & All Theories & Learning should fail completely. & Establishes a baseline of performance. If the model still acquires the generalization, it implies the existence of other, yet-unidentified sources of evidence in the input. \\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\clearpage
+
+\subsubsection{Training Procedure}
+
+SentencePiece \sidecite{Kudo2018-ke} tokenizers are trained on the datasets (base or ablated) and the training sets, making for a total of seven trained tokenizers. Those tokenizers are then used to tokenize the datasets, and the datasets are prepared for training by grouping text into lines of 1000 tokens to maximize training efficiency and consistency across steps. The model parameters are in Table {\ref{tab:lm_hyperparameters}}. 
+
+Models are initialized as empty GPT2 transformers \sidecite{Radford2019-pm} with weights randomly initialized based on a random seed (controlled for between experiments). Checkpoints are saved regularly during training: during the first epoch, 
+%training steps are saved increasing by log-steps (following the Pythia developmental models \sidecite{Biderman2023-uh}), so (1, 2, 4, 8, 16...), 
+with a checkpoint saved at the end of each epoch. %After the first epoch checkpoints will continue to be saved in log-steps. This is because many instances of learning LLMs occur in log-time, so the data is best captured in that scale -- This also saves the amount of data generated with each model training. 
+A final checkpoint is saved at the end of training. The base model, as with all other models were saved and evaluated over the course of 134 total checkpoint steps. 20 checkpoints were saved in the first epoch, and 6 were saved in each subsequent epoch. Each model used AdamW as the learning scheduler and optimizer. Each model was configured to use Flash-Attention 2 to save time and memory while training the models. Further the models used AMP to handle mixed precision during training (a step not usually paired with flash-attention but necessary to prevent catastrophic forgetting effects and instability when using float16 operations — these models used float32 operations). Gradient checkpointing was used to further save memory, and increase the available batch size. 
+\begin{margintable}
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\ 
+\midrule
+Layers & 12 \\
+Embedding size & 768 \\
+Hidden size & 768 \\
+Intermediate hidden size & 3072 \\
+Attention heads & 12 \\
+Attention head size & ? \\
+Activation function & gelu \\
+Vocab size & 50004 \\
+Max sequence length & 1000 \\
+Position embedding & ? \\
+Batch size & 256 \\
+Train steps & ? \\
+Learning rate decay & ? \\
+Warmup steps & ? \\
+Learning rate & ? \\
+Adam $\epsilon$ & ? \\
+Adam $\beta_1$ & ? \\
+Adam $\beta_2$ & ? \\
+Dropout & ? \\
+Attention dropout & ? \\ 
+\bottomrule
+\end{tabular}
+\caption{Language model hyperparameters.}
+\label{tab:lm_hyperparameters}
+\end{margintable}
+\vspace{-1em}
+Each model is trained for 20 epochs. Models are analyzed throughout the first epoch and at the end, and across time over the remaining 19 epochs. While this is a study looking at developmentally plausible models, large language models often require training unlike human learners, and so to give the model its best shot at learning the correct generalizations despite any ablative work, we choose to look across all epochs while considering learning from the first epoch separately. 
+
+Each model was trained on an NVIDIA RTX A6000 as part of the Psychology Department computing cluster, each model is trained over roughly two GPU hours.
+
+\subsection{Measures and Analysis}
+
+\subsubsection{Data and Coding}
+The outcome encodes preference as a binary response where \(\texttt{correct}=1\) indicates the \textit{null} realization has lower surprisal than the \textit{overt} realization. Factors include \texttt{model} (six experimental conditions), \texttt{form\_type} (\textit{null}, \textit{overt}), \texttt{item\_group} (linguistic subfamilies), \texttt{form} (processing/manipulation types), and \texttt{item\_id} (random-effect grouping). Baseline contrasts are enforced by releveling \texttt{model} so that the Baseline condition is the reference level. All models use a log\(_{10}\) transformation of training progress, \(\log_{10}(\texttt{checkpoint\_num}+1)\), to capture log-learning dynamics. 
+
+\subsubsection{Stimuli, Ablations, and Training}
+Evaluation items are constructed in minimal pairs that differ only in subject realization (\textit{null} vs.\ \textit{overt}), with lexical and contextual content otherwise held constant. Training corpora are ablated per experiment (e.g., removal of expletives and articles; removal of expletives with verb lemmatization; removal of expletives and subject pronominals). Models are trained under identical optimization settings and checkpointed uniformly. Training progress is analyzed on a log\textsubscript{10} scale with ticks at \(\{0,10,100,1\mathrm{K},10\mathrm{K}\}\) to reflect log-learning dynamics. 
+
+\subsubsection{Outcome Definition}
+For each pair at each checkpoint, mean surprisal is computed for the \textit{null} and \textit{overt} realization. A binary response \(Y\in\{0,1\}\) encodes a preference for the target realization (lower surprisal). Unless stated otherwise, end-state summaries report preference for the \textit{overt} realization on the probability scale; acquisition-time analyses operate on preference for the \textit{null} realization. Item identity is included as a random factor to account for repeated measures.
+
+\subsubsection{Learning Curves and Spline Selection}
+Learning curves are estimated with generalized linear mixed-effects models (GLMMs; logit link):
+\[
+\operatorname{logit}\Pr(Y=1)
+= \beta_0
++ \operatorname{ns}\bigl(\log_{10}(t+1),\,k\bigr)
++ u_i .
+\]
+
+where \(\mathrm{ns}(\cdot)\) is a natural spline over log-checkpoint and \(u_{\texttt{item}}\sim\mathcal{N}(0,\sigma^2)\). Spline complexity is selected per model by AIC over \(K\in\{3,\ldots,7\}\); the lowest-AIC converged fit is retained for inference and figures. Baseline contrasts are enforced by releveling the \texttt{model} factor to set the Baseline as reference.
+
+\subsubsection{Acquisition-Time Metrics}
+Two complementary metrics quantify when \textit{null}-subject behavior emerges.
+
+\paragraph{\(t_{50}\) (chance-level acquisition).}
+For each model, the fitted probability of \textit{null} preference is evaluated across checkpoints; \(t_{50}\) is defined as the \emph{last} crossing of \(0.50\) following a burn-in at \(\texttt{checkpoint}\ge 100\). Crossings are located by linear interpolation between adjacent fitted points. If no crossing occurs, the estimate is treated as right-censored. Uncertainty is quantified via parametric bootstrap of the fitted GLMM (fixed-effects uncertainty; \texttt{re.form} = \texttt{NA}), typically with \(n=500\) draws, reporting percentile 95\% confidence intervals (CIs). Measure derived from 
+
+\paragraph{AoA\(_{1/2}\) (halfway-to-asymptote).}
+End-state performance \(p_{\infty}\) is estimated from the \emph{last 10\%} of training. A dynamic threshold \(\theta=(p_{\infty}+0.5)/2\) defines \emph{Age of Acquisition} as the first post–burn-in crossing of \(\theta\). CIs use the same parametric bootstrap. Between-model differences are summarized as paired-bootstrap \(\Delta\)AoA\(_{1/2}\) relative to Baseline, with empirical \(p\)-values given by the proportion of paired draws at or beyond zero in the hypothesized direction.
+
+\paragraph{First-Epoch Analysis}
+Early learning is assessed by summarizing across all checkpoints of the first epoch (operationalized as \(\max(\texttt{checkpoint})/20\)). For each condition, the mean preference and 95\% CI are reported and tested against chance (\(0.50\)) using exact binomial tests. When comparing conditions within the first epoch, odds ratios (ORs) with 95\% CIs, Wald \(z\), and adjusted \(p\)-values are reported.
+
+\paragraph{End-State Analyses (Final 10\% of Training)}
+All end-state models use only the last 10\% of checkpoints and include a random intercept for item.
+
+\paragraph{Model-level preferences.}
+Estimated marginal means (EMMs) on the probability scale are reported for each model. Pairwise model comparisons are expressed as \emph{odds ratios} (OR) with standard errors (SE), Wald \(z\), and multiplicity-adjusted \(p\)-values. Corresponding probabilities with 95\% CIs are provided for interpretability.
+
+%\paragraph{Null--Overt gap.}
+%Within each model, the difference \(\Pr(\textit{null})\) vs.\ \(\Pr(\textit{overt})\) is estimated as a linear contrast on the EMMeans grid and reported with 95\% CIs. Between-model comparisons of this gap use the same contrast framework; when contrasts are parameterized on the logit scale, results are presented as ORs.
+
+\paragraph{Item-group effects.}
+Person/number/control/expletive/topic-shift subfamilies are modeled via fixed effects for \texttt{item\_group} and their interactions with \texttt{model}. Within each model, EMMs (probability + 95\% CI) are reported alongside all pairwise contrasts as OR (SE, \(z\), adjusted \(p\)). In cases of quasi-complete or perfect separation where mixed-effects models cannot converge, inference defaults to Fisher’s exact tests with exact \(p\)-values.
+
+\paragraph{Processing/structure manipulations.}
+Processing forms (e.g., long NPs, embedded relatives) and negation families (context, target, both) are analyzed using fixed effects for \texttt{form} and \texttt{form}\(\times\)\texttt{model}. Within-model pairwise contrasts are reported as ORs with 95\% CIs and adjusted \(p\)-values. Where “no difference from default” is stated, ORs are near 1 with CIs spanning 1.00.
+
+\subsubsection{Multiple Comparisons and Reporting}
+False discovery rate (FDR; Benjamini--Hochberg) is controlled within analysis families (model-vs-baseline, within-model item-group, within-model form, first-epoch). For planned Baseline-vs-treatment contrasts, Holm-adjusted results may additionally be reported. Reporting conventions: probabilities with 95\% CIs on the response scale; contrasts as OR (SE, \(z\), adjusted \(p\)); acquisition times with bootstrap 95\% CIs; exact \(p\)-values to three decimals, or ``\(p{<}.001\)'' when smaller.
+
+\subsubsection{Diagnostics and Estimation}
+Models are fit with \texttt{bobyqa} (increased iteration limits) and, for spline scans, \texttt{nloptwrap} when required. Convergence and boundary fits are monitored; when boundary fits occur, confirmatory fits with simplified random effects are checked. Non-convergence due to separation triggers the exact-test fallback noted above.
+
+\subsubsection{Software}
+Analyses are conducted in \textsf{R} (v4.4) using \texttt{lme4} and \texttt{lmerTest} (GLMMs and tests), \texttt{emmeans} (EMMs and contrasts), \texttt{splines} (natural splines), \texttt{MASS} (parametric simulation), and the \texttt{tidyverse} for data handling.
+
+
+%==================================================================
+% EXPERIMENT 0 (ZERO)
+%==================================================================
+
+\subsection{Experiment 0}
+
+In the first experiment the baseline model is trained on the un-ablated 90M-word training set derived from the BabyLM \cite{Warstadt2023-qd} strict dataset. 
+
+%Before training, a baseline tokenizer was trained on the test data-set, using the SentencePiece tokenizer (CITE). That tokenizer is then used to to tokenize the test and training datasets, those tokenized datasets are then pre-processed to be concatenated as cleanly as possible into 1000 token chunks to be fed into the model, a total of 127,981 chunks were created.
+
+%\begin{margintable}
+%\centering
+%\small
+%\begin{tabular}{@{}ll@{}}
+%\toprule
+%\textbf{Hyperparameter} & \textbf{Value} \\ 
+%\midrule
+%Layers & 12 \\
+%Embedding size & 768 \\
+%Hidden size & 768 \\
+%Intermediate hidden size & 3072 \\
+%Attention heads & 12 \\
+%Attention head size & 64 \\
+%Activation function & GELU \\
+%Vocab size & 50004 \\
+%Max sequence length & 128 \\
+%Position embedding & Absolute \\
+%Batch size & 256 \\
+%Train steps & 1M \\
+%Learning rate decay & Linear \\
+%Warmup steps & 10000 \\
+%Learning rate & $1 \times 10^{-4}$ \\
+%Adam $\epsilon$ & $1 \times 10^{-6}$ \\
+%Adam $\beta_1$ & 0.9 \\
+%Adam $\beta_2$ & 0.999 \\
+%Dropout & 0.1 \\
+%Attention dropout & 0.1 \\ 
+%\bottomrule
+%\end{tabular}
+%\caption{Language model hyperparameters.}
+%\label{tab:lm_hyperparameters}
+%\end{margintable}
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+\begin{figure}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics for Experiment 0 - Baseline} 
+\includegraphics{analysis/paper_figures/main/model_baseline.pdf}
+\end{figure}
+
+%Logistic models are fit on the model's preference for overt subjects. Automatic model selection was completed using AIC to determine the optimal degrees of freedom for the function splines; in the case of the baseline, a model was selected with $df = 6$. The model is calculated to last cross the 0 line at checkpoint 482. 16 steps before the end of the first epoch. At the end of the first epoch the model shows a significant/not significant preference for null 
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 6 degrees of freedom (AIC = 146242). The model achieved $t50$ at checkpoint 482 (95\% CI [396, 576]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 727 (95\% CI [664, 791]). 
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 727 (95\% CI [664, 791]). . 
+
+\begin{figure}[h]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint for Experiment 0 - Baseline}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_baseline.pdf}	
+\end{figure}
+
+%The end-state analysis showed that the base model strongly preferred overt subjects, with a 69\% preference over null subjects in the last two epochs of training, (95\% CI [68.5\%, 70.1\%], p < .001). 3rd person, 2nd person, 1st person, expletives in seems-like constructions, and 
+%
+%The model showed significant differences in the extent of its preferences between constructions. The model prefers overt subjects more in 1st person contexts (97\%) than 2nd person contexts (73\%) (p < .001), and comparing 1st person contexts and 3rd person contexts (70\%) (p < .001). There is no difference between 3rd and second person contexts. The model preferred overt subjects more in 2nd person plural contexts (75.6\%) than singular contexts (65.7\%) (χ²(1)=21.81, p < .001) and further it prefers nulls subjects more in 1st singular contexts (.95\%) than plural contexts (88.2\%) (χ²(1)=27.76, p < .001). 
+%
+%In addition, the model shows a Subject-Object control asymmetry, with the model unilaterally omitting objects (0\%) compared to subjects (30.2\%) (p < .001). The model also shows a difference in expletive use in `seem' vs `be' constructions, with the model showing no preference (51.1\%)
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 69.6\% preference over null subjects in the last two epochs of training (95\% CI [66.5\%, 72.5\%], \textit{p} <.001).
+
+  Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (93.3\%) elicited significantly more overt subjects than both second person (73.1\%) (OR = 5.081, 95\% CI [4.009, 6.438], \textit{p} < .001) and third person contexts (73.4\%) (OR = 5.008, 95\% CI [3.952, 6.347], \textit{p} < .001). There was no significant difference between second and third person contexts (OR = 0.986, 95\% CI [0.826, 1.177], \textit{p} > .05).
+
+  Within-person number contrasts showed opposite patterns across persons. For second person, plural contexts (78.3\%) elicited significantly more overt subjects than singular contexts (67.9\%) (OR = 0.585, 95\% CI [0.473, 0.723], \textit{p} < .001). Conversely, for first person, singular contexts (96.1\%) showed significantly higher preference than plural contexts (90.3\%) (OR = 2.667, 95\% CI [1.857, 3.832], \textit{p} < .001).
+  
+   \begin{margintable}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/baseline_itemgroups_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+Mixed-effect models were unable to converge comparing control contrasts because of Perfect Separation. In these cases the data are instead analyzed with Fisher's exact test. The model showed a complete subject-object control asymmetry, with subject control contexts (30.4\%) showing dramatically higher overt preferences than object control contexts (1.6\%) (\textit{p} < .001).
+
+Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (91.4\%), while \textit{be}-constructions showed no preference over chance
+  (50.3\%, \textit{p} > .05). No difference was found between conjoined phrases with (88.3\%) and without (89.8\%) topic shift.
+
+\begin{table}[h]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the baseline model}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp0baseline_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+\begin{figure}[h]
+\caption{Model preferences for overt subjects by processing manipulation at final checkpoint for Experiment 0 - Baseline}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_baseline.pdf}
+\end{figure}
+
+%All forms of processing manipulations show a preference for overt subjects, see Table \ref{tab:exp0form}). The model prefers overt subjects 64.7\% of the time in the default form.
+%
+%The model significant prefers overt subjects more in contexts with long noun phrases (69.4\%, p < .01) and relative clauses (68.1\%, p < . 05). The difference between the two complex contexts is not significant. The model shows no difference for items with negation in the context (64.7\%, p > .05). The model prefers overt subjects significantly more (p < .001) in contexts with negation in the target (75\%, p < .001), and negation in both context and target (75\%, p < .001).Bu
+
+     \begin{margintable}
+    \vspace{4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/baseline_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp0form}). The model preferred overt subjects 64.7\% of the time in default contexts. Complex constructions
+  significantly increased overt preferences: long noun phrases (69.4\%) and embedded relatives (68.1\%) both exceeded default rates, though the difference between complexity types was not significant (OR =
+  1.064, 95\% CI [0.874, 1.294], \textit{p} > .05).
+
+
+
+  Context negation showed no difference from default (65.3\%, \textit{p} > .05). However, target negation (75.7\%) and both-context negation (74.8\%) significantly increased overt preferences compared to
+  default (\textit{p} < .001). Target negation significantly exceeded context negation (OR = 0.603, 95\% CI [0.493, 0.736], \textit{p} < .001), while target and both-negation conditions did not differ
+  significantly (OR = 1.030, 95\% CI [0.836, 1.269], \textit{p} = > .05).
+
+\begin{table}[h]
+\small
+%\begin{flushleft}
+\caption{Overt subject preference by processing manipulation at final checkpoint for the baseline model}
+\label{tab:exp0form}
+\include{analysis/tables/latex_tables/forms/exp0baseline_forms.tex}
+%\end{flushleft}
+\end{table}
+
+
+%==================================================================
+% EXPERIMENT 1 (ONE)
+%==================================================================
+
+
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/baseline_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/baseline_by_form.pdf}
+%\end{figure*}
+
+\subsection{Experiment 1}
+
+The ablation targeted and excised all expletive subjects. After the first round of removal, replacement sentences are placed into the corpus and the process is repeated until satisfied.
+
+Pre-ablation size across sources was $N{=}89{,}014{,}604$ tokens. A total of $183{,}431$ expletive instances were removed, corresponding to $0.206\%$ of all tokens in the training set. Because the replacement step occasionally adds content, the net token change was an increase of $+27{,}829$ tokens overall.
+
+By source (expletives removed; share of that source; net token change):
+\begin{itemize}
+  \item \textbf{BNC Spoken}: $24{,}331$ ($0.349\%$); net $+957$ tokens.
+  \item \textbf{CHILDES}: $50{,}283$ ($0.194\%$); net $-796$ tokens.
+  \item \textbf{Gutenberg}: $52{,}412$ ($0.221\%$); net $+29{,}342$ tokens.
+  \item \textbf{OpenSubtitles}: $37{,}267$ ($0.208\%$); net $-1{,}322$ tokens.
+  \item \textbf{Simple Wikipedia}: $15{,}948$ ($0.121\%$); net $-459$ tokens.
+  \item \textbf{Switchboard}: $3{,}190$ ($0.264\%$); net $+107$ tokens.
+\end{itemize}
+
+Taken together, the ablation removes a small, well-defined portion of the corpus (about two expletives per thousand tokens) while leaving overall corpus size essentially unchanged due to the controlled insertions during replacement.
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+\begin{figure*}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+\includegraphics{analysis/paper_figures/wide/comparison_vs_baseline_faceted_remove_expletives.pdf}
+\end{figure*}
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 6 degrees of freedom (AIC = 146501). The model achieved $t50$ at checkpoint 531 (95\% CI [451, 616]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 767 (95\% CI [709, 820]). The ablated model reached acquisition criterion significantly later than the baseline model (ΔAoA = 39.71 epochs, 95\% CI [24, 55], p < .001).
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing a 64.1\% preference for null subjects (95\% CI [63.4, 64.8], \textit{p} < .001). This is not significantly different from the baseline model's first-epoch performance (p > .05) when correcting for multiple comparisons.
+
+\begin{figure}[h!]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_remove_expletives.pdf}	
+\end{figure}
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 68.1\% preference over null subjects in the last two epochs of training (95\% CI [67.2\%, 69.1\%], \textit{p} <.001). This is not significantly different from the baseline model's performance (69.3\%, p > .05) when correction for multiple comparisons is applied. 
+
+Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (91.4\%) elicited significantly more overt subjects than both second person (70.4\%, OR = 4.494, 95\% CI [3.539, 5.707], \textit{p} < .001) and third person contexts (74.2\%, OR = 3.704, 95\% CI [2.911, 4.713], \textit{p} < .001). There was no significant difference found between 2nd and 3rd person contexts (OR = 0.824, 95\% CI [0.682, 0.996], \textit{p} = .054) when correcting for multiple comparisons.
+
+   \begin{margintable}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removeexpletives_itemgroups_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+First person singular (91.6\%) and plural (91.3\%) contexts were not found to be significantly different, (OR = 1.029, 95\% CI [0.739, 1.432]), \textit{p} > .05. Second person singular contexts (67.8\%) elicited significantly less overt subjects than plural contexts (73\%, OR = 1.840, 95\% CI [1.469, 2.305], \textit{p} < .05). Conversely, for third person, singular contexts (72.6\%) and plural contexts (75.9\%) showed no difference (OR = 0.838, 95\% CI [0.667, 1.053], \textit{p} > .05) for preference of overt subjects.
+
+Mixed-effect models were unable to converge comparing control contrasts because of Perfect Separation. In these cases the data are instead analyzed with Fisher's Exact test. A significant subject-object asymmetry was observed with subject control contexts (31.4\%) showing dramatically higher overt preferences than object control contexts (0\%) (\textit{p} < .001). 
+  
+Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (97.1\%), than \textit{be}-constructions (56.9\%, OR = 0.040, 95\% CI [0.026, 0.060], \textit{p} > .001). Counter to the baseline model, \textit{be}-like constructions do in-fact differ from chance in overt preference, see Table \ref{tab:exp1_item}.
+  
+The model shows a significantly higher preference for overt subjects in topic shift (84.3\%) than non-topic-shift contexts (79.6\%, OR = .726, 95\% CI [0.557, 0.946], p < .001) 
+
+\begin{table}[h]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the remove expletives model}
+\label{tab:exp1_item}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp1removeexpletives_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+\begin{figure}[h!]
+\caption{Model preferences for overt subjects by processing manipulation at final checkpoint.}
+\label{tab:exp1_form}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_remove_expletives.pdf}
+\end{figure}
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp0form}). The model preferred overt subjects 71.2\% of the time in default contexts. Complex constructions were significantly more likely to prefer overt complementizers: comparing long noun phrases (76.4\%, OR = 1.311, 95\% CI [1.076, 1.596], p = .006 ) and embedded relatives (75.5\%, OR = 1.245, 95\% CI [1.024, 1.515], p < .001) and the difference between the two constructions is not significant (OR = 1.053, 95\% CI [0.838, 1.322], \textit{p} > .05).
+
+     \begin{margintable}
+    %\vspace{4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removeexpletives_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  Context negation showed no difference from default (71.2\%, OR = 1.072, 95\% CI [0.885, 1.300], \textit{p} > .05). Further, overt preference was not significantly higher in target negation (74.5\%, OR = 1.184, 95\% CI [0.975, 1.439], p > .05). However, overt complementizers were preferred significantly more in stimuli with negation on both target and context sentences (81.4\%, OR = 1.773, 95\% CI [1.442, 2.179], p < .001) contexts. Target negation significantly exceeded context negation (OR = 0.516, 95\% CI [0.414, 0.642], \textit{p} < .001). Contexts with negation on the target alone were significantly lower in overt subject preference than when negation was present on both (OR = 0.668, 95\% CI [0.527, 0.847], \textit{p} < .001).
+  
+    
+  \begin{table}[h!]
+%\begin{flushlef
+\caption{Overt subject preference by processing manipulation at final checkpoint for the remove expletives model}
+\label{tab:exp0form}
+\small
+\include{analysis/tables/latex_tables/forms/exp1removeexpletives_forms.tex}
+%\end{flushleft}
+\end{table}
+
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/remove_expletives_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/remove_expletives_by_form.pdf}
+%\end{figure*}
+
+%\begin{figure}[h!]
+%\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics.} 
+%\includegraphics{analysis/paper_figures/main/model_impoverish_determiners.pdf}
+%\end{figure}
+
+%==================================================================
+% EXPERIMENT 2 (TWO)
+%==================================================================
+
+
+\subsection{Experiment 2}
+
+The dataset ablated was the previously ablated dataset from Experiment 1. The ablation systematically impoverishes determiner morphology \emph{in place} (token-preserving substitutions). Unlike removal procedures, this transformation does not alter corpus length.
+
+Pre-ablation size across sources was $N{=}89{,}042{,}433$ tokens. A total of $6{,}938{,}234$ determiners were impoverished, corresponding to $7.792\%$ of all tokens in the training set. Because the operation is an in-place substitution, the net token change was $0$ overall.
+
+By source (determiners impoverished; share of that source; net token change):
+\begin{itemize}
+  \item \textbf{BNC Spoken}: $530{,}987$ ($7.610\%$); net $0$ tokens.
+  \item \textbf{CHILDES}: $1{,}468{,}619$ ($5.652\%$); net $0$ tokens.
+  \item \textbf{Gutenberg}: $2{,}353{,}331$ ($9.914\%$); net $0$ tokens.
+  \item \textbf{OpenSubtitles}: $1{,}235{,}717$ ($6.886\%$); net $0$ tokens.
+  \item \textbf{Simple Wikipedia}: $1{,}278{,}332$ ($9.690\%$); net $0$ tokens.
+  \item \textbf{Switchboard}: $71{,}248$ ($5.905\%$); net $0$ tokens.
+\end{itemize}
+
+Overall, determiners constitute a substantial, well-delimited portion of the corpus (about one in thirteen tokens), and the impoverishment procedure leaves corpus size unchanged while uniformly modifying the targeted category.
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+
+\begin{figure*}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+\includegraphics{analysis/paper_figures/wide/comparison_vs_baseline_faceted_impoverish_determiners.pdf}
+\end{figure*}
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 7 degrees of freedom (AIC = 139485). The model achieved $t50$ at checkpoint 2751˘˘ (95\% CI [451, 616]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 3400 (95\% CI [3306, 3498]). The ablated model reached acquisition criterion significantly later than the baseline model (ΔAoA = 2672 epochs, 95\% CI [2620, 2724], p < .001).
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing a 53.2\% preference for null subjects (95\% CI [52.5,53.9], \textit{p} < .001). This is significantly different from the baseline model's first-epoch performance (63.5\%, OR 1.53, 95\% CI [1.47, 1.59) p < .001).
+
+\begin{figure}[h!]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_impoverish_determiners.pdf}	
+\end{figure}
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 74.9\% preference over null subjects in the last two epochs of training (95\% CI [74\%, 75.7\%], \textit{p} <.001). This is significantly higher than the baseline model's preference (69.3\%, (OR = .756, 95\% CI [.711, 1.121, p < .001) . 
+
+  Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (93.7\%) elicited significantly more overt subjects than both second person (69.7\%, OR = 6.462, 95\% CI [4.971, 8.400], \textit{p} < .001) and third person contexts (74.3\%, OR = 5.129, 95\% CI [3.938, 6.680], \textit{p} < .001). Further there was a significant difference found between 2nd and 3rd person contexts (OR = 0.794, 95\% CI [0.656, 0.960], \textit{p} < .05).
+ 
+First person singular (95.2\%) and plural (92.5\%) contexts were shown to be significantly different, (OR = 1.594, 95\% CI [1.477, 2.331], \textit{p} < .05). Further, second person singular contexts (76.1\%) elicited significantly more overt subjects than plural contexts (63.4\%) (OR = 1.840, 95\% CI [1.469, 2.305], \textit{p} < .001). Conversely, for third person, singular contexts (58.5\%) showed significantly lower preference than plural contexts (89\%) (OR = 0.173, 95\% CI [0.134, 0.225], \textit{p} < .001) for overt subjects.
+
+ \begin{margintable}
+ 	%\vspace{-5em}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/impoverishdeterminers_itemgroups_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+
+  The model showed a strong subject-object control asymmetry, with subject control contexts (57.6\%) showing dramatically higher overt preferences than object control contexts (36.5\%) (\textit{p} < .001). It goes without statistical testing that use of overt pronouns in object control conditions increased compared to the baseline. 
+  
+  Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (98.3\%), than \textit{be}-constructions (72\%, \textit{p} > .05). Counter to the baseline model, \textit{be}-like constructions do in-fact differ from chance in overt preference, see Table \ref{tab:exp2_item}.
+  
+  The model shows a significantly stronger preference to drop pronouns in non-topic-shift contexts (74.9\%) than topic shift contexts (84.3\%, OR = .556, 95\% CI [0.436, 0.710], p < .001)
+  
+  \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the impoverish determiners model}
+\label{tab:exp2_item}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp2impoverishdeterminers_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+
+
+
+\begin{figure}[h!]
+\caption{Pairwise comparisons within item groups for null subject preference in the impoverish determiners model}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_impoverish_determiners.pdf}
+\end{figure}
+
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp0form}). The model preferred overt subjects 64.3\% of the time in default contexts. Complex constructions
+  significantly increased overt preferences: long noun phrases (69.4\%) and embedded relatives (68.1\%) both exceeded default rates, though the difference between complexity types was not significant (OR =
+  0.938, 95\% CI [0.818, 1.076], \textit{p} = .362).
+  
+     \begin{margintable}
+    \vspace{-4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/impoverishdeterminers_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  
+  Context negation showed no difference from default (65.3\%, \textit{p} > .05). However, target negation (75.7\%) and both-context negation (74.8\%) significantly increased overt preferences compared to
+  default (\textit{p} < .001). Target negation significantly exceeded context negation (OR = 0.605, 95\% CI [0.527, 0.694], \textit{p} < .001), while target and both-negation conditions did not differ
+  significantly (OR = 0.971, 95\% CI [0.842, 1.120], \textit{p} = .689).
+  
+    \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by processing manipulation at final checkpoint for the impoverish determiners model}
+\label{tab:exp2_item}
+\small
+\include{analysis/tables/latex_tables/forms/exp2impoverishdeterminers_forms.tex}
+%\end{flushleft}
+\end{table}
+
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/impoverish_determiners_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/impoverish_determiners_by_form.pdf}
+%\end{figure*}
+
+
+\subsection{Experiment 3}
+
+The dataset ablated was the previously ablated dataset from Experiment 1. The ablation excises all articles. After the first pass, replacement sentences are reinserted to preserve the corpus size, and the procedure is iterated; negative values in the token–change summaries therefore indicate a net addition of tokens.
+
+Pre-ablation size across sources was $N{=}89{,}042{,}433$ tokens. In total, $6{,}255{,}688$ article tokens were removed, corresponding to $7.026\%$ of all tokens in the training set. Because the replacement step can add or remove material, the net token change was a \emph{decrease} of $323{,}169$ tokens overall.
+
+By source (articles removed; share of that source; net token change):
+\begin{itemize}
+  \item \textbf{BNC Spoken}: $449{,}971$ ($6.449\%$); net $-41{,}025$ tokens.
+  \item \textbf{CHILDES}: $1{,}195{,}160$ ($4.600\%$); net $-254{,}272$ tokens.
+  \item \textbf{Gutenberg}: $2{,}198{,}527$ ($9.262\%$); net $+34{,}627$ tokens.
+  \item \textbf{OpenSubtitles}: $1{,}017{,}403$ ($5.669\%$); net $-150{,}074$ tokens.
+  \item \textbf{Simple Wikipedia}: $1{,}334{,}027$ ($10.113\%$); net $+84{,}118$ tokens.
+  \item \textbf{Switchboard}: $60{,}600$ ($5.022\%$); net $+3{,}457$ tokens.
+\end{itemize}
+
+Overall, the ablation removes a substantial, well-delimited category (roughly one article per fourteen tokens) while keeping corpus size broadly comparable despite localized insertions during replacement.
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+\begin{figure*}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+\includegraphics{analysis/paper_figures/wide/comparison_vs_baseline_faceted_remove_articles.pdf}
+\end{figure*}
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 7 degrees of freedom (AIC = 143567). The model achieved $t50$ at checkpoint 595 (95\% CI [532, 660]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 807 (95\% CI [758, 861]). The ablated model reached acquisition criterion significantly later than the baseline model (ΔAoA = 80 epochs, 95\% CI [81, 108], p < .001).
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing a 71.7\% preference for null subjects (95\% CI [71.1,72.4], \textit{p} < .001). This is significantly different from the baseline model's first-epoch performance (63.5\%, OR = .68, 95\% CI [.65, .71], p < .001).
+
+\begin{figure}[h!]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_remove_articles.pdf}	
+\end{figure}
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 68.2\% preference over null subjects in the last two epochs of training (95\% CI [74\%, 75.7\%], \textit{p} <.001). This is significantly lower than the baseline model's preference (69.3\%, (OR = .92, 95\% CI [.87, .975, p < .001) after correction for multiple comparisons. 
+
+  Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (92.8\%) elicited significantly more overt subjects than both second person (72.1\%, OR = 4.987, 95\% CI [3.91, 6.36], \textit{p} < .001) and third person contexts (75\%, OR = 4.302, 95\% CI [3.367, 5.497], \textit{p} < .001). There was no significant difference found between 2nd and 3rd person contexts (OR = .863, 95\% CI [0.718, 1.037], \textit{p} > .05).
+
+First person singular (94.6\%) and plural (90.9\%) contexts were shown to be significantly different (OR = 1.761, 95\% CI [1.237, 2.508], \textit{p} = .003). Further, second person singular contexts (67.5\%) elicited significantly less overt subjects than plural contexts (76.6\%, OR = .633, 95\% CI [.510, .785], \textit{p} < .001). Finally, third person singular contexts (72.1\%) showed significantly lower preference for overt subjects than plural contexts (77.8\%, OR = .737, 95\% CI [.591, .920], \textit{p} < .01).
+
+ \begin{margintable}
+ 	%\vspace{-5em}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removearticles_itemgroups_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+Mixed-effect models were unable to converge comparing control contrasts because of Perfect Separation. In these cases the data are instead analyzed with Fisher's Exact test. A significant subject-object asymmetry was observed with subject control contexts (31.9\%) showing dramatically higher overt preferences than object control contexts (2.7\%, \textit{p} < .001). 
+  
+  Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (98.3\%), than \textit{be}-constructions (50.6\%, OR = .031, 95\% CI [.021, .045], \textit{p} > .05). Like the baseline model, \textit{be}-like constructions do not differ from chance in overt preference, see Table \ref{tab:exp3_item}.
+  
+  The model shows a significant difference between topic-shift contexts, with a stronger preference for non-topic shift (96.6\%) than topic shift contexts (93.7\%, OR = 1.95, 95\% CI [1.433, 2.655], p < .001). 
+  
+  \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the remove articles model}
+\label{tab:ex3_item}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp3removearticles_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+\begin{figure}[h!]
+\caption{Model preferences for overt subjects by processing manipulation at final checkpoint.}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_remove_articles.pdf}
+\end{figure}
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp3_form}). The model preferred overt subjects 67.6\% of the time in default contexts. There was no significant difference comparing the default with forms including long noun phrases (68.5\%, OR 1.043, 95\% CI [.955,1.368], p > .05) and embedded relatives (70.4\%, OR 1.143, 95\%). Further, the difference between complexity types was not significant (OR = .912, 95\% CI [.745, 1.118], \textit{p} > .05).
+  
+       \begin{margintable}
+    %\vspace{-4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removearticles_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  Context negation showed no difference from default (66\%, OR .988, CI [827, 1.179,\textit{p} > .05). However, there was a significantly increased overt preferences compared to the default for target negation contexts (78.4\%, OR = 1.738, 95\% CI [1.439, 2.100], p < .001) and constructions with negation in both the target and context (77.4\%, OR = 1.644, 95\% CI [1.363, 1.983). Target negation significantly exceeded context negation (OR = .568, 95\% CI [0.456, 0.703], \textit{p} < .001), while target and both-negation conditions did not differ significantly (OR = 1.057, 95\% CI [0.845, 1.323], \textit{p} > .05).
+  
+    \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by processing manipulation at final checkpoint for the remove articles model}
+\label{tab:exp3_form}
+\small
+\include{analysis/tables/latex_tables/forms/exp3removearticles_forms.tex}
+%\end{flushleft}
+\end{table}
+
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/remove_articles_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/remove_articles_by_form.pdf}
+%\end{figure*}
+
+
+\subsection{Experiment 4}
+
+The dataset ablated was the previously ablated corpus from Experiment~1. The ablation lemmatizes all verbal tokens to the infinitival form \emph{in place} to remove inflectional variability while preserving tokenization; as a token‐preserving substitution, it does not change corpus length.
+
+Pre-ablation size across sources was $N{=}89{,}042{,}433$ tokens. In total, $11{,}924{,}417$ verb tokens were lemmatized, corresponding to $13.392\%$ of all tokens in the training set. Because the operation is in-place, the net token change was $0$ overall.
+
+By source (verbs lemmatized; share of that source; net token change):
+\begin{itemize}
+  \item \textbf{BNC Spoken}: $964{,}088$ ($13.816\%$); net $0$ tokens.
+  \item \textbf{CHILDES}: $3{,}537{,}141$ ($13.613\%$); net $0$ tokens.
+  \item \textbf{Gutenberg}: $3{,}358{,}317$ ($14.148\%$); net $0$ tokens.
+  \item \textbf{OpenSubtitles}: $2{,}763{,}574$ ($15.400\%$); net $0$ tokens.
+  \item \textbf{Simple Wikipedia}: $1{,}158{,}213$ ($8.780\%$); net $0$ tokens.
+  \item \textbf{Switchboard}: $143{,}084$ ($11.859\%$); net $0$ tokens.
+\end{itemize}
+
+Overall, the manipulation uniformly targets a large and well-delimited category (about one verb per seven to eight tokens) while leaving total corpus size unchanged.
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+\begin{figure*}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale to reflect model log-learning dynamics comparing Experiment 0 and Experiment 1.} 
+\includegraphics{analysis/paper_figures/wide/comparison_vs_baseline_faceted_lemmatize_verbs.pdf}
+\end{figure*}
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 6 degrees of freedom (AIC = 155563). The model achieved $t50$ at checkpoint 551 (95\% CI [484, 623]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 705 (95\% CI [660, 748]). The ablated model reached acquisition criterion significantly earlier than the baseline model (ΔAoA = -22 epochs, 95\% CI [-43, -1.65], p = .034).
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing a 65.2\% preference for null subjects (95\% CI 64.5,65.9], \textit{p} < .001). This is significantly different from the baseline model's first-epoch performance (63.5\%, OR = .926 95\% CI [886, 967], p = .003).
+
+
+
+
+\begin{figure}[h!]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_lemmatize_verbs.pdf}	
+\end{figure}
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 61.4\% preference for overt subjects in the last two epochs of training (95\% CI [60.6\%, 62.3\%], \textit{p} <.001). This is significantly lower than the baseline model's preference (69.3\%, (OR = 1.432, 95\% CI [1.36, .975], p < 1.51). 
+
+  Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (94.1\%) elicited significantly more overt subjects than both second person (75.1\%, OR = 5.315, 95\% CI [4.147, 6.810], \textit{p} < .001) and third person contexts (65\%, OR = 4.6734, 95\% CI [6.734, 10.989], \textit{p} < .001). A significant difference was found between 2nd and 3rd person contexts (OR =  1.619, 95\% CI [1.360, 1.926], \textit{p} > .05).
+˘
+First person singular (95.7\%) and plural (92.7\%) contexts were shown to be significantly different (OR = 1.738, 95\% CI [1.206, 2.504], \textit{p} = .004). Further, second person singular contexts (68.2\%) elicited significantly less overt subjects than plural contexts (81.9\%, OR = .473, 95\% CI [.381, .588], \textit{p} < .001). Finally, third person singular contexts (55.5\%) showed significantly lower preference for overt subjects than plural contexts (74.4\%, OR = .430, 95\% CI [.351, .527], \textit{p} < .001).
+
+ \begin{margintable}
+ 	%\vspace{-5em}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/lemmatizeverbs_itemgroups_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+Mixed-effect models were unable to converge comparing control contrasts because of Perfect Separation. In these cases the data are instead analyzed with Fisher's Exact test. A significant subject-object asymmetry was observed with subject control contexts (31.6\%) showing dramatically higher overt preferences than object control contexts (0.3\%, \textit{p} < .001). 
+  
+  Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (40.3\%) more than \textit{be}-constructions (40.3\%, OR = 1.969, 95\% CI [1.622, 2.390], \textit{p} < .001). Unlike the baseline model, \textit{be}-like constructions differ from chance in overt preference, see Table \ref{tab:exp4_item}.
+  
+  The model shows no significant difference between topic-shift contexts, with no difference in the preference for non-topic shift (56.6\%) than topic shift contexts (58.5\%, OR = .924, 95\% CI [.761, 1.122], p > .05). 
+  
+  \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the lemmatize verbs model}
+\label{tab:ex4_item}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp4lemmatizeverbs_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+\begin{figure}[h!]
+\caption{Model preferences for overt subjects by processing manipulation at final checkpoint.}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_lemmatize_verbs.pdf}
+\end{figure}
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp3_form}). The model preferred overt subjects 53.2\% of the time in default contexts. There was no significant difference comparing the default with forms including long noun phrases (55.1\%, OR = 1.078, 95\% CI [
+  +29, 1.267], p > .05) and embedded relatives (55.5\%, OR = 1.098, 95\% CI [.935, 1.290], p > .05). Further, the difference between complexity types was not significant (OR = .982, 95\% CI [.818, 1.178], \textit{p} > .05).
+
+       \begin{margintable}
+    %\vspace{-4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/lemmatizeverbs_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  Context negation showed no difference from default (53\%, OR = .992, CI [.845, 1.165,\textit{p} > .05). However, there was a significantly increased overt preference compared to the default for target negation contexts (74.3\%, OR = 2.546, 95\% CI [2.144, 3.023], p < .001) and constructions with negation in both the target and context (79.7\%, OR = 3.453, 95\% CI [2.885, 4.133, p < .001). Target negation significantly exceeded context negation (OR = .390, 95\% CI [0.321, 0.473], \textit{p} < .001), while target and both-negation conditions did not differ significantly (OR = 1.057, 95\% CI [0.845, 1.323], \textit{p} > .05).
+  
+    \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by processing manipulation at final checkpoint for the lemmatize verbs model}
+\label{tab:exp4_form}
+\small
+\include{analysis/tables/latex_tables/forms/exp4lemmatizeverbs_forms.tex}
+%\end{flushleft}
+\end{table}
+
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/lemmatize_verbs_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/lemmatize_verbs_by_form.pdf}
+%\end{figure*}
+
+\subsection{Experiment 5}
+
+The dataset ablated was the previously ablated corpus from Experiment~1. The ablation excises all \emph{subject pronominals}. After the first pass, replacement sentences are reinserted to preserve well-formedness, and the procedure is iterated; negative values in the token–change summaries indicate a net addition of tokens.
+
+Pre-ablation size across sources was $N{=}89{,}042{,}433$ tokens. In total, $8{,}184{,}685$ subject pronouns were removed, corresponding to $9.192\%$ of all tokens (roughly one in eleven). Because replacement can add or remove material, the net token change was an \emph{increase} of $227{,}736$ tokens overall.
+
+By source (subject pronouns removed; share of that source; net token change):
+\begin{itemize}
+  \item \textbf{BNC Spoken}: $892{,}344$ ($12.788\%$); net $+65{,}143$ tokens.
+  \item \textbf{CHILDES}: $2{,}663{,}055$ ($10.249\%$); net $-272{,}576$ tokens.
+  \item \textbf{Gutenberg}: $1{,}773{,}765$ ($7.473\%$); net $+354{,}581$ tokens.
+  \item \textbf{OpenSubtitles}: $2{,}361{,}473$ ($13.159\%$); net $-34{,}351$ tokens.
+  \item \textbf{Simple Wikipedia}: $338{,}283$ ($2.564\%$); net $+128{,}945$ tokens.
+  \item \textbf{Switchboard}: $155{,}765$ ($12.910\%$); net $-14{,}006$ tokens.
+\end{itemize}
+
+Overall, the ablation targets a broad, well-delimited category while keeping corpus size broadly comparable, owing to controlled insertions during replacement.
+
+%\subsubsection{Model Training}
+
+\subsubsection{Model Evaluation}
+
+\begin{figure*}[h!]
+\caption{Model preference for null and overt evaluation stimuli over training, training steps transformed to log-scale.} 
+\includegraphics{analysis/paper_figures/wide/comparison_vs_baseline_faceted_remove_subject_pronominals.pdf}
+\end{figure*}
+
+AIC-based model selection indicated that the baseline model achieved optimal fit with 6 degrees of freedom (AIC = 166269). The model achieved $t50$ at checkpoint 646 (95\% CI [536, 660]). Age of Acquisition analysis revealed that baseline achieved AoA at checkpoint 774 (95\% CI [706, 9733\sidenote[][]{Something about this condition made it hard for the function to estimate the right edge of the curve.}]). The ablated model reached acquisition criterion significantly earlier than the baseline model (ΔAoA = 80 epochs, 95\% CI [35.9, 8974], p < .001).
+
+First epoch analysis shows that the Baseline model exhibited a significant preference for null subjects by the end of the first epoch, showing a 62.3\% preference for null subjects (95\% CI 61.5,62.9], \textit{p} < .001). This is not significantly different from the baseline model's first-epoch performance (63.5\%, OR = 1.06 95\% CI [1.009, 1.1], p = .085) when corrections for multiple comparisons is applied.
+
+
+\begin{figure}[h!]
+\caption{Model preference for overt subjects by evaluation group at final checkpoint}
+\includegraphics{analysis/paper_figures/supplementary/forest_item_group_remove_subject_pronominals.pdf}	
+\end{figure}
+
+The end-state analysis showed that the base model strongly preferred overt subjects, with a 54.4\% preference for overt subjects in the last two epochs of training (95\% CI [53.4\%, 55.3\%], \textit{p} <.001). This is significantly lower than the baseline model's preference (69.3\%, (OR = 1.93, 95\% CI [1.82, 2.03], p < .001). 
+
+  Mixed-effects pairwise comparisons revealed significant person-based differences. First person contexts (96.4\%) elicited significantly more overt subjects than both second person (74.8\%, OR = 9.037, 95\% CI [6.698, 12.193], \textit{p} < .001) and third person contexts (72.9\%, OR = 9.999, 95\% CI [7.416, 13.482], \textit{p} < .001). There was no significant difference found between 2nd and 3rd person contexts (OR = 1.106, 95\% CI [.918, 1.333], \textit{p} > .05).
+˘
+First person singular (98\%) and plural (94.8\%) contexts were shown to be significantly different (OR = 2.686, 95\% CI [1.648, 4.379], \textit{p} < .001). Second person singular contexts (73.3\%) elicited no significant difference than plural contexts (76.4\%, OR = .851, 95\% CI [.682, 1.063], \textit{p} > .05). Finally, third person singular contexts (76\%) showed significantly higher preference for overt subjects than plural contexts (69.7\%, OR = 1.375, 95\% CI [1.104, 1.712], \textit{p} < .01).
+
+Mixed-effect models were unable to converge comparing control contrasts because of Perfect Separation. In these cases the data are instead analyzed with Fisher's Exact test. A significant subject-object asymmetry was observed with subject control contexts (30.4\%) showing dramatically higher overt preferences than object control contexts (1.6\%, \textit{p} < .001). 
+  
+  Expletive constructions showed differential behavior by verb type. \textit{Seems}-constructions strongly favored overt subjects (95.5\%), than \textit{be}-constructions (49.6\%, OR = .046, 95\% CI [.033, .065], \textit{p} > .001). Like the baseline model, \textit{be}-like constructions do not differ from chance in overt preference, see Table \ref{tab:exp3_item}.
+  
+  The model shows a significant difference between topic-shift contexts, with a weaker preference for non-topic shift (15.9\%) than topic shift contexts (7.8\%, OR = 2.218, 95\% CI [1.643, 2.995], p < .001). 
+  
+  \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by syntactic context at final checkpoint for the remove subject pronominals model}
+\label{tab:ex3_item}
+\small
+\include{analysis/tables/latex_tables/itemgroups/exp5removesubjectpronominals_itemgroups.tex}
+%\end{flushleft}
+\end{table}
+
+\begin{margintable}
+ 	%\vspace{-5em}
+ 	\caption{Pairwise comparisons of within Item Group differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removesubjectpronominals_itemgroups_fixed.tex}
+ \end{margintable}
+
+\begin{figure}[h!]
+\caption{Model preferences for overt subjects by processing manipulation at final checkpoint.}
+\includegraphics{analysis/paper_figures/supplementary/forest_form_remove_subject_pronominals.pdf}
+\end{figure}
+ \vspace{-\baselineskip}
+
+  All processing manipulations showed preferences for overt subjects (see Table \ref{tab:exp3_form}). The model preferred overt subjects 67.6\% of the time in default contexts. There was no significant difference comparing the default with forms including long noun phrases (68.5\%, OR 1.043, 95\% CI [.955,1.368], p > .05) and embedded relatives (70.4\%, OR 1.143, 95\%). Further, the difference between complexity types was not significant (OR = .912, 95\% CI [.745, 1.118], \textit{p} > .05).
+
+       \begin{margintable}
+    %\vspace{-4em}
+ 	\caption{Pairwise comparisons of within Processing differences}
+ 	\vspace{-\baselineskip}
+ 	\include{analysis/tables/latex_tables/margin/removesubjectpronominals_forms_fixed.tex}
+ \end{margintable}
+ 
+ \vspace{-\baselineskip}
+
+  Context negation showed no difference from default (66\%, OR .988, CI [827, 1.179,\textit{p} > .05). However, there was a significantly increased overt preferences compared to the default for target negation contexts (78.4\%, OR = 1.738, 95\% CI [1.439, 2.100], p < .001) and constructions with negation in both the target and context (77.4\%, OR = 1.644, 95\% CI [1.363, 1.983). Target negation significantly exceeded context negation (OR = .568, 95\% CI [0.456, 0.703], \textit{p} < .001), while target and both-negation conditions did not differ significantly (OR = 1.057, 95\% CI [0.845, 1.323], \textit{p} > .05).
+  
+    \begin{table}[h!]
+%\begin{flushleft}
+\caption{Overt subject preference by processing manipulation at final checkpoint for the remove subject pronominals model}
+\label{tab:exp4_form}
+\small
+\include{analysis/tables/latex_tables/forms/exp5removesubjectpronominals_forms.tex}
+%\end{flushleft}
+\end{table}
+
+
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Evaluation Set}
+%\includegraphics{analysis/paper_figures/wide/remove_subject_pronominals_by_item_group.pdf}
+%\end{figure*}
+%
+%\begin{figure*}[h!]
+%\caption{Model learning curves by Processing Manipulation for Experiment 0 - Baseline}
+%\includegraphics{analysis/paper_figures/wide/remove_subject_pronominals_by_form.pdf}
+%\end{figure*}
+
+%\subsection{Experiment 6}
+%
+%In this experiment we will train a model on a dataset ablated to contain no expletives, poor determiner morphology, and poor, but invariant verbal morphology.
+%
+%\subsubsection{Ablation Result}
+%
+%\subsubsection{Model Training}
+%
+%\subsubsection{Model Evaluation}
+%
+%\clearpage
+%
+%\subsection{Experiment 7}
+%
+%In this experiment we will train a model on a dataset ablated to contain no expletives, poor determiner morphology, invariant verbal morphology, and no pronominal subjects.
+%
+%\subsubsection{Ablation Result}
+%
+%\subsubsection{Model Training}
+%
+%\subsubsection{Model Evaluation}
+%
+%\subsection{Discussion}
+%
+%\subsection{Experiment 8}
+%
+%In this experiment we will test human participants on their performance processing stimuli including the preferred and dispreferred evaluation stimuli used to test the large language models. This aims to give us a human-baseline to compare model performance on its preference 
+%
+%\subsubsection{Method}
+%
+%\subsubsection{Participants}
+%
+%\subsubsection{Measures and Analysis}
+%
+%\subsection{Results}
+
+
+
+
+
+\section{Discussion}
+
+
+\begin{figure*}[h!]
+\caption{Cross-model comparison of null subject acquisition trajectories (log scale)}
+\includegraphics{analysis/paper_figures/wide/all_models_comparison_log.pdf}
+\end{figure*}
+
+In this study, I used small Transformer models trained on differently ablated linguistic corpuses to investigate the causal role that different sources of linguistic evidence play in a model forming syntactic preferences. In addition, I investigated the role that complexity within a production context would influence the performance of the model across different experiments. The goal was to investigate theories of evidence and performance on English children's mis-production of null subjects while learning an overt-subject language.
+
+After training the baseline model, we found that models fail to learn the overt subject constraint within the first 90 million words of training presented -- the amount of words that a 9 - 12 year old roughly has seen. By that age, English children uniformly produce overt subjects in adult-like ways. The model eventually did become more like an English speaker in its preference for overt subjects roughly after 1.5 epochs, maintaining a preference for overt subjects. The preference decreased (becoming more flexible) somewhat over log-time. 
+
+The baseline model, and all ablated models, demonstrate a stage before learning the English generalization, with a preference for null subjects to overt subjects. It is unclear what is the source, or evidence, for null subjects in English that the model is sensitive to in the early steps of training, or whether this is an artifact of a bias within the model. That is to say, whether the model defaults to a state that is available to null subjects and only learns otherwise with sufficient evidence later in training, or whether there is input within the English corpora that when presented to the model guides it towards a preference for null subjects. Our ablative experiments failed to eliminate this stage, at times increasing it. It is possible that insufficient lexical evidence could lead to an illusion of a null-subject preference in the sense that the model dis-prefers the presence of a pronoun due to unfamiliarity and not due to a linguistic generalization.
+
+Such a stage would be consistent with null-first accounts of overt subject learning, some of these theories attribute such a preference to innate learning biases (a kind of parameter setting) \sidecite{Hyams1986-ae,Hyams1989-mu}, while others may attribute it to something like an artifact of an easy-first or good-enough bias \cite{Kurumada2015-hs,Macdonald2013-iq,Yao2025-dl,Bloom1970-xr}. This is however evidence counter to Bloom's \cite{Bloom1970-xr} prediction that English children default to overt subjects, despite processing effects. 
+
+there may be biases present within transformers that would bias them early towards null subjects. It's also possible there is information available early on that leads them to the wrong preference. It's not necessarily the case that the model learns in such a way, and thus we should think that children learn such a way; rather, the model demonstrates that there is either evidence sufficient for English children to acquire an early null subject bias available in the environment (as such a thing as a Transformer can learn), or some other bias could be responsible for the effect. The former question can be asked further with more ablative work, looking for the causal source that leads to this initial bias, whereas the latter question is better served by manipulating model architecture and developing interpretability experiments to better understand the model's performance.
+
+\begin{table}[h!]
+	\caption{Age of acquisition for null subject preference across experimental models}
+	\include{analysis/tables/latex_tables/simple_aoa_table.tex}
+\end{table}
+
+\begin{figure}[h!]
+	\caption{Final checkpoint performance comparison across all experimental models}
+	\includegraphics{analysis/paper_figures/main/endstate_performance.pdf}
+\end{figure}
+
+
+Despite the fairly wide-reaching interventions we performed on the training data, all models successfully acquired an english-like generalization fairly early within training, although most models' preferences differed from each other by the end of training. The first manipulation, to remove expletives, influenced the model's behavior the least. While the ablated model took longer to acquire the generalization, by 40 training steps, it otherwise did not differ in terms of changing the state of the model's training at the end of the first checkpoint and the last. This is unlike the other ablated models. Nonetheless, this makes an account like Yang's \sidecite{Yang2003-fn,Yang2004-wk} variational learning theory of null subjects unlikely to explain the model's behavior. However, it serves to question whether this result is adequate given that the model which lacks evidence of unbound expletives, still shows preference for their presence in seems-like and be-like constructions (even to a greater extent). Either the ablative intervention did not sufficiently remove all expletives (which would still not explain the additive behavior), or other sources of evidence are contributing to the model's performance in these cases. This is all to say, even with fairly robust perturbation, there seems to be sufficient evidence present within the BabyLM dataset to acquire such a preference. 
+
+The second experiment demonstrated the most dramatic learning effect of an ablation: despite the fact that experiment 2 did not remove any words, only impoverishing forms, learning was delayed  5 full epochs, at least. Despite this fact, the model acquires the strongest preference for overt subjects than any other model. What makes this manipulation different from the others, in its outsized effect?
+
+The third experiment, was predicted to be even more extreme than the second, removing all articles, but this did not show nearly the same effect; instead showing the strongest initial preference for null subjects between models within the first epoch. This manipulation did in-fact slow the acquisition of the generalization more than any other experiment besides the second. However, it simply doesn't compare in magnitude or character. 
+
+This is problematic for Hyam's \cite{Hyams1986-ae,Hyams1989-mu,Hyams1993-zk} accounts which do not differentiate between impoverishment due to uniformity or absence, but also that do not consider articles to be primary evidence for the acquisition of this structure. Instead, Duguine \cite{Duguine2017-fr} proposed that a rich determiner system, and the absence of a rich verbal paradigm would lead to the generalization. That kind of account would seem to corroborate with model performance \sidecite{Bertolino2024-xf}. Duguine treats evidence of a rich determiner system as a kind of 'blocking' rule, which allows for the blocking of the null-subject parameter. It could be that in the absence of evidence for a kind of 'blocking' rule, you are forced to search for a less shallow source of evidence. This could extend the time to learn a construction, but being forced to form such a generalization in a less shallow may also encourage a stronger generalization with more acceptable dropping of both subject and object pronouns in allowed contexts.
+
+That is not to say that articles alone are important to learning this generalization (as it succeeds anyways), as Experiment 4 demonstrates, that among the targeted sources of indirect evidence (exps. 1-4), the absence of verbal morphology leads to the lowest overt subject preference. Note that in this ablation, the status of determiners or pronouns are all maintained, and in the absence of verbal agreement or tense information, the likelihood of overt subjects decreases significantly. Future work will look at the effect on learning when both verbal and determiner information is impoverished. Under a topology of non-null-subject languages, impoverished verbal information should lead to more Mandarin-like generalizations. 
+
+Despite the outside role of indirect evidence in this discussion, Experiment 5 directly tested the role that direct pronominal evidence has on learning. Hyams \cite{Hyams1986-ae,Hyams1989-mu} proposed that children can learn from the presence of a pronoun that they may be learning a non-null-subject language if they assume that there is some pressure for speakers to otherwise not speak a pronoun, and that the presence of a pronoun is evidence of its necessity, whether this constraint is pragmatic or syntactic/semantic in nature. In fact, Experiment 5 while demonstrating a slight but significant bias for overt subjects, in-fact shows no bias whatsoever in non-processing related contexts, that is you can see that the default forms without any manipulation do not significantly differ from chance. So, you could say in this case that the model does in fact fail to acquire the generalization in the case that direct evidence is not available. If the model is able to utilize the presence of pronouns as such evidence, it may indicate that children themselves are able to utilize the presence or absence of a pronoun as positive evidence towards either generalization, as Hyams predicted. Such questions should still be addressed by experimentally investigating children's learning, but these models offer a tool to test such questions with methods that are unavailable in human work. 
+
+\begin{table*}[h]
+	\caption{Syntactic forms showing significant deviation from default performance by experimental model}
+	\include{analysis/tables/latex_tables/forms_vs_default_checkmarks.tex}
+\end{table*}
+
+\begin{table*}[h]
+	\caption{Pairwise comparisons between processing manipulations across experiment model}
+	\include{analysis/tables/latex_tables/margin/comprehensive_forms_fixed.tex}
+\end{table*}
+
+In addition to testing the model's performance across training, we also compared model performance on specific stimuli designed to address questions about the role that processing load (or specifically the complexity of a processing environment) has on preferences for overt subjects. We found that, counter to processing accounts of null-subject use in children \cite{Bloom1970-xr,Bloom1975-uy,Bloom1989-ro, Valle-Perez2018-zb}, the model when faced with extra complexity instead seems to prefer overt pronouns more, to the extent that the positive result for Experiment 4 is from the negated forms increasing the overall rate of pronoun use in the model. Across the board, we do not see any models that are influenced by the presence of negation in the context sentence, whereas the presence of negation in the target sentence in almost all cases results in increased overt subject use. 
+
+Of course, it could be said that whatever manifests as processing difficulty within such a model does not reflect how processing difficulty is managed by speakers. Whereas surprisal has been shown to capture much about comprehender's difficulties reading, less work has been done as to how it captures language production\sidenote[][]{Except in the realm of aphasiology where there has been much work done, although not exactly relevant to the current discussion}. Some work, however, for instance, has shown that the dynamics of Large Language Models, when trained for such a task, can predict hierarchical aspects of language planning \sidecite{Mingfang2025-rj}, so it is not strictly out of the question that production effects could be captured in such a way. It could be in this case that parallel work needs to be done with adult human participants to determine whether this effect reflects human-like processing artifacts, or this is instead an artifact of the model's processing alone.
+
+Similarly, preferences across processing stimuli seem to follow similar patterns of acquisition across all stimuli, which would suggest the model is forming a fairly general heuristic which is robust to differences across contexts. One place of note is the presence of negation in the target sentence seems to eliminate the initial null-bias across its learning curve. This is still counter to the predictions made by the processing account, as this bias disappears as a preference, or lack of bias towards null for overt subjects. This can be seen in Figure \ref{dis:formtraj}
+
+\begin{figure*}
+\caption{Developmental trajectories of null subject preferences by processing manipulation across all models}
+\label{dis:formtraj}
+\includegraphics{analysis/paper_figures/wide/form_trajectories_log.pdf}
+\end{figure*}
+
+\begin{table*}[h!]
+	\caption{Cross-model pairwise comparisons of null subject preferences by syntactic context}
+	\include{analysis/tables/latex_tables/margin/comprehensive_itemgroups_fixed.tex}
+\end{table*}
+
+We can see fairly robust person asymmetries in the models. In general, models prefer overtly producing 1st person pronouns over 2nd and 3rd person pronouns. It is possible that this is the result of the kind of evidence available, vs specific characteristics as to how the model processes different pronouns. That is, in general you would expect to see more 2nd and 3rd person referents in imperative contexts. Although, this would not necessarily capture the whole picture, as diary drop `\gap didn't go to work today' involves only 1st person pronouns (in the case of declarative statements, unlike `didn't go to work today?'). Only in cases where we impoverished determiners, or lemmatized the verbs did we see a full person hierarchy, with a further difference between 2nd person and 3rd person. Regardless, this demonstrates, that even with the model having learned the English preference fairly robustly across items, there is still a graded difference between syntactic and lexical contexts that would influence this behavior. This pattern is fairly coherent with languages that allow for subject drop, where there are proposed person, and number hierarchies which determine how arguments are connected with their verbs. The study at present did not specifically investigate the topic of verbal agreement (compared to verbal morphology independently), but in languages that allow for robust person-based verbal agreement, such as Spanish, there are theories that differentiate the three persons in a pattern that follows from the results of this study \sidecite{Harley2002-lv,Carminati2005-to}  . Some even argue that 3rd singular pronouns in many languages are not pronouns at all, but instead determiners ('el' $\rightarrow$ 'el', 'la' $\rightarrow$ 'ella') \sidecite{Bonet:1991}. Among the biggest changes present in the within Itemgroup differences are in Experiment 2 and 4, impoverishing determiners and lemmatizing verbs effect preferences for 3rd person singular pronouns more than its plural counterpart towards a bias for null subjects. In addition, these two conditions also introduce a difference between 2nd and 3rd person pronouns in their production\sidenote[][]{This question, of the status of the 3rd person pronoun was one I was quite interested in when I used to study syntax. I had some independent evidence from Basque that syntactically, the 3rd singular object pronoun had such a status. Maybe there is also a subject-object asymmetry there as well as noted in the Carminati \cite{Carminati2005-to} paper}.  To better elucidate this effect, it may be interesting to perform a representational analysis on 3rd singular pronouns relative to other pronouns, and likewise to do such an analysis across models to see how representations change from ablation. We would predict, for example, that following a kind of analysis like Bonet's \cite{Bonet:1991}, that the more Italian-like a model becomes, the 3rd singular should become more like a determiner.
+
+\begin{figure*}[ht]
+	\caption{Learning trajectories for expletive constructions across experimental models}
+	\includegraphics{analysis/paper_figures/wide/item_group_trajectories_expletives.png}
+\end{figure*}
+
+All models demonstrated the human-like asymmetry between subject and object control verbs, preferring to drop object controlled pronouns far more than subject controlled pronouns. It is of note that, unlike the other models: Experiment 2, while maintaining the same asymmetry, incorrectly prefers overt pronouns in subject control contexts. % Whether this is a function of the input, or a bias present in the model would be a question to investigate further from this \sidecite{Macdonald2013-iq}.
+
+
+The models seem, for the most part, capable of developing a fairly strict preference for expletives in \emph{seems}-type verbs\sidenote[][]{I say seems-\emph{type} here, but indeed every verb in the set is 'seem'}. In the case of Experiment 4, lemmatize verbs, the model at some point reverses a preference for overt expletives towards one for null expletives — although this is reflected as a slight-overt bias when averaged over the last two epochs. On the other hand, all models, including the baseline model, struggle to form a strong preference for \emph{be}-like constructions. In contrast, when impoverishing determiners the model forms a later generalization for the expletive be, but its final impression is both correct, and stronger than other models. Such an effect could support the account that this model, when faced with the ablation developed a less shallow heuristic despite a longer acquisition time. Likewise for \emph{be}-like constructions, only Experiment 2 and 3 seem to demonstrate an early null-bias, and in the case of Experiment 3, this bias is very large. The lack of such an effect in the \emph{seems}-like contexts, could indicate that the development of English-like performance in \emph{be}-like contexts is more dependent upon evidence from articles, whereas the presence of verbal evidence is more important for \emph{seems}-type verbs, as demonstrated by Experiment 4. 
+
+\begin{figure*}[ht]
+	\caption{Learning trajectories for long-distance binding constructions across experimental models}
+	\includegraphics{analysis/paper_figures/wide/item_group_trajectories_long_distance_binding.pdf}
+\end{figure*}
+
+All models except for the model with ablated subject pronouns successfully acquired a strong preference for overt pronouns in long-distance binding contexts (where such binding is elicit and otherwise required to drop a pronoun). It seems then, that most models are able to acquire this constraint, which is largely bound by syntactic dependencies. However, the question is, why is there such variability in the performance of the model trained without subject pronouns? The most obvious answer to this, is of course, that there is simply much less exposure to pronouns in that model, especially in the subject position which these stimuli were targeting. Still, there should be plenty of independent evidence that should allow the model to acquire similar binding constraints, an heuristic that shouldn't necessarily be lexically-bound. Perhaps in this area we should cross-reference performance on this particular binding task and performance on other binding tasks, such as those found in the BLiMP evaluation setw. 
+
+\begin{figure*}[h!]
+	\caption{Learning trajectories for person-number agreement constructions across experimental models}
+	\includegraphics{analysis/paper_figures/wide/item_group_trajectories_conjunction.pdf}	
+\end{figure*}
+
+\begin{figure}[h!]
+	\caption{Overt subject preference in conjunction contexts by model}
+	\includegraphics{analysis/paper_figures/supplementary/forest_conjunction_by_model.pdf}	
+\end{figure}
+
+
+In the case of conjunction without topic shift and conjunction with topic shift, models, except for Experiment 5, correctly preference overt pronouns, but the baseline model fails to acquire a difference between topic shift contexts. However, four out of five ablated models acquire a distinction, Experiments 1 and 2 acquire the correct distinction, whereas Experiments 3 and 5 acquire the incorrect one. Experiment 1 prefers overt subjects 4.7\% (OR = .726, 95\% CI [0.557, 0.946], p < .001) more in topic shift contexts, whereas Experiment 2 shows a much stronger contrast of 9.4\% (OR = .556, 95\% CI [0.436, 0.710], p < .001). It's possible the effect that we're seeing when determiners are impoverished, is part of the same phenomenon that we have been tracking with its progress throughout this paper. That is, perhaps, in the course of its long acquisition of these constructions, it is actually establishing some deeper heuristics that in-fact are stronger, or more human-like in their content. Perhaps it has deeper competence that could be examined in BLiMP. We propose this as a possible explanation for the performance of the model when impoverishing determiners. 
+
+The idea that a model, when certain short-cut features are removed, will learn something slower but more robustly is not a new idea in the training of Large Language Models. This idea has been captured in a literature about a phenomena called `Grokking' \sidecite{Power2022-tt}. Essentially, models which have long since overfit on the training data available can experience sudden and extreme improvements in their performance on the validation data, through an emergent process called grokking. They find also that as their training set gets smaller, the amount of training steps to generalize to the validation data takes longer. While in this case, grokking is about a model which reaches perfect performance on a test case, we do not expect the model to reach such performance in this complex linguistic context. Some work suggests that what models are doing in these scenarios is transitioning from memorization-like states to generalization-like states in its internal state \sidecite{Varma2023-dl}. They show that if you re-introduce new sources of data to the model, it can revert back from generalization-like states, towards a memorization-like state, losing its performance gains. Perhaps we would see such a case comparing these ablated models in bilingual contexts, when they are later exposed to a new language. 
+
+It's possible that while determiner richness is a very available piece of evidence for the model, it introduces the model to a kind of short-cut learning \sidecite{Roman2024-wm}, which in the long-term could introduce shallow heuristics that harm out of distribution performance. On the other hand, not removing, but instead un-enriching the determiner morphology removes this as an obvious and available source of evidence for models, leading it to richer more robust generalizations. Of course, this process may not lead to a stronger model overall, this model was the only one that preferred overt pronouns in control conditions. Perhaps acquiring a stronger generalization for overt subjects, like the one in English could cause the model to incorrectly apply this rule in a control context. In this case, it may be considered that this model is in the middle of a U-like curve, first memorizing, then forming generalizations which mis-apply to incorrect contexts, and perhaps if training continued it may have corrected such mistakes.
+
+In fact, looking at the learning patterns for control contexts from Experiment 2, one can see that this result is an artifact of averaging over the last two epochs of training. You can observe, that the model after learning that overt subjects are obligatory soon rapidly corrects this rule in control contexts, making a U-shaped curve towards English-like performance (it's important to note that other models showed such a u-shaped curve for this stimuli, just at earlier points).
+
+\begin{figure*}[h!]
+	\caption{Learning trajectories for control constructions across experimental models}
+	\includegraphics{analysis/paper_figures/wide/item_group_trajectories_control_contexts.png}
+\end{figure*}
+
+\section{Future Directions}
+
+This study is by no means perfect, and is a first try at attempting a study of this kind for me. Some things that are notably missing by the time this proposal is sent out.
+
+\begin{enumerate}
+	\item More cross-wise experiments investigating the role of more than one source of linguistics evidence, manipulating multiple kinds of ablations.
+	\item Simple BLiMP or test perplexity analysis (I have all the stuff there, just couldn't get to it)
+	\item Looking closer at the distributional changes that appear as part of the ablative task, designing evaluation stimuli to test whether the ablation was correctly target, or certain linguistic information was lost
+	\item Discussion human-size LLMs, etc. Looking at performance within context to see how the model processed it's own training data. 
+	\item look at the baseline, and other models across random seeds, learning rates, other hyperparameters etc. 
+	\item a.o. this was getting to be quite long and cumbersome.
+\end{enumerate}
+
+These are my future plans:
+
+\begin{enumerate}
+	\item Perform representational analysis on these models to track how changes in representations occur over time, and whether this tracks with how/when learning occurs over time.
+	\item Look at whether within-language priming effects occur for the presence of absence of a subject.
+	\item Run bilingual language studies investigating the role the generalizations formed in one language influence the learning of another language, for instance, would freezing a model at the point where it prefers null subjects in one Language transfer an advantage in learning another language that allows for null subjects
+	\item Can we ablate a null-subject language in such a way that it behaves like an overt subject language?
+	\item We've talked about data ablations, but can we introduce rearing that allows for data manipulation? What if we artificially insert a rich agreement system into a language that otherwise lack one. Perhaps Mandarin is a good investigative domain for this. 
+\end{enumerate}
+
+Fit any one of these into a Chapter 2 and 3, I currently do not have the energy to do so myself. I will flesh two of these out at least on the proposal date. I also presented several ideas within the discussion itself, and this does not mention further investigations that I will put specifically towards the behavior of the model in Experiment 2.
+
+\section{Conclusion}
+
+This proposal sought to investigate the role that different sources of causal evidence plays in the learning of the null-subject constraint. It also sought to assess theories of processing difficulty leading to non-english like behavior in English-learning children. We found that LLMs were unable to learn the English overt subject constraint given the same amount of linguistic stimuli available to children after processing it once through. Instead, the model demonstrated the same non-english like behavior that young children do, preferring null subjects in positions where null subjects are elicit. Despite that, within the second epoch most models were able to develop an English-like preference for overt subjects. We found that the presence of different kinds of linguistic information significantly impacts the learning of this generalization, and that specifically the presence of a rich determiner system is important to quickly guide the model towards English-like subject rules. In addition, we found that processing-based manipulations of the data do not make the model behave in ways that English children do, instead under increased contextual complexity Transformer models omit subjects less. Either this is a difference between models and children, in how a model and child responds to complexity, or it suggests that we should look further at the causes of children's performance in these cases. The results of the learning study suggest that maybe removing some sources of information, like rich determiner morphology can herd a model towards processing more data over longer period of time to develop a stronger and more robust generalization. In this case, this could be an instance of adaptive Grokking as a result of linguistic deprivation of the model. 
+
+%\section{Chapter 2}
+%
+%\begin{enumerate}
+%  \item Prime Real Estate: Investigating Structural Priming with methods in Machine Interpretability
+%\end{enumerate}
+%
+%
+%\section{Chapter 3}
+%
+%\begin{enumerate}
+%  \item Back to the Future: Probing for Planning in Small and Large Language Models?
+%\end{enumerate}
+
+%\begin{widepar}
+%\begin{exe}
+%
+%    \ex \textit{3rd person singular and plural}
+%    
+%    \begin{xlist}
+%        \ex \gll Anna ha finito il libro. Lei/{\O} pensa che il finale sia perfetto. \\
+%                 Anna has finished the book. 3SG.F/{\O} thinks.3SG that the.M.SG ending be.SBJV.3SG perfect. \\
+%            \glt `Anna has finished the book. She thinks that the ending is perfect.'
+%
+%        \ex \gll I clienti hanno visto la proposta. Loro/{\O} pensano che il budget sia accettabile. \\
+%                 the.M.PL clients have.3PL seen the.F.SG proposal. 3PL/{\O} think.3PL that the.M.SG budget be.SBJV.3SG acceptable. \\
+%            \glt `The clients have seen the proposal. They think that the budget is acceptable.'
+%    \end{xlist}
+%
+%    \ex \textit{2nd person singular and plural}
+%    
+%    \begin{xlist}
+%        \ex \gll Marco, hai letto l'email. Tu/{\O} pensi che abbiamo bisogno di più tempo. \\
+%                 Marco, have.2SG read the=email. 2SG/{\O} think.2SG that have.1PL need of more time. \\
+%            \glt `Marco, you have read the email. You think that we need more time.'
+%
+%        \ex \gll Studenti, avete sentito la notizia. Voi/{\O} pensate che la decisione sia giusta. \\
+%                 Students, have.2PL heard the.F.SG news. 2PL/{\O} think.2PL that the.F.SG decision be.SBJV.3SG fair. \\
+%            \glt `Students, you have heard the news. You think that the decision is fair.'
+%    \end{xlist}
+%    
+%    \ex \textit{1st person singular and plural}
+%    
+%    \begin{xlist}
+%        \ex \gll Ho rivisto l'ordine del giorno. Io/{\O} penso che il programma sia troppo serrato. \\
+%                 have.1SG reviewed the=order of.the day. 1SG/{\O} think.1SG that the.M.SG schedule be.SBJV.3SG too tight. \\
+%            \glt `I have reviewed the agenda. I think the schedule is too tight.'
+%
+%        \ex \gll Io e il mio team abbiamo visto la demo. Noi/{\O} pensiamo che il prodotto abbia potenziale. \\
+%                 I and the my team have.1PL seen the.F.SG demo. 1PL/{\O} think.1PL that the.M.SG product have.SBJV.3SG potential. \\
+%            \glt `Me and my team have seen the demo. We think that the product has potential.'
+%    \end{xlist}
+%
+%    \ex \textit{Subject and Object Control}
+%    
+%    \begin{xlist}
+%        \ex \gll Maria ha convinto suo fratello {\O}/*lui a partire presto dalla festa. \\
+%                 Maria has convinced her brother {\O}/*3SG.M to leave early from.the party. \\
+%            \glt `Maria convinced her brother to leave the party early.'
+%
+%        \ex \gll Il regista ha promesso agli attori {\O}/*lui di rivedere il copione. \\
+%                 the.M.SG director has promised to.the actors {\O}/*3SG.M to revise the script. \\
+%            \glt `The director promised the actors to revise the script.'
+%    \end{xlist}
+%
+%    \ex \textit{Expletive constructions}
+%    
+%    \begin{xlist}
+%        \ex \gll {\O}/*Ci sembra che gli studenti abbiano superato l'esame facilmente. \\
+%                 {\O}/*EXPL seems that the.M.PL students have.SBJV.3PL passed the=exam easily. \\
+%            \glt `It seems that the students passed the exam easily.'
+%    \end{xlist}
+%
+%    \ex \textit{Distant antecedent in embedded finite clauses}
+%    
+%    \begin{xlist}
+%        \ex \gll Il cameriere ha detto che *{\O}/lui aveva aspettato più di un'ora. \\
+%                 the.M.SG waiter has said that *{\O}/3SG.M had waited more of an=hour. \\
+%            \glt `The waiter said that he had waited for more than an hour.'
+%    \end{xlist}
+%
+%    \ex \textit{Coordinate structures with and without topic shift}
+%    
+%    \begin{xlist}
+%        \ex \gll Giovanni si è svegliato tardi e {\O}/lui ha perso il treno completamente. \\
+%                 Giovanni REFL is woken late and {\O}/3SG.M has missed the.M.SG train completely. \\
+%            \glt `Giovanni woke up late and he completely missed the train.'
+%
+%        \ex \gll Anna ha chiamato Marco e *{\O}/lui ha rifiutato di rispondere alle sue domande. \\
+%                 Anna has called Marco and *{\O}/3SG.M has refused to answer to.the her questions. \\
+%            \glt `Anna called Marco and he refused to answer her questions.'
+%    \end{xlist}
+%    
+%\end{exe}
+%
+%\end{widepar}
+
+
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%---------------------------------------------------------------------------------------
+\newpage
+% The bibliography needs to be compiled with biber using your LaTeX editor, or on the command line with 'biber main' from the template directory
+
+\printbibliography[title=Bibliography] % Set the title of the bibliography and print the references
+
+\clearpage
+
+\section{Appendix}
+
+\begin{figure*}
+	\caption{Learning trajectories for person/number item groups across experimental models}
+	\includegraphics{analysis/paper_figures/wide/item_group_trajectories_person_number.png}
+\end{figure*}
+
+\begin{figure*}
+	\caption{Learning trajectories for control constructions in the baseline Model}
+	\includegraphics{analysis/paper_figures/supplementary/control_trajectories_baseline.pdf}
+\end{figure*}
+\vspace{-2in}
+\begin{figure*}
+	\caption{Learning trajectories for control constructions in the impoverish determiners modle}
+	\includegraphics{analysis/paper_figures/supplementary/control_trajectories_impoverish_determiners.pdf}
+\end{figure*}
+
+\clearpage 
+
+\subsubsection{Stimuli creation prompt}
+
+\begin{widepar}
+\begin{verbatim}
+### **Prompt for Generating Remaining Stimuli Sets**  
+
+**Objective**: Generate evaluation sets for the remaining Italian 
+syntactic phenomena, ensuring **isolation from previously generated 
+stimuli** to avoid bias. Each set must include:  
+1. **Context sentences** (Italian + English) to establish reference.  
+2. **Target sentences** (grammatical vs. ungrammatical minimal pairs).  
+3. **Glosses + translations**.  
+4. **Hotspots** (critical words for surprisal measurement).  
+
+---
+
+### **Instructions**  
+#### **1. Target Phenomena**  
+Generate **12 minimal pairs** (12 grammatical, 12 ungrammatical) for each of:  
+- **3rd/2nd/1st person pronoun agreement** (separate sg/pl).  
+- **Expletive constructions** (*∅* vs. *ci*).  
+- **Distant antecedents in embedded clauses** (pronoun vs. *∅*).  
+- **Coordinate structures with topic shift** (pronoun vs. *∅*).  
+
+#### **2. Requirements**  
+- **Novel lexical items**: Avoid verbs/nouns used in previous sets 
+(*pensare*, *convincere*, etc.).  
+- **Natural contexts**: Must pragmatically justify the target structure.  
+- **Balanced design**: 50% grammatical, 50% ungrammatical per set.  
+- **Hotspots**: Mark finite verbs, pronouns, or auxiliaries for surprisal.  
+
+#### **3. Template**  
+For each pair:  
+```  
+**Context**: [Italian sentence]. / "[English translation]."  
+**Target (G)**: [Grammatical sentence].  
+  *"[Gloss]."* → *"[Translation]."*  
+  **Hotspot**: [critical word]  
+**Target (U)**: [Ungrammatical sentence].  
+  *"[Gloss]."* → *"[Translation]."*  
+  **Hotspot**: [critical word]  
+```  
+
+#### **4. Steps**  
+1. **Generate contexts** that logically precede the target sentence.  
+   - Example for pronoun agreement:  
+     *"Luca è stanco dopo il lavoro."* / *"Luca is tired after work."* → 
+     Targets: *Lui/∅ vuole dormire*.  
+2. **Create minimal pairs**: Alter *only* the critical pronoun/verb.  
+3. **Verify ungrammaticality** with Italian syntax rules 
+(e.g., *∅* required in control, *ci* banned in expletives).  
+4. **Randomize order** of grammatical/ungrammatical items.  
+
+#### **5. Output Format**  
+Provide each set as a separate table (like the subject/object control sets), with:  
+- **Phenomenon label** (e.g., "Expletives").  
+- **12 numbered pairs**.  
+- **No overlap** with existing stimuli (check against previous lists).  
+
+---
+
+### **Example (Expletives)**  
+**Phenomenon**: Expletive *∅* vs. *ci*  
+(GLOSS TABLE]
+
+---
+
+### **Final Checks**  
+- **No lexical overlap** with previous sets.  
+- **All ungrammatical versions** violate Italian syntax.  
+- **Hotspots** consistently marked.  
+
+Proceed iteratively: **Complete one phenomenon at a time**, 
+then confirm before moving to the next.  
+--- 	
+\end{verbatim}
+\end{widepar}
+
+\subsubsection{Processing manipulation prompt}
+
+\begin{verbatim}
+	'complex_long': 'Rewrite the CONTEXT sentence to include more descriptive, 
+	longer noun phrases (NPs). For example, "the dog" could become 
+	"the large brown dog with the red collar". Do not change the TARGET sentence.',
+    'complex_emb': 'Rewrite the CONTEXT sentence by adding an embedded 
+    relative clause. 
+    For example, "the dog barked" could become "the dog that lived down 
+    the street barked". 
+    Do not change the TARGET sentence.',
+    'target_negation': "Rewrite the TARGET sentence to be negative. 
+    For example, \"She thinks the ending is perfect\" becomes \"She doesn't 
+    think the ending is perfect\". 
+    Do not change the CONTEXT sentence.",
+    'context_negation': "Rewrite the CONTEXT sentence to be negative. 
+    For example, \"Anna finished the book\" becomes 
+    \"Anna didn't finish the book\". 
+    Do not change the TARGET sentence.",
+    'both_negation': 'Rewrite BOTH the CONTEXT and 
+    TARGET sentences to be negative.',
+    
+    You are a linguistics research assistant. 
+    Your task is to manipulate sentences according to 
+    specific instructions and extract key linguistic features.
+
+**Instructions:**
+1. You will be given a context sentence and a target sentence.
+2. You will be given a manipulation instruction.
+3. Apply the manipulation ONLY to the specified sentence(s) (context or target).
+4. After manipulation, identify the "hotspots" in the MODIFIED target sentence.
+5. Return the result as a single JSON object with the specified schema. 
+Do not add any extra text, explanations, or markdown formatting.
+
+**Input Sentences:**
+- Context: "{context}"
+- Target: "{target}"
+
+**Hotspots to identify in the MODIFIED target sentence:**
+- subject: The subject of the main clause. 
+If the subject is omitted (a "subject drop"), return "Ø".
+- verb: The main verb immediately following the subject.
+- object: The direct or indirect object pronoun, if one exists. 
+Otherwise, return null.
+- spillover1: The first word immediately following the main verb. 
+Return null if not present.
+- spillover2: The second word immediately following the main verb. 
+Return null if not present.
+
+
+Return only a JSON object with this structure:
+{{
+    "manipulated_context": "the manipulated context sentence",
+    "manipulated_target": "the manipulated target sentence", 
+    "hotspots": {{
+        "subject": "subject or Ø",
+        "verb": "main verb",
+        "object": "object or null",
+        "spillover1": "first spillover or null",
+        "spillover2": "second spillover or null"
+    }}
+}}
+\end{verbatim}
+
+
+\end{document}

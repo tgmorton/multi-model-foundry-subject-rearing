@@ -1,0 +1,31 @@
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is '/Users/thomasmorton/subject-drop/Presentation.blg'
+[29] biber-darwin:340> INFO - === Thu Aug 21, 2025, 10:17:36
+[37] Biber.pm:419> INFO - Reading '/Users/thomasmorton/subject-drop/Presentation.bcf'
+[81] Biber.pm:979> INFO - Found 16 citekeys in bib section 0
+[91] Biber.pm:4419> INFO - Processing section 0
+[97] Biber.pm:4610> INFO - Looking for bibtex file 'Jul10.bib' for section 0
+[275] bibtex.pm:1713> INFO - LaTeX decoding ...
+[1808] bibtex.pm:1519> INFO - Found BibTeX data source 'Jul10.bib'
+[1986] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1986] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1986] Biber.pm:4239> INFO - Sorting list 'nyt/apasortcite//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[1986] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
+[2001] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[2001] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[2001] Biber.pm:4239> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'en-US'
+[2001] Biber.pm:4245> INFO - No sort tailoring available for locale 'en-US'
+[2009] bbl.pm:660> INFO - Writing '/Users/thomasmorton/subject-drop/Presentation.bbl' with encoding 'UTF-8'
+[2025] bbl.pm:763> INFO - Output to /Users/thomasmorton/subject-drop/Presentation.bbl
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'Chomsky1963-ag' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-il' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-po' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-gh' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-lx' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-rv' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-gh' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - Duplicate entry key: 'noauthor_undated-vq' in file 'Jul10.bib', skipping ...
+[2025] Biber.pm:131> WARN - BibTeX subsystem: /var/folders/hw/gln67wqs57d5zdr1mkjyztjc0000gp/T/biber_tmp_RBnC/9b5f70c72dff841d6421a7e588e019b2_49905.utf8, line 27369, warning: possible runaway string started at line 27361
+[2025] Biber.pm:131> WARN - BibTeX subsystem: /var/folders/hw/gln67wqs57d5zdr1mkjyztjc0000gp/T/biber_tmp_RBnC/9b5f70c72dff841d6421a7e588e019b2_49905.utf8, line 27565, warning: possible runaway string started at line 27543
+[2025] Biber.pm:131> WARN - BibTeX subsystem: /var/folders/hw/gln67wqs57d5zdr1mkjyztjc0000gp/T/biber_tmp_RBnC/9b5f70c72dff841d6421a7e588e019b2_49905.utf8, line 47941, warning: possible runaway string started at line 47930
+[2025] Biber.pm:133> INFO - WARNINGS: 11

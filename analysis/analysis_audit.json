@@ -1,0 +1,225 @@
+{
+  "data": {
+    "input_files": ["evaluation/results/all_models_null_subject_lme4_ready.csv"],
+    "preference_coding": "correct ~ 1 for null preferred, 0 for overt preferred (based on lower surprisal)",
+    "factors": {
+      "model": "Factor with 6 levels (exp0_baseline through exp5_remove_subject_pronominals)",
+      "model_label": "Human-readable labels (Baseline, Remove Expletives, etc.)",
+      "form_type": "Factor with 2 levels (null, overt)",
+      "item_group": "Factor for linguistic item categories",
+      "form": "Factor for specific linguistic forms",
+      "item_id": "Random effect grouping variable"
+    },
+    "baseline_releveling": {
+      "path": "analysis/scripts/analysis_with_models.R",
+      "lines": "L119-L121",
+      "method": "forcats::fct_relevel(data$model, baseline_model)"
+    }
+  },
+  "model_selection": {
+    "method": "Automatic df selection via AIC comparison",
+    "implementation": {
+      "path": "analysis/scripts/analysis_with_models.R",
+      "lines": "L139-L230"
+    },
+    "parameters": {
+      "dfs_tested": [3, 4, 5, 6, 7],
+      "formula": "correct ~ ns(log_chk, df = K) + (1|item_id)",
+      "family": "binomial",
+      "optimizer": "nloptwrap",
+      "maxeval": 200000,
+      "selection_criterion": "lowest AIC among converged models"
+    },
+    "fallbacks": {
+      "singular_models": "Accept lowest AIC even if singular",
+      "all_failed": "Default to df=3"
+    },
+    "tables_written": [
+      "analysis/tables/tests/df_selection_by_aic.csv",
+      "analysis/tables/tests/df_comparison_detailed.csv"
+    ]
+  },
+  "t50": {
+    "formula": "correct ~ ns(log_chk, df=K) + (1|item_id)",
+    "burnin_checkpoint": 100,
+    "crossing_rule": "last crossing of 0.5 with linear interpolation",
+    "halfway_point": "60% of max checkpoint (conservative halfway)",
+    "bootstrap": {
+      "type": "parametric",
+      "nsim": 1000,
+      "re.form": "NA",
+      "method": "mvrnorm with fixed effects covariance",
+      "seed": 42
+    },
+    "implementation": {
+      "path": "analysis/scripts/analysis_with_models.R",
+      "lines": "L232-L324"
+    },
+    "crossing_logic": {
+      "tolerance": 0.05,
+      "preference": "last crossing in first 60% of training",
+      "fallback": "first crossing if no early crossings"
+    },
+    "tables_written": [
+      "analysis/tables/tests/t50_by_model_robust.csv",
+      "analysis/tables/tests/delta_t50_vs_baseline_robust.csv"
+    ]
+  },
+  "aoa_half": {
+    "status": "IMPLEMENTED",
+    "definition": {
+      "p_infty_window": "last_10_percent",
+      "theta": "(p_infty + 0.5) / 2",
+      "formula": "halfway between 0.5 and asymptotic preference",
+      "bootstrap": {
+        "type": "parametric",
+        "nsim": 1000,
+        "seed": 99
+      }
+    },
+    "implementation": {
+      "path": "analysis/scripts/analysis_with_models.R",
+      "lines": "L859-L1012"
+    },
+    "burnin": 100,
+    "crossing_rule": "last crossing with minimum run of 3 consecutive points",
+    "tables_written": [
+      "analysis/tables/tests/aoa_halfway_by_model.csv",
+      "analysis/tables/tests/delta_aoa_half_vs_baseline.csv"
+    ]
+  },
+  "end_state": {
+    "window_used": "last_10_percent",
+    "window_definition": "checkpoint_num >= quantile(checkpoint_num, 0.9)",
+    "implementation": {
+      "path": "analysis/scripts/analysis_with_models.R",
+      "lines": "L466-L552"
+    },
+    "null_preference_model": {
+      "formula": "correct ~ model + (1|item_id)",
+      "family": "binomial",
+      "optimizer": "bobyqa",
+      "maxfun": 200000,
+      "emmeans_type": "response"
+    },
+    "gap_analysis": {
+      "formula": "correct ~ model * form_type + (1|item_id)",
+      "contrast": "NullMinusOvert = c(1, -1)",
+      "scale": "response (probability difference)"
+    },
+    "methods": {
+      "contrasts_adjustment": "tukey",
+      "secondary_adjustment": "fdr",
+      "report_scale": "probability"
+    },
+    "tables_written": [
+      "analysis/tables/tests/endstate_null_pref.csv",
+      "analysis/tables/tests/endstate_null_pref_pairwise.csv",
+      "analysis/tables/tests/endstate_gap_null_minus_overt.csv"
+    ]
+  },
+  "item_group": {
+    "formulas": [
+      "correct ~ item_group * form_type + (1|item_id)"
+    ],
+    "window": "last 1000 checkpoints",
+    "optimizer": "bobyqa",
+    "maxfun": 100000,
+    "emmeans_settings": {
+      "at": "form_type = 'null'",
+      "type": "response",
+      "adjustment": "fdr"
+    },
+    "key_contrasts": [
+      "1a_3rdSG - 1b_3rdPL",
+      "2a_2ndSG - 2b_2ndPL",
+      "3a_1stSg - 3b_1stPL",
+      "1a_3rdSG - 3a_1stSg",
+      "4a_subject_control - 4b_object_control",
+      "5a_expletive_seems - 5b_expletive_be",
+      "7a_conjunction_no_topic_shift - 7b_conjunction_topic_shift"
+    ],
+    "implementation": {
+      "path": "analysis/scripts/within_model_itemgroup_posthoc.R",
+      "lines": "L1-L198"
+    },
+    "tables": [
+      "analysis/tables/within_model_itemgroup_emmeans.csv",
+      "analysis/tables/within_model_itemgroup_pairwise.csv",
+      "analysis/tables/within_model_key_contrasts.csv"
+    ]
+  },
+  "processing_forms": {
+    "formulas": [
+      "correct ~ form + (1|item_id)"
+    ],
+    "window": "last 1000 checkpoints",
+    "data_filter": "form_type == 'overt'",
+    "form_pairs": [
+      ["complex_emb", "complex_long"],
+      ["target_negation", "context_negation"],
+      ["target_negation", "both_negation"]
+    ],
+    "optimizer": "bobyqa",
+    "emmeans_type": "response",
+    "implementation": {
+      "path": "analysis/scripts/form_pairwise_comparisons.R",
+      "lines": "L1-L141"
+    },
+    "tables": [
+      "analysis/tables/form_pairwise_comparisons.csv"
+    ]
+  },
+  "first_epoch": {
+    "definition": "max_checkpoint / 20",
+    "window": "4 checkpoints closest to and before first epoch boundary",
+    "implementation": {
+      "path": "analysis/scripts/first_epoch_analysis.R",
+      "lines": "L1-L140"
+    },
+    "stats": [
+      "mean across 4 checkpoints",
+      "SD across 4 checkpoints",
+      "pooled binomial test vs 0.5",
+      "exact binomial p-value (two-sided)"
+    ],
+    "tables": [
+      "analysis/tables/first_epoch_checkpoints.csv",
+      "analysis/tables/first_epoch_summary.csv"
+    ]
+  },
+  "fitting_diagnostics": {
+    "optimizer": "bobyqa (primary), nloptwrap (spline fitting)",
+    "maxfun": 200000,
+    "optCtrl": {
+      "maxeval": 200000
+    },
+    "calc.derivs": false,
+    "seed": 123,
+    "model_caching": {
+      "enabled": true,
+      "directory": "analysis/models/",
+      "format": "RDS files",
+      "validation": "smoke test with predict()"
+    },
+    "singularity_handling": "Accept singular fits if lowest AIC",
+    "convergence_checks": "isSingular() function",
+    "notes": [
+      "Uses glmerControl for all mixed models",
+      "Parametric bootstrap with mvrnorm for CI computation",
+      "Automatic fallback to simpler models on convergence failure",
+      "Parallel processing capabilities via future/furrr packages"
+    ]
+  },
+  "citations": [
+    {"claim": "burn-in at checkpoint >= 100", "path": "analysis/scripts/analysis_with_models.R", "lines": "L232-L264"},
+    {"claim": "end-state = last 10% window", "path": "analysis/scripts/analysis_with_models.R", "lines": "L466-L470"},
+    {"claim": "spline df selection by AIC", "path": "analysis/scripts/analysis_with_models.R", "lines": "L139-L230"},
+    {"claim": "t50 as last crossing with interpolation", "path": "analysis/scripts/analysis_with_models.R", "lines": "L232-L264"},
+    {"claim": "parametric bootstrap with nsim=1000", "path": "analysis/scripts/analysis_with_models.R", "lines": "L295-L323"},
+    {"claim": "AoA as halfway to asymptote", "path": "analysis/scripts/analysis_with_models.R", "lines": "L864-L915"},
+    {"claim": "first epoch = max_checkpoint/20", "path": "analysis/scripts/first_epoch_analysis.R", "lines": "L26-L32"},
+    {"claim": "item group analysis with FDR adjustment", "path": "analysis/scripts/within_model_itemgroup_posthoc.R", "lines": "L53-L69"},
+    {"claim": "form comparisons on overt data only", "path": "analysis/scripts/form_pairwise_comparisons.R", "lines": "L29-L34"}
+  ]
+}

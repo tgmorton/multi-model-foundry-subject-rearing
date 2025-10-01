@@ -1,0 +1,140 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% kaobook
+% LaTeX Template
+% Version 1.3 (18/2/20)
+%
+% This template originates from:
+% https://www.LaTeXTemplates.com
+%
+% For the latest template development version and to make contributions:
+% https://github.com/fmarotta/kaobook
+%
+% Authors:
+% Federico Marotta (federicomarotta@mail.com)
+% Giuseppe Silano (g.silano89@gmail.com)
+% Based on the doctoral thesis of Ken Arroyo Ohori (https://3d.bk.tudelft.nl/ken/en)
+% and on the Tufte-LaTeX class.
+% Modified for LaTeX Templates by Vel (vel@latextemplates.com)
+%
+% License:
+% CC0 1.0 Universal (see included MANIFEST.md file)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+	%fontsize=10pt, % Base font size
+	twoside=false, % If true, use different layouts for even and odd pages (in particular, if twoside=true, the margin column will be always on the outside)
+	secnumdepth=1, % How deep to number headings. Defaults to 2 (subsections)
+	%abstract=true, % Uncomment to print the title of the abstract
+	numbers=auto, % Comment to output dots after section numbers; the most common values for this option are: enddot, noenddot and auto (see the KOMAScript documentation for an in-depth explanation)
+	%draft=true, % If uncommented, rulers will be added in the header and footer
+	%overfullrule=true, % If uncommented, overly long lines will be marked by a black box; useful for correcting spacing problems
+]{kaohandt}
+
+\newcommand{\hmwkTitle}{12 Angry Ideas}
+\newcommand{\hmwkDueDate}{In the times before common dating}
+\newcommand{\hmwkClass}{July 8, 2025}
+\newcommand{\hmwkClassInstructor}{Kyle Johnson}
+\newcommand{\hmwkAuthorName}{Thomas Morton}
+\newcommand{\problemDenotation}{Question}
+
+% Choose the language
+\usepackage[english]{babel} % Load characters and hyphenation
+
+% Load packages for testing
+\usepackage{blindtext}
+%\usepackage{showframe} % Uncomment to show boxes around the text area, margin, header and footer
+%\usepackage{showlabels} % Uncomment to output the content of \label commands to the document where they are used
+
+%\graphicspath{{images/}{./}} % Paths where images are looked for
+
+% Load mathematical packages for theorems and related environments. NOTE: choose only one between 'mdftheorems' and 'plaintheorems'.
+% \usepackage{../styles/mdftheorems}
+\usepackage{../styles/mdftheorems}
+
+% Load the bibliography package
+\usepackage[backend=bibtex]{../styles/kaobiblio}
+\addbibresource{../basque.bib} % Bibliography file
+
+% Load the package for hyperreferences
+\usepackage{../styles/kaorefs}
+
+\usepackage[linguistics]{forest}
+\usepackage{fullwidth}
+\usepackage{extramarks}
+\usepackage{gb4e}
+\usepackage{tipa}
+\usepackage{setspace}
+\usepackage{soul}
+\usepackage{csquotes}
+\usepackage{thomasling}
+\usepackage{leipzig}
+\usepackage{bigstrut}
+\usepackage{longtable}
+\usepackage{makecell}
+\usepackage{langsci-gb4e}
+\newcommand{\set}[1]{\{#1\}}
+\newcommand{\brac}[1]{{[}#1{]}}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+
+\begin{document}
+
+\pagelayout{wide}
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{fullwidth}
+{\fontfamily{phv}\selectfont
+	\noindent\textbf{\Huge{\hmwkTitle}}\\[-.5em]
+	
+	\indent\Large{\textsc{\hmwkClass}}\\[-.5em]
+	
+	\noindent\LARGE{\hmwkAuthorName}
+}
+\end{fullwidth}
+\addtokomafont{pagenumber}{\fontfamily{phv}}
+\setlength{\columnseprule}{0pt}
+\pagestyle{myheadings}
+
+\margintoc
+
+%\vspace{-1.5em}
+
+%----------------------------------------------------------------------------------------
+%	MAIN BODY
+%----------------------------------------------------------------------------------------
+
+Okay, quick thought list
+
+\begin{enumerate}
+	\item Do Large Language Models plan further than the next-word? How do we detect that?
+	\item Is there mechanistic circuitry associated with priming in large language models? What does that tell us about human priming?
+	\item Do large language models show priming effects from elided material? Adjuncts vs arguments? What can priming tell us about completely orthogonal tasks?
+	\item Humans have a short-first preference, but we also have a long-last preference. Right-ward displacement is relatively unique linguistically, what does heavy-np shift look like in the model, what model constraints would lead to text-general processing preferences?
+	\item Assessing GPT vs Mamba models in agreement performance, what comparative model psychology can tell us about the mechanisms behind agreement production.
+	\item The problem with serial order in behavior. Lashley doesn't tell us that a system like a large language model is a problem, what he instead says is that if behavior looks like this, then, even despite the evidence in front of us we should consider that more complex underlying processes are leading to the output than ennervation of a chain of actions. Human and LLM psychology under the lens of Lashley
+	\item Encoding timing in behavior. An important part of cognition in action is the idea that somehow, we encode timing into our actions, are there any production timings that can be extracted from a model, for instance, typing rts, or in some way can we learn something about timings if we encode them in the model, would there be a function learned?
+	\item What can we learn about code switching from large language models? Do multilingual models code switch? Do multilingual model show codeswitching preferences for certain lineriazations, how far up the syntax tree? Can we learn anything about model inhibition from that?
+	\item Can models inhibition? It seems they can only 'select', not neccessarily disselect, why for instance do they so often struggle with negation? What does an A-not-B task look like for a linguistic models, can you introduce primed interference into a model? What does that look like? Are we primed by the same thing? At the same levels? In language production we sometimes see facilitory effects from words that are categorically related but not thematically related and vice versa, do language models show that and when we look at representational spaces of those models what does that look like?
+	\item Do models introduce any kind of informativity tradeoffs when producing future content
+\end{enumerate}
+
+
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%---------------------------------------------------------------------------------------
+
+% The bibliography needs to be compiled with biber using your LaTeX editor, or on the command line with 'biber main' from the template directory
+
+\printbibliography[title=Bibliography] % Set the title of the bibliography and print the references
+
+\large
+\end{document}
