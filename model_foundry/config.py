@@ -73,10 +73,52 @@ class TrainingConfig(BaseModel):
     min_checkpoints_per_epoch: int = 5
 
 class LoggingConfig(BaseModel):
-    level: str = "INFO"
-    dir: str = "logs"
-    use_wandb: bool = False
-    wandb_project: Optional[str] = None
+    """Configuration for logging behavior."""
+
+    # Log levels
+    console_level: str = Field(default="INFO", description="Console log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)")
+    file_level: str = Field(default="DEBUG", description="File log level")
+
+    # Log directory
+    dir: str = Field(default="logs", description="Directory for log files")
+
+    # Output formats
+    use_structured_logging: bool = Field(default=True, description="Enable JSON structured logs")
+
+    # WandB integration
+    use_wandb: bool = Field(default=False, description="Send logs to Weights & Biases")
+    wandb_project: Optional[str] = Field(default=None, description="WandB project name")
+
+    # Log rotation
+    max_log_files: int = Field(default=10, gt=0, description="Maximum log files to keep")
+    max_log_size_mb: int = Field(default=100, gt=0, description="Maximum size per log file in MB")
+
+    # Metrics logging
+    log_metrics_every_n_steps: int = Field(default=10, gt=0, description="Steps between metric logs")
+    log_detailed_metrics_every_n_steps: int = Field(default=100, gt=0, description="Steps between detailed metrics")
+
+    # Performance logging
+    profile_performance: bool = Field(default=False, description="Enable performance profiling")
+    log_memory_every_n_steps: int = Field(default=100, gt=0, description="Steps between memory logs")
+
+    # Error tracking
+    max_errors_to_track: int = Field(default=1000, gt=0, description="Maximum errors to track in memory")
+
+    # Legacy compatibility
+    level: str = Field(default="INFO", description="Legacy log level (use console_level instead)")
+
+    def __init__(self, **data):
+        """Initialize LoggingConfig with level validation."""
+        super().__init__(**data)
+
+        # Validate log levels
+        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+        if self.console_level not in valid_levels:
+            raise ValueError(f"console_level must be one of {valid_levels}")
+        if self.file_level not in valid_levels:
+            raise ValueError(f"file_level must be one of {valid_levels}")
+        if self.level not in valid_levels:
+            raise ValueError(f"level must be one of {valid_levels}")
 
 # The main configuration model that brings everything together
 
