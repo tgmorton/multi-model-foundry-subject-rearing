@@ -163,17 +163,17 @@ def _register_default_architectures():
     except ImportError as e:
         print(f"  - Warning: Could not import BERT architecture: {e}")
 
-    # Future architectures will be imported here
-    # try:
-    #     from . import rnn  # noqa: F401
-    #     print(f"  - Registered RNN/LSTM/GRU architectures")
-    # except ImportError:
-    #     pass
+    try:
+        from . import rnn  # noqa: F401
+        print(f"  - Registered RNN/LSTM/GRU architectures")
+    except ImportError as e:
+        print(f"  - Warning: Could not import RNN architectures: {e}")
 
 
 # Import architecture implementations for export
 from .gpt import GPT2Model  # noqa: E402
 from .bert import BERTModel  # noqa: E402
+from .rnn import LSTMModel, GRUModel, VanillaRNNModel  # noqa: E402
 
 # Export public API
 __all__ = [
@@ -185,4 +185,7 @@ __all__ = [
     'MODEL_REGISTRY',
     'GPT2Model',
     'BERTModel',
+    'LSTMModel',
+    'GRUModel',
+    'VanillaRNNModel',
 ]

@@ -4,7 +4,7 @@
 
 **Date:** 2025-10-02
 
-**Status:** ✅ Phase 1 Complete, ✅ Phase 2 Complete (BERT & Masked LM)
+**Status:** ✅ Phase 1 Complete, ✅ Phase 2 Complete (BERT & Masked LM), ✅ Phase 3 Complete (LSTM/RNN/GRU)
 
 ---
 
@@ -18,9 +18,9 @@ The Model Foundry framework has been extended to support multiple model architec
 |-------------|------|-------------------|-----------|--------|
 | GPT-2 | Decoder-only Transformer | Causal LM | SentencePiece | ✅ Complete |
 | BERT | Encoder-only Transformer | Masked LM | WordPiece | ✅ Complete (Phase 2) |
-| LSTM | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 3) |
-| GRU | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 4) |
-| RNN | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 4) |
+| LSTM | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | ✅ Complete (Phase 3) |
+| GRU | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | ✅ Complete (Phase 3) |
+| RNN | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | ✅ Complete (Phase 3) |
 
 ---
 
@@ -35,7 +35,7 @@ model_foundry/
 │   ├── base.py                # Abstract base classes
 │   ├── gpt.py                 # GPT-2 implementation
 │   ├── bert.py                # BERT implementation ✅
-│   ├── rnn.py                 # RNN/LSTM/GRU (Phase 3-4)
+│   ├── rnn.py                 # RNN/LSTM/GRU implementations ✅
 │   └── utils.py               # Shared utilities
 ├── data_collators.py          # Causal LM & Masked LM collators ✅
 ├── tokenizer/
@@ -397,6 +397,188 @@ tokenizer:
     mask_token: "[MASK]"
     unk_token: "[UNK]"
     pad_token: "[PAD]"
+```
+
+---
+
+## RNN/LSTM/GRU Implementation (Phase 3)
+
+### Architecture Overview
+
+The RNN-based architectures provide recurrent neural network models that process sequences sequentially. Unlike transformers, RNNs maintain a hidden state that evolves as they process each token, making them useful for studying sequential processing and certain linguistic phenomena.
+
+All RNN variants share a common base implementation (`RNNLanguageModel`) with architecture-specific wrappers.
+
+### Supported RNN Types
+
+| Model | Cell Type | Parameters | Characteristics |
+|-------|-----------|------------|-----------------|
+| LSTM | Long Short-Term Memory | Most (3 gates + cell state) | Best for long-range dependencies |
+| GRU | Gated Recurrent Unit | Medium (2 gates) | Simpler than LSTM, often similar performance |
+| RNN | Vanilla RNN | Fewest (single tanh) | Simplest, prone to vanishing gradients |
+
+### LSTM Architecture Wrapper
+
+```python
+@register_architecture("lstm")
+class LSTMModel(RNNLanguageModel):
+    """LSTM language model supporting both uni/bidirectional modes."""
+
+    def __init__(self, vocab_size, embedding_size, hidden_size,
+                 num_layers, bidirectional=False, dropout=0.0, **kwargs):
+        super().__init__(
+            vocab_size=vocab_size,
+            embedding_size=embedding_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            rnn_type='lstm',
+            bidirectional=bidirectional,
+            dropout=dropout,
+            **kwargs
+        )
+
+    @property
+    def model_type(self) -> str:
+        return "lstm"
+
+    @property
+    def supports_generation(self) -> bool:
+        return not self.bidirectional  # Only unidirectional can generate
+```
+
+### Network Architecture
+
+```
+Input Tokens
+    ↓
+Token Embeddings (vocab_size → embedding_size)
+    ↓
+LSTM Layers (embedding_size → hidden_size)
+    ├─ Unidirectional: Forward only (causal LM)
+    └─ Bidirectional: Forward + Backward (masked LM)
+    ↓
+Dropout
+    ↓
+Output Projection (hidden_size[*2] → vocab_size)
+    ↓
+Logits
+```
+
+### Features
+
+- **Unidirectional mode**: For causal LM (autoregressive generation)
+- **Bidirectional mode**: For masked LM (BERT-style training)
+- **Packed sequences**: Efficient handling of variable-length sequences
+- **Gradient clipping**: Built-in support (recommended for RNNs)
+- **Dropout**: Applied between layers and after RNN output
+- **Custom initialization**: Proper weight initialization for stability
+
+### Example Configuration: Unidirectional LSTM
+
+```yaml
+model:
+  architecture: "lstm"
+  rnn:
+    embedding_size: 512
+    hidden_size: 1024
+    num_layers: 2
+    bidirectional: false  # Unidirectional for causal LM
+    dropout: 0.2
+    rnn_type: "lstm"
+
+training:
+  objective: "causal_lm"  # Autoregressive language modeling
+  max_grad_norm: 1.0  # Important for RNNs!
+
+tokenizer:
+  tokenizer_type: "sentencepiece"  # Or "bpe"
+  vocab_size: 32000
+  special_tokens:
+    bos_token: "<s>"
+    eos_token: "</s>"
+    unk_token: "<unk>"
+    pad_token: "<pad>"
+```
+
+### Example Configuration: Bidirectional LSTM
+
+```yaml
+model:
+  architecture: "lstm"
+  rnn:
+    embedding_size: 512
+    hidden_size: 1024
+    num_layers: 2
+    bidirectional: true  # Bidirectional for masked LM
+    dropout: 0.2
+    rnn_type: "lstm"
+
+training:
+  objective: "masked_lm"  # Masked language modeling
+  mlm_probability: 0.15
+  max_grad_norm: 1.0
+
+tokenizer:
+  tokenizer_type: "sentencepiece"
+  vocab_size: 32000
+  special_tokens:
+    bos_token: "<s>"
+    eos_token: "</s>"
+    unk_token: "<unk>"
+    pad_token: "<pad>"
+    mask_token: "<mask>"
+```
+
+### GRU and Vanilla RNN
+
+GRU and vanilla RNN models use the same configuration structure, just change the `architecture` field:
+
+```yaml
+model:
+  architecture: "gru"  # Or "rnn" for vanilla RNN
+  rnn:
+    # ... same parameters as LSTM
+```
+
+### Performance Considerations
+
+**Memory:**
+- RNNs: Lower memory than transformers (linear in sequence length)
+- Transformers: O(n²) memory due to attention
+
+**Training Speed:**
+- RNNs: Sequential processing (cannot parallelize across sequence)
+- Transformers: Fully parallel (much faster)
+
+**Batch Sizes:**
+- RNNs: Can use larger batches than transformers
+- Recommended: 32-128 for RNNs vs 8-32 for transformers
+
+**Gradient Clipping:**
+- **Critical for RNNs**: Always use `max_grad_norm` (typically 1.0-5.0)
+- Prevents exploding gradients in RNN training
+- Less critical for transformers (but still helpful)
+
+### Usage Example
+
+```python
+from model_foundry.architectures import create_model_from_config
+from model_foundry.config import ExperimentConfig
+
+# Load config
+config = ExperimentConfig.from_yaml("configs/lstm_config.yaml")
+
+# Create LSTM model
+model = create_model_from_config(config)
+
+# Forward pass
+outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+loss = outputs.loss
+logits = outputs.logits
+
+# For unidirectional models only
+if model.supports_generation:
+    generated = model.hf_model.generate(input_ids, max_length=100)
 ```
 
 ---
