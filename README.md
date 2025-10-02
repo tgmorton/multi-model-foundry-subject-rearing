@@ -170,7 +170,7 @@ If you use this codebase, please cite:
   author={Morton, Thomas},
   year={2024},
   note={GitHub repository},
-  url={https://github.com/yourusername/subject-drop}
+  url={https://github.com/tgmorton/subject-drop}
 }
 ```
 
