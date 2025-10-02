@@ -12,8 +12,9 @@ from typing import Dict, List, Optional, Tuple, Generator
 import numpy as np
 from datasets import Dataset, load_from_disk, disable_progress_bar
 from torch.utils.data import DataLoader
-from transformers import DataCollatorForLanguageModeling
 import torch
+
+from .data_collators import get_data_collator
 
 # Disable progress bars for cleaner output
 disable_progress_bar()
@@ -289,31 +290,26 @@ class DataProcessor:
     def create_dataloader(self, tokenizer) -> DataLoader:
         """
         Create a DataLoader for training.
-        
+
         Args:
             tokenizer: The tokenizer to use for padding
-            
+
         Returns:
             Configured DataLoader
         """
         print(f"  - Creating DataLoader...")
         print(f"[DEBUG] Loading chunked dataset...")
-        
+
         # Load chunked dataset
         dataset = self._load_chunked_dataset()
         if dataset is None:
             raise RuntimeError("Chunked dataset not found. Run preprocessing first.")
-        
+
         print(f"[DEBUG] Dataset loaded, size: {len(dataset)}")
-        
-        # Set up data collator
-        pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else -100
-        print(f"[DEBUG] Creating data collator with pad_token_id: {pad_token_id}")
-        data_collator = DataCollatorForLanguageModeling(
-            tokenizer=tokenizer,
-            mlm=False,
-            pad_to_multiple_of=8  # For efficiency on modern hardware
-        )
+
+        # Set up data collator based on training objective
+        print(f"[DEBUG] Creating data collator for objective: {self.config.training.objective}")
+        data_collator = get_data_collator(self.config, tokenizer)
         
         # Create DataLoader with high-performance optimizations
         import os

@@ -4,7 +4,7 @@
 
 **Date:** 2025-10-02
 
-**Status:** ✅ Phase 1 Complete (Architecture Abstraction)
+**Status:** ✅ Phase 1 Complete, ✅ Phase 2 Complete (BERT & Masked LM)
 
 ---
 
@@ -14,13 +14,13 @@ The Model Foundry framework has been extended to support multiple model architec
 
 ### Supported Architectures
 
-| Architecture | Type | Training Objective | Status |
-|-------------|------|-------------------|--------|
-| GPT-2 | Decoder-only Transformer | Causal LM | ✅ Complete |
-| BERT | Encoder-only Transformer | Masked LM | 🚧 Planned (Phase 2) |
-| LSTM | Recurrent Network | Causal LM / Masked LM | 🚧 Planned (Phase 3) |
-| GRU | Recurrent Network | Causal LM / Masked LM | 🚧 Planned (Phase 4) |
-| RNN | Recurrent Network | Causal LM / Masked LM | 🚧 Planned (Phase 4) |
+| Architecture | Type | Training Objective | Tokenizer | Status |
+|-------------|------|-------------------|-----------|--------|
+| GPT-2 | Decoder-only Transformer | Causal LM | SentencePiece | ✅ Complete |
+| BERT | Encoder-only Transformer | Masked LM | WordPiece | ✅ Complete (Phase 2) |
+| LSTM | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 3) |
+| GRU | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 4) |
+| RNN | Recurrent Network | Causal LM / Masked LM | SentencePiece/BPE | 🚧 Planned (Phase 4) |
 
 ---
 
@@ -34,12 +34,16 @@ model_foundry/
 │   ├── __init__.py            # Registry and factory
 │   ├── base.py                # Abstract base classes
 │   ├── gpt.py                 # GPT-2 implementation
-│   ├── bert.py                # BERT implementation (Phase 2)
+│   ├── bert.py                # BERT implementation ✅
 │   ├── rnn.py                 # RNN/LSTM/GRU (Phase 3-4)
 │   └── utils.py               # Shared utilities
+├── data_collators.py          # Causal LM & Masked LM collators ✅
+├── tokenizer/
+│   ├── tokenizer_factory.py  # Multi-tokenizer support ✅
+│   └── train_tokenizer.py    # Updated to use factory ✅
 ├── model.py                   # Public API (uses factory)
 ├── config.py                  # Multi-architecture configs
-└── ...
+└── data.py                    # Updated for multi-objective ✅
 ```
 
 ### Key Design Principles
@@ -310,6 +314,205 @@ class GPT2Model(BaseLanguageModel):
 - Gradient checkpointing
 - Autoregressive generation
 - Standard save/load
+
+---
+
+## BERT Implementation (Phase 2)
+
+### Architecture Wrapper
+
+```python
+@register_architecture("bert")
+class BERTModel(BaseLanguageModel):
+    """Wraps HuggingFace BERT for masked language modeling."""
+
+    def __init__(self, hf_model, hf_config):
+        super().__init__()
+        self.hf_model = hf_model  # AutoModelForMaskedLM
+        self.config = hf_config
+
+    def forward(self, input_ids, attention_mask=None, labels=None,
+                token_type_ids=None, **kwargs):
+        # Delegate to HuggingFace BERT
+        outputs = self.hf_model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            labels=labels,
+            token_type_ids=token_type_ids,
+            **kwargs
+        )
+
+        # Convert to ModelOutput
+        return ModelOutput(
+            loss=outputs.loss,
+            logits=outputs.logits,
+            hidden_states=outputs.hidden_states,
+            attentions=outputs.attentions
+        )
+
+    @property
+    def model_type(self) -> str:
+        return "bert"
+
+    @property
+    def supports_generation(self) -> bool:
+        return False  # BERT is bidirectional, cannot generate
+```
+
+### Features
+
+- Bidirectional attention (sees full context)
+- Masked language modeling objective
+- Segment embeddings for sentence pairs
+- [CLS] token for sequence representation
+- WordPiece tokenization
+
+### Example Configuration
+
+```yaml
+model:
+  architecture: "bert"
+  transformer:
+    layers: 12
+    embedding_size: 768
+    hidden_size: 768
+    intermediate_hidden_size: 3072
+    attention_heads: 12
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+  bert:
+    type_vocab_size: 2  # For segment embeddings
+
+training:
+  objective: "masked_lm"
+  mlm_probability: 0.15
+
+tokenizer:
+  tokenizer_type: "wordpiece"
+  vocab_size: 30000
+  special_tokens:
+    cls_token: "[CLS]"
+    sep_token: "[SEP]"
+    mask_token: "[MASK]"
+    unk_token: "[UNK]"
+    pad_token: "[PAD]"
+```
+
+---
+
+## Data Collators (Phase 2)
+
+### CausalLMDataCollator
+
+For autoregressive language modeling (GPT-2, unidirectional LSTM):
+
+```python
+from model_foundry.data_collators import CausalLMDataCollator
+
+collator = CausalLMDataCollator(
+    tokenizer=tokenizer,
+    mlm=False,
+    pad_to_multiple_of=8
+)
+```
+
+**Features:**
+- Pads sequences to batch max length
+- Creates attention masks (1 for real tokens, 0 for padding)
+- Sets labels = input_ids (shifted internally by model)
+- Masks padding tokens in labels (-100 for ignored positions)
+
+### MaskedLMDataCollator
+
+For masked language modeling (BERT, bidirectional models):
+
+```python
+from model_foundry.data_collators import MaskedLMDataCollator
+
+collator = MaskedLMDataCollator(
+    tokenizer=tokenizer,
+    mlm=True,
+    mlm_probability=0.15,
+    pad_to_multiple_of=8
+)
+```
+
+**Features:**
+- Randomly masks 15% of tokens
+- BERT masking strategy:
+  - 80% replace with [MASK]
+  - 10% replace with random token
+  - 10% keep unchanged
+- Never masks special tokens (CLS, SEP, PAD)
+- Labels set to -100 for non-masked positions
+
+### Data Collator Factory
+
+Automatically selects appropriate collator based on training objective:
+
+```python
+from model_foundry.data_collators import get_data_collator
+
+collator = get_data_collator(config, tokenizer)
+# Returns CausalLMDataCollator for objective="causal_lm"
+# Returns MaskedLMDataCollator for objective="masked_lm"
+```
+
+---
+
+## Tokenizer Factory (Phase 2)
+
+### Supported Tokenizer Types
+
+| Type | Best For | Special Tokens |
+|------|---------|---------------|
+| SentencePiece | GPT-2, general LMs | `<s>`, `</s>`, `<unk>`, `<pad>` |
+| WordPiece | BERT | `[CLS]`, `[SEP]`, `[MASK]`, `[UNK]`, `[PAD]` |
+| BPE | RoBERTa-style | `<s>`, `</s>`, `<unk>`, `<pad>` |
+| Character | RNNs, small vocab | Custom |
+
+### Training Tokenizers
+
+```python
+from model_foundry.tokenizer.tokenizer_factory import TokenizerFactory
+
+# Train WordPiece tokenizer for BERT
+tokenizer = TokenizerFactory.train_wordpiece(
+    input_files=["train.txt", "test.txt"],
+    output_dir="tokenizer/bert",
+    vocab_size=30000,
+    special_tokens={
+        "cls_token": "[CLS]",
+        "sep_token": "[SEP]",
+        "mask_token": "[MASK]",
+        "unk_token": "[UNK]",
+        "pad_token": "[PAD]"
+    }
+)
+
+# Train SentencePiece tokenizer for GPT-2
+tokenizer = TokenizerFactory.train_sentencepiece(
+    input_files=["train.txt"],
+    output_dir="tokenizer/gpt2",
+    vocab_size=50000,
+    special_tokens={
+        "bos_token": "<s>",
+        "eos_token": "</s>",
+        "unk_token": "<unk>",
+        "pad_token": "<pad>"
+    }
+)
+```
+
+### Using Tokenizer Factory with Config
+
+```python
+from model_foundry.tokenizer.tokenizer_factory import train_tokenizer_from_config
+
+# Reads config YAML and trains appropriate tokenizer
+tokenizer = train_tokenizer_from_config("configs/experiment.yaml")
+```
 
 ---
 
