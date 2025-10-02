@@ -84,7 +84,8 @@ class CheckpointManager:
         return set(self.config.training.checkpoint_schedule or [])
 
     def save_checkpoint(self, model, tokenizer, optimizer, lr_scheduler,
-                        global_step: int, epoch: int, scaler: Optional[torch.cuda.amp.GradScaler] = None):
+                        global_step: int, epoch: int, scaler: Optional[torch.cuda.amp.GradScaler] = None,
+                        total_tokens_processed: int = 0):
         """
         Save the complete training state to a checkpoint directory.
 
@@ -96,6 +97,7 @@ class CheckpointManager:
             global_step: Current global training step
             epoch: Current epoch number
             scaler: Optional AMP gradient scaler
+            total_tokens_processed: Total number of tokens processed so far
         """
         checkpoint_dir = self.output_dir / f"checkpoint-{global_step}"
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -117,8 +119,17 @@ class CheckpointManager:
             'git_commit_hash': self.git_commit_hash,
             # Add AMP scaler state
             'amp_scaler': scaler.state_dict() if scaler is not None else None,
+            # Add token count
+            'total_tokens_processed': total_tokens_processed,
         }
         torch.save(state, checkpoint_dir / "training_state.pt")
+
+        # Calculate token metrics for comparison
+        batch_size = self.config.data.batch_size
+        seq_length = self.config.data.max_sequence_length
+        grad_accum = self.config.training.gradient_accumulation_steps
+        effective_batch_size = batch_size * grad_accum
+        tokens_per_step = effective_batch_size * seq_length
 
         # Save checkpoint metadata
         metadata = {
@@ -129,6 +140,14 @@ class CheckpointManager:
             'git_commit_hash': self.git_commit_hash,
             'config_hash': hashlib.md5(json.dumps(self.config.model_dump(), sort_keys=True).encode()).hexdigest(),
             'wandb_run_id': wandb.run.id if self.config.logging.use_wandb and wandb.run else None,
+            # Token counting metrics for cross-architecture comparison
+            'token_metrics': {
+                'total_tokens_processed': total_tokens_processed,
+                'tokens_per_step': tokens_per_step,
+                'effective_batch_size': effective_batch_size,
+                'sequence_length': seq_length,
+                'estimated_tokens_at_step': global_step * tokens_per_step,
+            },
             'training_config': {
                 'learning_rate': self.config.training.learning_rate,
                 'batch_size': self.config.data.batch_size,
@@ -138,6 +157,7 @@ class CheckpointManager:
                 'use_gradient_checkpointing': self.config.training.use_gradient_checkpointing,
             },
             'model_config': {
+                'architecture': self.config.model.architecture,
                 'layers': self.config.model.layers,
                 'hidden_size': self.config.model.hidden_size,
                 'attention_heads': self.config.model.attention_heads,
@@ -148,6 +168,7 @@ class CheckpointManager:
             json.dump(metadata, f, indent=2)
 
         print(f"\n  - Saved checkpoint at step {global_step} to '{checkpoint_dir}'")
+        print(f"    - Tokens processed: {total_tokens_processed:,} ({total_tokens_processed/1e6:.2f}M)")
         print(f"    - Config hash: {metadata['config_hash'][:8]}...")
         if metadata['wandb_run_id']:
             print(f"    - WandB run ID: {metadata['wandb_run_id']}")

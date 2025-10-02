@@ -141,7 +141,7 @@ class TrainingLoop:
 
                     # Checkpoint saving
                     if self.global_step in checkpoint_schedule:
-                        self._save_checkpoint(tokenizer)
+                        self._save_checkpoint(tokenizer, total_tokens_processed)
 
                     self.global_step += 1
                     progress_bar.update(1)
@@ -307,12 +307,13 @@ class TrainingLoop:
             "memory_reserved_gb": torch.cuda.memory_reserved() / 1024**3 if torch.cuda.is_available() else 0
         }, step=self.global_step)
 
-    def _save_checkpoint(self, tokenizer):
+    def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0):
         """
         Save a checkpoint with proper cleanup.
 
         Args:
             tokenizer: Tokenizer to save with checkpoint
+            total_tokens_processed: Total number of tokens processed so far
         """
         # Ensure all gradients are cleared before checkpoint
         self.optimizer.zero_grad(set_to_none=True)
@@ -323,7 +324,7 @@ class TrainingLoop:
 
         self.checkpoint_manager.save_checkpoint(
             self.model, tokenizer, self.optimizer, self.lr_scheduler,
-            self.global_step, self.epoch, self.scaler
+            self.global_step, self.epoch, self.scaler, total_tokens_processed
         )
 
         # Clear cache after checkpoint to free memory

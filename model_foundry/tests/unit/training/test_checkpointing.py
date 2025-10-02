@@ -51,7 +51,7 @@ class TestCheckpointManager:
         assert (checkpoint_dir / "metadata.json").exists()
 
     def test_save_checkpoint_preserves_model_weights(self, tiny_config, temp_workspace,
-                                                     tiny_model, mock_tokenizer):
+                                                     tiny_model, mock_tokenizer, deterministic_seed):
         """Saved checkpoint contains correct model weights."""
         manager = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
 
@@ -59,8 +59,8 @@ class TestCheckpointManager:
         scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1.0,
                                                        total_iters=10)
 
-        # Get original weights
-        original_weights = {name: param.clone() for name, param in tiny_model.named_parameters()}
+        # Get original weights (detach to avoid computation graph issues)
+        original_weights = {name: param.clone().detach() for name, param in tiny_model.named_parameters()}
 
         manager.save_checkpoint(
             model=tiny_model,
@@ -71,11 +71,10 @@ class TestCheckpointManager:
             epoch=0
         )
 
-        # Load a new model and check weights
+        # Load weights from checkpoint and verify they match original
         checkpoint_dir = temp_workspace / "test" / "output" / "checkpoint-50"
-        loaded_model = create_model(tiny_config)
 
-        # Load weights manually (without going through load_checkpoint)
+        # Load saved state dict
         state_dict_path = checkpoint_dir / "pytorch_model.bin"
         if not state_dict_path.exists():
             # Try alternative name (safetensors format)
@@ -93,11 +92,18 @@ class TestCheckpointManager:
             # PyTorch pickle format
             loaded_state_dict = torch.load(state_dict_path, map_location="cpu", weights_only=False)
 
-        loaded_model.load_state_dict(loaded_state_dict, strict=False)  # strict=False for tied weights
+        # Compare loaded weights directly with original weights
+        # (don't create a new model - just check the checkpoint contains correct weights)
+        for name, original_param in original_weights.items():
+            # Handle both formats: "hf_model.transformer.wte.weight" and "transformer.wte.weight"
+            checkpoint_key = name if name in loaded_state_dict else name.replace("hf_model.", "")
+            if checkpoint_key not in loaded_state_dict:
+                # Try without prefix
+                checkpoint_key = name.split("hf_model.")[-1]
 
-        # Compare weights
-        for name, param in loaded_model.named_parameters():
-            assert torch.allclose(param, original_weights[name], rtol=1e-5)
+            assert checkpoint_key in loaded_state_dict, f"Parameter {name} not found in checkpoint"
+            assert torch.allclose(loaded_state_dict[checkpoint_key], original_param, rtol=1e-5), \
+                f"Parameter {name} doesn't match"
 
     def test_save_checkpoint_includes_metadata(self, tiny_config, temp_workspace,
                                                tiny_model, mock_tokenizer):
@@ -136,6 +142,15 @@ class TestCheckpointManager:
         assert "config_hash" in metadata
         assert "training_config" in metadata
         assert "model_config" in metadata
+
+        # Check token metrics for cross-architecture comparison
+        assert "token_metrics" in metadata
+        token_metrics = metadata["token_metrics"]
+        assert "total_tokens_processed" in token_metrics
+        assert "tokens_per_step" in token_metrics
+        assert "effective_batch_size" in token_metrics
+        assert "sequence_length" in token_metrics
+        assert "estimated_tokens_at_step" in token_metrics
 
     def test_save_checkpoint_preserves_optimizer_state(self, tiny_config, temp_workspace,
                                                        tiny_model, mock_tokenizer):
