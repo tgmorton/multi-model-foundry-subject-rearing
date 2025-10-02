@@ -45,6 +45,15 @@ class RNNModelConfig(BaseModel):
     dropout: float = Field(0.0, ge=0.0, lt=1.0)
     rnn_type: Literal["rnn", "lstm", "gru"] = Field("lstm")
 
+class MambaModelConfig(BaseModel):
+    """Configuration for Mamba state space model."""
+    d_model: int = Field(..., gt=0, description="Model dimension (embedding size)")
+    n_layers: int = Field(..., gt=0, description="Number of Mamba layers")
+    d_state: int = Field(16, gt=0, description="SSM state expansion factor")
+    d_conv: int = Field(4, gt=0, description="Local convolution width")
+    expand: int = Field(2, gt=0, description="Block expansion factor")
+    dropout: float = Field(0.0, ge=0.0, lt=1.0, description="Dropout probability")
+
 class ModelConfig(BaseModel):
     """
     Unified model configuration supporting multiple architectures.
@@ -55,7 +64,7 @@ class ModelConfig(BaseModel):
     """
 
     # Required: Architecture type
-    architecture: Literal["gpt2", "bert", "lstm", "rnn", "gru"] = Field(
+    architecture: Literal["gpt2", "bert", "lstm", "rnn", "gru", "mamba"] = Field(
         ...,
         description="Model architecture family (required)"
     )
@@ -73,8 +82,12 @@ class ModelConfig(BaseModel):
         None,
         description="RNN config (required for lstm, rnn, gru)"
     )
+    mamba: Optional[MambaModelConfig] = Field(
+        None,
+        description="Mamba config (required for mamba)"
+    )
 
-    @field_validator('transformer', 'rnn')
+    @field_validator('transformer', 'rnn', 'mamba')
     @classmethod
     def validate_architecture_config(cls, v, info):
         """Validate that appropriate config is provided for architecture."""
@@ -109,6 +122,21 @@ class ModelConfig(BaseModel):
                         "      embedding_size: 512\n"
                         "      hidden_size: 512\n"
                         "      num_layers: 2\n"
+                        "      ..."
+                    )
+
+            # Check Mamba architecture
+            if architecture == "mamba" and field_name == "mamba":
+                if v is None:
+                    raise ValueError(
+                        "Architecture 'mamba' requires 'mamba' configuration. "
+                        "Example:\n"
+                        "  model:\n"
+                        "    architecture: 'mamba'\n"
+                        "    mamba:\n"
+                        "      d_model: 768\n"
+                        "      n_layers: 24\n"
+                        "      d_state: 16\n"
                         "      ..."
                     )
 

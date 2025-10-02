@@ -169,11 +169,18 @@ def _register_default_architectures():
     except ImportError as e:
         print(f"  - Warning: Could not import RNN architectures: {e}")
 
+    try:
+        from . import mamba  # noqa: F401
+        print(f"  - Registered Mamba architecture")
+    except ImportError as e:
+        print(f"  - Warning: Could not import Mamba architecture: {e}")
+
 
 # Import architecture implementations for export
 from .gpt import GPT2Model  # noqa: E402
 from .bert import BERTModel  # noqa: E402
 from .rnn import LSTMModel, GRUModel, VanillaRNNModel  # noqa: E402
+from .mamba import MambaModel  # noqa: E402
 
 # Export public API
 __all__ = [
@@ -188,4 +195,5 @@ __all__ = [
     'LSTMModel',
     'GRUModel',
     'VanillaRNNModel',
+    'MambaModel',
 ]

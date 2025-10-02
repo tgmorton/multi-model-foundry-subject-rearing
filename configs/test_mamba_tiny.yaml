@@ -1,0 +1,73 @@
+# Test configuration for Mamba (State Space Model)
+# Minimal configuration for testing and development
+
+experiment_name: "test_mamba_tiny"
+
+data:
+  source_corpus: "data/raw/test_10M/simple_wiki.test"
+  training_corpus: "data/processed/test_exp/simple_wiki.train"
+  batch_size: 8
+  max_sequence_length: 512  # Mamba handles long sequences efficiently
+
+tokenizer:
+  output_dir: "tokenizers/test_mamba"
+  vocab_size: 5000
+  tokenizer_type: "sentencepiece"
+  special_tokens:
+    bos_token: "<s>"
+    eos_token: "</s>"
+    unk_token: "<unk>"
+    pad_token: "<pad>"
+
+model:
+  architecture: "mamba"  # Required: specifies Mamba architecture
+
+  # Mamba-specific configuration
+  mamba:
+    d_model: 256        # Model dimension (embedding size)
+    n_layers: 4         # Number of Mamba layers
+    d_state: 16         # SSM state expansion (default 16)
+    d_conv: 4           # Convolution kernel size (default 4)
+    expand: 2           # Block expansion factor (default 2)
+    dropout: 0.1        # Dropout probability
+
+training:
+  output_dir: "output/test_mamba_tiny"
+
+  # Optimizer settings
+  learning_rate: 0.0001  # Mamba often uses lower LR than transformers
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+
+  # Training duration
+  epochs: 1
+  train_steps: null  # Will be calculated from epochs
+  warmup_steps: null  # Will be calculated as warmup_ratio * train_steps
+  warmup_ratio: 0.1
+
+  # Training objective
+  objective: "causal_lm"  # Mamba is a causal model (autoregressive)
+
+  # Performance optimizations
+  use_amp: false  # Mixed precision (can enable on GPU)
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0  # Gradient clipping
+
+  # Checkpointing
+  checkpointing_strategy: null
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+
+logging:
+  console_level: "INFO"
+  file_level: "DEBUG"
+  dir: "logs/test_mamba_tiny"
+  use_structured_logging: true
+  use_wandb: false
+  log_metrics_every_n_steps: 10
+
+random_seed: 42
+
+# Note: This config uses PyTorch fallback on CPU/macOS
+# For optimal performance, run on Linux with CUDA (uses mamba-ssm kernels)
