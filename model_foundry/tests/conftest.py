@@ -10,7 +10,7 @@ from datasets import Dataset
 
 from model_foundry.config import (
     ExperimentConfig, DataConfig, TokenizerConfig, ModelConfig,
-    TrainingConfig, LoggingConfig
+    TransformerModelConfig, TrainingConfig, LoggingConfig
 )
 
 
@@ -39,14 +39,17 @@ def tiny_config():
             vocab_size=1000
         ),
         model=ModelConfig(
-            layers=2,
-            embedding_size=64,
-            hidden_size=64,
-            intermediate_hidden_size=128,
-            attention_heads=2,
-            activation_function="gelu",
-            dropout=0.1,
-            attention_dropout=0.1
+            architecture="gpt2",
+            transformer=TransformerModelConfig(
+                layers=2,
+                embedding_size=64,
+                hidden_size=64,
+                intermediate_hidden_size=128,
+                attention_heads=2,
+                activation_function="gelu",
+                dropout=0.1,
+                attention_dropout=0.1
+            )
         ),
         training=TrainingConfig(
             output_dir="test/output",

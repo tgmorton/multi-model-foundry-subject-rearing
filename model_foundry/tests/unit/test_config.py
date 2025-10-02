@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from model_foundry.config import (
     ExperimentConfig, DataConfig, TokenizerConfig, ModelConfig,
-    TrainingConfig, LoggingConfig
+    TransformerModelConfig, TrainingConfig, LoggingConfig
 )
 
 
@@ -104,23 +104,9 @@ class TestModelConfig:
     def test_valid_model_config(self):
         """Valid model configuration."""
         config = ModelConfig(
-            layers=12,
-            embedding_size=768,
-            hidden_size=768,
-            intermediate_hidden_size=3072,
-            attention_heads=12,
-            activation_function="gelu",
-            dropout=0.1,
-            attention_dropout=0.1
-        )
-        assert config.layers == 12
-        assert config.attention_heads == 12
-
-    def test_layers_must_be_positive(self):
-        """Number of layers must be greater than 0."""
-        with pytest.raises(ValidationError):
-            ModelConfig(
-                layers=0,
+            architecture="gpt2",
+            transformer=TransformerModelConfig(
+                layers=12,
                 embedding_size=768,
                 hidden_size=768,
                 intermediate_hidden_size=3072,
@@ -129,46 +115,75 @@ class TestModelConfig:
                 dropout=0.1,
                 attention_dropout=0.1
             )
+        )
+        assert config.layers == 12
+        assert config.attention_heads == 12
+
+    def test_layers_must_be_positive(self):
+        """Number of layers must be greater than 0."""
+        with pytest.raises(ValidationError):
+            ModelConfig(
+                architecture="gpt2",
+                transformer=TransformerModelConfig(
+                    layers=0,
+                    embedding_size=768,
+                    hidden_size=768,
+                    intermediate_hidden_size=3072,
+                    attention_heads=12,
+                    activation_function="gelu",
+                    dropout=0.1,
+                    attention_dropout=0.1
+                )
+            )
 
     def test_dropout_range_validation(self):
         """Dropout must be in [0, 1)."""
         # Valid: 0.0
         config = ModelConfig(
-            layers=12,
-            embedding_size=768,
-            hidden_size=768,
-            intermediate_hidden_size=3072,
-            attention_heads=12,
-            activation_function="gelu",
-            dropout=0.0,
-            attention_dropout=0.0
+            architecture="gpt2",
+            transformer=TransformerModelConfig(
+                layers=12,
+                embedding_size=768,
+                hidden_size=768,
+                intermediate_hidden_size=3072,
+                attention_heads=12,
+                activation_function="gelu",
+                dropout=0.0,
+                attention_dropout=0.0
+            )
         )
         assert config.dropout == 0.0
 
         # Invalid: 1.0 or higher
         with pytest.raises(ValidationError):
             ModelConfig(
-                layers=12,
-                embedding_size=768,
-                hidden_size=768,
-                intermediate_hidden_size=3072,
-                attention_heads=12,
-                activation_function="gelu",
-                dropout=1.0,
-                attention_dropout=0.1
+                architecture="gpt2",
+                transformer=TransformerModelConfig(
+                    layers=12,
+                    embedding_size=768,
+                    hidden_size=768,
+                    intermediate_hidden_size=3072,
+                    attention_heads=12,
+                    activation_function="gelu",
+                    dropout=1.0,
+                    attention_dropout=0.1
+                )
             )
 
         # Invalid: negative
         with pytest.raises(ValidationError):
             ModelConfig(
-                layers=12,
-                embedding_size=768,
-                hidden_size=768,
-                intermediate_hidden_size=3072,
-                attention_heads=12,
-                activation_function="gelu",
-                dropout=-0.1,
-                attention_dropout=0.1
+                architecture="gpt2",
+                transformer=TransformerModelConfig(
+                    layers=12,
+                    embedding_size=768,
+                    hidden_size=768,
+                    intermediate_hidden_size=3072,
+                    attention_heads=12,
+                    activation_function="gelu",
+                    dropout=-0.1,
+                    attention_dropout=0.1
+                )
             )
 
 
@@ -387,26 +402,32 @@ class TestConfigValidationEdgeCases:
         """Test dropout at boundary values."""
         # 0.0 should work
         config = ModelConfig(
-            layers=12,
-            embedding_size=768,
-            hidden_size=768,
-            intermediate_hidden_size=3072,
-            attention_heads=12,
-            activation_function="gelu",
-            dropout=0.0,
-            attention_dropout=0.0
+            architecture="gpt2",
+            transformer=TransformerModelConfig(
+                layers=12,
+                embedding_size=768,
+                hidden_size=768,
+                intermediate_hidden_size=3072,
+                attention_heads=12,
+                activation_function="gelu",
+                dropout=0.0,
+                attention_dropout=0.0
+            )
         )
         assert config.dropout == 0.0
 
         # 0.999 should work
         config = ModelConfig(
-            layers=12,
-            embedding_size=768,
-            hidden_size=768,
-            intermediate_hidden_size=3072,
-            attention_heads=12,
-            activation_function="gelu",
-            dropout=0.999,
-            attention_dropout=0.999
+            architecture="gpt2",
+            transformer=TransformerModelConfig(
+                layers=12,
+                embedding_size=768,
+                hidden_size=768,
+                intermediate_hidden_size=3072,
+                attention_heads=12,
+                activation_function="gelu",
+                dropout=0.999,
+                attention_dropout=0.999
+            )
         )
         assert config.dropout == 0.999

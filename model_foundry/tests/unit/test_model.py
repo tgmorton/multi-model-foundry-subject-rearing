@@ -1,24 +1,32 @@
 """
 Unit tests for model creation.
 
-Tests the model factory function that creates GPT-2 models from configuration.
+Tests the model factory function that creates models from configuration using
+the multi-architecture system.
 """
 
 import pytest
 import torch
-from transformers import GPT2LMHeadModel
 
 from model_foundry.model import create_model
+from model_foundry.architectures import BaseLanguageModel, GPT2Model
 
 
 class TestCreateModel:
     """Tests for create_model factory function."""
 
-    def test_creates_gpt2_model(self, tiny_config):
-        """Should create a GPT2LMHeadModel instance."""
+    def test_creates_base_language_model(self, tiny_config):
+        """Should create a BaseLanguageModel instance."""
         model = create_model(tiny_config)
 
-        assert isinstance(model, GPT2LMHeadModel)
+        assert isinstance(model, BaseLanguageModel)
+
+    def test_creates_gpt2_model(self, tiny_config):
+        """Should create a GPT2Model instance for gpt2 architecture."""
+        model = create_model(tiny_config)
+
+        assert isinstance(model, GPT2Model)
+        assert model.model_type == "gpt2"
 
     def test_model_has_correct_vocab_size(self, tiny_config):
         """Model should have vocabulary size from config."""
@@ -30,25 +38,25 @@ class TestCreateModel:
         """Model should have number of layers from config."""
         model = create_model(tiny_config)
 
-        assert model.config.n_layer == tiny_config.model.layers
+        assert model.config.n_layer == tiny_config.model.transformer.layers
 
     def test_model_has_correct_hidden_size(self, tiny_config):
         """Model should have hidden size from config."""
         model = create_model(tiny_config)
 
-        assert model.config.n_embd == tiny_config.model.hidden_size
+        assert model.config.n_embd == tiny_config.model.transformer.hidden_size
 
     def test_model_has_correct_attention_heads(self, tiny_config):
         """Model should have number of attention heads from config."""
         model = create_model(tiny_config)
 
-        assert model.config.n_head == tiny_config.model.attention_heads
+        assert model.config.n_head == tiny_config.model.transformer.attention_heads
 
     def test_model_has_correct_intermediate_size(self, tiny_config):
         """Model should have intermediate hidden size from config."""
         model = create_model(tiny_config)
 
-        assert model.config.n_inner == tiny_config.model.intermediate_hidden_size
+        assert model.config.n_inner == tiny_config.model.transformer.intermediate_hidden_size
 
     def test_model_has_correct_max_position_embeddings(self, tiny_config):
         """Model should have max positions from data config."""
@@ -60,14 +68,14 @@ class TestCreateModel:
         """Model should use activation function from config."""
         model = create_model(tiny_config)
 
-        assert model.config.activation_function == tiny_config.model.activation_function
+        assert model.config.activation_function == tiny_config.model.transformer.activation_function
 
     def test_model_has_correct_dropout(self, tiny_config):
         """Model should have dropout values from config."""
         model = create_model(tiny_config)
 
-        assert model.config.resid_pdrop == tiny_config.model.dropout
-        assert model.config.attn_pdrop == tiny_config.model.attention_dropout
+        assert model.config.resid_pdrop == tiny_config.model.transformer.dropout
+        assert model.config.attn_pdrop == tiny_config.model.transformer.attention_dropout
 
     def test_model_cache_disabled(self, tiny_config):
         """Model should have caching disabled for training."""
@@ -143,7 +151,7 @@ class TestCreateModel:
         try:
             model = create_model(tiny_config, attn_implementation="flash_attention_2")
             # If it doesn't raise, check that it's a valid model
-            assert isinstance(model, GPT2LMHeadModel)
+            assert isinstance(model, GPT2Model)
         except (ImportError, ValueError) as e:
             # Flash attention not available - expected
             pytest.skip(f"Flash Attention 2 not available: {e}")
@@ -153,7 +161,13 @@ class TestCreateModel:
         # Test that we can pass additional arguments
         model = create_model(tiny_config, attn_implementation="eager")
 
-        assert isinstance(model, GPT2LMHeadModel)
+        assert isinstance(model, GPT2Model)
+
+    def test_model_supports_generation(self, tiny_config):
+        """GPT-2 models should support generation."""
+        model = create_model(tiny_config)
+
+        assert model.supports_generation is True
 
 
 class TestCreateModelVariations:
@@ -161,29 +175,29 @@ class TestCreateModelVariations:
 
     def test_small_model(self, tiny_config):
         """Should create very small model."""
-        tiny_config.model.layers = 1
-        tiny_config.model.hidden_size = 32
-        tiny_config.model.embedding_size = 32
-        tiny_config.model.intermediate_hidden_size = 64
-        tiny_config.model.attention_heads = 2
+        tiny_config.model.transformer.layers = 1
+        tiny_config.model.transformer.hidden_size = 32
+        tiny_config.model.transformer.embedding_size = 32
+        tiny_config.model.transformer.intermediate_hidden_size = 64
+        tiny_config.model.transformer.attention_heads = 2
 
         model = create_model(tiny_config)
 
-        total_params = sum(p.numel() for p in model.parameters())
+        total_params = model.get_parameter_count()
         # Very small model should have fewer parameters
         assert total_params < 100_000
 
     def test_larger_model(self, tiny_config):
         """Should create larger model."""
-        tiny_config.model.layers = 6
-        tiny_config.model.hidden_size = 256
-        tiny_config.model.embedding_size = 256
-        tiny_config.model.intermediate_hidden_size = 1024
-        tiny_config.model.attention_heads = 8
+        tiny_config.model.transformer.layers = 6
+        tiny_config.model.transformer.hidden_size = 256
+        tiny_config.model.transformer.embedding_size = 256
+        tiny_config.model.transformer.intermediate_hidden_size = 1024
+        tiny_config.model.transformer.attention_heads = 8
 
         model = create_model(tiny_config)
 
-        total_params = sum(p.numel() for p in model.parameters())
+        total_params = model.get_parameter_count()
         # Larger model should have more parameters
         assert total_params > 1_000_000
 
@@ -208,7 +222,7 @@ class TestCreateModelVariations:
     def test_different_activation_functions(self, tiny_config):
         """Should support different activation functions."""
         for activation in ["gelu", "relu", "gelu_new"]:
-            tiny_config.model.activation_function = activation
+            tiny_config.model.transformer.activation_function = activation
 
             model = create_model(tiny_config)
 
@@ -217,8 +231,8 @@ class TestCreateModelVariations:
     def test_different_dropout_values(self, tiny_config):
         """Should handle different dropout values."""
         for dropout in [0.0, 0.1, 0.3]:
-            tiny_config.model.dropout = dropout
-            tiny_config.model.attention_dropout = dropout
+            tiny_config.model.transformer.dropout = dropout
+            tiny_config.model.transformer.attention_dropout = dropout
 
             model = create_model(tiny_config)
 
@@ -279,7 +293,7 @@ class TestCreateModelEdgeCases:
 
     def test_model_with_single_layer(self, tiny_config):
         """Should create model with just 1 layer."""
-        tiny_config.model.layers = 1
+        tiny_config.model.transformer.layers = 1
 
         model = create_model(tiny_config)
 
@@ -288,9 +302,9 @@ class TestCreateModelEdgeCases:
     def test_model_with_minimum_hidden_size(self, tiny_config):
         """Should create model with very small hidden size."""
         # Minimum that works with attention heads
-        tiny_config.model.hidden_size = 16
-        tiny_config.model.embedding_size = 16
-        tiny_config.model.attention_heads = 2  # hidden_size must be divisible
+        tiny_config.model.transformer.hidden_size = 16
+        tiny_config.model.transformer.embedding_size = 16
+        tiny_config.model.transformer.attention_heads = 2  # hidden_size must be divisible
 
         model = create_model(tiny_config)
 
@@ -298,8 +312,8 @@ class TestCreateModelEdgeCases:
 
     def test_model_with_zero_dropout(self, tiny_config):
         """Should create model with no dropout."""
-        tiny_config.model.dropout = 0.0
-        tiny_config.model.attention_dropout = 0.0
+        tiny_config.model.transformer.dropout = 0.0
+        tiny_config.model.transformer.attention_dropout = 0.0
 
         model = create_model(tiny_config)
 
