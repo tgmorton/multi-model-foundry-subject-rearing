@@ -31,12 +31,20 @@ class TestAblationRegistry:
     """Tests for AblationRegistry class."""
 
     def setup_method(self):
-        """Clear registry before each test."""
+        """Clear registry before each test in this class."""
+        from preprocessing.registry import AblationRegistry
         AblationRegistry.clear()
 
     def teardown_method(self):
-        """Clear registry after each test."""
-        AblationRegistry.clear()
+        """Restore registry after each test in this class."""
+        from preprocessing.registry import AblationRegistry
+        # Re-register session-level ablations
+        try:
+            import importlib
+            import preprocessing.ablations.remove_articles
+            importlib.reload(preprocessing.ablations.remove_articles)
+        except (ImportError, AttributeError):
+            pass  # OK if not available
 
     def test_register_ablation_without_validator(self):
         """Can register ablation without validator."""

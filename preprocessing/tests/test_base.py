@@ -16,6 +16,31 @@ from preprocessing.registry import AblationRegistry
 class TestAblationPipelineInit:
     """Tests for AblationPipeline initialization."""
 
+    def setup_method(self):
+        """Clear registry before each test."""
+        AblationRegistry.clear()
+
+    def teardown_method(self):
+        """Clear registry and reload all ablations after each test."""
+        AblationRegistry.clear()
+        try:
+            import importlib
+            from preprocessing.ablations import (
+                remove_articles,
+                remove_expletives,
+                impoverish_determiners,
+                lemmatize_verbs,
+                remove_subject_pronominals
+            )
+            # Reload all modules to re-register ablations
+            importlib.reload(remove_articles)
+            importlib.reload(remove_expletives)
+            importlib.reload(impoverish_determiners)
+            importlib.reload(lemmatize_verbs)
+            importlib.reload(remove_subject_pronominals)
+        except (ImportError, AttributeError):
+            pass
+
     def test_cannot_init_without_registered_ablation(self, tmp_path):
         """Cannot initialize pipeline with unregistered ablation type."""
         config = AblationConfig(
@@ -89,6 +114,31 @@ class TestAblationPipelineInit:
 class TestAblationPipelineProcessCorpus:
     """Tests for process_corpus method."""
 
+    def setup_method(self):
+        """Clear registry before each test."""
+        AblationRegistry.clear()
+
+    def teardown_method(self):
+        """Clear registry and reload all ablations after each test."""
+        AblationRegistry.clear()
+        try:
+            import importlib
+            from preprocessing.ablations import (
+                remove_articles,
+                remove_expletives,
+                impoverish_determiners,
+                lemmatize_verbs,
+                remove_subject_pronominals
+            )
+            # Reload all modules to re-register ablations
+            importlib.reload(remove_articles)
+            importlib.reload(remove_expletives)
+            importlib.reload(impoverish_determiners)
+            importlib.reload(lemmatize_verbs)
+            importlib.reload(remove_subject_pronominals)
+        except (ImportError, AttributeError):
+            pass
+
     def test_process_corpus_fails_with_no_files(self, tmp_path, dummy_ablation_function, empty_corpus_dir):
         """process_corpus raises error when no .train files found."""
         AblationRegistry.register("dummy", dummy_ablation_function)
@@ -112,6 +162,31 @@ class TestAblationPipelineProcessCorpus:
 
 class TestAblationPipelineConfiguration:
     """Tests for pipeline configuration handling."""
+
+    def setup_method(self):
+        """Clear registry before each test."""
+        AblationRegistry.clear()
+
+    def teardown_method(self):
+        """Clear registry and reload all ablations after each test."""
+        AblationRegistry.clear()
+        try:
+            import importlib
+            from preprocessing.ablations import (
+                remove_articles,
+                remove_expletives,
+                impoverish_determiners,
+                lemmatize_verbs,
+                remove_subject_pronominals
+            )
+            # Reload all modules to re-register ablations
+            importlib.reload(remove_articles)
+            importlib.reload(remove_expletives)
+            importlib.reload(impoverish_determiners)
+            importlib.reload(lemmatize_verbs)
+            importlib.reload(remove_subject_pronominals)
+        except (ImportError, AttributeError):
+            pass
 
     def test_respects_seed_from_config(self, tmp_path, dummy_ablation_function):
         """Pipeline uses seed from configuration."""

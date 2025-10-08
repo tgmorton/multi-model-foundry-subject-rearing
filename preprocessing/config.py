@@ -79,7 +79,7 @@ class AblationConfig(BaseModel):
         path = Path(v)
         if not path.is_absolute():
             # Import here to avoid circular dependency
-            from model_foundry.utils import find_project_root
+            from preprocessing.utils import find_project_root
             root = find_project_root(__file__)
             return root / path
         return path

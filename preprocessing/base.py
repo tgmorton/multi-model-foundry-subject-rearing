@@ -83,7 +83,7 @@ class AblationPipeline:
         Returns:
             Configured logger instance
         """
-        from model_foundry.logging_utils import setup_logging
+        from preprocessing.utils import setup_logging
 
         logger = setup_logging(
             name=f"preprocessing.{self.config.type}",

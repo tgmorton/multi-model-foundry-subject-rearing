@@ -2,18 +2,21 @@
 Preprocessing Utilities
 
 Shared utility functions for ablation pipelines, including device detection,
-token counting, checksumming, and environment info capture.
+token counting, checksumming, environment info capture, and logging setup.
 
 Consolidates common functionality from original preprocessing scripts.
+Independent of model_foundry to avoid dependency conflicts.
 """
 
 import hashlib
+import logging
 import os
 import platform
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 
 def get_spacy_device(verbose: bool = False) -> str:
@@ -195,3 +198,93 @@ def count_files_in_directory(directory: Path, pattern: str = "*.train") -> int:
         return 0
 
     return len(list(directory.rglob(pattern)))
+
+
+def setup_logging(
+    name: str,
+    experiment: str = "default",
+    phase: str = None,
+    log_dir: Union[str, Path] = "logs",
+    level: int = logging.INFO,
+) -> logging.Logger:
+    """
+    Initialize logger with consistent format.
+
+    Copied from model_foundry.logging_utils to avoid import dependency.
+
+    Args:
+        name: Logger name
+        experiment: Experiment identifier
+        phase: Optional phase name
+        log_dir: Root directory for logs
+        level: Logging level
+
+    Returns:
+        Configured logger instance
+    """
+    logger = logging.getLogger(name)
+
+    # Only configure if not already configured
+    if logger.handlers:
+        return logger
+
+    log_dir = Path(log_dir) / experiment
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    if phase:
+        file_name = f"{experiment}_{phase}_{timestamp}.log"
+    else:
+        file_name = f"{experiment}_{timestamp}.log"
+
+    fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    datefmt = "%Y-%m-%d %H:%M:%S"
+
+    file_handler = logging.FileHandler(log_dir / file_name)
+    stream_handler = logging.StreamHandler(sys.stdout)
+
+    for h in (file_handler, stream_handler):
+        h.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
+
+    logger.setLevel(level)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    logger.propagate = False
+
+    return logger
+
+
+def find_project_root(start_path: str = __file__) -> Path:
+    """
+    Find project root by looking for marker files.
+
+    Copied from model_foundry.utils to avoid import dependency.
+
+    Args:
+        start_path: Path to start searching from
+
+    Returns:
+        Path to project root
+
+    Raises:
+        FileNotFoundError: If no project root found
+    """
+    current = Path(start_path).resolve()
+
+    if current.is_file():
+        current = current.parent
+
+    markers = ["pyproject.toml", "setup.py", ".git", "requirements.txt"]
+
+    while current != current.parent:
+        for marker in markers:
+            if (current / marker).exists():
+                return current
+        current = current.parent
+
+    # Fallback
+    fallback = Path(start_path).resolve().parent.parent
+    if fallback.exists():
+        return fallback
+
+    raise FileNotFoundError(f"Could not find project root from {start_path}")

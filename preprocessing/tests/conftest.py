@@ -12,9 +12,46 @@ from typing import Tuple
 from preprocessing.registry import AblationRegistry
 
 
-@pytest.fixture(autouse=True)
-def reset_registry():
-    """Automatically clear registry before and after each test."""
+@pytest.fixture(scope="session", autouse=True)
+def _register_all_ablations():
+    """
+    Session-scoped fixture to register all ablations once for all tests.
+
+    This ensures ablations are available for integration tests.
+    """
+    try:
+        # Import all ablation modules to trigger registration
+        from preprocessing.ablations import (
+            remove_articles,
+            remove_expletives,
+            impoverish_determiners,
+            lemmatize_verbs,
+            remove_subject_pronominals
+        )
+    except ImportError:
+        pass
+    yield
+
+
+@pytest.fixture()
+def _preserve_registry():
+    """
+    Fixture that does NOT clear the registry.
+
+    Use this for integration tests that need pre-registered ablations.
+    """
+    # Do nothing - just a marker to prevent cleanup
+    yield
+
+
+@pytest.fixture()
+def clean_registry():
+    """
+    Clear registry before and after test (opt-in via fixture).
+
+    Use this fixture when you need an empty registry for testing.
+    Don't use autouse=True since some tests need pre-registered ablations.
+    """
     AblationRegistry.clear()
     yield
     AblationRegistry.clear()
