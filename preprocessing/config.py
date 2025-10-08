@@ -58,6 +58,15 @@ class AblationConfig(BaseModel):
         None,
         description="Device: 'cpu', 'cuda', 'mps', or None for auto-detect"
     )
+    spacy_batch_size: int = Field(
+        50,
+        gt=0,
+        description="Batch size for spaCy nlp.pipe() processing"
+    )
+    spacy_disable_components: Optional[List[str]] = Field(
+        None,
+        description="spaCy components to disable for performance (e.g., ['ner', 'textcat'])"
+    )
 
     # Logging
     verbose: bool = Field(False, description="Enable verbose logging")
@@ -151,6 +160,12 @@ class ProvenanceMetadata(BaseModel):
         description="Total items ablated (expletives, articles, etc.)"
     )
     processing_time_seconds: float = Field(0.0, ge=0.0, description="Processing duration")
+
+    # Error tracking
+    failed_files: List[tuple] = Field(
+        default_factory=list,
+        description="List of (file_path, error_message) tuples for failed files"
+    )
 
     @classmethod
     def create_from_environment(

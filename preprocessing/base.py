@@ -97,7 +97,7 @@ class AblationPipeline:
 
     def _load_spacy_model(self) -> spacy.Language:
         """
-        Load spaCy model with device configuration.
+        Load spaCy model with device configuration and performance optimizations.
 
         Returns:
             Loaded spaCy Language model
@@ -125,6 +125,41 @@ class AblationPipeline:
 
         # Increase max_length for large texts
         nlp.max_length = 2000000  # 2M characters
+
+        # Disable unused components for performance
+        if self.config.spacy_disable_components:
+            try:
+                # Get currently enabled components
+                enabled = [name for name, pipe in nlp.pipeline]
+
+                # Disable requested components
+                components_to_disable = [
+                    comp for comp in self.config.spacy_disable_components
+                    if comp in enabled
+                ]
+
+                if components_to_disable:
+                    nlp.disable_pipes(*components_to_disable)
+                    self.logger.info(
+                        f"Disabled spaCy components for performance: {components_to_disable}"
+                    )
+
+                # Warn about components that were requested but don't exist
+                invalid = [
+                    comp for comp in self.config.spacy_disable_components
+                    if comp not in enabled
+                ]
+                if invalid:
+                    self.logger.warning(
+                        f"Requested to disable non-existent components: {invalid}. "
+                        f"Available components: {enabled}"
+                    )
+
+            except Exception as e:
+                self.logger.warning(
+                    f"Failed to disable spaCy components: {e}. "
+                    "Continuing with default pipeline."
+                )
 
         return nlp
 
@@ -160,6 +195,7 @@ class AblationPipeline:
         self.logger.info(f"Found {len(source_files)} files to process")
 
         # Process each file
+        failed_files = []
         for source_path in tqdm(source_files, desc="Processing files"):
             try:
                 file_stats = self._process_file(Path(source_path))
@@ -169,8 +205,25 @@ class AblationPipeline:
                     f"{file_stats.items_ablated:,} items ablated"
                 )
             except Exception as e:
-                self.logger.error(f"Failed to process {source_path}: {e}")
-                raise
+                self.logger.error(
+                    f"Failed to process {source_path}: {type(e).__name__}: {e}",
+                    exc_info=self.config.verbose  # Include traceback if verbose
+                )
+                failed_files.append((source_path, str(e)))
+                # Continue processing other files instead of failing completely
+                continue
+
+        # Report summary of failures
+        if failed_files:
+            self.logger.warning(
+                f"Processing completed with {len(failed_files)} failed file(s) "
+                f"out of {len(source_files)} total"
+            )
+            for failed_path, error_msg in failed_files:
+                self.logger.warning(f"  - {failed_path}: {error_msg}")
+
+            # Store failed files in manifest
+            self.manifest.metadata.failed_files = failed_files
 
         # Finalize provenance
         self.manifest.metadata.processing_time_seconds = time.time() - start_time
@@ -244,11 +297,19 @@ class AblationPipeline:
         # Validate ablation (if not skipped)
         if not self.config.skip_validation and self.validation_fn:
             self.logger.info(f"Validating ablation for {file_path.name}")
-            is_valid = self.validation_fn(original_text, ablated_text, self.nlp)
-            if not is_valid:
+            try:
+                is_valid = self.validation_fn(original_text, ablated_text, self.nlp)
+                if not is_valid:
+                    self.logger.warning(
+                        f"Validation failed for {file_path.name}: "
+                        "ablation may not have occurred as expected. "
+                        "This is not fatal - continuing with processing."
+                    )
+            except Exception as e:
+                # Validation errors are not fatal - log and continue
                 self.logger.warning(
-                    f"Validation failed for {file_path.name}: "
-                    "ablation may not have occurred as expected"
+                    f"Validation raised an exception for {file_path.name}: "
+                    f"{type(e).__name__}: {e}. Skipping validation for this file."
                 )
 
         # Rebuild to target size if replacement pool provided
@@ -298,6 +359,10 @@ class AblationPipeline:
 
         Returns:
             Tuple of (ablated_text, total_items_ablated)
+
+        Raises:
+            ValueError: If ablation function fails on a document
+            RuntimeError: If spaCy pipeline encounters an error
         """
         ablated_text = ""
         total_items_ablated = 0
@@ -312,11 +377,36 @@ class AblationPipeline:
             for i in range(0, len(lines), self.config.chunk_size):
                 chunk = lines[i:i + self.config.chunk_size]
 
-                # Process chunk with spaCy pipeline
-                for doc in self.nlp.pipe(chunk):
-                    ablated_doc_text, num_items = self.ablation_fn(doc)
-                    ablated_text += ablated_doc_text
-                    total_items_ablated += num_items
+                try:
+                    # Process chunk with spaCy pipeline using configured batch size
+                    for line_idx, doc in enumerate(
+                        self.nlp.pipe(chunk, batch_size=self.config.spacy_batch_size)
+                    ):
+                        try:
+                            ablated_doc_text, num_items = self.ablation_fn(doc)
+                            ablated_text += ablated_doc_text
+                            total_items_ablated += num_items
+                        except Exception as e:
+                            # Log the specific line that failed
+                            global_line_idx = i + line_idx
+                            self.logger.error(
+                                f"Ablation function failed on line {global_line_idx + 1}: "
+                                f"{type(e).__name__}: {e}"
+                            )
+                            # Re-raise to fail the file (but not the whole corpus)
+                            raise ValueError(
+                                f"Ablation failed on line {global_line_idx + 1}"
+                            ) from e
+
+                except Exception as e:
+                    # Catch spaCy pipeline errors
+                    self.logger.error(
+                        f"spaCy pipeline error in chunk {i//self.config.chunk_size + 1}: "
+                        f"{type(e).__name__}: {e}"
+                    )
+                    raise RuntimeError(
+                        f"spaCy processing failed in chunk starting at line {i + 1}"
+                    ) from e
 
                 pbar.update(len(chunk))
 
@@ -380,7 +470,7 @@ class AblationPipeline:
 
                 # Ablate sampled sentences
                 sample_text = "".join(sample_sentences)
-                for doc in self.nlp.pipe([sample_text]):
+                for doc in self.nlp.pipe([sample_text], batch_size=self.config.spacy_batch_size):
                     ablated_sample, num_items = self.ablation_fn(doc)
                     ablated_text += ablated_sample
                     additional_items_ablated += num_items
