@@ -1,0 +1,86 @@
+site_name: Model Foundry Documentation
+site_description: Complete documentation for the Model Foundry training framework and analysis tools
+site_author: Model Foundry Team
+site_url: https://tgmorton.github.io/multi-model-foundry-subject-rearing/
+repo_url: https://github.com/tgmorton/multi-model-foundry-subject-rearing
+repo_name: tgmorton/multi-model-foundry-subject-rearing
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - toc:
+      permalink: true
+  - tables
+
+nav:
+  - Home: README.md
+  - Project Structure: STRUCTURE.md
+
+  - Getting Started:
+    - Training Guide: TRAINING_GUIDE.md
+    - Training on SLURM: TRAINING_ON_SLURM.md
+    - Training on Wild West: TRAINING_ON_WILD_WEST.md
+    - Data Processing: data_processing.md
+
+  - Experiments:
+    - Checkpoint Scheduling: checkpoint_scheduling.md
+    - New Checkpoint Scheduling: new_checkpoint_scheduling.md
+    - Phase 3 Pipeline: phase3_experimental_pipeline.md
+    - Cross Architecture Comparison: CROSS_ARCHITECTURE_COMPARISON.md
+
+  - Model Foundry:
+    - Overview: model_foundry/README.md
+    - Architecture:
+      - Multi-Architecture System: model_foundry/architecture/multi-architecture-system.md
+      - Logging System: model_foundry/architecture/logging-system.md
+      - Training Refactoring: model_foundry/architecture/training-refactoring.md
+      - Refactoring Status: model_foundry/architecture/refactoring-status.md
+    - Testing:
+      - Testing Strategy: model_foundry/testing/strategy.md
+      - Running Tests: model_foundry/testing/running-tests.md
+      - Logging Tests: model_foundry/testing/logging-tests.md
+    - Guides:
+      - WandB Integration: model_foundry/guides/wandb-integration.md
+
+  - Preprocessing:
+    - User Guide: preprocessing/USER_GUIDE.md
+    - Advanced Usage: preprocessing/ADVANCED_USAGE.md
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com
