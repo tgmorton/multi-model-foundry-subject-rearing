@@ -1,0 +1,503 @@
+% Simplified version for non-linguistic audience
+\documentclass[aspectratio=169]{beamer}
+
+% --- Theme ---
+\makeatletter
+\def\input@path{{beamertheme-cleaneasy/theme/}}
+\makeatother
+\usepackage{beamerthemeCleanEasy}
+
+% --- Essential packages ---
+\usepackage{tikz}
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[backend=biber, style=apa, sorting=nyt, doi=true, url=true]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Oct22Meeting.bib}
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+
+% --- Tables and figures ---
+\usepackage{booktabs}
+\usepackage{array}
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\footnotesize}
+\setbeamercolor{caption name}{fg=gray}
+
+% --- Graphics paths ---
+\graphicspath{{/Users/thomasmorton/subject-drop/analysis/paper_figures/main/}{/Users/thomasmorton/subject-drop/analysis/paper_figures/wide/}{/Users/thomasmorton/subject-drop/analysis/paper_figures/supplementary/}}
+
+% --- Metadata ---
+\title{Teaching AI to Learn Language Like Children Do}
+\subtitle{A Detective Story About Grammar}
+\author{Thomas Morton}
+\date{October 22, 2025}
+\institute{LemN Lab Meeting}
+
+\begin{document}
+
+% Title
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ============================================================================
+% THE PROBLEM
+% ============================================================================
+
+\begin{frame}
+  \frametitle{The Mystery}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{How do children learn grammar without being taught?}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Children master complex language rules with minimal instruction
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \textbf{Today's specific puzzle:}
+  \begin{itemize}
+    \item<2-> Some languages drop the subject: "Speaks Italian" (OK in Italian)
+    \item<3-> Other languages require it: "She speaks Italian" (required in English)
+    \item<4-> Children figure this out by age 3-4
+    \item<5-> \textbf{But how?} Nobody explicitly teaches them this rule
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This Matters}
+
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+      \textbf{The Challenge:}
+      \begin{itemize}
+        \item Children only hear correct sentences
+        \item Never told what's wrong
+        \item Yet they learn perfectly
+        \item Works across all languages
+      \end{itemize}
+
+    \column{0.48\textwidth}
+      \textbf{The Stakes:}
+      \begin{itemize}
+        \item Understanding human cognition
+        \item Building better AI
+        \item Helping children with language disorders
+        \item Designing language education
+      \end{itemize}
+  \end{columns}
+
+  \vspace{1em}
+
+  \onslide<2->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    If we understand how children learn, we can build better learning systems
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% THE DEBATE
+% ============================================================================
+
+\begin{frame}
+  \frametitle{40 Years of Debate}
+
+  \textbf{Scientists have proposed different theories:}
+
+  \vspace{1em}
+
+  \begin{itemize}
+    \item<2-> \textbf{Theory 1:} Children learn from specific words like "it" and "there"
+    \item<3-> \textbf{Theory 2:} They detect patterns in word endings (-s, -ed, -ing)
+    \item<4-> \textbf{Theory 3:} They count how often subjects appear
+    \item<5-> \textbf{Theory 4:} They notice pronouns (I, you, he, she)
+    \item<6-> \textbf{Theory 5:} They track articles (a, the)
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<7->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{The Problem}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    We can't test these theories on real children (unethical to manipulate their input)
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% THE SOLUTION
+% ============================================================================
+
+\begin{frame}
+  \frametitle{The Solution: AI as a Test Subject}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Use Small Language Models as Stand-ins for Children}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    We can control exactly what they learn from and track their progress
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \textbf{Why this works:}
+  \begin{itemize}
+    \item<2-> Train on child-scale data (90M words = what a child hears)
+    \item<3-> Remove specific evidence types to test theories
+    \item<4-> Track learning over time like developmental psychology
+    \item<5-> Run experiments impossible with humans
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<6->{
+  \textbf{The Approach:} Train multiple models, each missing different evidence
+  }
+\end{frame}
+
+% ============================================================================
+% THE EXPERIMENTS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{The Experiments}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    We trained 6 different AI models, each missing something different
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \begin{tabular}{lll}
+  \textbf{Model} & \textbf{What We Removed} & \textbf{Testing Which Theory} \\
+  \hline
+  Baseline & Nothing & Control \\
+  Model 1 & Words like "it/there" & Expletive theory \\
+  Model 2 & Article distinctions & Determiner theory \\
+  Model 3 & All "a/the" & Article theory \\
+  Model 4 & Word endings & Morphology theory \\
+  Model 5 & Pronouns (I/you/he/she) & Direct evidence theory \\
+  \end{tabular}
+
+  \vspace{1em}
+
+  \onslide<2->{
+  \textbf{The Test:} Can they still learn that English requires subjects?
+  }
+\end{frame}
+
+% ============================================================================
+% KEY RESULTS WITH FIGURES
+% ============================================================================
+
+\begin{frame}{Result 1: Baseline Learning}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{model_baseline.pdf}
+		\vspace{-1.5em}
+		\caption{How the baseline model learns over time}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Key Finding:}
+      \begin{itemize}
+        \item<3-> Models start by dropping subjects (like Italian)
+        \item<4-> Gradually learn English pattern
+        \item<5-> Mirrors child development!
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{Implication:}\\
+      Default state might be to drop subjects
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Result 2: The Surprise Winner}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{comparison_vs_baseline_overt_only_impoverish_determiners.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of removing determiner distinctions}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Shocking Discovery:}
+      \begin{itemize}
+        \item<3-> Removing "a/the" distinctions causes \textbf{massive} delay
+        \item<4-> Takes 5x longer to learn!
+        \item<5-> Nobody predicted this
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{What this means:}\\
+      Articles might be a critical "shortcut" for learning grammar
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Result 3: The Necessary Evidence}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{comparison_vs_baseline_overt_only_remove_subject_pronominals.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of removing pronouns}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Critical Finding:}
+      \begin{itemize}
+        \item<3-> Without pronouns, learning barely happens
+        \item<4-> Model stays at 50-50 (guessing)
+        \item<5-> Pronouns are \textbf{necessary}
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{Conclusion:}\\
+      Direct evidence (seeing "I/you/he/she") is essential
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The Big Picture}
+  \begin{figure}
+    \centering
+    \vspace{-1em}
+    \includegraphics[width=.85\linewidth]{all_models_comparison_log.pdf}
+    \vspace{-1em}
+    \caption{All models compared}
+  \end{figure}
+
+  \onslide<2->{
+  \textbf{Evidence Hierarchy:}
+  1. Pronouns (necessary) | 2. Articles (huge shortcut) | 3. Others (minor help)
+  }
+\end{frame}
+
+% ============================================================================
+% IMPLICATIONS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{What We Learned}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Major Discoveries}
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \begin{enumerate}
+    \item<2-> \textbf{Pronouns are essential}\\
+    Without seeing "I/you/he/she", learning fails
+
+    \vspace{0.5em}
+
+    \item<3-> \textbf{Articles are shortcuts}\\
+    "A/the" provide unexpected learning boost
+
+    \vspace{0.5em}
+
+    \item<4-> \textbf{Some theories are wrong}\\
+    Word endings actually slow learning down!
+
+    \vspace{0.5em}
+
+    \item<5-> \textbf{Models mirror children}\\
+    Start with wrong assumption, gradually correct it
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This Matters}
+
+  \textbf{For Science:}
+  \begin{itemize}
+    \item<2-> We can finally test competing theories
+    \item<3-> Some 40-year-old theories are probably wrong
+    \item<4-> Unexpected connections (articles → grammar learning)
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \textbf{For AI:}
+  \begin{itemize}
+    \item<6-> Shows what data is actually important
+    \item<7-> Could build more efficient learning systems
+    \item<8-> Small models can reveal big insights
+  \end{itemize}
+  }
+
+  \vspace{1em}
+
+  \onslide<9->{
+  \textbf{For Education:}
+  \begin{itemize}
+    \item<10-> Might inform language teaching methods
+    \item<11-> Could help with language disorders
+    \item<12-> Shows importance of pronouns and articles
+  \end{itemize}
+  }
+\end{frame}
+
+% ============================================================================
+% NEXT STEPS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{Next Steps}
+
+  \textbf{Immediate plans:}
+  \begin{itemize}
+    \item<2-> Test with other languages (Italian, Spanish, Chinese)
+    \item<3-> Try different model architectures
+    \item<4-> Look at bilingual learning
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \textbf{Bigger questions:}
+  \begin{itemize}
+    \item<6-> Can we predict which children will struggle?
+    \item<7-> How do bilingual children manage two systems?
+    \item<8-> What other grammar rules work this way?
+  \end{itemize}
+  }
+
+  \vspace{1em}
+
+  \onslide<9->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{The Goal}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Build a complete theory of how grammar is learned from experience
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% CONCLUSION
+% ============================================================================
+
+\begin{frame}
+  \frametitle{Take-Home Messages}
+
+  \begin{enumerate}
+    \item<2-> \textbf{AI can help us understand human learning}\\
+    \vspace{0.3em}
+    Small models trained on child-scale data reveal learning mechanisms
+
+    \vspace{0.8em}
+
+    \item<3-> \textbf{Not all evidence is equal}\\
+    \vspace{0.3em}
+    Pronouns: necessary | Articles: powerful shortcuts | Word endings: red herrings
+
+    \vspace{0.8em}
+
+    \item<4-> \textbf{Simple experiments can challenge old theories}\\
+    \vspace{0.3em}
+    40 years of debate, resolved with targeted ablation studies
+  \end{enumerate}
+
+  \vspace{1.5em}
+
+  \onslide<5->{
+  \begin{center}
+    \Large
+    \textbf{Questions?}
+  \end{center}
+  }
+\end{frame}
+
+% ============================================================================
+% BACKUP SLIDES
+% ============================================================================
+
+\appendix
+
+\begin{frame}
+  \frametitle{Technical Details}
+
+  \textbf{Model:} GPT-2 Small (124M parameters)
+
+  \textbf{Data:} BabyLM corpus (90M words)
+  \begin{itemize}
+    \item Child-directed speech
+    \item Children's books
+    \item Simple Wikipedia
+  \end{itemize}
+
+  \textbf{Evaluation:} Minimal pairs
+  \begin{itemize}
+    \item "She walks" vs "*Walks"
+    \item "It rains" vs "*Rains"
+  \end{itemize}
+
+  \textbf{Statistics:}
+  \begin{itemize}
+    \item 3 random seeds per condition
+    \item Logistic mixed models
+    \item Age of Acquisition metrics
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Processing Effects}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{forest_form_baseline.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of sentence complexity}
+      \end{figure}
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Unexpected finding:}
+      \begin{itemize}
+        \item Negation increases subject use
+        \item Opposite of human children
+        \item Models don't "drop under pressure"
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \textbf{Implication:}\\
+      AI and humans might process difficulty differently
+  \end{columns}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography
+\end{frame}
+
+\end{document}

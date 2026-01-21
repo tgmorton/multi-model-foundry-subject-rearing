@@ -1,0 +1,1636 @@
+% The development of Subject-Drop in Small Language Models
+% PhD Pitch Presentation - Beamer Version
+\documentclass[aspectratio=169]{beamer}
+
+% --- Theme ---
+% Add theme directory to search path
+\makeatletter
+\def\input@path{{beamertheme-cleaneasy/theme/}}
+\makeatother
+\usepackage{beamerthemeCleanEasy}
+
+% --- TikZ (required by CleanEasy theme) ---
+\usepackage{tikz}
+
+% --- Language & Bibliography ---
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[backend=biber, style=apa, sorting=nyt, doi=true, url=true]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Oct22Meeting.bib}
+
+% --- Linguistic glossing ---
+\usepackage{gb4e}
+\noautomath % Prevent gb4e from interfering with math mode
+
+% --- Table packages ---
+\usepackage{booktabs}
+\usepackage{array}
+
+% --- Figure/caption tuning ---
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\footnotesize}
+\setbeamercolor{caption name}{fg=gray}
+
+% --- Metadata ---
+\title{The development of Subject-Drop in Small Language Models}
+\author{Thomas Morton}
+\date{October 22, 2025}
+\institute{Department of Psycholinguistics \\ LemN Lab Meeting}
+
+\begin{document}
+
+% Title slide
+\begin{frame}[fragile]
+  \titlepage
+\end{frame}
+
+% Opening Statement
+\begin{frame}[fragile]
+  \frametitle{Opening Statement}
+  \centering
+  \Large
+
+  \vspace{1em}
+
+  I'm interested in learning how humans learn Language using the input available to them
+
+  \vspace{0.8em}
+
+  Asking such questions of human children can be incredibly resource and time intensive, if not unethical
+
+  \vspace{0.8em}
+
+  My work centers on using Small Language Models as candidate models to investigate human Language learning
+\end{frame}
+
+% Roadmap
+\begin{frame}[fragile]
+  \frametitle{Roadmap}
+
+  \textbf{Our Journey Today:}
+
+  \begin{enumerate}
+    \item \textbf{The Phenomenon}: Cross-linguistic variation in null subjects
+    \item \textbf{The Learning Problem}: How children acquire this from limited input
+    \item \textbf{40 Years of Theory}: The search for learning evidence
+    \item \textbf{The Impasse}: Why we can't test these theories on children
+    \item \textbf{The Solution}: Small Language Models as experimental systems
+  \end{enumerate}
+
+  \vspace{0.5em}
+  \textbf{Goal:} Understand what evidence children might use by testing what evidence models \emph{can} use.
+\end{frame}
+
+% ============================================================================
+% ACT 1: THE PHENOMENON & THE PROBLEM
+% ============================================================================
+
+\section{Act 1: The Phenomenon \& The Problem}
+
+\begin{frame}[fragile]
+  \frametitle{The Phenomenon: Languages Differ}
+
+  Some languages allow subjects to be silent. Others don't.
+
+  \vspace{0.5em}
+
+  \begin{exe}
+  \ex \emph{Italian (Consistent Null-Subject Language)}
+  \gll $\varnothing$ Parla italiano.\\
+  \textsc{3sg} speaks Italian\\
+  \glt `(She) speaks Italian.'
+  \end{exe}
+
+  \vspace{0.5em}
+
+  \begin{exe}
+  \ex \emph{English (Non-Null-Subject Language)}
+  \gll * $\varnothing$ Speaks Italian.\\
+  {} \textsc{3sg} speaks Italian\\
+  \glt (Intended: `She speaks Italian.')
+  \end{exe}
+
+  \vspace{0.5em}
+
+  How do children figure out which type of language they're learning?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Null Subject Parameter}
+
+  \textbf{Definition:} A parametric difference distinguishing languages that permit referential subjects to be phonologically null (pro-drop languages) from those that require overt subjects \parencite{Chomsky1981-bf, Rizzi1982-vy}.
+
+  \vspace{0.3em}
+
+  \textbf{Italian allows both forms:}
+
+  \begin{exe}
+  \ex
+  \begin{xlist}
+  \ex \gll Lei parla italiano.\\
+  she speaks Italian\\
+  \glt `She speaks Italian.'
+  \ex \gll $\varnothing$ Parla italiano.\\
+  \textsc{3sg.fem} speaks Italian\\
+  \glt `(She) speaks Italian.'
+  \end{xlist}
+  \end{exe}
+
+  \vspace{0.3em}
+
+  \textbf{English requires overt subjects:}
+
+  \begin{exe}
+  \ex
+  \begin{xlist}
+  \ex \gll She speaks Italian.\\
+  she.\textsc{3sg.fem} speaks Italian\\
+  \glt `She speaks Italian.'
+  \ex \gll * $\varnothing$ Speaks Italian.\\
+  {} speaks Italian\\
+  \glt (Intended: `She speaks Italian.')
+  \end{xlist}
+  \end{exe}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Plato's Problem}
+
+  \textbf{The Poverty of the Stimulus:} How do children acquire grammatical knowledge that goes beyond their linguistic input?
+
+  \vspace{0.5em}
+
+  \textbf{The Core Challenge:}
+  \begin{itemize}
+    \item Children are only exposed to \emph{positive evidence} (grammatical utterances)
+    \item They receive no \emph{negative evidence} (corrections telling them what's ungrammatical)
+    \item Yet they converge on adult grammars that distinguish grammatical from ungrammatical structures
+    \item How do learners avoid overgeneralization without negative feedback?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Acquisition Challenge}
+
+  \textbf{The Empirical Pattern \parencite{Hyams1986-ae, Valian1991-pa}:}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item \textbf{English-speaking children} initially produce null subjects at $\sim$30\% rate
+    \begin{itemize}
+      \item e.g., ``Want cookie'', ``Goes there''
+    \end{itemize}
+    \item \textbf{Italian-speaking children} produce null subjects at $\sim$70\% rate
+    \begin{itemize}
+      \item Matches adult Italian usage
+    \end{itemize}
+    \item \textbf{Adult English} prohibits null subjects entirely
+    \item \textbf{No direct negative evidence} to correct English children
+  \end{itemize}
+
+  \vspace{0.4em}
+
+  \textbf{The Central Question:} What positive evidence in English input causes children to stop dropping subjects?
+\end{frame}
+
+% ============================================================================
+% ACT 2: THE SEARCH FOR EVIDENCE
+% ============================================================================
+
+\section{Act 2: The Search for Evidence}
+
+\begin{frame}[fragile]
+  \frametitle{The Elegant Beginning: One Parameter, Many Properties}
+
+  \textbf{The Chomsky-Rizzi Cluster (1981-1982)}
+
+  \vspace{0.3em}
+
+  \textbf{The Elegant Solution \parencite{Chomsky1981-bf, Rizzi1982-pa}:}
+
+  Languages vary along discrete \textbf{parameters}—binary switches in Universal Grammar.
+
+  \vspace{0.3em}
+
+  \textbf{The Null Subject Parameter:}
+  \begin{itemize}
+    \item [\textsc{+nsp}]: Allow null subjects (Italian, Spanish, Greek)
+    \item [\textsc{-nsp}]: Require overt subjects (English, French)
+  \end{itemize}
+
+  \vspace{0.4em}
+
+  \textbf{The Clustering Innovation:}
+  \begin{itemize}
+    \item Setting one parameter explains \textbf{four} correlated properties
+    \item Child can learn from \emph{any} observable property
+    \item Deduces non-observable properties automatically
+    \item Solves Plato's Problem: Abstract knowledge from limited input
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Chomsky-Rizzi Cluster}
+
+  \textbf{The Cluster Hypothesis} \parencite{Chomsky1981-bf, Rizzi1982-vy}
+
+  \vspace{0.3em}
+
+  If a language permits null subjects [\textsc{+nsp}], it should also exhibit:
+
+  \begin{enumerate}
+    \item \textbf{Null referential subjects} in finite clauses
+    \item \textbf{Free subject inversion} in declaratives
+    \item \textbf{Absence of complementizer-trace effects}
+    \item \textbf{Rich verbal agreement} morphology
+  \end{enumerate}
+
+  \vspace{0.4em}
+
+  \textbf{The Learning Advantage:} A child could detect \emph{any} of these properties and deduce the others—even those not directly observable in typical input!
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Cluster Properties: Illustrations}
+
+  \textbf{Property 2: Free Subject Inversion}
+
+  \begin{exe}
+  \ex \emph{Italian}
+  \gll Ha telefonato Maria.\\
+  has called Maria\\
+  \glt `Maria called.'
+  \end{exe}
+
+  \begin{exe}
+  \ex \emph{English}
+  \gll * Called Maria.\\
+  {} called Maria\\
+  \glt (Intended: `Maria called.')
+  \end{exe}
+
+  \vspace{0.4em}
+
+  \textbf{Property 3: That-Trace Effects}
+
+  \begin{exe}
+  \ex \emph{English}
+  \gll * Who$_i$ did you say that t$_i$ called?\\
+  {} who did you.\textsc{2sg} say that {} called\\
+  \glt (Intended: `Who did you say called?')
+  \end{exe}
+
+  \begin{exe}
+  \ex \emph{Italian}
+  \gll Chi$_i$ hai detto che t$_i$ ha telefonato?\\
+  who have.\textsc{2sg} said that {} has called\\
+  \glt `Who did you say called?'
+  \end{exe}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Deductive Power}
+
+  \textbf{Why the cluster matters for acquisition:}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item Child doesn't need to hear subjectless sentences directly
+    \item Could learn from \emph{any} property in the cluster
+    \item Example: That-trace effects are rare in child-directed speech
+    \item But if they're in the cluster, child could deduce them from observing free inversion
+    \item Solves Plato's Problem: Abstract knowledge from limited input
+  \end{itemize}
+
+  \vspace{0.4em}
+
+  \textbf{Theoretical Elegance:} One parameter, multiple deducible properties, minimal input requirements.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The First Crack: Empirical Reality}
+
+  \textbf{Gilligan's Cross-Linguistic Test (1989)}
+
+  \vspace{0.3em}
+
+  \textbf{The Empirical Test:} Gilligan tested the Chomsky-Rizzi cluster across 100 languages \parencite{Gilligan1989-ww}.
+
+  \vspace{0.3em}
+
+  \textbf{Expected:} Bidirectional correlations among all four properties.
+
+  \vspace{0.3em}
+
+  \textbf{Predicted correlations that FAILED:}
+  \begin{itemize}
+    \item Null subjects $\not\leftrightarrow$ rich agreement
+    \item Null subjects $\not\leftrightarrow$ free inversion
+    \item Null subjects $\not\leftrightarrow$ complementizer-trace violations
+    \item Rich agreement $\not\leftrightarrow$ free inversion
+    \item Rich agreement $\not\leftrightarrow$ complementizer-trace violations
+    \item Free inversion $\not\leftrightarrow$ complementizer-trace violations
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{What Gilligan found:} Only one-way statistical associations, mostly pointing to expletives.
+
+  \vspace{0.3em}
+
+  \textbf{The Implication:} The elegant cluster doesn't exist. Languages can mix and match properties.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Gilligan's Four-Way Typology}
+
+  \textbf{Reality is messier than theory predicted:}
+
+  \vspace{0.3em}
+
+  \begin{small}
+  \begin{tabular}{llll}
+  \textbf{Type} & \textbf{Null Subjects} & \textbf{Null Expletives} & \textbf{Examples} \\
+  \hline
+  CNSL & Yes (consistent) & Yes & Italian, Spanish, Greek \\
+  PNSL & Yes (partial) & Yes & Brazilian Portuguese, Finnish \\
+  SNSL & Yes (semi) & No & Icelandic, Russian \\
+  NNSL & No & No & English, French \\
+  \end{tabular}
+  \end{small}
+
+  \vspace{0.3em}
+
+  \textbf{Key Findings:}
+  \begin{itemize}
+    \item Languages don't cluster cleanly into two types
+    \item Properties vary independently
+    \item Expletives emerge as the only reliable predictor
+    \item The learning problem is harder than we thought
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Pivot: Multiple Evidence Types}
+
+  \textbf{After the cluster failed, researchers proposed different evidence sources}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evidence Type 1: Expletives (Hyams 1989)}
+
+  \textbf{The AG/PRO Parameter:} Children start with pro-drop as default \parencite{Hyams1986-ae, Hyams1989-mu}
+
+  \vspace{0.3em}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Key insight: Reverse the learning problem—explain how children STOP dropping subjects
+  \end{beamercolorbox}
+
+  \vspace{0.3em}
+
+  \textbf{Trigger:} Expletive pronouns signal [\textsc{-nsp}]
+
+  \ex. \emph{English (expletive required)}
+  \a. \gll It rains.\\
+  \textsc{expl} rains\\
+  \glt `It rains.'
+  \b. \gll There is a book.\\
+  \textsc{expl} is a book\\
+  \glt `There is a book.'
+
+  \ex. \emph{Italian (expletives ungrammatical)}
+  \a. \gll * Esso piove.\\
+  it rains\\
+  \glt (Intended: `It rains.')
+  \b. \gll Piove.\\
+  rains\\
+  \glt `It rains.'
+
+  \vspace{0.2em}
+
+  \textbf{Learning Implication:} Presence of \emph{it}/\emph{there} in English input signals that subjects must be phonologically realized.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Trigger Evidence Type 2: Overt Pronouns}
+
+  \ex. \textbf{Avoid Pronoun Principle} \parencite{Chomsky1981-bf}\\
+  Use the least explicit referential form licensed by grammar.
+
+  \vspace{0.2em}
+
+  \textbf{Prediction:} In [\textsc{+nsp}] languages, overt pronouns are marked (emphatic/contrastive).
+
+  \vspace{0.2em}
+
+  \ex. \emph{Italian (neutral discourse)}
+  \a. \gll Maria ha telefonato. $\varnothing$ Arriva domani.\\
+  Maria has called {} arrives tomorrow\\
+  \glt `Maria called. (She) arrives tomorrow.'
+
+  \vspace{0.2em}
+
+  \ex. \emph{English (neutral discourse)}
+  \a. \gll Maria called. She arrives tomorrow.\\
+  Maria called she.\textsc{3sg.fem} arrives tomorrow\\
+  \glt `Maria called. She arrives tomorrow.'
+
+  \vspace{0.2em}
+
+  \textbf{Learning Implication:} English systematically uses overt pronouns in neutral contexts where Italian would drop them. This signals [\textsc{-nsp}].
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evidence Type 2: Morphological Richness}
+
+  \textbf{Morphological Uniformity Hypothesis:} Null subjects require either maximally rich or maximally poor agreement \parencite{Jaeggli1989-wh}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item Rich agreement: Italian, Spanish (allow null subjects)
+    \item Poor agreement: Chinese, Japanese (allow null subjects)
+    \item Mixed paradigms: English, French (require overt subjects)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evidence Type 3: Statistical Patterns}
+
+  \textbf{Statistical Learning Hypothesis:} Children track frequency of overt subjects in input \parencite{Valian1991-pa}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item Italian children hear subjects only ~30\% of the time
+    \item English children hear subjects ~70\% of the time
+    \item Children could detect this distributional difference
+    \item No need for abstract syntactic features
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evidence Type 4: Multiple Cues}
+
+  \textbf{Variational Learning Model:} Children use unambiguous morphological forms as cues \parencite{Yang2004-wk, Legate2003-vh}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item Children maintain competing grammars
+    \item Unambiguous forms push toward correct grammar
+    \item English: "Is the cat sleeping?" (expletive needed) → [\textsc{-nsp}]
+    \item Spanish: unique verb forms identify subject → [\textsc{+nsp}]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Evidence Landscape}
+
+  \textbf{Multiple competing theories emerged:}
+
+  \vspace{0.3em}
+
+  \begin{small}
+  \begin{tabular}{p{3cm}p{5cm}p{3cm}}
+  \textbf{Evidence Type} & \textbf{Description} & \textbf{Key Proponents} \\
+  \hline
+  Lexical Items & Expletives, overt pronouns & Hyams \\
+  \hline
+  Morphology & Paradigm uniformity, syncretism & Jaeggli \& Safir \\
+  \hline
+  Input Frequency & Statistical distribution of subjects & Valian \\
+  \hline
+  Multiple Cues & Unambiguous morphological forms & Yang, Legate \\
+  \hline
+  Null Objects & Presence/absence patterns & Wang et al. \\
+  \hline
+  Verb Finiteness & Correlation with non-finite verbs & Bromberg \& Wexler \\
+  \end{tabular}
+  \end{small}
+
+  \vspace{0.3em}
+
+  \textbf{The Problem:} Each theory claims different evidence is critical. How do we test them?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Modern Synthesis: Everything Matters}
+
+  \textbf{Contemporary approaches integrate multiple evidence sources}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{A Richer Typology}
+
+  The binary view ([\textpm nsp]) is insufficient. Cross-linguistic evidence reveals \textbf{four distinct types} \parencite{Bertolino2024-xf, Roberts2021-ia}:
+
+  \vspace{0.3em}
+
+  \begin{enumerate}
+  \item \textbf{Consistent NSLs (CNSLs)}: Italian, Spanish, Greek
+  \item \textbf{Partial NSLs (PNSLs)}: Brazilian Portuguese, Finnish
+  \item \textbf{Semi NSLs (SNSLs)}: German, Yiddish, Kriyol
+  \item \textbf{Non-NSLs (NNSLs)}: English, French
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \begin{small}
+  \begin{tabular}{lcccc}
+  \textbf{Type} & \textbf{Main 3SG} & \textbf{Embed. 3SG} & \textbf{Generic} & \textbf{Expletive} \\
+  \hline
+  CNSL & null & null & overt & null \\
+  PNSL & overt & null & null & overt \\
+  SNSL & overt & overt & overt & null \\
+  NNSL & overt & overt & overt & overt \\
+  \end{tabular}
+  \end{small}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Key Diagnostic: Generic Null Subjects}
+
+  Generic null subjects (impersonals) distinguish PNSLs from CNSLs:
+
+  \vspace{0.2em}
+
+  \ex. \emph{Brazilian Portuguese (PNSL)}
+  \a. \gll $\varnothing$ N\~ao pode andar sem m\'ascara.\\
+  {} not can.\textsc{3sg} walk without mask\\
+  \glt `One cannot walk without a mask.'
+
+  \vspace{0.2em}
+
+  \ex. \emph{European Portuguese (CNSL)}
+  \a. \gll $\varnothing$ N\~ao pode andar sem m\'ascara.\\
+  {} not can.\textsc{3sg} walk without mask\\
+  \glt `\{She/He/*One\} cannot walk without a mask.' (definite only)
+
+  \vspace{0.3em}
+
+  \textbf{The Problem:} Finnish has rich agreement (like Italian) but patterns as PNSL, not CNSL.
+
+  \vspace{0.2em}
+
+  \textbf{Implication:} Rich agreement alone cannot predict null subject distribution. The simple parameter story breaks down.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Integrated Approaches}
+
+  \textbf{New Focus:} Verbal paradigm structure as the licensing mechanism
+
+  \vspace{0.3em}
+
+  \textbf{Jaeggli \& Safir (1989): Morphological Uniformity Principle}
+  \begin{itemize}
+    \item Null subjects licensed in \emph{uniformly} inflected OR uninflected paradigms
+    \item Uniform = all forms distinct OR all forms identical
+    \item English is ``mixed'' (talk/talks) → blocks pro-drop
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Hyams (1991): Reanalysis Account}
+  \begin{itemize}
+    \item English children initially misanalyze paradigm as uniform
+    \item Once they acquire full paradigm (I talk vs. he talks), they realize it's mixed
+    \item Reanalysis blocks null subjects
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Problems:}
+  \begin{itemize}
+    \item Finnish: rich agreement, but PNSL (not CNSL)
+    \item Kriyol: uniform paradigm (fala for all persons), but only allows expletive drop (SNSL)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Alternative Perspectives (1991-1995)}
+
+  Three challenges to the single-parameter view:
+
+  \vspace{0.3em}
+
+  \textbf{1. Input Frequency \parencite{Valian1991-pa}}
+  \begin{itemize}
+    \item English children drop subjects at 30\%, Italian at 70\%
+    \item Mirrors adult input frequencies
+    \item Suggests statistical sensitivity, not mis-set parameter
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{2. Null Objects \parencite{Wang1992-ty}}
+  \begin{itemize}
+    \item Chinese children: drop subjects (70\%) AND objects (22.5\%)
+    \item English children: drop subjects (30\%) but NOT objects (3.75\%)
+    \item Different mechanisms: discourse-topic drop vs. pro-drop
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{3. Optional Infinitive Stage \parencite{Bromberg1995-vs, Rizzi1994-tm}}
+  \begin{itemize}
+    \item Many child null subjects occur with non-finite verbs
+    \item These may be PRO (infinitival subjects), not pro-drop
+    \item Problem is about Tense acquisition, not NSP
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Modern Synthesis (2000s-Present)}
+
+  \textbf{Contemporary approaches integrate multiple factors:}
+
+  \vspace{0.3em}
+
+  \textbf{1. Features \& Economy \parencite{Biberauer2017-ki, Roberts2021-ia}}
+  \begin{itemize}
+    \item BCC (Borer-Chomsky Conjecture): Parameters = features on functional heads
+    \item Learning path: NONE → ALL → SOME
+    \item Child is conservative: only posits features for departures from Saussurean arbitrariness
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{2. Statistical Learning \parencite{Yang2004-wk, Legate2007-wq}}
+  \begin{itemize}
+    \item Variational model: children entertain multiple grammars with weights
+    \item Weights adjusted based on input fit
+    \item Gradual decline of null subjects as adult grammar outcompetes child grammar
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Key Insight:} Evidence = statistical prevalence of \emph{unambiguous} morphological cues (e.g., past tense -ed, agreement is/am/are)
+\end{frame}
+
+% ============================================================================
+% ACT 3: THE IMPASSE
+% ============================================================================
+
+\section{Act 3: The Impasse}
+
+\begin{frame}[fragile]
+  \frametitle{40 Years of Proposed Evidence}
+
+  \begin{small}
+  \begin{tabular}{p{3cm}p{5cm}p{3cm}}
+  \textbf{Evidence Type} & \textbf{Description} & \textbf{Proponents} \\
+  \hline
+  Abstract Syntax & Cluster properties (inversion, that-trace) & Chomsky, Rizzi \\
+  \hline
+  Lexical Items & Expletives, overt pronouns & Hyams \\
+  \hline
+  Morphology & Paradigm uniformity, syncretism & Jaeggli \& Safir \\
+  \hline
+  Input Frequency & Statistical distribution of overt subjects & Valian \\
+  \hline
+  Null Objects & Presence/absence in child speech & Wang et al. \\
+  \hline
+  Verb Finiteness & Correlation with non-finite verbs & Bromberg \& Wexler \\
+  \hline
+  Statistical Cues & Unambiguous morphological forms & Yang, Legate \\
+  \end{tabular}
+  \end{small}
+
+  \vspace{0.3em}
+
+  \textbf{The Landscape:} Multiple competing theories, each proposing different evidence sources.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Impasse: Why We're Stuck}
+
+  \textbf{The Fundamental Problem}
+
+  \vspace{0.3em}
+
+  \textbf{We cannot test these competing theories on human children.}
+
+  \vspace{0.3em}
+
+  \textbf{What we would need:}
+  \begin{itemize}
+    \item \textbf{Ablation studies}: Remove specific evidence types from input
+    \begin{itemize}
+      \item Remove all expletives: Does NSP learning fail?
+      \item Flatten morphological paradigm: Can children still learn?
+    \end{itemize}
+    \item \textbf{Isolation studies}: Provide \emph{only} one evidence type
+    \begin{itemize}
+      \item Only expletives, no morphology: Is this sufficient?
+      \item Only frequency patterns, no lexical cues: What happens?
+    \end{itemize}
+    \item \textbf{Controlled input}: Precise manipulation of statistical properties
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Why we can't do this:}
+  \begin{itemize}
+    \item Unethical to deprive children of linguistic input
+    \item Impractical to control all input sources
+    \item Observational data is confounded—all evidence types co-occur naturally
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{What We Need to Break the Impasse}
+
+  \textbf{Requirements for testing the competing theories:}
+
+  \vspace{0.3em}
+
+  \begin{enumerate}
+    \item \textbf{Systematic isolation}: Test each evidence type independently
+    \begin{itemize}
+      \item Which evidence is \emph{sufficient} alone?
+    \end{itemize}
+
+    \item \textbf{Systematic ablation}: Remove each evidence type
+    \begin{itemize}
+      \item Which evidence is \emph{necessary}?
+    \end{itemize}
+
+    \item \textbf{Precise control}: Manipulate statistical properties
+    \begin{itemize}
+      \item How much input of type X is required?
+    \end{itemize}
+
+    \item \textbf{Transparent inspection}: Examine internal representations
+    \begin{itemize}
+      \item What patterns are actually learned?
+    \end{itemize}
+
+    \item \textbf{Developmental trajectory}: Track learning over time
+    \begin{itemize}
+      \item Do learners show child-like intermediate stages?
+    \end{itemize}
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \textbf{The Gap:} No way to do this with human children.
+\end{frame}
+
+% ============================================================================
+% PART II: PROPOSED RESEARCH DESIGN
+% ============================================================================
+
+\section{Part II: The Solution}
+
+\begin{frame}[fragile]
+  \frametitle{Small Language Models as Experimental Systems}
+
+  \textbf{Key Properties of SLMs:}
+
+  \vspace{0.3em}
+
+  \begin{itemize}
+    \item \textbf{Learn from distributional patterns} in text (like children)
+    \item \textbf{No explicit grammatical rules}—must induce structure from input
+    \item \textbf{Can control training input precisely}
+    \item \textbf{Can run ablation \& isolation experiments}
+    \item \textbf{Transparent representations} we can analyze
+    \item \textbf{Fast training}—can test many conditions
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{As Candidate Models:}
+  \begin{itemize}
+    \item Not claiming SLMs = children
+    \item But: If evidence type X is sufficient for SLMs, it's a \emph{candidate} for children
+    \item If evidence type Y is necessary for SLMs, worth investigating in children
+    \item Tests theoretical sufficiency/necessity claims
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{The Opportunity:} Test 40 years of theories empirically.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Chapter 1: Research Questions}
+
+  \textbf{Core Questions:}
+
+  \vspace{0.3em}
+
+  \begin{enumerate}
+    \item What information contributes to learning subject drop?
+
+    \item How much does direct vs. indirect evidence matter?
+
+    \item What is the most important indirect evidence?
+
+    \item How do statistical learners solve problems without negative evidence?
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \textbf{Approach:} Controlled rearing experiments with systematic ablations
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Full Experimental Design Overview}
+
+  \textbf{Three Study Types:}
+
+  \vspace{0.3em}
+
+  \textbf{1. Single Ablations} (6 manipulations)
+  \begin{itemize}
+    \item Remove expletives
+    \item Impoverish determiners
+    \item Remove articles
+    \item Lemmatize verbs
+    \item Remove pronouns
+    \item Remove tense/aspect marking
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{2. Continuous Sweeps}
+  \begin{itemize}
+    \item Pronoun:null subject ratio (100:0 → 0:100)
+    \item Determiner richness gradients
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{3. Combined Ablations}
+  \begin{itemize}
+    \item All indirect evidence removed
+    \item All direct + indirect removed
+    \item Minimal evidence baseline
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Cross-Linguistic \& Cross-Architecture Design}
+
+  \textbf{Languages:}
+  \begin{itemize}
+    \item English (Non-Null-Subject Language)
+    \item Italian (Consistent Null-Subject Language)
+    \item Counterfactuals: English + nulls, Italian - nulls
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Architectures:}
+  \begin{itemize}
+    \item GPT-2 (Small, Medium, Large, XL)
+    \item LSTM
+    \item BERT
+    \item n-gram baselines
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Robustness:} Multiple random initializations per condition
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evaluation Framework}
+
+  \textbf{Behavioral Measures:}
+  \begin{itemize}
+    \item Grammaticality judgments (minimal pairs)
+    \item Production preferences (forced choice)
+    \item Developmental trajectories (learning curves)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Representational Analyses:}
+  \begin{itemize}
+    \item Probing classifiers
+    \item Similarity structure
+    \item Transfer learning
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Statistical Metrics:}
+  \begin{itemize}
+    \item Age of Acquisition (AoA50, AoA75)
+    \item Effect sizes (Cohen's d)
+    \item Learning curve slopes
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dataset Specifications}
+
+  \textbf{Training Corpus:} BabyLM 90M words
+  \begin{itemize}
+    \item Child-directed speech weighted
+    \item Open subtitles
+    \item Wikipedia (simple)
+    \item Children's books
+    \item QA datasets
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Evaluation Sets:}
+  \begin{itemize}
+    \item Minimal pairs (null vs. overt subjects)
+    \item Core contrasts: Person/Number, Control, Expletives, Topic shift
+    \item Processing manipulations: Complexity, Negation
+    \item Item groups: Expletives, Conjunction, Long-distance binding
+  \end{itemize}
+\end{frame}
+
+% ============================================================================
+% PART III: PILOT EVIDENCE
+% ============================================================================
+
+\section{Part III: Pilot Evidence}
+
+\begin{frame}[fragile]
+  \frametitle{Pilot Study Overview}
+
+  \textbf{What We've Completed:}
+  \begin{itemize}
+    \item \textbf{Language:} English only
+    \item \textbf{Architecture:} GPT-2 Small (124M parameters)
+    \item \textbf{Conditions:} Baseline + 5 ablations
+    \item \textbf{Corpus:} BabyLM 90M words
+    \item \textbf{Replications:} 3 random seeds per condition
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Goal:} Demonstrate that SLMs can learn null subject distributions and that ablations reveal evidence hierarchies
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Materials: BabyLM Dataset}
+
+  \textbf{Corpus Composition} (90M words total):
+  \begin{itemize}
+    \item Child-directed speech (CHILDES)
+    \item Open Subtitles
+    \item Simple Wikipedia
+    \item Children's books (Project Gutenberg)
+    \item QA datasets
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Why BabyLM?}
+  \begin{itemize}
+    \item Approximates child input scale
+    \item Weighted toward child-directed speech
+    \item Standard benchmark for developmental modeling
+    \item Enables comparison across studies
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evaluation Stimuli: Minimal Pairs}
+
+  \textbf{Design:} Null vs. Overt subject minimal pairs
+
+  \vspace{0.3em}
+
+  \textbf{Core Contrasts:}
+  \begin{itemize}
+    \item \textbf{Person/Number:} ``She walks'' vs. ``*Walks''
+    \item \textbf{Control Contexts:} ``Maria wants to leave'' vs. ``*Maria wants PRO leave''
+    \item \textbf{Expletives:} ``It rains'' vs. ``*Rains''
+    \item \textbf{Topic Shift:} Overt pronoun required for referent switch
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Item Groups:}
+  \begin{itemize}
+    \item Expletive constructions
+    \item Long-distance binding
+    \item Conjunction structures
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Statistical Approach}
+
+  \textbf{Outcome Measure:} Binary preference for overt subject
+
+  \vspace{0.3em}
+
+  \textbf{Analysis:}
+  \begin{itemize}
+    \item Logistic GLMMs with random effects for items and runs
+    \item Fixed effects: Epoch, Condition, Form, Negation, Complexity
+    \item Learning curves fit with logistic growth models
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Age of Acquisition Metrics:}
+  \begin{itemize}
+    \item \textbf{AoA50:} Epoch at 50\% overt preference
+    \item \textbf{AoA75:} Epoch at 75\% overt preference
+    \item Measured via logistic curve fitting
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experimental Conditions}
+
+  \begin{small}
+  \begin{tabular}{lll}
+  \textbf{Condition} & \textbf{Manipulation} & \textbf{Theory Tested} \\
+  \hline
+  0. Baseline & No manipulation & Control \\
+  1. Remove Expletives & Remove \emph{it}/\emph{there} & Yang (2002) \\
+  2. Impoverish Determiners & Reduce D-features & Duguine (2017) \\
+  3. Remove Articles & Remove \emph{a}/\emph{the} & Duguine (2017) \\
+  4. Lemmatize Verbs & Remove inflection & Hyams (1991) \\
+  5. Remove Pronouns & Remove direct evidence & Hyams (1989) \\
+  \end{tabular}
+  \end{small}
+
+  \vspace{0.3em}
+
+  \textbf{Key Prediction:} Each ablation should delay or impair learning if that evidence type is necessary.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Baseline Model: Developmental Trajectory}
+
+  \textbf{Key Findings:}
+  \begin{itemize}
+    \item \textbf{Initial state:} 63.4\% null subjects (like Italian children)
+    \item \textbf{Age of Acquisition:} AoA50 = 727 epochs
+    \item \textbf{End state:} 69.6\% overt subjects (adult-like English)
+    \item \textbf{Trajectory:} Smooth transition from null-preferring to overt-preferring
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Models recapitulate child development—start null, shift to overt
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experiment 1: Remove Expletives}
+
+  \textbf{Manipulation:} Remove all \emph{it} and \emph{there} expletives from training
+
+  \vspace{0.3em}
+
+  \textbf{Prediction (Yang 2002):} Should significantly delay learning
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item AoA50 = 767 epochs (+39 compared to baseline)
+    \item No difference in end-state preference
+    \item Learning trajectory nearly identical
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Expletives provide minimal benefit—challenges Yang's strong claim
+
+  \vspace{0.3em}
+
+  \textbf{Effect Size:} Small (Cohen's d $\approx$ 0.2)
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experiment 2: Impoverish Determiners}
+
+  \textbf{Manipulation:} Reduce determiner paradigm richness (test Duguine's D-feature theory)
+
+  \vspace{0.3em}
+
+  \textbf{Prediction (Duguine 2017):} Should substantially delay learning
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item AoA50 = 3400 epochs (+2672 compared to baseline!)
+    \item \textbf{Strongest final preference} (75\% overt)
+    \item Possible ``grokking''-like sudden transition
+    \item By far the largest effect
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Determiners provide crucial learning shortcuts—massive delay without them
+
+  \vspace{0.3em}
+
+  \textbf{Effect Size:} Very large (Cohen's d $\approx$ 1.8)
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experiment 3: Remove Articles}
+
+  \textbf{Manipulation:} Remove all articles (\emph{a}, \emph{the}) from training
+
+  \vspace{0.3em}
+
+  \textbf{Prediction (Duguine 2017):} Should delay learning (but less than impoverishing determiners)
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item AoA50 = 807 epochs (+80 compared to baseline)
+    \item Stronger null preference initially
+    \item Lower overt preference finally (65\% vs. 70\%)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Articles matter approximately 2× more than expletives
+
+  \vspace{0.3em}
+
+  \textbf{Effect Size:} Medium (Cohen's d $\approx$ 0.5)
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experiment 4: Lemmatize Verbs}
+
+  \textbf{Manipulation:} Remove all verbal inflection (test Hyams' morphology hypothesis)
+
+  \vspace{0.3em}
+
+  \textbf{Prediction (Hyams 1991):} Should delay learning—morphology licenses pro-drop
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item AoA50 = 705 epochs (\textbf{-22 compared to baseline!})
+    \item \textbf{Faster} learning, not slower
+    \item Contradicts morphological uniformity theory
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Morphology \emph{interferes} with learning, doesn't help—opposite of prediction
+
+  \vspace{0.3em}
+
+  \textbf{Effect Size:} Small negative (Cohen's d $\approx$ -0.2)
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Experiment 5: Remove Subject Pronouns}
+
+  \textbf{Manipulation:} Remove all subject pronouns (direct evidence for overt subjects)
+
+  \vspace{0.3em}
+
+  \textbf{Prediction (Hyams 1989):} Should be catastrophic—direct evidence is necessary
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item AoA50 = 774 epochs (unstable—barely crosses 50\%)
+    \item \textbf{Final preference: 54.4\% overt} (near chance!)
+    \item Weakest learning of all conditions
+    \item Never reaches adult-like performance
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Direct evidence is \textbf{necessary}—without pronouns, models barely learn
+
+  \vspace{0.3em}
+
+  \textbf{Effect Size:} Very large (Cohen's d $\approx$ 2.1)
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Cross-Model Comparison}
+
+  \textbf{Evidence Hierarchy (Ranked by AoA50):}
+
+  \vspace{0.3em}
+
+  \begin{enumerate}
+    \item \textbf{Remove Pronouns:} 774 epochs, 54\% final (NECESSARY)
+    \item \textbf{Impoverish Determiners:} 3400 epochs, 75\% final (CRITICAL SHORTCUT)
+    \item \textbf{Remove Articles:} 807 epochs, 65\% final (HELPFUL)
+    \item \textbf{Remove Expletives:} 767 epochs, 70\% final (MINIMAL)
+    \item \textbf{Baseline:} 727 epochs, 70\% final
+    \item \textbf{Lemmatize Verbs:} 705 epochs, 70\% final (INTERFERING)
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \textbf{Key Takeaway:} Clear hierarchy of evidence importance
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Processing Effects: Negation}
+
+  \textbf{Prediction (Bloom 1990):} Processing difficulty → null subjects
+
+  \vspace{0.3em}
+
+  \textbf{Test:} Compare items with negation vs. without
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item Negation \textbf{increases} overt subject preference
+    \item Opposite of processing account prediction
+    \item Effect consistent across all models
+    \item \textbf{Effect size:} OR = 1.45 (95\% CI: 1.21-1.73)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Models don't show processing-driven omission—challenges Bloom's theory
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Processing Effects: Complexity}
+
+  \textbf{Test:} Long NPs, embedded clauses vs. simple contexts
+
+  \vspace{0.3em}
+
+  \textbf{Results:}
+  \begin{itemize}
+    \item \textbf{No consistent effect} of syntactic complexity
+    \item Some models show slight increase in overt, others no change
+    \item Effect much smaller than negation
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Interpretation:} Complexity doesn't drive subject omission in these models
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Universal Early Null Subject Stage}
+
+  \textbf{Key Finding:} ALL models start with null subject preference
+
+  \vspace{0.3em}
+
+  \textbf{Implications:}
+  \begin{itemize}
+    \item Despite training on English (non-null-subject language)
+    \item Regardless of which evidence types are available
+    \item Even when only overt subjects appear in training
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Two Possible Explanations:}
+  \begin{enumerate}
+    \item \textbf{Architecture bias:} Transformers prefer shorter sequences?
+    \item \textbf{Environmental regularity:} Null subjects are default until evidence accumulates?
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \textbf{Open Question:} Parallels Hyams' claim that children start pro-drop—but why?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Evidence Types: Hierarchy}
+
+  \textbf{Ranking by Impact:}
+
+  \vspace{0.3em}
+
+  \begin{small}
+  \begin{tabular}{lll}
+  \textbf{Evidence Type} & \textbf{Impact} & \textbf{AoA Delay} \\
+  \hline
+  Pronouns (direct) & CRITICAL & +47 (near failure) \\
+  Determiners (D-features) & MAJOR SHORTCUT & +2672 epochs \\
+  Articles (subset of D) & HELPFUL & +80 epochs \\
+  Expletives (lexical) & MINIMAL & +39 epochs \\
+  Morphology (inflection) & INTERFERING & -22 epochs \\
+  \end{tabular}
+  \end{small}
+
+  \vspace{0.3em}
+
+  \textbf{Key Insights:}
+  \begin{itemize}
+    \item Direct evidence necessary
+    \item D-features provide massive shortcuts
+    \item Morphology doesn't help (challenges Hyams, Jaeggli \& Safir)
+    \item Expletives barely matter (challenges Yang)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Theoretical Implications}
+
+  \textbf{Challenged:}
+  \begin{itemize}
+    \item Yang (2002): Expletives as primary trigger
+    \item Hyams (1991): Morphological uniformity
+    \item Jaeggli \& Safir (1989): Paradigm structure
+    \item Bloom (1990): Processing accounts
+    \item Simple binary parameter models
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Supported:}
+  \begin{itemize}
+    \item Hyams (1989): Direct evidence (pronouns) critical
+    \item Duguine (2017): D-feature/determiner importance
+    \item Gradual, statistical learning models (Yang 2002, Legate \& Yang 2007)
+    \item Multiple evidence types work together
+    \item Universal null-first stage
+  \end{itemize}
+\end{frame}
+
+% ============================================================================
+% PART IV: REMAINING WORK
+% ============================================================================
+
+\section{Part IV: Remaining Work}
+
+\begin{frame}[fragile]
+  \frametitle{Remaining Single Ablations}
+
+  \textbf{Completed (English):}
+  \begin{itemize}
+    \item[$\checkmark$] Determiners (impoverish)
+    \item[$\checkmark$] Articles (remove)
+    \item[$\checkmark$] Morphology (lemmatize)
+    \item[$\checkmark$] Pronouns (remove)
+    \item[$\checkmark$] Expletives (remove)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Still Needed:}
+  \begin{itemize}
+    \item[$\square$] Tense/aspect marking removal
+    \item[$\square$] Subject drop insertion (create English + nulls)
+    \item[$\square$] All ablations replicated in Italian
+    \item[$\square$] Counterfactual languages (English + nulls, Italian - nulls)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Remaining Continuous Sweeps}
+
+  \textbf{Planned Gradients:}
+
+  \vspace{0.3em}
+
+  \textbf{1. Pronoun:Null Ratio Sweep}
+  \begin{itemize}
+    \item 100:0 (all overt) → 70:30 → 50:50 → 30:70 → 0:100 (all null)
+    \item Expected: Sigmoidal learning curve with threshold
+    \item Tests: How much direct evidence is sufficient?
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{2. Determiner Richness Gradient}
+  \begin{itemize}
+    \item Full paradigm → Reduced → Minimal
+    \item Expected: Graded effect on learning speed
+    \item Tests: Monotonic or threshold effects?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Remaining Combined Ablations}
+
+  \textbf{Planned Combinations:}
+
+  \vspace{0.3em}
+
+  \begin{enumerate}
+    \item \textbf{All Indirect Evidence Removed}
+    \begin{itemize}
+      \item Remove expletives + articles + determiners + morphology
+      \item Keep only pronouns (direct evidence)
+      \item Test: Is direct evidence alone sufficient?
+    \end{itemize}
+
+    \item \textbf{All Direct + Indirect Removed}
+    \begin{itemize}
+      \item Remove everything
+      \item Test: Absolute floor performance
+    \end{itemize}
+
+    \item \textbf{Minimal Evidence Baseline}
+    \begin{itemize}
+      \item Minimal vocabulary, minimal structure
+      \item Test: What's the learning threshold?
+    \end{itemize}
+  \end{enumerate}
+
+  \vspace{0.3em}
+
+  \textbf{Key Question:} Do evidence types interact non-linearly?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Remaining Architectures}
+
+  \textbf{Completed:} GPT-2 Small (124M)
+
+  \vspace{0.3em}
+
+  \textbf{Planned:}
+  \begin{itemize}
+    \item GPT-2 Medium (355M)
+    \item GPT-2 Large (774M)
+    \item GPT-2 XL (1.5B)
+    \item LSTM (comparable parameters)
+    \item BERT (masked language model)
+    \item n-gram baselines (1-gram through 5-gram)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Key Questions:}
+  \begin{itemize}
+    \item Do larger models show different evidence sensitivity?
+    \item Do architecture differences (causal vs. masked) matter?
+    \item Are results general or GPT-2 specific?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Remaining Italian Studies}
+
+  \textbf{Critical Test:} Italian should show \emph{different} evidence hierarchy
+
+  \vspace{0.3em}
+
+  \textbf{Predictions:}
+  \begin{itemize}
+    \item Italian models should \emph{maintain} null preference
+    \item Evidence hierarchy should reverse or differ
+    \item Morphology might help in Italian (rich paradigm)
+    \item Pronouns less critical (null is target)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Status:} Corpus prepared, experiments planned
+\end{frame}
+
+% ============================================================================
+% PART V: SYNTHESIS
+% ============================================================================
+
+\section{Part V: Synthesis}
+
+\begin{frame}[fragile]
+  \frametitle{Empirical Contributions}
+
+  \textbf{This project will provide:}
+
+  \vspace{0.3em}
+
+  \textbf{1. First Systematic Test of 40 Years of Theories}
+  \begin{itemize}
+    \item Direct comparison of competing hypotheses
+    \item Quantified effect sizes for each evidence type
+    \item Dissociation of necessary vs. sufficient cues
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{2. Novel Findings from Pilot}
+  \begin{itemize}
+    \item Pronouns critical, determiners provide shortcuts
+    \item Morphology interferes (unexpected!)
+    \item Expletives have minimal impact
+    \item Universal null-first stage
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{3. Complete Evidence Map}
+  \begin{itemize}
+    \item Comprehensive catalog of evidence types
+    \item Interaction effects
+    \item Cross-linguistic validation
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Methodological Contributions}
+
+  \textbf{New Paradigm: Controlled Rearing}
+  \begin{itemize}
+    \item Systematic input manipulation
+    \item Developmental trajectory analysis
+    \item Ablation methodology for acquisition
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Reusable Framework}
+  \begin{itemize}
+    \item Code, data, and analysis pipeline open-sourced
+    \item Applicable to other acquisition phenomena
+    \item Template for theory testing with SLMs
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Bridges Modeling \& Theory}
+  \begin{itemize}
+    \item Connects formal theories to computational implementation
+    \item Tests learnability claims empirically
+    \item Informs both linguistics and AI
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Limitations \& Future Directions}
+
+  \textbf{Current Limitations:}
+  \begin{itemize}
+    \item Models learn from text only (children have multimodal input)
+    \item Batch training (children learn incrementally/online)
+    \item No interaction or feedback
+    \item Simplified language (children's input is richer)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Future Extensions:}
+  \begin{itemize}
+    \item Multimodal models (vision + language)
+    \item Interactive learning paradigms
+    \item Integration with child language corpora
+    \item Application to other parameters (word order, case, etc.)
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Key Point:} Despite limitations, this provides unprecedented empirical leverage on acquisition theories
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Broader Impact}
+
+  \textbf{For Linguistics:}
+  \begin{itemize}
+    \item Empirical grounding for 40 years of theory
+    \item New methodology for testing learnability
+    \item Constraints on future proposals
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{For AI \& NLP:}
+  \begin{itemize}
+    \item Understanding what information enables grammatical learning
+    \item Data efficiency insights
+    \item Curriculum design for language models
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{For Education \& Clinical Applications:}
+  \begin{itemize}
+    \item Which input features matter most for L2 learners?
+    \item Targeted interventions for language delay
+    \item Evidence-based language teaching
+  \end{itemize}
+
+  \vspace{0.3em}
+
+  \textbf{Core Message:} Understanding human language learning through computational experimentation
+\end{frame}
+
+% References
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography[heading=none]
+\end{frame}
+
+\end{document}

@@ -1,49 +1,28 @@
 # Preprocessing User Guide
 
-Complete guide to using the preprocessing pipeline for text corpus ablations.
+Complete guide to using linguistic ablations for corpus processing.
 
-## Table of Contents
+## Understanding Ablations
 
-1. [Quick Start](#quick-start)
-2. [Basic Usage](#basic-usage)
-3. [Available Ablations](#available-ablations)
-4. [Common Workflows](#common-workflows)
-5. [Performance Tuning](#performance-tuning)
-6. [Error Handling](#error-handling)
-7. [Provenance Tracking](#provenance-tracking)
+Linguistic ablations systematically remove or modify language features to test model learning. By creating controlled variations of training data, you can investigate which features models rely on and how they acquire linguistic knowledge.
 
-## Quick Start
+**Example research questions:**
+- Can models learn determiners without seeing "the", "a", or "an"?
+- How do models handle pronoun resolution without expletives?
+- Does morphological impoverishment affect grammar acquisition?
+
+## Basic Usage
+
+### Process a Corpus
 
 ```python
 from preprocessing.config import AblationConfig
 from preprocessing.base import AblationPipeline
 
-# Configure
 config = AblationConfig(
     type="remove_articles",
     input_path="data/raw/corpus/",
-    output_path="data/processed/corpus/",
-    seed=42
-)
-
-# Run
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-
-# Check results
-print(f"Processed: {manifest.metadata.total_files_processed} files")
-print(f"Modified: {manifest.metadata.total_items_ablated:,} items")
-```
-
-## Basic Usage
-
-### Process a Single File
-
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/raw/bnc_spoken.train",
-    output_path="data/processed/bnc_no_articles.train",
+    output_path="data/processed/",
     seed=42
 )
 
@@ -51,145 +30,155 @@ pipeline = AblationPipeline(config)
 manifest = pipeline.process_corpus()
 ```
 
-### Process a Directory
-
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/raw/corpus/",  # Directory
-    output_path="data/processed/corpus/",
-    seed=42
-)
-
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-```
-
-The pipeline will:
-1. Find all `*.train` files recursively
-2. Process each file with the ablation
-3. Maintain directory structure in output
-4. Generate a provenance manifest
+The pipeline:
+1. Finds all `.train` files in `input_path` (recursively)
+2. Applies the ablation to each file
+3. Writes output maintaining directory structure
+4. Generates a provenance manifest
 
 ### With Replacement Pool
 
+Maintain corpus size by backfilling with replacement text:
+
 ```python
 config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/train_90M/",
-    output_path="data/processed/exp1/",
-    replacement_pool_dir="data/raw/pool_10M/",  # Rebuild to original size
+    input_path="data/train_90M/",      # Main corpus
+    output_path="data/processed/",
+    replacement_pool_dir="data/pool_10M/",  # Replacement text
     seed=42
 )
-
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
 ```
+
+When articles are removed, the pipeline adds text from the pool to reach the original token count.
 
 ## Available Ablations
 
 ### remove_articles
-Removes determiners 'a', 'an', 'the' from text.
+
+Removes determiners: 'a', 'an', 'the'
 
 ```python
-# Input:  "The cat sat on a mat."
-# Output: "cat sat on mat."
+# Input:  "The cat sat on a mat near the window."
+# Output: "cat sat on mat near window."
 ```
 
-**Use case**: Test how models learn without explicit articles.
+**Use case**: Test how models learn determiner systems and noun phrase structure without explicit article exposure.
+
+**Configuration:**
+```python
+config = AblationConfig(type="remove_articles", ...)
+```
 
 ### remove_expletives
-Removes expletive (dummy) pronouns like non-referential "it".
+
+Removes non-referential pronouns (expletives)
 
 ```python
-# Input:  "It is raining. It seems nice."
-# Output: "is raining. seems nice."
+# Input:  "It is raining. It seems like a nice day."
+# Output: "is raining. seems like a nice day."
 ```
 
-**Use case**: Test pronoun function understanding.
+**Use case**: Test pronoun function understanding and subject requirement learning.
 
-**Advanced**: Supports coreference resolution (see [Advanced Usage](ADVANCED_USAGE.md)).
+**Simple mode (default):**
+```python
+config = AblationConfig(type="remove_expletives", ...)
+```
+
+**Advanced mode (with coreference resolution):**
+```python
+import spacy
+from preprocessing.ablations.remove_expletives import make_remove_expletives_with_coref
+from preprocessing.registry import AblationRegistry
+
+nlp_coref = spacy.load("en_core_web_sm")
+ablate_fn = make_remove_expletives_with_coref(nlp_coref)
+
+AblationRegistry.register("remove_expletives", ablate_fn, validator_fn)
+```
+
+See [Advanced Usage](ADVANCED_USAGE.md) for details on coreference resolution.
 
 ### impoverish_determiners
-Replaces all determiners with 'the'.
+
+Replaces all determiners with 'the'
 
 ```python
-# Input:  "A cat and an elephant."
-# Output: "the cat and the elephant."
+# Input:  "A cat and an elephant walked by."
+# Output: "the cat and the elephant walked by."
 ```
 
-**Use case**: Test morphological learning with impoverished paradigm.
+**Use case**: Test morphological learning with impoverished paradigms.
 
 ### lemmatize_verbs
-Reduces all verbs to base lemma form.
+
+Reduces verbs to base form
 
 ```python
 # Input:  "She was running quickly. He went home."
 # Output: "She be run quickly. He go home."
 ```
 
-**Use case**: Test verb morphology learning.
+**Use case**: Test verb inflection and tense learning.
 
 ### remove_subject_pronominals
-Removes pronouns functioning as subjects.
+
+Removes pronouns functioning as subjects
 
 ```python
 # Input:  "She likes cats. They are friendly."
 # Output: "likes cats. are friendly."
 ```
 
-**Use case**: Test subject-drop pattern learning.
+**Use case**: Test subject-drop pattern learning and null subject phenomena.
 
 ## Common Workflows
 
-### Workflow 1: Simple Ablation
+### Research Experiment
 
 ```python
-from preprocessing.config import AblationConfig
-from preprocessing.base import AblationPipeline
-
-config = AblationConfig(
+# 1. Create ablated training corpus
+train_config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/corpus/",
-    output_path="data/processed/no_articles/",
+    input_path="data/bnc_train/",
+    output_path="data/exp1_train/",
+    replacement_pool_dir="data/pool/",
     seed=42
 )
 
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-```
+pipeline = AblationPipeline(train_config)
+train_manifest = pipeline.process_corpus()
 
-### Workflow 2: With Validation
-
-```python
-config = AblationConfig(
+# 2. Create matching test set (no replacement pool)
+test_config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/corpus/",
-    output_path="data/processed/no_articles/",
-    seed=42,
-    skip_validation=False,  # Enable validation (default)
-    verbose=True  # See validation details
+    input_path="data/bnc_test/",
+    output_path="data/exp1_test/",
+    seed=42
 )
 
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
+pipeline = AblationPipeline(test_config)
+test_manifest = pipeline.process_corpus()
+
+# 3. Compare manifests
+print(f"Train: {train_manifest.metadata.total_items_ablated:,} items removed")
+print(f"Test:  {test_manifest.metadata.total_items_ablated:,} items removed")
 ```
 
-### Workflow 3: Production Pipeline
+### Production Pipeline
 
 ```python
-# Large corpus with error handling and performance tuning
 config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/train_90M/",
-    output_path="data/processed/exp1/",
-    replacement_pool_dir="data/raw/pool_10M/",
+    input_path="data/large_corpus/",
+    output_path="data/processed/",
     seed=42,
-    # Performance
+    # Performance tuning
     spacy_batch_size=100,
-    spacy_disable_components=["ner", "textcat", "lemmatizer"],
+    spacy_disable_components=["ner", "textcat"],
     chunk_size=2000,
-    # Logging
+    # Error handling
     verbose=True,
     log_dir="logs/preprocessing/"
 )
@@ -197,69 +186,96 @@ config = AblationConfig(
 pipeline = AblationPipeline(config)
 manifest = pipeline.process_corpus()
 
-# Check for errors
+# Check for failures
 if manifest.metadata.failed_files:
-    print(f"⚠️ {len(manifest.metadata.failed_files)} files failed")
-    for path, error in manifest.metadata.failed_files:
-        print(f"  - {path}: {error}")
+    print(f"Warning: {len(manifest.metadata.failed_files)} files failed")
+    for file_path, error in manifest.metadata.failed_files:
+        print(f"  {file_path}: {error}")
+```
+
+## Configuration Options
+
+### Required
+
+```python
+type: str              # Ablation name (e.g., "remove_articles")
+input_path: Path       # Input corpus file or directory
+output_path: Path      # Output directory
+```
+
+### Common Options
+
+```python
+seed: int = 42                      # Random seed for reproducibility
+chunk_size: int = 1000              # Lines per processing chunk
+skip_validation: bool = False       # Skip validation for speed
+replacement_pool_dir: Path = None   # Pool for maintaining corpus size
+```
+
+### spaCy Configuration
+
+```python
+spacy_model: str = "en_core_web_sm"
+spacy_batch_size: int = 50
+spacy_disable_components: list = None  # e.g., ["ner", "textcat"]
+```
+
+### Logging
+
+```python
+verbose: bool = False
+log_dir: Path = "logs"
 ```
 
 ## Performance Tuning
 
-### Speed-Optimized (Fast Prototyping)
+### For Speed
 
 ```python
 config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/",
+    input_path="data/corpus/",
     output_path="data/processed/",
-    seed=42,
-    # Fast settings
-    spacy_batch_size=100,  # Larger batches
+    # Optimizations
+    spacy_batch_size=100,         # Larger batches
     spacy_disable_components=["ner", "textcat", "lemmatizer"],
-    chunk_size=2000,  # More lines per chunk
-    skip_validation=True  # Skip validation
+    chunk_size=2000,              # More lines per chunk
+    skip_validation=True          # Skip validation checks
 )
 ```
 
-**Expected speedup**: 40-50% faster than defaults
+**Expected speedup**: 40-50% faster
 
-### Balanced (Production)
+### For Accuracy
 
 ```python
 config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/",
+    input_path="data/corpus/",
     output_path="data/processed/",
-    seed=42,
-    # Balanced settings (these are mostly defaults)
-    spacy_batch_size=50,
-    spacy_disable_components=["ner", "textcat"],  # Disable unused only
-    chunk_size=1000,
-    skip_validation=False  # Keep validation
-)
-```
-
-**Expected speedup**: 20-30% faster than defaults
-
-### Accuracy-Optimized (Careful Validation)
-
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/raw/",
-    output_path="data/processed/",
-    seed=42,
-    # Careful settings
-    spacy_batch_size=25,  # Smaller batches
+    # Conservative settings
+    spacy_batch_size=25,          # Smaller batches
     spacy_disable_components=None,  # Use all components
-    chunk_size=500,  # Smaller chunks
+    chunk_size=500,               # Smaller chunks
     skip_validation=False,
-    verbose=True  # Full logging
+    verbose=True                  # Full logging
 )
 ```
 
-See [Phase 4 Enhancements](PHASE4_ENHANCEMENTS.md) for detailed performance guide.
+### Memory Issues
+
+If you hit out-of-memory errors:
+
+```python
+config = AblationConfig(
+    type="remove_articles",
+    input_path="data/corpus/",
+    output_path="data/processed/",
+    spacy_batch_size=10,          # Much smaller batches
+    chunk_size=500,
+    spacy_disable_components=["ner", "textcat", "lemmatizer"]
+)
+```
 
 ## Error Handling
 
@@ -269,150 +285,130 @@ See [Phase 4 Enhancements](PHASE4_ENHANCEMENTS.md) for detailed performance guid
 pipeline = AblationPipeline(config)
 manifest = pipeline.process_corpus()
 
-# Check results
 if manifest.metadata.failed_files:
-    print(f"⚠️ Warning: {len(manifest.metadata.failed_files)} files failed")
-    for file_path, error_msg in manifest.metadata.failed_files:
-        print(f"  - {file_path}")
-        print(f"    Error: {error_msg}")
-else:
-    print("✅ All files processed successfully")
+    print(f"{len(manifest.metadata.failed_files)} files failed:")
+    for path, error in manifest.metadata.failed_files:
+        print(f"  {path}")
+        print(f"    {error}")
 ```
 
-### Verbose Error Logging
+### Detailed Error Logs
 
 ```python
 config = AblationConfig(
     type="remove_articles",
-    input_path="data/raw/",
+    input_path="data/corpus/",
     output_path="data/processed/",
-    seed=42,
-    verbose=True  # Enable detailed error logging with stack traces
+    verbose=True  # Enables detailed logging with stack traces
 )
 
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-
-# Check logs in: logs/preprocessing.remove_articles/
+# Logs written to: logs/preprocessing.remove_articles/
 ```
 
-### Error Behavior
-
-- **File errors**: Failed files don't crash entire run
+Error types:
+- **File errors**: Failed files don't crash the run
 - **Validation errors**: Non-fatal warnings, processing continues
 - **spaCy errors**: Logged with context, file marked as failed
-- **Ablation errors**: Logged with line number, file marked as failed
-
-All errors are tracked in `manifest.metadata.failed_files`.
 
 ## Provenance Tracking
 
-Every run generates a complete provenance manifest:
+Every run generates `ABLATION_MANIFEST.json` with complete metadata:
 
-```python
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-
-# Manifest saved to: {output_path}/ABLATION_MANIFEST.json
-# Contains:
-print(f"Timestamp: {manifest.metadata.timestamp}")
-print(f"Python: {manifest.metadata.python_version}")
-print(f"spaCy: {manifest.metadata.spacy_version}")
-print(f"Model: {manifest.metadata.spacy_model_name}")
-print(f"Seed: {manifest.metadata.random_seed}")
-print(f"Files processed: {manifest.metadata.total_files_processed}")
-print(f"Items ablated: {manifest.metadata.total_items_ablated}")
-print(f"Processing time: {manifest.metadata.processing_time_seconds:.1f}s")
-
-# Checksums for reproducibility
-print(f"Input checksums: {manifest.metadata.input_checksums}")
-print(f"Output checksums: {manifest.metadata.output_checksums}")
+```json
+{
+  "metadata": {
+    "timestamp": "2025-10-09T14:32:15Z",
+    "python_version": "3.10.6",
+    "spacy_version": "3.8.7",
+    "spacy_model_name": "en_core_web_sm",
+    "device": "mps",
+    "hostname": "research-macbook.local",
+    "ablation_type": "remove_articles",
+    "random_seed": 42,
+    "total_files_processed": 6,
+    "total_tokens_original": 90000000,
+    "total_tokens_final": 90000000,
+    "total_items_ablated": 8234567,
+    "processing_time_seconds": 3245.67,
+    "failed_files": []
+  },
+  "config": {...},
+  "files": [...]
+}
 ```
 
-### Loading a Saved Manifest
+Load saved manifest:
 
 ```python
-from preprocessing.config import ProvenanceManifest
 import json
 
 with open("data/processed/ABLATION_MANIFEST.json") as f:
-    manifest_data = json.load(f)
+    manifest = json.load(f)
 
-# Access metadata
-print(f"This corpus was processed on: {manifest_data['metadata']['timestamp']}")
-print(f"Using seed: {manifest_data['metadata']['random_seed']}")
-print(f"Total items ablated: {manifest_data['metadata']['total_items_ablated']}")
+print(f"Processed on: {manifest['metadata']['timestamp']}")
+print(f"Seed: {manifest['metadata']['random_seed']}")
+print(f"Items ablated: {manifest['metadata']['total_items_ablated']:,}")
 ```
-
-## Configuration Reference
-
-### All AblationConfig Options
-
-```python
-config = AblationConfig(
-    # Required
-    type="remove_articles",           # Ablation name
-    input_path="data/raw/",           # Input directory
-    output_path="data/processed/",    # Output directory
-
-    # Reproducibility
-    seed=42,                          # Random seed (default: 42)
-
-    # Processing
-    chunk_size=1000,                  # Lines per chunk (default: 1000)
-    skip_validation=False,            # Skip validation (default: False)
-
-    # Replacement pool
-    replacement_pool_dir=None,        # Optional pool directory
-
-    # spaCy
-    spacy_model="en_core_web_sm",     # spaCy model (default: en_core_web_sm)
-    spacy_device=None,                # Device (None = auto-detect)
-    spacy_batch_size=50,              # Batch size (default: 50)
-    spacy_disable_components=None,    # Components to disable (default: None)
-
-    # Logging
-    verbose=False,                    # Verbose logging (default: False)
-    log_dir="logs",                   # Log directory (default: logs)
-
-    # Custom
-    parameters={}                     # Ablation-specific params
-)
-```
-
-## Next Steps
-
-- **Custom ablations**: See [Developer Guide](DEVELOPER_GUIDE.md)
-- **Advanced features**: See [Advanced Usage](ADVANCED_USAGE.md)
-- **Testing**: See [Testing Guide](TESTING.md)
-- **Performance**: See [Phase 4 Enhancements](PHASE4_ENHANCEMENTS.md)
 
 ## Troubleshooting
 
 ### "No .train files found"
-- Check that `input_path` contains `*.train` files
-- Files can be in subdirectories (searched recursively)
 
-### spaCy model not found
+The pipeline looks for files with `.train` extension. Check:
+- Files exist in `input_path`
+- Files have `.train` extension
+- Path is correct (relative or absolute)
+
+```bash
+# Check what files exist
+find data/raw/ -name "*.train"
+```
+
+### spaCy Model Not Found
+
 ```bash
 python -m spacy download en_core_web_sm
 ```
 
-### Out of memory
-- Reduce `spacy_batch_size` (try 25 or 10)
-- Reduce `chunk_size` (try 500)
-- Disable more components
+### Processing Too Slow
 
-### Slow processing
-- Increase `spacy_batch_size` (try 100)
-- Disable unused components
-- Increase `chunk_size` (try 2000)
-- Set `skip_validation=True` for prototyping
+Try performance optimizations:
+```python
+spacy_batch_size=100              # Increase batch size
+spacy_disable_components=["ner", "textcat"]  # Disable unused
+chunk_size=2000                   # Larger chunks
+skip_validation=True              # Skip validation
+```
 
-## Examples Repository
+### Out of Memory
 
-See `examples/` directory for:
-- End-to-end processing scripts
-- Performance benchmarks
-- Error handling examples
-- Custom ablation examples
+Reduce memory usage:
+```python
+spacy_batch_size=10               # Smaller batches
+chunk_size=500                    # Smaller chunks
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+# All tests
+python -m pytest preprocessing/tests/ -v
+
+# Specific test file
+python -m pytest preprocessing/tests/test_base.py -v
+
+# With coverage
+python -m pytest preprocessing/tests/ --cov=preprocessing
+```
+
+Current status: 106 tests passing
+
+## Next Steps
+
+**Add custom ablations**: See [Developer Guide](DEVELOPER_GUIDE.md)
+
+**Advanced features**: See [Advanced Usage](ADVANCED_USAGE.md) for coreference resolution and production deployment
+
+**Understanding internals**: See [Testing Guide](TESTING.md) for architecture details

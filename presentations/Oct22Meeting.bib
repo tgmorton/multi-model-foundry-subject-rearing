@@ -1,0 +1,2290 @@
+@ARTICLE{Chomsky1980-hk,
+  title   = "On Binding",
+  author  = "Chomsky, Noam",
+  journal = "Linguistic Inquiry",
+  volume  =  11,
+  number  =  1,
+  pages   = "1--46",
+  year    =  1980
+}
+
+@article{Misra2024-mr,
+  abstract = {Language models learn rare syntactic phenomena, but the extent to which this is attributable to generalization vs. memorization is a major open question. To that end, we iteratively trained transformer language models on systematically manipulated corpora which were human-scale in size, and then evaluated their learning of a rare grammatical phenomenon: the English Article+Adjective+Numeral+Noun (AANN) construction (``a beautiful five days''). We compared how well this construction was learned on the default corpus relative to a counterfactual corpus in which AANN sentences were removed. We found that AANNs were still learned better than systematically perturbed variants of the construction. Using additional counterfactual corpora, we suggest that this learning occurs through generalization from related constructions (e.g., ``a few days''). An additional experiment showed that this learning is enhanced when there is more variability in the input. Taken together, our results provide an existence proof that LMs can learn rare grammatical phenomena by generalization from less rare phenomena. Data and code: https://github.com/kanishkamisra/aannalysis.},
+  archivePrefix = {arXiv},
+  author = {Misra, Kanishka and Mahowald, Kyle},
+  journal = {arXiv [cs.CL]},
+  month = mar,
+  primaryClass = {cs.CL},
+  title = {Language models learn rare phenomena from less rare phenomena: The case of the missing {AANNs}},
+  year = 2024
+}
+
+@article{Patil2024-gw,
+  abstract = {This paper introduces Filtered Corpus Training, a method that trains language models (LMs) on corpora with certain linguistic constructions filtered out from the training data, and uses it to measure the ability of LMs to perform linguistic generalization on the basis of indirect evidence. We apply the method to both LSTM and Transformer LMs (of roughly comparable size), developing filtered corpora that target a wide range of linguistic phenomena. Our results show that while transformers are better qua LMs (as measured by perplexity), both models perform equally and surprisingly well on linguistic generalization measures, suggesting that they are capable of generalizing from indirect evidence.},
+  archivePrefix = {arXiv},
+  author = {Patil, Abhinav and Jumelet, Jaap and Chiu, Yu Ying and Lapastora, Andy and Shen, Peter and Wang, Lexie and Willrich, Clevis and Steinert-Threlkeld, Shane},
+  journal = {arXiv [cs.CL]},
+  month = may,
+  primaryClass = {cs.CL},
+  title = {Filtered Corpus Training ({FiCT}) shows that language models can generalize from indirect evidence},
+  year = 2024
+}
+
+@article{Yao2025-dl,
+  abstract = {Language models (LMs) tend to show human-like preferences on a number of syntactic phenomena, but the extent to which these are attributable to direct exposure to the phenomena or more general properties of language is unclear. We explore this with the English dative alternation (DO: ``gave Y the X'' vs. PO: ``gave the X to Y''), using a controlled rearing paradigm wherein we iteratively train small LMs on systematically manipulated input. We focus on properties that affect the choice of alternant: length and animacy. Both properties are directly present in datives but also reflect more global tendencies for shorter elements to precede longer ones and animates to precede inanimates. First, by manipulating and ablating datives for these biases in the input, we show that direct evidence of length and animacy matters, but easy-first preferences persist even without such evidence. Then, using LMs trained on systematically perturbed datasets to manipulate global length effects (re-linearizing sentences globally while preserving dependency structure), we find that dative preferences can emerge from indirect evidence. We conclude that LMs' emergent syntactic preferences come from a mix of direct and indirect sources.},
+  archivePrefix = {arXiv},
+  author = {Yao, Qing and Misra, Kanishka and Weissweiler, Leonie and Mahowald, Kyle},
+  journal = {arXiv [cs.CL]},
+  month = mar,
+  primaryClass = {cs.CL},
+  title = {Both direct and indirect evidence contribute to dative alternation preferences in language models},
+  year = 2025
+}
+
+@article{Leong2023-gu,
+  abstract = {Artificial neural networks can generalize productively to novel contexts. Can they also learn exceptions to those productive rules? We explore this question using the case of restrictions on English passivization (e.g., the fact that ``The vacation lasted five days'' is grammatical, but ``*Five days was lasted by the vacation'' is not). We collect human acceptability judgments for passive sentences with a range of verbs, and show that the probability distribution defined by GPT-2, a language model, matches the human judgments with high correlation. We also show that the relative acceptability of a verb in the active vs. passive voice is positively correlated with the relative frequency of its occurrence in those voices. These results provide preliminary support for the entrenchment hypothesis, according to which learners track and use the distributional properties of their input to learn negative exceptions to rules. At the same time, this hypothesis fails to explain the magnitude of unpassivizability demonstrated by certain individual verbs, suggesting that other cues to exceptionality are available in the linguistic input.},
+  archivePrefix = {arXiv},
+  author = {Leong, Cara Su-Yi and Linzen, Tal},
+  journal = {arXiv [cs.CL]},
+  month = jun,
+  primaryClass = {cs.CL},
+  title = {Language models can learn exceptions to syntactic rules},
+  year = 2023
+}
+
+@article{Feng2024-iz,
+  abstract = {While high-performing language models are typically trained on hundreds of billions of words, human children become fluent language users with a much smaller amount of data. What are the features of the data they receive, and how do these features support language modeling objectives? To investigate this question, we train GPT-2 and RoBERTa models on 29M words of English child-directed speech and a new matched, synthetic dataset (TinyDialogues), comparing to OpenSubtitles, Wikipedia, and a heterogeneous blend of datasets from the BabyLM challenge. We evaluate the syntactic and semantic knowledge of these models using developmentally-inspired evaluations. Through pretraining experiments, we test whether the global developmental ordering or the local discourse ordering of children's training data supports high performance relative to other datasets. The local properties of the data affect model results, but surprisingly, global properties do not. Further, child language input is not uniquely valuable for training language models. These findings support the hypothesis that, rather than proceeding from better data, the child's learning algorithm is substantially more data-efficient than current language modeling techniques.},
+  archivePrefix = {arXiv},
+  author = {Feng, Sophie Shuqing and Sachdeva, Rishav and Choshen, Leshem and Wilcox, Ethan and Warstadt, Alex and Cotterell, Ryan and Williams, Adina and Mueller, Aaron and Wilcox, Ethan},
+  journal = {arXiv [cs.CL]},
+  month = may,
+  primaryClass = {cs.CL},
+  title = {Is child-directed speech effective training data for language models?},
+  year = 2024
+}
+
+@article{Bloom1990-tz,
+  author = {Bloom, P},
+  journal = {Linguistic Inquiry},
+  number = 4,
+  pages = {491--504},
+  publisher = {The MIT Press},
+  title = {Subjectless sentences in child language},
+  volume = 21,
+  year = 1990
+}
+
+@ARTICLE{Pesetsky1982-gh,
+  title     = "Complementizer - trace phenomena and the nominative island
+               condition",
+  author    = "Pesetsky, David",
+  journal   = "Linguist. Rev.",
+  publisher = "Walter de Gruyter GmbH",
+  volume    =  1,
+  number    =  3,
+  year      =  1982
+}
+
+@ARTICLE{Kayne1980-gq,
+  title   = "Extension of Binding and Case-Marking",
+  author  = "Kayne, Richard S",
+  journal = "Linguistic Inquiry",
+  volume  =  11,
+  number  =  1,
+  pages   = "75--96",
+  year    =  1980
+}
+
+@PHDTHESIS{Jaeggli1980-yj,
+  title   = "On some phonologically-null elements in syntax",
+  author  = "Jaeggli, Osvaldo Adolfo",
+  address = "Cambridge, MA",
+  year    =  1980,
+  school  = "Massachussets Institute of Technology"
+}
+
+@ARTICLE{Chomsky1977-kg,
+  title   = "Filters and Control",
+  author  = "Chomsky, Noam and Lasnik, Howard",
+  journal = "Linguistic Inquiry",
+  volume  =  8,
+  number  =  3,
+  pages   = "425--507",
+  year    =  1977
+}
+
+@PHDTHESIS{Bresnan1972-ws,
+  title   = "Theory of Complementation in English Syntax",
+  author  = "Bresnan, Joan Wanda",
+  address = "Cambridge, MA",
+  year    =  1972,
+  school  = "Massachussets Institute of Technology"
+}
+
+@PHDTHESIS{Perlmutter1968-au,
+  title  = "Deep and surface structure constraints in syntax",
+  author = "Perlmutter, David M",
+  year   =  1968,
+  school = "Massachussets Institute of Technology"
+}
+
+@ARTICLE{Wang1992-ty,
+  title   = "Null subject versus null object: Some evidence from the acquisition
+             of Chinese and English",
+  author  = "Wang, Qi and Others, And",
+  journal = "Lang. Acquis.",
+  volume  =  2,
+  number  =  3,
+  pages   = "221--254",
+  year    =  1992
+}
+
+@INCOLLECTION{Hyams1991-fw,
+  title     = "A reanalysis of null subjects in child language",
+  author    = "Hyams, Nina",
+  booktitle = "Theoretical issues in language acquisition",
+  publisher = "Psychology Press",
+  pages     = "249--268",
+  abstract  = "new analysis of the null-subject phenomenon in early child
+               language that departs in crucial problems of language
+               acquisition. We take the logical problem of language acquisition
+               to be",
+  year      =  1991
+}
+
+@INCOLLECTION{Guasti1996-jg,
+  title     = "Acquisition of Italian interrogatives",
+  author    = "Guasti, Maria Teresa",
+  booktitle = "Language Acquisition and Language Disorders",
+  publisher = "John Benjamins Publishing Company",
+  address   = "Amsterdam",
+  pages     = "241--270",
+  month     =  jul,
+  year      =  1996,
+  language  = "en"
+}
+
+@INCOLLECTION{Wexler1987-us,
+  title     = "Parameters and learnability in binding theory",
+  author    = "Wexler, Kenneth and Manzini, M Rita",
+  booktitle = "Studies in Theoretical Psycholinguistics",
+  publisher = "Springer Netherlands",
+  address   = "Dordrecht",
+  pages     = "41--76",
+  year      =  1987
+}
+
+@BOOK{Berwick1985-vh,
+  title     = "The acquisition of syntactic knowledge",
+  author    = "Berwick, Robert C",
+  publisher = "MIT press",
+  volume    =  16,
+  abstract  = "acquisition: How can we account for the range of adult human
+               languages, given some initial knowledge constraints on the
+               acquisition of knowledge-syntactic knowledge. The results",
+  year      =  1985
+}
+
+@INCOLLECTION{Snyder2007-uj,
+  title     = "A Brief Introduction",
+  author    = "Snyder, William",
+  booktitle = "Child Language",
+  publisher = "Oxford University PressOxford",
+  pages     = "1--3",
+  abstract  = "Abstract This book is dedicated to a single, foundational issue
+               in the study of child language acquisition: What exactly is the
+               child acquiring? Even the most ardent of nativists will
+               acknowledge that languages differ from one another, and that the
+               child uses her input to choose among the various grammars
+               permitted by human biology. What exactly are the decisions that
+               the child has to make? At the other end of the spectrum, those
+               with an empiricist inclination expect the process of language
+               acquisition to depend much more heavily on the input. Yet, these
+               researchers too acknowledge that the final state of language
+               acquisition includes grammatical knowledge of a general nature,
+               more abstract than the specific examples encountered in the
+               input. Again, what form does this grammatical knowledge take? The
+               parametric approach to child language is a broad research program
+               dedicated to this issue. Here the word parametric is a convenient
+               cover term for any kind of abstract grammatical knowledge,
+               regardless of how it is implemented: Possible instantiations
+               include actual parameter settings, constraint rankings, or
+               abstract features of functional heads, to name but a few My
+               central empirical claim will be that the time course of child
+               language acquisition is itself a rich source of evidence about
+               the nature of what the child is acquiring. First, theories of
+               grammatical variation across languages make strong, testable
+               predictions about the process of language acquisition in
+               children. This book will show, in considerable detail, how to
+               derive these predictions and then test them with various types of
+               evidence from children. Second, certain broad observations about
+               the process of language acquisition, in and of themselves, have
+               direct implications for the nature of what the child is
+               acquiring. I will elaborate on this point in the final chapter of
+               the book. My objective in writing the book is to create a
+               resource for fellow child-language researchers who are interested
+               in parametric questions.",
+  month     =  jun,
+  year      =  2007
+}
+
+@INPROCEEDINGS{Snyder2011-xp,
+  title       = "Children's grammatical conservatism: implications for syntactic
+                 theory",
+  author      = "Snyder, W",
+  booktitle   = "BUCLD 35 Proceedings",
+  institution = "Boston University",
+  pages       = "23--40",
+  month       =  mar,
+  year        =  2011
+}
+
+@BOOK{Snyder2007-dk,
+  title     = "Child language: The parametric approach",
+  author    = "Snyder, William",
+  publisher = "Oxford University Press",
+  address   = "London, England",
+  month     =  nov,
+  year      =  2007
+}
+
+@INPROCEEDINGS{Snyder2014-ue,
+  title     = "Parameters: The view from child language",
+  author    = "Snyder, William",
+  booktitle = "Tokyo Conference on Psycholinguistics (Keynote Address)",
+  publisher = "unknown",
+  month     =  oct,
+  year      =  2014
+}
+
+@ARTICLE{Chomsky2005-mf,
+  title     = "Three factors in language design",
+  author    = "Chomsky, Noam",
+  journal   = "Linguist. Inq.",
+  publisher = "MIT Press - Journals",
+  volume    =  36,
+  number    =  1,
+  pages     = "1--22",
+  abstract  = "The biolinguistic perspective regards the language faculty as an
+               “organ of the body,” along with other cognitive systems. Adopting
+               it, we expect to find three factors that interact to determine
+               (I-) languages attained: genetic endowment (the topic of
+               Universal Grammar), experience, and principles that are language-
+               or even organism-independent. Research has naturally focused on
+               I-languages and UG, the problems of descriptive and explanatory
+               adequacy. The Principles-and-Parameters approach opened the
+               possibility for serious investigation of the third factor, and
+               the attempt to account for properties of language in terms of
+               general considerations of computational efficiency, eliminating
+               some of the technology postulated as specific to language and
+               providing more principled explanation of linguistic phenomena",
+  month     =  jan,
+  year      =  2005,
+  language  = "en"
+}
+
+@ARTICLE{Rizzi1986-nk,
+  title   = "Null objects in Italian and the theory of pro",
+  author  = "Rizzi, Luigi",
+  journal = "Linguistic Inquiry",
+  volume  =  17,
+  pages   = "501--557",
+  year    =  1986
+}
+
+
+
+@BOOK{Chomsky1986-gh,
+  title     = "Knowledge of language: Its nature, origins, and use",
+  author    = "Chomsky, Noam",
+  publisher = "Praeger",
+  address   = "Westport, CT",
+  abstract  = "Why do we know so much more than we have evidence for in certain
+               areas, and so much less in others? In tackling these
+               questions--Plato's and Orwell's…",
+  month     =  jan,
+  year      =  1986
+}
+
+
+@PHDTHESIS{Gilligan1989-ww,
+  title    = "A cross-linguistic approach to the pro-drop parameter",
+  author   = "Gilligan, Gary Martin",
+  abstract = "A major goal of this work is to bring cross-linguistic of
+              language-specific hypotheses against a cross-linguistic sample,
+              eg, in this way it is easily demonstrated that Pro-drop Parameter
+              (",
+  year     =  1989,
+  school   = "University of Southern California"
+}
+
+@BOOK{Chomsky1980-az,
+  title   = "On Cognitive Structures and Their Development: A Reply to Piaget",
+  author  = "Chomsky, N",
+  editor  = "Piatelli-Palmarini, M and {Learning} and Paul, Kegan",
+  address = "London",
+  year    =  1980
+}
+
+@ARTICLE{Haegeman1997-rw,
+  title     = "Register variation, truncation, and subject omission in English
+               and in French",
+  author    = "Haegeman, Liliane",
+  journal   = "Engl. Lang. Linguist.",
+  publisher = "Cambridge University Press (CUP)",
+  volume    =  1,
+  number    =  2,
+  pages     = "233--270",
+  abstract  = "This paper concerns the null subject phenomenon attested in
+               abbreviated written registers in English and in French (diaries,
+               instructions) and in informal spoken English. Neither a pro drop
+               analysis nor a topic drop analysis will account for the
+               incompatibility of the English null subjects withwh-preposing and
+               with embedded contexts. Rizzi's (1994) analysis for null subjects
+               in child production is adopted here in a slightly modified form.
+               Like the early null subject, the (adult) null subject in
+               abbreviated registers is an antecedentless empty category in the
+               A-specifier of the root. Null subjects depend on the truncation
+               of CP, which turns the specifier of IP into the highest specifier
+               of the clause. The paper explores apparent noninitial null
+               subjects, i.e. null subjects co-occurring with preposed adjuncts
+               (though not arguments) and shows that these can be accounted for
+               in terms of partial truncation within an articulated CP. The null
+               subject is an antecedentless empty category in the (A-)specifier
+               of an AGR-projection dominating the Topic Projection. The
+               incompatibility withwh-preposing and with argument preposing is
+               accounted for. In a more speculative vein I also consider the
+               deletion ofbein the abbreviated styles, which I claim can also be
+               analysed in terms of truncation.",
+  month     =  nov,
+  year      =  1997,
+  language  = "en"
+}
+
+
+@INCOLLECTION{Haegeman1990-qx,
+  title     = "Non-overt subjects in diary contexts",
+  author    = "Haegeman, Liliane",
+  booktitle = "Grammar in Progress",
+  publisher = "DE GRUYTER MOUTON",
+  address   = "Berlin, New York",
+  pages     = "167--174",
+  month     =  jan,
+  year      =  1990
+}
+
+@ARTICLE{Bromberg1995-vs,
+  title   = "Null subjects in child wh-questions",
+  author  = "Bromberg, Sara and Wexler, Kenneth",
+  journal = "MIT Working Papers in Linguistics",
+  volume  =  26,
+  year    =  1995
+}
+
+@INCOLLECTION{Biberauer2016-en,
+  title     = "Parameter typology from a diachronic perspective: The case of
+               Conditional Inversion",
+  author    = "Biberauer, Theresa and Roberts, Ian",
+  booktitle = "Linguistik Aktuell/Linguistics Today",
+  publisher = "John Benjamins Publishing Company",
+  address   = "Amsterdam",
+  pages     = "259--292",
+  abstract  = "This paper considers the question of the nature of parameters
+               from a diachronic perspective, focusing in particular on the case
+               of Conditional Inversion (CI) in the history of English. The
+               objective is to show that it is meaningful to think of parameters
+               and their synchronic robustness and consequent diachronic
+               stability in “size” terms. More specifically, we show that it is
+               possible to discern a consistent, but ever more frayed parametric
+               thread linking the availability of verb-movement operations in
+               the history of English: while verb-movement at the earliest
+               stages (Old and early Middle English) can be ascribed to the
+               activation of a Verb Second grammar – conceived of as a grammar
+               requiring verb-movement into the finite C-domain (Force or Fin)
+               in matrix clauses (a mesoparameter) – verb-movement at the early
+               modern stage was much more fragmented, triggered by a smaller
+               class of finite Cs and also, as a result of the loss of V-to-T
+               movement and the rise of a class of auxiliaries, affecting a
+               smaller class of verbs (a microparameter); the situation in
+               modern British and American English, where only had, should and
+               certain uses of were trigger CI, is nanoparametric, a situation
+               which is expected to be unstable, as various post-colonial
+               varieties indeed show it to be. CI in the history of English,
+               then, provides a window on parametric continuity and change.",
+  series    = "Linguistik Aktuell/Linguistics Today",
+  month     =  nov,
+  year      =  2016,
+  keywords  = "diachrony of English; emergent parameters; parameter hierarchies;
+               V2 constraint",
+  language  = "en"
+}
+
+@ARTICLE{Biberauer2017-ki,
+  title    = "Factors 2 and 3: Towards a principled approach",
+  author   = "Biberauer, Theressa",
+  journal  = "Cambridge Occasional Papers in Linguistics",
+  volume   =  10,
+  number   =  3,
+  pages    = "38--65",
+  abstract = "is paper concerns two components of Chomsky’s (2005) ree Factors
+              model that have not, to date, received the serious and systematic
+              aention that they deserve: the data that a language-acquiring
+              child picks up on during the process of language acquisition
+              (Factor 2), and the non-language-specic, general cognitive
+              considerations (Factor 3) that interact with Factor 2 and a
+              minimal UG (Factor 1) to determine the form of I-languages. In
+              relation to Factor 2, I introduce and motivate a principled
+              approach, which builds on both classic structuralist and more
+              recent Chomskyan ideas, and allows us to formulate a suitably
+              precise hypothesis about which aspects of the input will qualify
+              as ‘intake’ and, hence, serve as the basis for grammar
+              construction. In relation to Factor 3, I highlight a specic
+              cognitive bias that appears well motivated outside of language,
+              while also having wide- ranging consequences for our understanding
+              of how I-language grammars are constructed, and why they should
+              have the crosslinguistically comparable form that generativists
+              have always argued human languages have. is is Maximise Minimal
+              Means (MMM). I demonstrate how its incorporation into our model of
+              grammar acquisition allows us to understand diverse facts about
+              natural language typology, acquisition, both in “stable” and
+              “unstable” contexts, and also the ways in which it may change.",
+  year     =  2017
+}
+
+@BOOK{Biberauer2018-gx,
+  title     = "Pro-drop and emergent parameter hierarchies",
+  author    = "Biberauer, Theresa",
+  publisher = "Oxford University Press",
+  abstract  = "This chapter considers the extent to which it is still meaningful
+               to conceptualize pro-drop phenomena in parametric terms,
+               introducing a three-factors model in which parameters are
+               emergent, not UG-given. Within this model, it seems possible to
+               distinguish macro, meso, and micro pro-drop systems. The attested
+               systematic variation in even the most familiar instantiations of
+               these putative types, however, raises questions about existing
+               parametric accounts of the acquisition and typological
+               relationship between these systems. Drawing on parallels with a
+               neo-emergentist account of word-order variation, the chapter
+               argues for an approach assuming interdependent parameters (a
+               parameter-hierarchy) where the ‘size’ and precise formal
+               specification of pro-drop in individual grammars is determined by
+               the way the model’s three factors interact, with different formal
+               features playing potentially parallel roles in different systems.
+               The typological picture is thus more variation-rich than
+               previously assumed, but this variation exhibits the kind of
+               cross-linguistic systematicity a parametric approach predicts.",
+  month     =  jun,
+  year      =  2018
+}
+
+@INCOLLECTION{Rizzi1982-vy,
+  title     = "{IV}. Negation, Wh-movement and the null subject parameter",
+  author    = "Rizzi, L",
+  booktitle = "Issues in Italian Syntax",
+  publisher = "DE GRUYTER",
+  address   = "Berlin, Boston",
+  pages     = "117--184",
+  month     =  dec,
+  year      =  1982
+}
+
+@BOOK{Chomsky1981-bf,
+  title     = "Lectures on government and binding: The Pisa lectures",
+  author    = "Chomsky, Noam",
+  publisher = "De Gruyter Mouton",
+  address   = "Berlin, Germany",
+  edition   =  7,
+  series    = "Studies in Generative Grammar [SGG]",
+  month     =  dec,
+  year      =  1981,
+  language  = "en"
+}
+
+@ARTICLE{UnknownUnknown-cj,
+  title = "Lectures on government and binding : Chomsky, Noam"
+}
+
+@PHDTHESIS{Bertolino2020-nm,
+  title    = "An Experimental Study on the Acquisition of Impersonals in
+              Brazilian Portuguese",
+  author   = "Bertolino, Karina",
+  abstract = "This dissertation focuses on the acquisition of null impersonal
+              structures in Brazilian Portuguese (BP), a partial null-subject
+              language (PNSL). PNSLs allow definite null subjects under more
+              restricted conditions than consistent null-subject languages
+              (CNSLs). However, PNSLs are characterized by having impersonal
+              constructions with generic null subjects which are absent in
+              CNSLs. Using the Truth Value Judgment Task, I investigated whether
+              BP-speaking children know that they are acquiring a PNSL, in which
+              null subjects should be understood as generic. The results show
+              that children as young as 4-years-old correctly reject the
+              definite reading of null subjects in impersonal structures and
+              correctly accept their generic reading. The data suggest that
+              BP-speaking children have early knowledge that they are acquiring
+              a PNSL. Using the Felicity Judgement Task, I tested children’s
+              knowledge of restrictions imposed on the well-formedness of
+              impersonal structures in BP. Particularly, impersonal structures
+              in BP are completely well-formed only when they have an overt
+              marker of genericity (e.g., a deontic modal or an impersonal
+              clitic se). 7-year-olds and 6-year-olds exhibited sensitivity to
+              the adult grammar. 5- and 4-year-olds exhibited worse performance
+              than the other groups, over-accepting the null subject in
+              structures without an overt marker of genericity. It seems that at
+              the age of 5-years-old children did not completely acquire the
+              impersonal pronoun se. This can be explained by the fact that
+              impersonal se is not frequent in the input. Building upon
+              Holmberg’s (2010a) Null Subject Parameters, I propose a learning
+              model to address the problem of learnability that PNSLs and other
+              (non-)null-subject languages impose. There is no evidence of
+              missetting of the Null Subject Parameters by children acquiring
+              any (non-)null-subject language, supporting the hypothesis that
+              parameters are set in the earliest observable stages (Wexler
+              1995).",
+  year     =  2020,
+  school   = "University of Connecticut"
+}
+
+@BOOK{Roberts2021-ia,
+  title     = "Parameter hierarchies and universal grammar",
+  author    = "Roberts, Ian",
+  publisher = "Oxford University Press",
+  address   = "London, England",
+  month     =  feb,
+  year      =  2021,
+  language  = "en"
+}
+
+@INCOLLECTION{Biberauer2009-fy,
+  title     = "A deletion analysis of null subjects",
+  author    = "Biberauer, Theresa and Holmberg, Anders and Roberts, Ian and
+               Sheehan, Michelle",
+  booktitle = "Parametric Variation",
+  publisher = "Cambridge University Press",
+  address   = "Cambridge",
+  pages     = "58--87",
+  month     =  dec,
+  year      =  2009
+}
+
+@INCOLLECTION{Biberauer2009-zy,
+  title     = "Null Subject Parameters",
+  author    = "Biberauer, Theresa and Holmberg, Anders and Roberts, Ian and
+               Sheehan, Michelle",
+  booktitle = "Parametric Variation",
+  publisher = "Cambridge University Press",
+  address   = "Cambridge",
+  pages     = "88--124",
+  abstract  = "PDF | 1. Rizzi's null subject parameters Rizzi (1982: 143): (1)
+               a. INFL can be specified [+pronoun]. b. INFL which is [+pronoun]
+               can be referential.... | Find, read and cite all the research you
+               need on ResearchGate",
+  month     =  dec,
+  year      =  2009
+}
+
+@INCOLLECTION{Biberauer2009-qv,
+  title     = "Introduction: parameters in minimalist theory",
+  author    = "Biberauer, Theresa and Holmberg, Anders and Roberts, Ian and
+               Sheehan, Michelle",
+  booktitle = "Parametric Variation",
+  publisher = "Cambridge University Press",
+  address   = "Cambridge",
+  pages     = "1--57",
+  month     =  dec,
+  year      =  2009
+}
+
+@INCOLLECTION{Baker2008-kk,
+  title     = "The macroparameter in a microparametric world",
+  author    = "Baker, Mark C",
+  booktitle = "Linguistik Aktuell/Linguistics Today",
+  publisher = "John Benjamins Publishing Company",
+  address   = "Amsterdam",
+  pages     = "351--373",
+  abstract  = "This paper considers the role of macroparameters in parametric
+               theory. It is argued that a system in which all syntactic
+               variation is ascribed solely to microparametric differences in
+               the make-up of functional heads, as assumed under the so-called
+               Borer-Chomsky Conjecture, cannot account for actually attested
+               patterns of variation. In the word-order domain, for example, the
+               facts seem to point to the kind of bimodal distribution expected
+               on a macroparametric view, with microparameters accounting for
+               the observed “noise”. A similar scenario is also argued to obtain
+               in the domain of agreement, once two new macroparameters,
+               presented here, are taken into account.",
+  month     =  sep,
+  year      =  2008,
+  language  = "en"
+}
+
+@ARTICLE{Anej2025-hj,
+  title         = "On the reasoning abilities of masked diffusion language
+                   models",
+  author        = "Anej, Svete and Ashish, Sabharwal",
+  journal       = "arXiv [cs.LG]",
+  abstract      = "Masked diffusion models (MDMs) for text offer a compelling
+                   alternative to traditional autoregressive language models.
+                   Parallel generation makes them efficient, but their
+                   computational capabilities and the limitations inherent to
+                   their parallelism remain largely unexplored. To this end, we
+                   characterize what types of reasoning problems MDMs can
+                   provably solve and how efficiently. We do this by connecting
+                   MDMs to the well-understood reasoning frameworks of chain of
+                   thought (CoT) and padded looped transformers (PLTs) in the
+                   finite-precision log-width setting: We show that MDMs and
+                   polynomially-padded PLTs are, in fact, equivalent in this
+                   setting, and that MDMs can solve all problems that
+                   CoT-augmented transformers can. Moreover, we showcase classes
+                   of problems (including regular languages) for which MDMs are
+                   inherently more efficient than CoT transformers, where
+                   parallel generation allows for substantially faster
+                   reasoning.",
+  month         =  oct,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG"
+}
+
+@ARTICLE{Robert2025-xg,
+  title         = "Tandem Training for Language Models",
+  author        = "Robert, West and Ashton, Anderson and Ece, Kamar and Eric,
+                   Horvitz",
+  journal       = "arXiv [cs.AI]",
+  abstract      = "As language models continue to rapidly improve, we can expect
+                   their actions and reasoning to become difficult or impossible
+                   for weaker agents and humans to follow, undermining
+                   interpretability and oversight. With an eye on long-term
+                   futures, we pursue methods that encourage models to produce
+                   solutions that remain intelligible to weaker collaborators.
+                   We formalize intelligibility as handoff robustness: a strong
+                   model's solution is intelligible to a weaker model if
+                   randomly handing off control to the weaker model along the
+                   solution path does not cause failure. Building on this
+                   criterion, we introduce tandem training for language models,
+                   a reinforcement learning (RL) paradigm in which rollout
+                   tokens are intermittently and randomly sampled from a frozen
+                   weak model rather than the strong model being trained.
+                   Because rollouts succeed only when the strong model's actions
+                   and reasoning process can be continued by the weak model --
+                   when the two can co-construct a successful solution --
+                   optimizing standard RL objectives with tandem training
+                   implicitly incentivizes both correctness and intelligibility.
+                   In the GSM8K math reasoning task, tandem training reliably
+                   teaches models to abandon jargon and adapt their language to
+                   weaker partners while keeping task accuracy high. Our results
+                   demonstrate a promising route to building AI systems that
+                   remain auditable by weaker agents, with implications for
+                   human--AI collaboration and multi-agent communication.",
+  month         =  oct,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.AI"
+}
+
+@ARTICLE{Ravi2025-zs,
+  title         = "From refusal to recovery: A control-theoretic approach to
+                   generative {AI} guardrails",
+  author        = "Ravi, Pandya and Madison, Bland and Duy, P Nguyen and
+                   Changliu, Liu and Fisac, Jaime Fernández and Andrea, Bajcsy",
+  journal       = "arXiv [cs.AI]",
+  abstract      = "Generative AI systems are increasingly assisting and acting
+                   on behalf of end users in practical settings, from digital
+                   shopping assistants to next-generation autonomous cars. In
+                   this context, safety is no longer about blocking harmful
+                   content, but about preempting downstream hazards like
+                   financial or physical harm. Yet, most AI guardrails continue
+                   to rely on output classification based on labeled datasets
+                   and human-specified criteria,making them brittle to new
+                   hazardous situations. Even when unsafe conditions are
+                   flagged, this detection offers no path to recovery:
+                   typically, the AI system simply refuses to act--which is not
+                   always a safe choice. In this work, we argue that agentic AI
+                   safety is fundamentally a sequential decision problem:
+                   harmful outcomes arise from the AI system's continually
+                   evolving interactions and their downstream consequences on
+                   the world. We formalize this through the lens of
+                   safety-critical control theory, but within the AI model's
+                   latent representation of the world. This enables us to build
+                   predictive guardrails that (i) monitor an AI system's outputs
+                   (actions) in real time and (ii) proactively correct risky
+                   outputs to safe ones, all in a model-agnostic manner so the
+                   same guardrail can be wrapped around any AI model. We also
+                   offer a practical training recipe for computing such
+                   guardrails at scale via safety-critical reinforcement
+                   learning. Our experiments in simulated driving and e-commerce
+                   settings demonstrate that control-theoretic guardrails can
+                   reliably steer LLM agents clear of catastrophic outcomes
+                   (from collisions to bankruptcy) while preserving task
+                   performance, offering a principled dynamic alternative to
+                   today's flag-and-block guardrails.",
+  month         =  oct,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.AI"
+}
+
+@INPROCEEDINGS{Sahala2025-nv,
+  title     = "Neural models for lemmatization and {POS}-tagging of earlier and
+               late Egyptian (supporting hieroglyphic input) and demotic",
+  author    = "Sahala, Aleksi and Lincke, Eliese-Sophia",
+  booktitle = "Proceedings of the Second Workshop on Ancient Language Processing",
+  publisher = "Association for Computational Linguistics",
+  address   = "Stroudsburg, PA, USA",
+  pages     = "99--104",
+  year      =  2025
+}
+
+@ARTICLE{Hu2017-ow,
+  title         = "Toward controlled generation of text",
+  author        = "Hu, Zhiting and Yang, Zichao and Liang, Xiaodan and
+                   Salakhutdinov, Ruslan and Xing, Eric P",
+  journal       = "arXiv [cs.LG]",
+  abstract      = "Generic generation and manipulation of text is challenging
+                   and has limited success compared to recent deep generative
+                   modeling in visual domain. This paper aims at generating
+                   plausible natural language sentences, whose attributes are
+                   dynamically controlled by learning disentangled latent
+                   representations with designated semantics. We propose a new
+                   neural generative model which combines variational
+                   auto-encoders and holistic attribute discriminators for
+                   effective imposition of semantic structures. With
+                   differentiable approximation to discrete text samples,
+                   explicit constraints on independent attribute controls, and
+                   efficient collaborative learning of generator and
+                   discriminators, our model learns highly interpretable
+                   representations from even only word annotations, and produces
+                   realistic sentences with desired attributes. Quantitative
+                   evaluation validates the accuracy of sentence and attribute
+                   generation.",
+  month         =  mar,
+  year          =  2017,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG"
+}
+
+@ARTICLE{Hu2017-ly,
+  title         = "Toward controlled generation of text",
+  author        = "Hu, Zhiting and Yang, Zichao and Liang, Xiaodan and
+                   Salakhutdinov, Ruslan and Xing, Eric P",
+  journal       = "arXiv [cs.LG]",
+  abstract      = "Generic generation and manipulation of text is challenging
+                   and has limited success compared to recent deep generative
+                   modeling in visual domain. This paper aims at generating
+                   plausible natural language sentences, whose attributes are
+                   dynamically controlled by learning disentangled latent
+                   representations with designated semantics. We propose a new
+                   neural generative model which combines variational
+                   auto-encoders and holistic attribute discriminators for
+                   effective imposition of semantic structures. With
+                   differentiable approximation to discrete text samples,
+                   explicit constraints on independent attribute controls, and
+                   efficient collaborative learning of generator and
+                   discriminators, our model learns highly interpretable
+                   representations from even only word annotations, and produces
+                   realistic sentences with desired attributes. Quantitative
+                   evaluation validates the accuracy of sentence and attribute
+                   generation.",
+  month         =  mar,
+  year          =  2017,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG"
+}
+
+@ARTICLE{Malmi2019-ut,
+  title         = "Encode, tag, realize: High-precision text editing",
+  author        = "Malmi, Eric and Krause, Sebastian and Rothe, Sascha and
+                   Mirylenka, Daniil and Severyn, Aliaksei",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "We propose LaserTagger - a sequence tagging approach that
+                   casts text generation as a text editing task. Target texts
+                   are reconstructed from the inputs using three main edit
+                   operations: keeping a token, deleting it, and adding a phrase
+                   before the token. To predict the edit operations, we propose
+                   a novel model, which combines a BERT encoder with an
+                   autoregressive Transformer decoder. This approach is
+                   evaluated on English text on four tasks: sentence fusion,
+                   sentence splitting, abstractive summarization, and grammar
+                   correction. LaserTagger achieves new state-of-the-art results
+                   on three of these tasks, performs comparably to a set of
+                   strong seq2seq baselines with a large number of training
+                   examples, and outperforms them when the number of examples is
+                   limited. Furthermore, we show that at inference time tagging
+                   can be more than two orders of magnitude faster than
+                   comparable seq2seq models, making it more attractive for
+                   running in a live environment.",
+  month         =  sep,
+  year          =  2019,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@INPROCEEDINGS{Omelianchuk2020-jy,
+  title     = "{GECToR} – grammatical error correction: Tag, not rewrite",
+  author    = "Omelianchuk, Kostiantyn and Atrasevych, Vitaliy and Chernodub,
+               Artem and Skurzhanskyi, Oleksandr",
+  editor    = "Burstein, Jill and Kochmar, Ekaterina and Leacock, Claudia and
+               Madnani, Nitin and Pilán, Ildikó and Yannakoudakis, Helen and
+               Zesch, Torsten",
+  booktitle = "Proceedings of the Fifteenth Workshop on Innovative Use of NLP
+               for Building Educational Applications",
+  publisher = "Association for Computational Linguistics",
+  address   = "Stroudsburg, PA, USA",
+  pages     = "163--170",
+  year      =  2020
+}
+
+@INPROCEEDINGS{Das2011-ic,
+  title     = "Unsupervised Part-of-Speech Tagging with Bilingual Graph-Based
+               Projections",
+  author    = "Das, Dipanjan and Petrov, Slav",
+  editor    = "Lin, Dekang and Matsumoto, Yuji and Mihalcea, Rada",
+  booktitle = "Proceedings of the 49th Annual Meeting of the Association for
+               Computational Linguistics: Human Language Technologies",
+  publisher = "Association for Computational Linguistics",
+  address   = "Portland, Oregon, USA",
+  pages     = "600--609",
+  month     =  jun,
+  year      =  2011
+}
+
+@INPROCEEDINGS{Yarowsky2001-bl,
+  title     = "Inducing multilingual {POS} taggers and {NP} bracketers via
+               robust projection across aligned corpora",
+  author    = "Yarowsky, David and Ngai, Grace",
+  booktitle = "Second meeting of the North American Chapter of the Association
+               for Computational Linguistics on Language technologies 2001 -
+               NAACL '01",
+  publisher = "Association for Computational Linguistics",
+  address   = "Morristown, NJ, USA",
+  abstract  = "This paper investigates the potential for projecting linguistic
+               annotations including part-of-speech tags and base noun phrase
+               bracketings from one language to another via automatically
+               word-aligned parallel corpora. First, experiments assess the
+               accuracy of unmodified direct transfer of tags and brackets from
+               the source language English to the target languages French and
+               Chinese, both for noisy machine-aligned sentences and for clean
+               hand-aligned sentences. Performance is then substantially boosted
+               over both of these baselines by using training techniques
+               optimized for very noisy data, yielding 94-96\% core French
+               part-of-speech tag accuracy and 90\% French bracketing F-measure
+               for stand-alone monolingual tools trained without the need for
+               any human-annotated data in the given language.",
+  year      =  2001
+}
+
+@ARTICLE{S2017-kr,
+  title         = "Morphology generation for Statistical machine translation",
+  author        = "S, Sreelekha and Bhattacharyya, Pushpak",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "When translating into morphologically rich languages,
+                   Statistical MT approaches face the problem of data sparsity.
+                   The severity of the sparseness problem will be high when the
+                   corpus size of morphologically richer language is less. Even
+                   though we can use factored models to correctly generate
+                   morphological forms of words, the problem of data sparseness
+                   limits their performance. In this paper, we describe a simple
+                   and effective solution which is based on enriching the input
+                   corpora with various morphological forms of words. We use
+                   this method with the phrase-based and factor-based
+                   experiments on two morphologically rich languages: Hindi and
+                   Marathi when translating from English. We evaluate the
+                   performance of our experiments both in terms automatic
+                   evaluation and subjective evaluation such as adequacy and
+                   fluency. We observe that the morphology injection method
+                   helps in improving the quality of translation. We further
+                   analyze that the morph injection method helps in handling the
+                   data sparseness problem to a great level.",
+  month         =  oct,
+  year          =  2017,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Mahmoudi2013-lq,
+  title   = "Supervised morphology generation using parallel corpus",
+  author  = "Mahmoudi, Alireza and Arabsorkhi, M and Faili, Heshaam",
+  journal = "RANLP",
+  pages   = "408--414",
+  month   =  sep,
+  year    =  2013
+}
+
+@ARTICLE{Garcia-Martinez2016-he,
+  title   = "Factored Neural Machine Translation Architectures",
+  author  = "García-Martínez, Mercedes and Barrault, Loïc and Bougares, Fethi",
+  journal = "IWSLT",
+  year    =  2016
+}
+
+@MISC{UnknownUnknown-iw,
+  title        = "{GitHub} - neulab/awesome-align: A neural word aligner based
+                  on multilingual {BERT}",
+  booktitle    = "GitHub",
+  abstract     = "A neural word aligner based on multilingual BERT. Contribute
+                  to neulab/awesome-align development by creating an account on
+                  GitHub.",
+  howpublished = "\url{https://github.com/neulab/awesome-align}",
+  note         = "Accessed: 2025-10-16",
+  language     = "en"
+}
+
+@INPROCEEDINGS{Jalili-Sabet2020-tr,
+  title     = "{SimAlign}: High quality word alignments without parallel
+               training data using static and contextualized embeddings",
+  author    = "Jalili Sabet, Masoud and Dufter, Philipp and Yvon, François and
+               Schütze, Hinrich",
+  booktitle = "Findings of the Association for Computational Linguistics: EMNLP
+               2020",
+  publisher = "Association for Computational Linguistics",
+  address   = "Stroudsburg, PA, USA",
+  pages     = "1627--1643",
+  abstract  = "Masoud Jalili Sabet, Philipp Dufter, François Yvon, Hinrich
+               Schütze. Findings of the Association for Computational
+               Linguistics: EMNLP 2020. 2020.",
+  month     =  nov,
+  year      =  2020
+}
+
+@INPROCEEDINGS{Cotterell2016-fy,
+  title     = "The {SIGMORPHON} 2016 shared task—morphological reinflection",
+  author    = "Cotterell, Ryan and Kirov, Christo and Sylak-Glassman, John and
+               Yarowsky, David and Eisner, Jason and Hulden, Mans",
+  booktitle = "Proceedings of the 14th SIGMORPHON Workshop on Computational
+               Research in Phonetics, Phonology, and Morphology",
+  publisher = "Association for Computational Linguistics",
+  address   = "Stroudsburg, PA, USA",
+  year      =  2016
+}
+
+@ARTICLE{Sabet2020-ew,
+  title         = "{SimAlign}: High quality word alignments without parallel
+                   training data using static and contextualized embeddings",
+  author        = "Sabet, Masoud Jalili and Dufter, Philipp and Yvon, François
+                   and Schütze, Hinrich",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Word alignments are useful for tasks like statistical and
+                   neural machine translation (NMT) and cross-lingual annotation
+                   projection. Statistical word aligners perform well, as do
+                   methods that extract alignments jointly with translations in
+                   NMT. However, most approaches require parallel training data,
+                   and quality decreases as less training data is available. We
+                   propose word alignment methods that require no parallel data.
+                   The key idea is to leverage multilingual word embeddings,
+                   both static and contextualized, for word alignment. Our
+                   multilingual embeddings are created from monolingual data
+                   only without relying on any parallel data or dictionaries. We
+                   find that alignments created from embeddings are superior for
+                   four and comparable for two language pairs compared to those
+                   produced by traditional statistical aligners, even with
+                   abundant parallel data; e.g., contextualized embeddings
+                   achieve a word alignment F1 for English-German that is 5
+                   percentage points higher than eflomal, a high-quality
+                   statistical aligner, trained on 100k parallel sentences.",
+  month         =  apr,
+  year          =  2020,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Garcia-Martinez2016-jf,
+  title         = "Factored Neural Machine Translation",
+  author        = "García-Martínez, Mercedes and Barrault, Loïc and Bougares,
+                   Fethi",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "We present a new approach for neural machine translation
+                   (NMT) using the morphological and grammatical decomposition
+                   of the words (factors) in the output side of the neural
+                   network. This architecture addresses two main problems
+                   occurring in MT, namely dealing with a large target language
+                   vocabulary and the out of vocabulary (OOV) words. By the
+                   means of factors, we are able to handle larger vocabulary and
+                   reduce the training time (for systems with equivalent target
+                   language vocabulary size). In addition, we can produce new
+                   words that are not in the vocabulary. We use a morphological
+                   analyser to get a factored representation of each word
+                   (lemmas, Part of Speech tag, tense, person, gender and
+                   number). We have extended the NMT approach with attention
+                   mechanism in order to have two different outputs, one for the
+                   lemmas and the other for the rest of the factors. The final
+                   translation is built using some \textit{a priori} linguistic
+                   information. We compare our extension with a word-based NMT
+                   system. The experiments, performed on the IWSLT'15 dataset
+                   translating from English to French, show that while the
+                   performance do not always increase, the system can manage a
+                   much larger vocabulary and consistently reduce the OOV rate.
+                   We observe up to 2\% BLEU point improvement in a simulated
+                   out of domain translation setup.",
+  month         =  sep,
+  year          =  2016,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Gezmu2023-lt,
+  title     = "Morpheme-based Neural Machine Translation models for low-resource
+               fusion languages",
+  author    = "Gezmu, Andargachew Mekonnen and Nürnberger, Andreas",
+  journal   = "ACM Trans. Asian Low-resour. Lang. Inf. Process.",
+  publisher = "Association for Computing Machinery (ACM)",
+  volume    =  22,
+  number    =  9,
+  pages     = "1--19",
+  abstract  = "Neural approaches, which are currently state-of-the-art in many
+               areas, have contributed significantly to the exciting
+               advancements in machine translation. However, Neural Machine
+               Translation (NMT) requires a substantial quantity and good
+               quality parallel training data to train the best model. A large
+               amount of training data, in turn, increases the underlying
+               vocabulary exponentially. Therefore, several proposed methods
+               have been devised for relatively limited vocabulary due to
+               constraints of computing resources such as system memory.
+               Encoding words as sequences of subword units for so-called
+               open-vocabulary translation is an effective strategy for solving
+               this problem. However, the conventional methods for splitting
+               words into subwords focus on statistics-based approaches that
+               mainly conform to agglutinative languages. In these languages,
+               the morphemes have relatively clean boundaries. These methods
+               still need to be thoroughly investigated for their applicability
+               to fusion languages, which is the main focus of this article.
+               Phonological and orthographic processes alter the borders of
+               constituent morphemes of a word in fusion languages. Therefore,
+               it makes it difficult to distinguish the actual morphemes that
+               carry syntactic or semantic information from the word’s surface
+               form, the form of the word as it appears in the text. We, thus,
+               resorted to a word segmentation method that segments words by
+               restoring the altered morphemes. We also compared conventional
+               and morpheme-based NMT subword models. We could prove that
+               morpheme-based models outperform conventional subword models on a
+               benchmark dataset.",
+  month     =  sep,
+  year      =  2023,
+  language  = "en"
+}
+
+@ARTICLE{Nzeyimana2024-fe,
+  title         = "Low-resource neural machine translation with morphological
+                   modeling",
+  author        = "Nzeyimana, Antoine",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Morphological modeling in neural machine translation (NMT) is
+                   a promising approach to achieving open-vocabulary machine
+                   translation for morphologically-rich languages. However,
+                   existing methods such as sub-word tokenization and
+                   character-based models are limited to the surface forms of
+                   the words. In this work, we propose a framework-solution for
+                   modeling complex morphology in low-resource settings. A
+                   two-tier transformer architecture is chosen to encode
+                   morphological information at the inputs. At the target-side
+                   output, a multi-task multi-label training scheme coupled with
+                   a beam search-based decoder are found to improve machine
+                   translation performance. An attention augmentation scheme to
+                   the transformer model is proposed in a generic form to allow
+                   integration of pre-trained language models and also
+                   facilitate modeling of word order relationships between the
+                   source and target languages. Several data augmentation
+                   techniques are evaluated and shown to increase translation
+                   performance in low-resource settings. We evaluate our
+                   proposed solution on Kinyarwanda - English translation using
+                   public-domain parallel text. Our final models achieve
+                   competitive performance in relation to large multi-lingual
+                   models. We hope that our results will motivate more use of
+                   explicit morphological information and the proposed model and
+                   data augmentations in low-resource NMT.",
+  month         =  apr,
+  year          =  2024,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@INPROCEEDINGS{Hackenbuchner2025-ey,
+  title     = "{GENDEROUS}: Machine translation and cross-linguistic evaluation
+               of a gender-ambiguous dataset",
+  author    = "Hackenbuchner, Janiça and Gkovedarou, Eleni and Daems, Joke",
+  booktitle = "Proceedings of the 6th Workshop on Gender Bias in Natural
+               Language Processing (GeBNLP)",
+  publisher = "Association for Computational Linguistics",
+  address   = "Stroudsburg, PA, USA",
+  pages     = "302--319",
+  year      =  2025
+}
+
+@MISC{UnknownUnknown-mx,
+  title        = "Cross-lingual Transfer Learning for Grammatical Error
+                  Correction",
+  howpublished = "\url{https://aclanthology.org/2020.coling-main.415.pdf?utm\_source=chatgpt.com}"
+}
+
+@ARTICLE{Corral2024-xc,
+  title   = "Morphology aware source term masking for terminology-constrained
+             {NMT}",
+  author  = "Corral, Ander and Saralegi, X",
+  journal = "Findings (Syd)",
+  pages   = "1676--1688",
+  year    =  2024
+}
+
+@ARTICLE{Wang2016-lg,
+  title         = "A novel approach to dropped pronoun translation",
+  author        = "Wang, Longyue and Tu, Zhaopeng and Zhang, Xiaojun and Li,
+                   Hang and Way, Andy and Liu, Qun",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Dropped Pronouns (DP) in which pronouns are frequently
+                   dropped in the source language but should be retained in the
+                   target language are challenge in machine translation. In
+                   response to this problem, we propose a semi-supervised
+                   approach to recall possibly missing pronouns in the
+                   translation. Firstly, we build training data for DP
+                   generation in which the DPs are automatically labelled
+                   according to the alignment information from a parallel
+                   corpus. Secondly, we build a deep learning-based DP generator
+                   for input sentences in decoding when no corresponding
+                   references exist. More specifically, the generation is
+                   two-phase: (1) DP position detection, which is modeled as a
+                   sequential labelling task with recurrent neural networks; and
+                   (2) DP prediction, which employs a multilayer perceptron with
+                   rich features. Finally, we integrate the above outputs into
+                   our translation system to recall missing pronouns by both
+                   extracting rules from the DP-labelled training data and
+                   translating the DP-generated input sentences. Experimental
+                   results show that our approach achieves a significant
+                   improvement of 1.58 BLEU points in translation performance
+                   with 66\% F-score for DP generation accuracy.",
+  month         =  apr,
+  year          =  2016,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Gerard2025-me,
+  title    = "Null subject comprehension and production revisited: a look at
+              English and Italian",
+  author   = "Gerard, Juliana and Singh, Muskaan and Bencini, Giulia and Valian,
+              Virginia",
+  journal  = "J. Child Lang.",
+  pages    = "1--26",
+  abstract = "This study will investigate how children acquire the option to
+              drop the subject of a sentence, or null subjects (e.g., ``Tickles
+              me'' instead of ``He tickles me''). In languages that do not
+              permit null subjects, children produce sentences with null
+              subjects from 1 to 3 years of age. This non-adultlike production
+              has been explained by two main accounts: first, the null subject
+              sentences may accurately reflect the children's linguistic
+              knowledge, that is, a competence account. Alternatively, they may
+              result from immature processing resources, therefore
+              underestimating children's competence, that is, a performance
+              account. We will test the predictions of these accounts by using a
+              central fixation preference procedure and elicited imitation to
+              measure children's comprehension and production, respectively, in
+              monolingual 19- to 28-month-olds acquiring English (a non-null
+              subject language) and Italian (a null subject language). The
+              results will shed light on acquisition across languages, and the
+              features that provide evidence to a learner.",
+  month    =  jan,
+  year     =  2025,
+  keywords = "comprehension; imitation; looking time; null subject; production",
+  language = "en"
+}
+
+@MISC{UnknownUnknown-cx,
+  title        = "The production of null and overt subject pronouns in Italian
+                  and Spanish: Effects of Semantic Role Predictability",
+  howpublished = "HSP 2025"
+}
+
+@ARTICLE{Di-Domenico2020-vg,
+  title     = "Null and overt subject pronouns in topic continuity and topic
+               shift: An investigation of the narrative productions of Italian
+               Natives, Greek Natives and near-native second language speakers
+               of Italian with Greek as a first language",
+  author    = "Di Domenico, Elisa and Baroncini, Ioli and Capotorti, Andrea",
+  journal   = "Glossa",
+  publisher = "Open Library of the Humanities",
+  volume    =  5,
+  number    =  1,
+  pages     =  117,
+  abstract  = "In this work we analyze the anaphoric devices employed in topic
+               continuity and topic shift in the semi-spontaneous narrations of
+               three groups of speakers: Italian Natives, Greek Natives and
+               near-native second language speakers (L2ers) of Italian with
+               Greek as a first language (L1). According to some recent
+               literature, near-native speakers of a null subject language
+               over-use overt pronouns even when their L1 is also a null subject
+               language. It is still unclear whether this over-use is tied to
+               differences in the languages involved (e.g. Italian and Spanish,
+               Filiaci et al. 2014) and hence might be the result of
+               cross-linguistic influence. Our data reveal that in Italian pro
+               has a more specific function than in Greek in signaling topic
+               continuity. The characteristic of pro in Italian is preserved in
+               the L2ers productions. We also found that L2ers over-use overt
+               pronouns, particularly in topic continuity, despite the
+               similarity of their two languages in this respect. Finally, we
+               single out an additional factor that influences speakers’ choice
+               of anaphoric devices, i.e. the number and kind of active
+               referents, proving evidence that all speakers’ groups employ
+               overt pronouns particularly when there are two active animate
+               referents that differ for gender and/or number, and L2ers
+               significantly more than the other two groups. Our findings thus
+               show that micro-variation in the use of anaphoric devices is
+               attested among null subject languages, while the over-use of
+               overt pronouns by L2ers stems from their difficulty in
+               establishing topicality under higher degrees of cognitive load.",
+  month     =  dec,
+  year      =  2020,
+  keywords  = "anaphoric devices, null subject languages, native speakers,
+               near-native speakers, topicality, active referents",
+  language  = "en"
+}
+
+@PHDTHESIS{Carminati2002-co,
+  title   = "The processing of Italian subject pronouns",
+  author  = "Carminati, Maria Nella",
+  address = "Amherst, MA",
+  month   =  feb,
+  year    =  2002,
+  school  = "University of Massachussets Amherst"
+}
+
+@ARTICLE{Wagner2016-pl,
+  title     = "Never saw one – first-person null subjects in spoken {English1}",
+  author    = "Wagner, Susanne",
+  journal   = "English Language and Linguistics",
+  publisher = "Cambridge University Press",
+  volume    = "-1",
+  number    =  01,
+  pages     = "1--34",
+  abstract  = "PDF | While null subjects are a well-researched phenomenon in
+               pro-drop languages like Italian or Spanish, they have not
+               received much attention in... | Find, read and cite all the
+               research you need on ResearchGate",
+  month     =  jul,
+  year      =  2016
+}
+
+@ARTICLE{Walkden2013-ql,
+  title     = "Null subjects in Old English",
+  author    = "Walkden, George",
+  journal   = "Lang. Var. Change",
+  publisher = "Cambridge University Press (CUP)",
+  volume    =  25,
+  number    =  2,
+  pages     = "155--178",
+  abstract  = "AbstractThe possibility of referential null subjects in Old
+               English has been the subject of conflicting assertions. Hulk and
+               van Kemenade (1995:245) stated that “the phenomenon of
+               referentialpro-drop does not exist in Old English,” but van
+               Gelderen (2000:137) claimed that “Old English has pro-drop.” This
+               paper presents a systematic quantitative investigation of
+               referential null subjects in Old English, drawing on the
+               York-Toronto-Helsinki Parsed Corpus of Old English Prose (YCOE;
+               Taylor, Warner, Pintzuk, \& Beths, 2003) and the York-Helsinki
+               Parsed Corpus of Old English Poetry (YCOEP; Pintzuk \& Plug,
+               2001). The results indicate substantial variation between texts.
+               In those texts that systematically exhibit null subjects, these
+               are much rarer in subordinate clauses, with first- and
+               second-person null subjects also being rare. I argue that the
+               theory of identification of null subjects by rich verbal
+               agreement is not sufficient to explain the Old English
+               phenomenon, and instead I develop an account based on Holmberg's
+               (2010) analysis of partial null subject languages.",
+  month     =  jul,
+  year      =  2013,
+  language  = "en"
+}
+
+@MISC{English_undated-py,
+  title  = "Null Subjects in Northeast English Bailey",
+  author = "English, Null Subjects I N"
+}
+
+@ARTICLE{Haegeman2013-hh,
+  title     = "The syntax of registers: Diary subject omission and the privilege
+               of the root",
+  author    = "Haegeman, Liliane",
+  journal   = "Lingua",
+  publisher = "Elsevier BV",
+  volume    =  130,
+  pages     = "88--110",
+  abstract  = "This paper examines register-based language internal variation,
+               focussing on subject omission in English diaries. This
+               register-specific pattern might be seen as some kind of
+               ‘extragrammatical’ culturally-determined stylistic convention
+               associated with this particular register, but a survey of the
+               relevant data shows that the omission of the subject in diary
+               styles is subject to the core syntactic constraints that have
+               been identified in formal syntax. Importantly, the observed
+               restrictions on subject omission do not follow from a purely
+               functional account according to which recoverable subjects can be
+               omitted: while recoverability certainly plays a role, there are
+               precise constraints on the syntactic positions in which
+               recoverable subjects can be omitted.The empirical generalisation
+               that emerges is that subjects can be omitted in root clauses.
+               Moreover, apart from fronted adjuncts no other constituent can
+               precede the non-overt subject. The generalisation applies both to
+               English and to French.The paper develops an account for subject
+               omission which, in addition to standard assumptions about phrase
+               structure, makes use of (i) the Phase based theory of truncation,
+               (ii) the hypothesis of the articulated subject field.It is shown
+               that other instantiations of subject omission such as that found,
+               for instance, in note style journalese or in Samuel Beckett's
+               poem Rockaby (Bianchi, 2007), are governed by the same
+               principles, suggesting that the pattern is subject to grammatical
+               constraints which are not exclusively tied to the specific
+               register. That the type of subject omission identified here
+               should be analysed in terms of core grammatical principles is
+               confirmed by the fact that subject ellipsis in second conjuncts,
+               a phenomenon which is independent of register variation, is
+               subject to the same restrictions as subject omission in the diary
+               style and can be accounted for using the hypotheses developed
+               here. The conclusion I draw from this discussion is that the
+               grammatical patterns displayed by what might seem a culturally
+               determined linguistic system are fully amenable to core
+               principles and parameters of universal grammar.",
+  month     =  jun,
+  year      =  2013,
+  language  = "en"
+}
+
+@INCOLLECTION{Jaeggli1989-vf,
+  title     = "The null subject parameter and parametric theory",
+  author    = "Jaeggli, Osvaldo and Safir, Kenneth J",
+  booktitle = "The Null Subject Parameter",
+  publisher = "Springer Netherlands",
+  address   = "Dordrecht",
+  pages     = "1--44",
+  abstract  = "The central challenge for modern linguistic theory is to develop
+               a model of Universal Grammar that is, on the one hand, general
+               enough to capture the universal features of natural language, and
+               on the other, flexible enough to account for the variation among
+               languages that is in fact observed. Moreover, insofar as
+               Universal Grammar (UG) is assumed to be part of the innate human
+               endowment, the problem of linguistic variation becomes crucially
+               related to the logical problem of how linguistic variation can be
+               mastered by the language learner. One conceptualization of this
+               problem that we believe is on the right track is the parametric
+               theory of linguistic variation, which is designed to provide both
+               a theory of linguistic typology as well as an answer to the
+               logical problem of language acquisition. In fact it is probably
+               fair to say that the recent proliferation of theoretically
+               informed generativist studies of languages other than English is
+               a direct result of the conceptualization of the role of
+               parameters in syntactic theory. The articles in this collection
+               exemplify the potential of this sort of research with respect to
+               a rather well-defined set of phenomena — centering around the
+               null subject phenomenon — within the paradigm of research known
+               as Government-Binding theory (Chomsky (1981, 1982)).",
+  year      =  1989
+}
+
+@ARTICLE{Duguine2017-jp,
+  title     = "Reversing the approach to null subjects: A perspective from
+               language acquisition",
+  author    = "Duguine, Maia",
+  journal   = "Front. Psychol.",
+  publisher = "Frontiers Media SA",
+  volume    =  8,
+  pages     =  27,
+  abstract  = "This paper proposes a new model for null subjects, and focuses on
+               its implications for language development. The literature on
+               pro-drop generally considers that not allowing null subjects is,
+               informally speaking, the ``default'' option in natural languages,
+               and appeals to particular morphosyntactic mechanisms in order to
+               account for those languages in which the subject can be omitted.
+               Shifting the perspective, the inverse approach postulates that
+               pro-drop is (almost) a default grammatical setting, and that
+               non-pro-drop results from the intervention of independent factors
+               that block pro-drop in the derivation. The paper explores the
+               consequences of the inverse approach in the domain of language
+               acquisition, arguing that this model allows to account for a
+               number of properties of child languages. It opens an avenue of
+               research worth exploring, one that could give new solutions to
+               old problems.",
+  month     =  feb,
+  year      =  2017,
+  keywords  = "case; language acquisition; language variation; null subjects;
+               pro-drop",
+  language  = "en"
+}
+
+@ARTICLE{McCarley2025-pb,
+  title     = "Orality and overtness: effects on Spanish subject use",
+  author    = "McCarley, Gemma",
+  journal   = "J. Hist. Socioling.",
+  publisher = "Walter de Gruyter GmbH",
+  abstract  = "Abstract This study of a corpus of varieties of Spanish finds
+               that the level of orality of a text is a strong predictor of
+               subject pronoun expression. Following previous studies’
+               application of orality to interrogative constructions in
+               Brazilian Portuguese and French, an orality measurement was
+               adapted for Spanish and applied to the new corpus Corpus
+               Diacrónico del Español Latinoamericano: Edición de Sujetos
+               (CorDELES). CorDELES was created to investigate the historic
+               development of subject pronoun expression that led to the high
+               rates of overt subject pronouns attested in current varieties of
+               Latin American Spanish, specifically whether overt subject
+               pronoun expression increases following contact with the enslaved
+               Africans brought to the Caribbean during the colonial period.
+               This contact hypothesis was used as a backdrop to investigate the
+               effects of orality on a corpus. Indeed, the inclusion of orality
+               as a predictor in a mixed-effects model found significant effects
+               for a distinction between Spain and the Americas as well as an
+               intriguing interaction between year and orality. These results
+               add to the burgeoning body of work revealing the benefits of
+               accounting for orality in corpus work.",
+  month     =  jul,
+  year      =  2025,
+  language  = "en"
+}
+
+@INCOLLECTION{Shin2015-yo,
+  title     = "The Emergence of Structured Variability in Morphosyntax:
+               Childhood acquisition of Spanish subject pronouns",
+  author    = "Shin, Naomi Lapidus and Erker, Daniel",
+  editor    = "Carvalho, Ana M and Orozco, Rafael and Shin, Naomi Lapidus",
+  booktitle = "ubject Pronoun Expression in Spanish: A Cross-Dialectal
+               Perspective",
+  publisher = "Georgetown University Press",
+  year      =  2015
+}
+
+@ARTICLE{Schafer2021-xc,
+  title     = "Topic drop in German: Empirical support for an
+               information-theoretic account to a long-known omission phenomenon",
+  author    = "Schäfer, Lisa",
+  journal   = "Z. Sprachwiss.",
+  publisher = "Walter de Gruyter GmbH",
+  volume    =  40,
+  number    =  2,
+  pages     = "161--197",
+  abstract  = "AbstractGerman allows fortopic drop(Fries 1988), the omission of
+               a preverbal constituent from a V2 sentence. I address the
+               underexplored question of why speakers use topic drop with a
+               corpus study and two acceptability rating studies. I propose an
+               information-theoretic explanation based on the Uniform
+               Information Density hypothesis (Levy and Jaeger 2007) that
+               accounts for the full picture of data. The information-theoretic
+               approach predicts that topic drop is more felicitous when the
+               omitted constituent is predictable in context and easy to
+               recover. This leads to a more optimal use of the hearer’s
+               processing capacities. The corpus study on the FraC corpus (Horch
+               and Reich 2017) shows that grammatical person, verb probability
+               and verbal inflection impact the frequency of topic drop. The two
+               rating experiments indicate that these differences in frequency
+               are also reflected in acceptability and additionally evidence an
+               impact of topicality on topic drop. Taken together my studies
+               constitute the first systematic empirical investigation of
+               previously only sparsely researched observations from the
+               literature. My information-theoretic account provides a unifying
+               explanation of these isolated observations and is also able to
+               account for the effect of verb probability that I find in my
+               corpus study.",
+  month     =  nov,
+  year      =  2021,
+  keywords  = "topic drop; ellipsis; information theory; Uniform Information
+               Density hypothesis; predictability; recoverability; corpus study;
+               acceptability judgments",
+  language  = "en"
+}
+
+@ARTICLE{Hao2025-wt,
+  title         = "Uniform Information Density and syntactic reduction:
+                   Revisiting $\textit{that}$-mentioning in English complement
+                   clauses",
+  author        = "Hao, Hailin and Kaiser, Elsi",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Speakers often have multiple ways to express the same
+                   meaning. The Uniform Information Density (UID) hypothesis
+                   suggests that speakers exploit this variability to maintain a
+                   consistent rate of information transmission during language
+                   production. Building on prior work linking UID to syntactic
+                   reduction, we revisit the finding that the optional
+                   complementizer $\textit{that}$in English complement clauses
+                   is more likely to be omitted when the clause has low
+                   information density (i.e., more predictable). We advance this
+                   line of research by analyzing a large-scale, contemporary
+                   conversational corpus and using machine learning and neural
+                   language models to refine estimates of information density.
+                   Our results replicated the established relationship between
+                   information density and $\textit{that}$-mentioning. However,
+                   we found that previous measures of information density based
+                   on matrix verbs' subcategorization probability capture
+                   substantial idiosyncratic lexical variation. By contrast,
+                   estimates derived from contextual word embeddings account for
+                   additional variance in patterns of complementizer usage.",
+  month         =  sep,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Lemke2021-je,
+  title     = "Predictable words are more likely to be omitted in
+               fragments-evidence from production data",
+  author    = "Lemke, Robin and Reich, Ingo and Schäfer, Lisa and Drenhaus,
+               Heiner",
+  journal   = "Front. Psychol.",
+  publisher = "Frontiers Media SA",
+  volume    =  12,
+  pages     =  662125,
+  abstract  = "Instead of a full sentence like Bring me to the university
+               (uttered by the passenger to a taxi driver) speakers often use
+               fragments like To the university to get their message across. So
+               far there is no comprehensive and empirically supported account
+               of why and under which circumstances speakers sometimes prefer a
+               fragment over the corresponding full sentence. We propose an
+               information-theoretic account to model this choice: A speaker
+               chooses the encoding that distributes information most uniformly
+               across the utterance in order to make the most efficient use of
+               the hearer's processing resources (Uniform Information Density,
+               Levy and Jaeger, 2007). Since processing effort is related to the
+               predictability of words (Hale, 2001) our account predicts two
+               effects of word probability on omissions: First, omitting
+               predictable words (which are more easily processed), avoids
+               underutilizing processing resources. Second, inserting words
+               before very unpredictable words distributes otherwise excessively
+               high processing effort more uniformly. We test these predictions
+               with a production study that supports both of these predictions.
+               Our study makes two main contributions: First we develop an
+               empirically motivated and supported account of fragment usage.
+               Second, we extend previous evidence for information-theoretic
+               processing constraints on language in two ways: We find
+               predictability effects on omissions driven by extralinguistic
+               context, whereas previous research mostly focused on effects of
+               local linguistic context. Furthermore, we show that omissions of
+               content words are also subject to information-theoretic
+               well-formedness considerations. Previously, this has been shown
+               mostly for the omission of function words.",
+  month     =  jul,
+  year      =  2021,
+  keywords  = "ellipsis; fragments; information theory; script knowledge;
+               surprisal",
+  language  = "en"
+}
+
+@INCOLLECTION{HolmbergUnknown-la,
+  title     = "Null subjects in Finnish and the typology of pro drop",
+  author    = "Holmberg, Anders",
+  editor    = "Tamm, Anne and Vainikka, Anne",
+  booktitle = "Uralic Syntax"
+}
+
+@ARTICLE{Zhu2019-fk,
+  title     = "Testing language acquisition models: null and overt topics in
+               Mandarin",
+  author    = "Zhu, Jingtao and Gavarró, Anna",
+  journal   = "J. Child Lang.",
+  publisher = "Cambridge University Press (CUP)",
+  volume    =  46,
+  number    =  4,
+  pages     = "707--732",
+  abstract  = "Parameter setting is either precipitous (Gibson \& Wexler, 1994)
+               or it is gradual in response to input frequency (Yang, 2002,
+               2004). In this study, we compare these models against the
+               empirical domain of subject and (direct) object drop in Mandarin.
+               We conducted a corpus-based study of the speech of 47
+               Mandarin-speaking children aged 1;2-6;5, and their caregivers,
+               from the CHILDES database. The results show that before age 1;8
+               all the children used null subjects and null objects in a
+               target-like fashion, which reveals that the parameter that
+               governs null topics is set from very early on, even if the
+               presence of disambiguating evidence for [+Null Topic] patterns is
+               low. Besides, children's ba constructions, which require an overt
+               object, reliably included this object from the first occurrence
+               although its frequency was scarce in the input. Our results
+               indicate that the setting of certain parameters occurred early
+               independently of the input.",
+  month     =  jul,
+  year      =  2019,
+  language  = "en"
+}
+
+@INPROCEEDINGS{Liang2024-he,
+  title       = "Uniform information density explains subject doubling in French",
+  author      = "Liang, Yiming and Amsili, Pascal and Burnett, Heather and
+                 Demberg, Vera",
+  editor      = "Samuelson, L K and Frank, S L and Toneva, M and Mackey, A and
+                 Hazeltine, E",
+  booktitle   = "Proceedings of the 46th Annual Conference of the Cognitive
+                 Science Society",
+  institution = "Cognitive Science Society",
+  abstract    = "In this paper we investigate whether subject doubling in French
+                 is affected by the Uniform Information Density (UID) princi-
+                 ple, which states that speakers prefer language encoding that
+                 minimizes fluctuations in information density. We show that,
+                 other factors being controlled, speakers are more likely to
+                 dou- ble the NP subject when it has a high surprisal, thus
+                 providing further empirical evidence to the UID principle which
+                 predicts a surprisal-redundancy trade-off as a property of
+                 natural lan- guages. We argue for the importance of employing
+                 GPT-2 to investigate complex linguistic phenomena such as
+                 subject dou- bling, as it enables the estimation of subject
+                 surprisal by con- sidering a rather large conversational
+                 context, a task made pos- sible by powerful language models
+                 that incorporate linguistic knowledge through pre-training on
+                 extensive datasets.",
+  year        =  2024
+}
+
+@ARTICLE{Park2025-ub,
+  title     = "An empirical study on parameters affecting the recoverability of
+               deictic null subjects in Korean",
+  author    = "Park, Arum",
+  journal   = "Lingua",
+  publisher = "Elsevier BV",
+  volume    =  319,
+  number    =  103913,
+  pages     =  103913,
+  abstract  = "Korean is a null subject language, allowing the omission of overt
+               subjects in sentences. Within the framework of principle and
+               parameter theory, Korea…",
+  month     =  may,
+  year      =  2025,
+  language  = "en"
+}
+
+@ARTICLE{Zushi2003-at,
+  title     = "Null arguments: the case of Japanese and Romance",
+  author    = "Zushi, Mihoko",
+  journal   = "Lingua",
+  publisher = "Elsevier BV",
+  volume    =  113,
+  number    = "4-6",
+  pages     = "559--604",
+  abstract  = "The first half of this article presents an overview of
+               theoretical and empirical issues raised by the phenomena of
+               argument drop within the principles-and-parameters approach, with
+               special attention to the comparison of the argument drop in
+               Japanese and the Romance languages. The latter half of the
+               article is devoted to reconsidering the two parameters dealing
+               with argument drop that have been proposed in the literature,
+               namely, the pro-drop parameter and the zero-topic parameter. This
+               article attempts to eliminate the need for postulating the two
+               parameters as independent parameters and derive the presence or
+               absence of null arguments from a particular property of T, in
+               accordance with the view that all parameters are morphological in
+               nature. It is argued that the occurrence of null subjects in
+               finite clauses is a consequence of the lexical, rather than
+               functional, nature of T, which holds true in Japanese and
+               Italian, but not in English. It is also argued that the presence
+               of zero topics that plays a crucial role in identifying null
+               arguments is allowed when they are licensed by a predication
+               relation, and that such a predication relation can be made
+               available by the predicative nature of the projection of T in
+               Japanese, but cannot by the argument nature of the projection of
+               T in Italian and English.",
+  month     =  apr,
+  year      =  2003,
+  language  = "en"
+}
+
+@ARTICLE{Ishizuki2024-xl,
+  title         = "To drop or not to drop? Predicting argument ellipsis
+                   judgments: A case study in Japanese",
+  author        = "Ishizuki, Yukiko and Kuribayashi, Tatsuki and Matsubayashi,
+                   Yuichiroh and Sasano, Ryohei and Inui, Kentaro",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Speakers sometimes omit certain arguments of a predicate in a
+                   sentence; such omission is especially frequent in pro-drop
+                   languages. This study addresses a question about ellipsis --
+                   what can explain the native speakers' ellipsis decisions? --
+                   motivated by the interest in human discourse processing and
+                   writing assistance for this choice. To this end, we first
+                   collect large-scale human annotations of whether and why a
+                   particular argument should be omitted across over 2,000 data
+                   points in the balanced corpus of Japanese, a prototypical
+                   pro-drop language. The data indicate that native speakers
+                   overall share common criteria for such judgments and further
+                   clarify their quantitative characteristics, e.g., the
+                   distribution of related linguistic factors in the balanced
+                   corpus. Furthermore, the performance of the language
+                   model-based argument ellipsis judgment model is examined, and
+                   the gap between the systems' prediction and human judgments
+                   in specific linguistic aspects is revealed. We hope our
+                   fundamental resource encourages further studies on natural
+                   human ellipsis judgment.",
+  month         =  apr,
+  year          =  2024,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL",
+  language      = "en"
+}
+
+@ARTICLE{Valian1991-pa,
+  title     = "Syntactic subjects in the early speech of American and Italian
+               children",
+  author    = "Valian, V",
+  journal   = "Cognition",
+  publisher = "Elsevier BV",
+  volume    =  40,
+  number    = "1-2",
+  pages     = "21--81",
+  abstract  = "Why do young children leave out sentential subjects? Two
+               competence-deficit hypotheses and a performance-limitation
+               account are evaluated in the present set of studies. American
+               children appear to understand that English requires subjects
+               before mean length of utterance (MLU) 2.0. On balance,
+               performance factors account for the data best. Natural
+               conversations between 21 American children (ranging in age from
+               1;10 to 2;8 and in MLU from 1.53 to 4.38) and their mothers were
+               taped, transcribed, and analyzed to determine when American
+               children understand that English requires subjects. We measured
+               the frequency of subjects (Study 1); types of pronominal
+               subjects, including expletives (Study 2); frequency of modals and
+               semi-auxiliaries (Study 3); frequency of infinitival to, past
+               tense, third person singular, and subordinate clauses (Study 4);
+               length of verb phrase, frequency of different types of verbs, and
+               frequency of direct objects (Study 5). For Studies 1 and 3 we
+               also used, for comparative purposes, transcripts of 5 Italian
+               children, taped monthly for a year. Even our lowest-MLU American
+               group (5 children between 1.5 and 1.99) used subjects and
+               pronominal subjects more than twice as often as the Italian
+               children, and correctly case-marked their subjects. The American
+               children also produced examples of all the sentence elements
+               measured.",
+  month     =  aug,
+  year      =  1991,
+  language  = "en"
+}
+
+@INCOLLECTION{Hyams1989-mu,
+  title     = "The null subject parameter in language acquisition",
+  author    = "Hyams, Nina",
+  booktitle = "The Null Subject Parameter",
+  publisher = "Springer Netherlands",
+  address   = "Dordrecht",
+  pages     = "215--238",
+  abstract  = "Within a parameterized theory of grammar such as that proposed
+               within the Government/Binding Theory of Chomsky (1981),
+               grammatical development is viewed as a process whereby the child
+               ‘fixes’ the parameters of Universal Grammar (UG) at the values
+               which are appropriate for the particular adult language he is to
+               acquire. The parameters of UG provide the child with a limited
+               number of grammatical options; these options express the narrow
+               range of variation which adult languages exhibit with respect to
+               some aspect of grammar. Of course, in addition to fixing the
+               parameters of UG, the child must also acquire the idiosyncratic
+               or peripheral aspects of his language, which may be unrelated or
+               only loosely connected to the parameters. However, it is assumed
+               that once the child has set all the parameters, he will have
+               acquired the ‘core’ component of the adult grammatical system.",
+  year      =  1989,
+  language  = "en"
+}
+
+@BOOK{Hyams1986-ae,
+  title     = "Language acquisition and the theory of parameters",
+  author    = "Hyams, Nina",
+  publisher = "Kluwer Academic",
+  address   = "Dordrecht, Netherlands",
+  series    = "Studies in Theoretical Psycholinguistics",
+  month     =  aug,
+  year      =  1986,
+  language  = "en"
+}
+
+@ARTICLE{Duguine2017-fr,
+  title     = "Reversing the approach to null subjects: A perspective from
+               language acquisition",
+  author    = "Duguine, Maia",
+  journal   = "Front. Psychol.",
+  publisher = "Frontiers Media SA",
+  volume    =  8,
+  pages     =  27,
+  abstract  = "This paper proposes a new model for null subjects, and focuses on
+               its implications for language development. The literature on
+               pro-drop generally considers that not allowing null subjects is,
+               informally speaking, the ``default'' option in natural languages,
+               and appeals to particular morphosyntactic mechanisms in order to
+               account for those languages in which the subject can be omitted.
+               Shifting the perspective, the inverse approach postulates that
+               pro-drop is (almost) a default grammatical setting, and that
+               non-pro-drop results from the intervention of independent factors
+               that block pro-drop in the derivation. The paper explores the
+               consequences of the inverse approach in the domain of language
+               acquisition, arguing that this model allows to account for a
+               number of properties of child languages. It opens an avenue of
+               research worth exploring, one that could give new solutions to
+               old problems.",
+  month     =  feb,
+  year      =  2017,
+  keywords  = "case; language acquisition; language variation; null subjects;
+               pro-drop",
+  language  = "en"
+}
+
+@ARTICLE{Guarasci2023-sl,
+  title     = "Assessing {BERT’s} ability to learn Italian syntax: a study on
+               null-subject and agreement phenomena",
+  author    = "Guarasci, Raffaele and Silvestri, Stefano and De Pietro, Giuseppe
+               and Fujita, Hamido and Esposito, Massimo",
+  journal   = "J. Ambient Intell. Humaniz. Comput.",
+  publisher = "Springer Science and Business Media LLC",
+  volume    =  14,
+  number    =  1,
+  pages     = "289--303",
+  abstract  = "The work presented in this paper investigates the ability of BERT
+               neural language model pretrained in Italian to embed syntactic
+               dependency relationships into its layers, by approximating a
+               Dependency Parse Tree. To this end, a structural probe, namely a
+               supervised model able to extract linguistic structures from a
+               language model, has been trained leveraging the contextual
+               embeddings from the layers of BERT. An experimental assessment
+               has been performed using an Italian version of BERT-base model
+               and a set of datasets for Italian labelled with Universal
+               Dependencies formalism. The results, achieved using standard
+               metrics of dependency parsers, have shown that a knowledge of the
+               Italian syntax is embedded in central-upper layers of the BERT
+               model, according to what observed in literature for the English
+               case. In addition, the probe has been also used to experimentally
+               evaluate the BERT model behaviour in case of two specific
+               syntactic phenomena in Italian, namely null-subject and
+               subject-verb-agreement, showing better performance than an
+               Italian state-of-the-art parser. These findings can open a path
+               for the development of new hybrid approaches, exploiting the
+               probe to integrate or improve limits or weaknesses in analysing
+               articulated constructions of Italian syntax, traditionally
+               complex to be parsed.",
+  month     =  jan,
+  year      =  2023,
+  language  = "en"
+}
+
+@INCOLLECTION{Barbagli2016-eh,
+  title     = "{CItA}: an {L1} Italian Learners Corpus to Study the Development
+               of Writing Competence",
+  author    = "Barbagli, A and Lucisano, P and Dellorletta, F and Montemagni, S
+               and Venturi, G",
+  booktitle = "Proceedings of 10th Edition of International Conference on
+               Language Resources and Evaluation",
+  address   = "Portorož, Slovenia",
+  pages     = "23--28",
+  year      =  2016
+}
+
+@INCOLLECTION{Brunato2016-kc,
+  title     = "{PaCCSS}-{IT}: A Parallel Corpus of Complex-Simple Sentences for
+               Automatic Text Simplification“",
+  author    = "Brunato, D and Cimino, A and Dellorletta, F and Venturi, G",
+  booktitle = "Proceedings of Conference on Empirical Methods in Natural
+               Language Processing",
+  address   = "Austin, Texas, USA",
+  pages     = "351--361",
+  year      =  2016
+}
+
+@ARTICLE{Brunato2016-sf,
+  title     = "{ISACCO}: a corpus for investigating spoken and written language
+               development in Italian school–age children",
+  author    = "Brunato, Dominique and Dell'Orletta, Felice",
+  journal   = "IJCoL",
+  publisher = "OpenEdition",
+  volume    =  2,
+  number    =  1,
+  pages     = "63--76",
+  month     =  jun,
+  year      =  2016
+}
+
+@ARTICLE{Legate2007-wq,
+  title     = "Morphosyntactic learning and the development of tense",
+  author    = "Legate, Julie Anne and Yang, Charles",
+  journal   = "Lang. Acquis.",
+  publisher = "Informa UK Limited",
+  volume    =  14,
+  number    =  3,
+  pages     = "315--344",
+  month     =  aug,
+  year      =  2007
+}
+
+@ARTICLE{Yang2004-wk,
+  title     = "Universal Grammar, statistics or both?",
+  author    = "Yang, Charles D",
+  journal   = "Trends Cogn. Sci.",
+  publisher = "Elsevier BV",
+  volume    =  8,
+  number    =  10,
+  pages     = "451--456",
+  abstract  = "Recent demonstrations of statistical learning in infants have
+               reinvigorated the innateness versus learning debate in language
+               acquisition. This article addresses these issues from both
+               computational and developmental perspectives. First, I argue that
+               statistical learning using transitional probabilities cannot
+               reliably segment words when scaled to a realistic setting (e.g.
+               child-directed English). To be successful, it must be constrained
+               by knowledge of phonological structure. Then, turning to the bona
+               fide theory of innateness--the Principles and Parameters
+               framework--I argue that a full explanation of children's grammar
+               development must abandon the domain-specific learning model of
+               triggering, in favor of probabilistic learning mechanisms that
+               might be domain-general but nevertheless operate in the
+               domain-specific space of syntactic parameters.",
+  month     =  oct,
+  year      =  2004,
+  language  = "en"
+}
+
+@BOOK{Yang2003-fn,
+  title     = "Knowledge and learning in natural language",
+  author    = "Yang, Charles D",
+  publisher = "Oxford University Press",
+  address   = "London, England",
+  month     =  feb,
+  year      =  2003,
+  language  = "en"
+}
+
+@BOOK{Yang2011-ur,
+  title     = "Minimalism and Language Acquisition",
+  author    = "Yang, Charles and Roeper, Tom",
+  publisher = "Oxford University Press",
+  abstract  = "Perhaps more clearly than any other field, the study of child
+               language acquisition highlights the continuity from the
+               Principles \& Parameters framework (Chomsky 1981) to the
+               Minimalist Program (Chomsky 1995). As is the case for all
+               meaningful theoretical developments, under Minimalism new
+               challenges emerge, puzzles are cast under different lights, while
+               important insights from previous work can still be retained; this
+               chapter provides an overview of these issues. The first part
+               builds on the continuity from P\&P to Minimalism, with focus on
+               the role of parameters in the theory of language acquisition and
+               the mechanisms of learning. The second part turns to the
+               Minimalist innovations, specifically how the new formulations of
+               the syntactic system bring new tools to the explanation of child
+               language.",
+  month     =  mar,
+  year      =  2011
+}
+
+@ARTICLE{Valian2005-cn,
+  title     = "When opportunity knocks twice: two-year-olds' repetition of
+               sentence subjects",
+  author    = "Valian, Virginia and Aubry, Stephanie",
+  journal   = "J. Child Lang.",
+  publisher = "J Child Lang",
+  volume    =  32,
+  number    =  3,
+  pages     = "617--641",
+  abstract  = "Why are young children's utterances short? This elicited
+               imitation study used a new task--double imitation--to investigate
+               the factors that contribute to children's failure to lexicalize
+               sentence subjects. Two-year-olds heard a triad of sentences
+               singly and attempted to imitate each; they then again heard the
+               same triad singly and again attempted to imitate each.
+               Comparisons between the two attempts showed that children's
+               second passes were more accurate than their first. In addition,
+               independent of sentence length, children increased their
+               inclusion of pronominal and expletive but not lexical subjects.
+               Children included verbs more often from sentences with pronominal
+               than lexical subjects, suggesting a trade-off. Children included
+               subjects more often in short sentences than long ones, and
+               increased subject inclusion only in short sentences. The results
+               suggest that children's language production is similar to
+               adults': a complex interaction of syntactic knowledge, limited
+               cognitive resources, communicative goals, and conversational
+               structure.",
+  month     =  aug,
+  year      =  2005,
+  language  = "en"
+}
+
+@INCOLLECTION{Rizzi1994-tm,
+  title     = "Early null subjects and root null subjects",
+  author    = "Rizzi, Luigi",
+  editor    = "Lust, Barbara",
+  booktitle = "Language Acquisition Studies in Generative Grammar",
+  publisher = "John Benjamins Publishing Company",
+  address   = "Amsterdam",
+  volume    =  2,
+  pages     =  151,
+  abstract  = "around the age of 2, children freely drop subjects, irrespective
+               of whether or not the target language is a null subject language
+               / [examine] this state of affairs in terms of the Null Subject
+               Parameter / the initial setting is the null subject value / a
+               number of structural properties of the early null subjects are
+               emerging that suggest that this phenomenon is quite different
+               from the drop of subjects in an adult grammatical system like
+               Italian / discuss . . . such properties and identify the major
+               configurational constraint: by and large, the early null subject
+               is possible in the 1st position of the structure, that is, in the
+               specifier of the root / then claim that such a configurational
+               constraint is not specific to transitional systems in
+               acquisition: instances of root null subjects can be found in
+               adult grammatical systems; hence they represent a genuine option
+               of Universal Grammar various questions are raised by the
+               existence of root null subjects in acquisition, in special
+               registers, and in normal adult languages / what is the status of
+               the null element involved / how is it licensed and identified /
+               how does it differ from a discourse-bound null operator / why is
+               this option lost in the course of the acquisition of English and
+               many other languages / try to provide a partial answer to these
+               questions by developing an analysis of root null subjects based
+               on the typology of null elements proposed by H. Lasnik and T.
+               Stowell (1991) (PsycINFO Database Record (c) 2016 APA, all rights
+               reserved)",
+  year      =  1994
+}
+
+@INPROCEEDINGS{Lorusso2004-ga,
+  title     = "Overt Subject Distribution in Early Italian Children",
+  author    = "Lorusso, Paolo and Caprin, Claudia and Guasti, Maria Teresa",
+  booktitle = "BUCLD 28 Proceedings",
+  year      =  2004
+}
+
+@ARTICLE{Sessarego2017-cn,
+  title     = "Revisiting the null subject parameter: New insights from
+               Afro-Peruvian Spanish",
+  author    = "Sessarego, Sandro and Gutiérrez-Rexach, Javier",
+  journal   = "Isogloss J. Var. Roman. Iber. Lang.",
+  publisher = "Universitat Autonoma de Barcelona",
+  volume    =  3,
+  number    =  1,
+  pages     =  43,
+  month     =  dec,
+  year      =  2017
+}
+
+@ARTICLE{Bloom1989-ro,
+  title    = "Why Do Children Omit Subjects?",
+  author   = "Bloom, Paul",
+  abstract = "A discussion of young children's production of English utterances
+              with missing constituents focuses on the omission of subjects. The
+              theory that young children have different grammars from those of
+              adults is disputed, and it is suggested that, instead, subjects
+              are omitted due to performance factors. Processing limitations in
+              child language are evidenced in early difficulties with utterance
+              length, omission of other constituents, and some children's
+              reduction of the subject to a schwa. A study of the speech of
+              three children supported the processing theory's prediction that
+              children's subjectless sentences would tend to have longer verb
+              phrases than sentences with subjects. Therefore, in contrast to
+              the notion that children acquiring English represent pro-drop
+              grammars until they are 2 to 3 years old, it is proposed that
+              children initially represent overt subjects as obligatory
+              (non-pro-drop), and only when hearing subjectless sentences do
+              they change their grammars to pro-drop, as",
+  month    =  apr,
+  year     =  1989,
+  keywords = "Child Language; Contrastive Linguistics; English; Grammar;
+              Italian; Language Acquisition; Language Processing; Language
+              Research; Linguistic Theory; Oral Language; Sentence Structure;
+              Uncommonly Taught Languages",
+  language = "en"
+}
+
+@ARTICLE{Hyams1993-zk,
+  title   = "On the grammatical basis of null subjects in child language",
+  author  = "Hyams, Nina and Wexler, Kenneth",
+  journal = "Linguist. Inq.",
+  volume  =  24,
+  number  =  3,
+  pages   = "421--459",
+  year    =  1993
+}
+
+@ARTICLE{Orfitelli2012-pr,
+  title   = "Children’s grammar of null subjects: Evidence from comprehension",
+  author  = "Orfitelli, Robyn and Hyams, N",
+  journal = "Linguist. Inq.",
+  volume  =  43,
+  number  =  4,
+  pages   = "563--590",
+  month   =  oct,
+  year    =  2012
+}
+
+@ARTICLE{Mateu2018-hz,
+  title  = "The structure of silence: A look at children’s comprehension of
+            sluicing",
+  author = "Mateu, Victoria and Hyams, N",
+  year   =  2018
+}
+
+@ARTICLE{Pizzuto1992-kk,
+  title     = "The acquisition of Italian morphology: implications for models of
+               language development",
+  author    = "Pizzuto, Elena and Caselli, Maria Cristina",
+  journal   = "J. Child Lang.",
+  publisher = "Cambridge University Press (CUP)",
+  volume    =  19,
+  number    =  3,
+  pages     = "491--557",
+  abstract  = "ABSTRACTThis study explores the spontaneous acquisition of
+               Italian inflectional morphology by three children (age range
+               1;4–3;0). Longitudinal, free speech samples are examined,
+               focusing on the development of the morphological paradigms of
+               Italian verbs, pronouns and articles. Data analysis is conducted
+               using criteria appropriate to allow reliable cross-linguistic
+               comparisons with data from English. By this means we evaluate the
+               plausibility of a nativist, parameter-setting account of language
+               development in Italian and English, as recently proposed for
+               these two languages. Results show that the general developmental
+               patterns observed in Italian are not significantly different from
+               those found in English. These findings are not consistent with
+               current interpretations of parameter-setting accounts of language
+               development. Alternative explanatory models are discussed.",
+  month     =  oct,
+  year      =  1992,
+  language  = "en"
+}
+
+@ARTICLE{Magnini2025-ry,
+  title         = "Evalita-{LLM}: Benchmarking Large Language Models on Italian",
+  author        = "Magnini, Bernardo and Zanoli, Roberto and Resta, Michele and
+                   Cimmino, Martin and Albano, Paolo and Madeddu, Marco and
+                   Patti, Viviana",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "We describe Evalita-LLM, a new benchmark designed to evaluate
+                   Large Language Models (LLMs) on Italian tasks. The
+                   distinguishing and innovative features of Evalita-LLM are the
+                   following: (i) all tasks are native Italian, avoiding issues
+                   of translating from Italian and potential cultural biases;
+                   (ii) in addition to well established multiple-choice tasks,
+                   the benchmark includes generative tasks, enabling more
+                   natural interaction with LLMs; (iii) all tasks are evaluated
+                   against multiple prompts, this way mitigating the model
+                   sensitivity to specific prompts and allowing a fairer and
+                   objective evaluation. We propose an iterative methodology,
+                   where candidate tasks and candidate prompts are validated
+                   against a set of LLMs used for development. We report
+                   experimental results from the benchmark's development phase,
+                   and provide performance statistics for several
+                   state-of-the-art LLMs.",
+  month         =  feb,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Michaelov2022-gy,
+  title         = "Do language models make human-like predictions about the
+                   coreferents of Italian anaphoric zero pronouns?",
+  author        = "Michaelov, James A and Bergen, Benjamin K",
+  journal       = "arXiv [cs.CL]",
+  abstract      = "Some languages allow arguments to be omitted in certain
+                   contexts. Yet human language comprehenders reliably infer the
+                   intended referents of these zero pronouns, in part because
+                   they construct expectations about which referents are more
+                   likely. We ask whether Neural Language Models also extract
+                   the same expectations. We test whether 12 contemporary
+                   language models display expectations that reflect human
+                   behavior when exposed to sentences with zero pronouns from
+                   five behavioral experiments conducted in Italian by Carminati
+                   (2005). We find that three models - XGLM 2.9B, 4.5B, and 7.5B
+                   - capture the human behavior from all the experiments, with
+                   others successfully modeling some of the results. This result
+                   suggests that human expectations about coreference can be
+                   derived from exposure to language, and also indicates
+                   features of language models that allow them to better reflect
+                   human behavior.",
+  month         =  aug,
+  year          =  2022,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.CL"
+}
+
+@ARTICLE{Bertolino2024-xf,
+  title     = "The setting of the null subject parameters across
+               (non-)null-subject languages",
+  author    = "Bertolino, Karina",
+  journal   = "Languages",
+  publisher = "mdpi.com",
+  abstract  = "This article explores a learning model for acquiring a variety of
+               null and non-null-subject languages (i.e., consistent, partial,
+               semi and non-null-subject languages). This model builds upon a
+               version of the Null Subject Parameter(s) based on the
+               “Borer-Chomsky Conjecture” (BCC), which assumes that the presence
+               or absence of a D(definiteness)-feature in different functional
+               heads, together with EPP (Extended projection principle) related
+               features, account for the distributions of null subjects in a
+               complex typology of (non-)null-subject languages. This BCC-based
+               learning model assumes the hypothesis that children, in order to
+               learn the pattern of null subjects in their language, need to
+               look at the morphology of functional elements. By reviewing
+               acquisition studies, I examine whether the model is compatible
+               with the data. I argue that there is no evidence of parameter
+               missetting in any of the languages examined, and that children’s
+               early sensitivity to functional elements suggests that the
+               BCC-based learning model is a suitable theory for the acquisition
+               of null subjects.",
+  month     =  aug,
+  year      =  2024
+}
+
+@ARTICLE{Su2025-fr,
+  title     = "On null-subject languages and the Overt Pronoun Constraint: A
+               comparison of English, Mandarin and Japanese",
+  author    = "Su, Yi-Ching and Hsieh, Ho-Yun and Tankersley, Devin and Chen,
+               Chia-Hsing",
+  journal   = "Second Lang. Res.",
+  publisher = "SAGE Publications",
+  volume    =  41,
+  number    =  1,
+  pages     = "47--75",
+  abstract  = "This study reports on findings from two experiments investigating
+               the interpretive patterns of overt pronouns in an embedded
+               subject position with three types of matrix subjects (i.e. a
+               referential NP, a quantified NP, or a wh-phrase) in Mandarin,
+               English, and Japanese. According to the Overt Pronoun Constraint
+               (OPC), overt pronouns in null-subject languages cannot have
+               bound-variable interpretation, i.e. they cannot be bound by a
+               quantified NP or a wh-phrase. This constraint has been assumed to
+               be universal and accessible for learners at early stages of
+               second language (L2) acquisition. The results of Experiment 1
+               show that, although Mandarin is a null-subject language, Mandarin
+               and English native speakers as well as L2 learners of both
+               languages demonstrated similar patterns of interpretation,
+               accepting both coreference readings and bound-variable readings,
+               the latter being contrary to the prediction of the OPC. The
+               results of Experiment 2 show that Japanese native speakers
+               differed from Mandarin native speakers in that the former
+               accepted both coreference readings and bound-variable readings at
+               chance levels. These findings clearly demonstrate that the OPC
+               cannot be characterized as a property of null-subject languages
+               generally, given the lack of effect in Mandarin, and there are
+               cross-linguistic variations in interpretive patterns for overt
+               pronouns among languages that exhibit the effect.",
+  month     =  jan,
+  year      =  2025,
+  language  = "en"
+}
+
+@ARTICLE{Mateu2015-ev,
+  title     = "Object Clitic Omission in Child Spanish: Evaluating
+               Representational and Processing Accounts",
+  author    = "Mateu, Victoria Eugenia",
+  journal   = "Lang. Acquis.",
+  publisher = "Routledge",
+  volume    =  22,
+  number    =  3,
+  pages     = "240--284",
+  abstract  = "This study explores the widely documented difficulty children
+               have with object clitics in the acquisition of Romance languages.
+               It reports on two experiments: a production task and a
+               comprehension task. Results from the elicitation task confirm
+               that object omission occurs at nonnegligible rates in 2- and
+               3-year-olds. Findings from the sentence-picture matching task
+               show that children do not sanction a grammar with referential
+               null objects, as suggested by previous research, and that
+               children do not always assign a transitive interpretation to
+               clitic constructions. Further analysis reveals that both the
+               frequency of object omissions in production as well as the
+               results in the clitic conditions of the receptive task are
+               strongly negatively correlated with an independent measure of
+               verbal working memory (nonword repetition task), consistent with
+               the hypothesis that object clitic omission is affected by
+               linguistic processing and short-term memory limitations.",
+  month     =  jul,
+  year      =  2015
+}
+
+@ARTICLE{Kreer2025-vj,
+  title         = "Bayesian influence functions for Hessian-free data attribution",
+  author        = "Kreer, Philipp Alexander and Wu, Wilson and Adam, Maxwell and Furman, Zach and Hoogland, Jesse",
+  journal       = "arXiv [cs.LG]",
+  abstract      = "Classical influence functions face significant challenges when applied to deep neural networks, primarily due to non-invertible Hessians and high-dimensional parameter spaces. We propose the local Bayesian influence function (BIF), an extension of classical influence functions that replaces Hessian inversion with loss landscape statistics that can be estimated via stochastic-gradient MCMC sampling. This Hessian-free approach captures higher-order interactions among parameters and scales efficiently to neural networks with billions of parameters. We demonstrate state-of-the-art results on predicting retraining experiments.",
+  month         =  sep,
+  year          =  2025,
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG"
+}

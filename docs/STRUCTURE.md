@@ -15,6 +15,13 @@ subject-drop/
 │   │
 │   ├── 📄 README.md                     # Master documentation index
 │   │
+│   ├── 📁 preprocessing/                # Preprocessing module docs
+│   │   ├── README.md                    # Overview & quick start
+│   │   ├── USER_GUIDE.md                # Complete usage guide
+│   │   ├── DEVELOPER_GUIDE.md           # Adding custom ablations
+│   │   ├── ADVANCED.md                  # Performance, coreference & production
+│   │   └── TESTING.md                   # Test guide
+│   │
 │   └── 📁 model_foundry/                # Model Foundry framework docs
 │       │
 │       ├── 📁 guides/                   # User guides & how-tos

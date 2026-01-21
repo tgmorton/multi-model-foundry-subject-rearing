@@ -1,0 +1,672 @@
+% Simplified version for non-linguistic audience
+\documentclass[aspectratio=169]{beamer}
+
+% --- Theme ---
+\makeatletter
+\def\input@path{{beamertheme-cleaneasy/theme/}}
+\makeatother
+\usepackage{beamerthemeCleanEasy}
+
+% --- Essential packages ---
+\usepackage{tikz}
+\usepackage[american]{babel}
+\usepackage{csquotes}
+\usepackage[backend=biber, style=apa, sorting=nyt, doi=true, url=true]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Oct22Meeting.bib}
+\setbeamertemplate{bibliography item}{\insertbiblabel}
+
+% --- Tables and figures ---
+\usepackage{booktabs}
+\usepackage{array}
+\setbeamertemplate{caption}[numbered]
+\setbeamerfont{caption}{size=\footnotesize}
+\setbeamercolor{caption name}{fg=gray}
+
+% --- Graphics paths ---
+\graphicspath{{/Users/thomasmorton/subject-drop/analysis/paper_figures/main/}{/Users/thomasmorton/subject-drop/analysis/paper_figures/wide/}{/Users/thomasmorton/subject-drop/analysis/paper_figures/supplementary/}{/Users/thomasmorton/subject-drop/analysis/analysis/paper_figures/wide/}}
+
+% --- Metadata ---
+\title{Modeling Null Subject Evidence with Controlled Rearing Experiments}
+\subtitle{Pilot Evidence and Preregistration Plan}
+\author{Thomas Morton}
+\date{October 22, 2025}
+\institute{LemN Lab Meeting}
+
+\begin{document}
+
+% Title
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ============================================================================
+% THE PROBLEM
+% ============================================================================
+
+\begin{frame}
+  \frametitle{The Mystery}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{How do children learn grammar without being taught?}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Children master complex language rules with minimal instruction
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \textbf{Today's specific puzzle:}
+  \begin{itemize}
+    \item<2-> Some languages drop the subject: "Speaks Italian" (OK in Italian)
+    \item<3-> Other languages require it: "She speaks Italian" (required in English)
+    \item<4-> Children figure this out by age 3-4
+    \item<5-> \textbf{But how?} Nobody explicitly teaches them this rule
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This Matters}
+
+  \textbf{The acquisition puzzle:}
+  \begin{itemize}
+    \item<2-> Null-subject behaviour sits at the heart of how children learn grammar from positive evidence alone.
+    \item<3-> Pinpointing which cues matter helps resolve decades of debate about the role of pronouns, determiners, and morphology.
+  \end{itemize}
+
+  \vspace{0.8em}
+
+  \textbf{Language models as a testbed:}
+  \begin{itemize}
+    \item<4-> Small LMs let us create counterfactual inputs, track learning throughout training, and run studies we cannot do with children.
+    \item<5-> Controlled rearing makes theoretical claims measurable—remove evidence and watch how the grammar shifts.
+  \end{itemize}
+\end{frame}
+
+
+
+
+% LITERATURE BACKGROUND
+% ============================================================================
+
+\begin{frame}
+  \frametitle{What the Literature Already Suggested}
+
+  \textbf{Some evidence sources the theories spotlight:}
+  \begin{itemize}
+    \item<2-> \textbf{Lexical expletives.} \textcite{Hyams1989-mu} treat items like \emph{it/there} as a direct signal that English fills subject position even when there is no meaning to express.
+    \item<3-> \textbf{Determiner contrasts.} \textcite{Duguine2017-fr} argue that rich nominal morphology (e.g., \emph{a} vs. \emph{the}) can substitute for weak verbal cues when diagnosing subject requirements.
+    \item<4-> \textbf{Morphological uniformity.} \textcite{Jaeggli1989-vf} and \textcite{Hyams1991-fw} note that both richly inflected paradigms (Italian) and uniformly uninflected ones (Mandarin) correlate with subject drop, while mixed systems like English do not.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    These claims motivate our ablations: remove expletives, blur determiners, or flatten verb endings to see which cues matter.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{What Child Studies Found}
+
+  \textbf{Researchers tracked what children actually hear and say:}
+  \begin{itemize}
+    \item<2-> \textbf{Expletives show up fast.} English-learning toddlers reliably say \emph{it} and \emph{there} in weather/existence sentences, so it remains debated whether these tokens actually reset the grammar \parencite{Hyams1989-mu,Valian1991-pa}.
+    \item<4-> \textbf{Pronouns stay frequent later.} Once past that early stage, English toddlers keep overt pronouns far more often than Italian peers \parencite{Valian1991-pa,Wang1992-ty}.
+    \item<5-> \textbf{Morphology closes the gap.} The decline of subject dropping tracks mastery of English verb endings, supporting the morphological reanalysis story \parencite{Hyams1991-fw,Legate2007-wq}.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Together, these studies hint that frequency and clarity of pronouns could steer learning.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Early Subject Drop in English}
+
+  \textbf{Bloom (1990) and follow-ups showed:}
+  \begin{itemize}
+    \item English children around age 2 produce null subjects in roughly 20--30\% of utterances \parencite{Bloom1990-tz}.
+    \item Subject drop declines sharply once verbal morphology (\emph{-s}, past tense) is mastered \parencite{Bloom1990-tz}.
+  \end{itemize}
+
+  \vspace{0.8em}
+
+  \textbf{Takeaway:} English learners move from an Italian-like starting point to adult-like overt subjects as the evidence accumulates. This could be cause of how they learned the data, or it could be something about their processing of these patterns that causes this (We won't necessarily attend to this distinction here)
+\end{frame}
+
+% ============================================================================
+% PRIOR INTERVENTION WORK
+% ============================================================================
+
+\begin{frame}
+  \frametitle{How Prior LM Interventions Guide Us}
+
+  \textbf{Recent controlled rearing studies already test syntax this way:}
+  \begin{itemize}
+    \item<2-> \textbf{Filtered corpora.} Removing constructions and retraining shows LMs generalize from indirect evidence \parencite{Patil2024-gw}.
+    \item<3-> \textbf{Counterfactual corpora.} Rare-phenomenon learning replaces or ablates cues to probe what models infer \parencite{Misra2024-mr,Leong2023-gu}.
+    \item<4-> \textbf{Targeted alternations.} Controlled rearing on dative choice mixes direct and indirect cues \parencite{Yao2025-dl}.
+    \item<5-> \textbf{Child-scale datasets.} Developmentally plausible corpora spotlight which signals matter most \parencite{Feng2024-iz}.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<6->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Our subject-drop interventions follow this established playbook rather than inventing a brand-new methodology.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% THE SOLUTION
+% ============================================================================
+
+\begin{frame}
+  \frametitle{The Solution: AI as a Test Subject}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+    \textbf{Use Small Language Models as Stand-ins for Children}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    We can control exactly what they learn from and track their progress
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \textbf{Why this works:}
+  \begin{itemize}
+    \item<2-> Train on child-scale data (90M words = what a child hears)
+    \item<3-> Remove specific evidence types to test theories
+    \item<4-> Track learning over time like developmental psychology
+    \item<5-> Run experiments impossible with humans
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<6->{
+  \textbf{The Approach:} Train multiple models, each missing different evidence
+  }
+\end{frame}
+
+% ============================================================================
+% THE EXPERIMENTS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{Evaluation Stimuli We Already Have}
+
+  \textbf{Current minimal-pair sets:}
+  \begin{itemize}
+    \item 1st/2nd/3rd person subject pronoun contexts (singular and plural).
+    \item Subject vs. object control infinitives.
+    \item Expletive clauses (weather/there/it seems constructions).
+    \item Distant antecedents in embedded finite clauses.
+    \item Coordinate structures with and without topic shift.
+  \end{itemize}
+
+  \vspace{0.8em}
+
+  \textbf{Processing manipulations on each set:}
+  \begin{itemize}
+    \item Longer noun phrases and embedded relative clauses in the context.
+    \item Target or context negation, plus combined negation.
+    \item Hotspot annotations (subject/verb/object/spillovers) for surprisal and priming probes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Experiments}
+
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    We trained 6 different AI models, each missing something different
+  \end{beamercolorbox}
+
+  \vspace{1em}
+
+  \begin{tabular}{lll}
+  \textbf{Model} & \textbf{What We Removed} & \textbf{Testing Which Theory} \\
+  \hline
+  Baseline & Nothing & Control \\
+  Model 1 & Words like "it/there" & Expletive theory \\
+  Model 2 & Article distinctions & Determiner theory \\
+  Model 3 & All "a/the" & Article theory \\
+  Model 4 & Word endings & Morphology theory \\
+  Model 5 & Pronouns (I/you/he/she) & Direct evidence theory \\
+  \end{tabular}
+
+  \vspace{1em}
+
+  {\footnotesize
+  \textbf{Why these manipulations?} Expletives probe the triggers proposed by \textcite{Hyams1989-mu}; determiner edits follow the nominal cues emphasized by \textcite{Duguine2017-fr}; verb lemmatization encodes the morphological uniformity debates \parencite{Jaeggli1989-vf,Hyams1991-fw}; pronoun removal tests direct evidence accounts grounded in child frequencies \parencite{Valian1991-pa,Hyams1986-ae,Chomsky1980-hk}.
+  }
+
+  \vspace{1em}
+\end{frame}
+
+% ============================================================================
+% KEY RESULTS WITH FIGURES
+% ============================================================================
+
+\begin{frame}{Baseline Model Trajectory}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{model_baseline.pdf}
+		\vspace{-1.5em}
+		\caption{How the baseline model learns over time}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Pilot read-outs:}
+      \begin{itemize}
+        \item<3-> Starting behaviour: subject omission is common in early checkpoints.
+        \item<4-> Later behaviour: the model shifts toward overt subjects with exposure.
+        \item<5-> Pattern loosely mirrors reported child trajectories \parencite{Valian1991-pa}.
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{Preliminary implication:}\\
+      The baseline gives us a reference curve for interpreting subsequent ablations.
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Expletive Ablation (Pilot Result)}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.2em}
+		\includegraphics[width=1\linewidth]{comparison_vs_baseline_overt_only_remove_expletives.pdf}
+		\vspace{-1.2em}
+		\caption{Removing \emph{it/there} barely moves the curves at the beginning or end.}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Pilot read-outs:}
+      \begin{itemize}
+        \item<3-> Early and late accuracy overlap with baseline across single-run checkpoints.
+        \item<4-> We observe a small mid-training slowdown; multiple seeds will test whether this is stable.
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{Preliminary implication:}\\
+      We see an undersized effect of the presence of expletives compared to what most primary literature would suggest
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Determiner Impoverishment (Pilot Result)}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{comparison_vs_baseline_overt_only_impoverish_determiners.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of removing determiner distinctions}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Pilot read-outs:}
+      \begin{itemize}
+        \item<3-> Collapsing \emph{a/the} slows the transition toward overt subjects.
+        \item<4-> Single-run estimate suggests a large delay relative to baseline.
+        \item<5-> However, we see that this model comes out with the strongest preference at the end compared to all other models
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<6->{
+      \textbf{Preliminary implication:}\\
+      Determiner richness is a promising signal to test further.
+      }
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Pronoun Removal (Pilot Result)}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+    \onslide<2->{
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{comparison_vs_baseline_overt_only_remove_subject_pronominals.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of removing pronouns}
+      \end{figure}
+      }
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Pilot read-outs:}
+      \begin{itemize}
+        \item<3-> Training plateaus near chance across most checkpoints.
+        \item<4-> The model still shows the same initial learning pattern, but doesn't show as strong a generalization in later learning. 
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \onslide<5->{
+      \textbf{Preliminary implication:}\\
+      Other available evidence still influences model in learning similarly to other models but ends without definitive preference.
+      }
+  \end{columns}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{All Models at a Glance}
+  \vfill
+  \begin{columns}[c,onlytextwidth]
+    \column{0.52\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{CleanShot 2025-10-22 at 12.01.24@2x.png}
+        \caption{Learning trajectories across training}
+      \end{figure}
+
+    \column{0.48\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{CleanShot 2025-10-22 at 12.01.34@2x.png}
+        \caption{First epoch vs. final accuracy}
+      \end{figure}
+  \end{columns}
+  \vfill
+\end{frame}
+
+% ============================================================================
+% IMPLICATIONS
+% ============================================================================
+
+%\begin{frame}
+%  \frametitle{What We Learned}
+%
+%  \begin{beamercolorbox}[wd=\textwidth,sep=0.4em,colsep=0pt]{block title}
+%    \textbf{Major Discoveries}
+%  \end{beamercolorbox}
+%
+%  \vspace{1em}
+%
+%  \begin{enumerate}
+%    \item<2-> \textbf{Pronouns are essential}\\
+%    Without seeing "I/you/he/she", learning fails
+%
+%    \vspace{0.5em}
+%
+%    \item<3-> \textbf{Articles are shortcuts}\\
+%    "A/the" provide unexpected learning boost
+%
+%    \vspace{0.5em}
+%
+%    \item<4-> \textbf{Not all evidence provides as strong an influence}\\
+%    Despite wide implication in theory, expletives provide no meaningful difference
+%
+%    \vspace{0.5em}
+%
+%    \item<5-> \textbf{Models mirror children}\\
+%    Show initial preference for null pronouns, which then becomes an english-like generalization
+%  \end{enumerate}
+%\end{frame}
+%
+%\begin{frame}
+%  \frametitle{Why This Matters}
+%
+%  \textbf{For Science:}
+%  \begin{itemize}
+%    \item<2-> We can finally test competing theories
+%    \item<3-> Some 40-year-old theories are probably wrong
+%    \item<4-> Unexpected connections (articles → grammar learning)
+%  \end{itemize}
+%
+%  \vspace{1em}
+%
+%  \onslide<5->{
+%  \textbf{For AI:}
+%  \begin{itemize}
+%    \item<6-> Shows what data is actually important
+%    \item<7-> Could build more efficient learning systems
+%    \item<8-> Small models can reveal big insights
+%  \end{itemize}
+%  }
+%
+%  \vspace{1em}
+%
+%  \onslide<9->{
+%  \textbf{For Education:}
+%  \begin{itemize}
+%    \item<10-> Might inform language teaching methods
+%    \item<11-> Could help with language disorders
+%    \item<12-> Shows importance of pronouns and articles
+%  \end{itemize}
+%  }
+%\end{frame}
+
+% ============================================================================
+% NEXT STEPS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{Pre-Registration Scope}
+
+  \textbf{Conditions (10 random seeds each):}
+  \begin{itemize}
+    \item<2-> Baseline corpus plus the five key ablations (expletives, determiner collapse, article removal, verb lemmatization, pronoun removal).
+    \item<3-> Gradual sweeps on pronoun frequency to test whether there are phase-shifts to do with the presence of absence of pronounce on learning
+    \item<4-> Architectures: replicate the full set on GPT-2 Small, LSTM, Mamba, and a compact BERT to test mechanism generality.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \textbf{Registered readouts:}
+  \begin{itemize}
+    \item<5-> Age of acquisition estimates, start/end accuracy, and learning speed from logistic mixed models \parencite{Legate2007-wq}.
+    \item<6-> Seed-level variance summaries so we can have confidence in the existence or non-existence of effects that we see.
+  \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Expanded Evaluation Battery}
+
+  \textbf{New evaluation stimuli:}
+  \begin{itemize}
+    \item<2-> Subject \emph{and} object minimal pairs, enabling Mandarin-style diagnostics for topic-drop vs argument-drop \parencite{Wang1992-ty,Bertolino2024-xf}.
+    \item<3-> Matrix vs. subordinate clause pronoun dropping to mirror English/Italian contrasts in the acquisition literature \parencite{Hyams1991-fw,Rizzi1994-tm}.
+    \item<4-> Dedicated that-trace probes to test whether syntactic clusters co-vary with null-subject behaviour \parencite{Chomsky1981-bf,Rizzi1982-vy}.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    Following \textcite{Bertolino2024-xf}, we will tag each item by functional head so we can report results for NNSL vs. CNSL diagnostics (our two pilot languages) while noting that partial and semi-null subject systems exist but remain under-documented in acquisition work (cf. \textcite{Wang1992-ty}).
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Counterfactual Grammars to Probe Typology}
+
+  \textbf{Planned manipulations:}
+  \begin{itemize}
+    \item<2-> Inject rich agreement morphology into English verbs to test whether uniformity triggers push models toward Italian-like behaviour \parencite{Jaeggli1989-vf,Guasti1996-jg}.
+    \item<3-> Pair determiner impoverishment with verb neutralization to approximate Mandarin-style subject/object drop patterns \parencite{Wang1992-ty}.
+    \item<4-> Vary functional morphology following \textcite{Bertolino2024-xf} to see which features separate CNSL vs. PNSL outcomes.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    These counterfactual grammars let us probe whether targeted evidence makes English look more Italian or even Mandarin-like in the model's behaviour.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Towards Mandarin Learnability Tests}
+
+  \textbf{Longer-term extensions:}
+  \begin{itemize}
+    \item<2-> Use the BabyBabelLM Mandarin corpus to recreate the ablation suite so we can test probabilistic learnability accounts proposed by \textcite{Yang2003-fn,Yang2004-wk}.
+    \item<3-> Craft parallel evaluation stimuli for subject and object positions that align with the child data reported in \textcite{Wang1992-ty}, allowing direct comparison with our English and Italian pilots.
+    \item<4-> Use the tri-language setup (English, Italian, Mandarin) as a controlled arena for probing cross-linguistic predictions about the null-subject phenomenon.
+  \end{itemize}
+
+  \vspace{1em}
+
+  \onslide<5->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    This gives us a single phenomenon—null subjects—as the shared lever for testing how different typologies satisfy learnability constraints, moving beyond the currently sparse acquisition literature on partial and semi-null subject systems.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% FUTURE DIRECTIONS
+% ============================================================================
+
+\begin{frame}
+  \frametitle{Longer-Term Extensions}
+
+  \textbf{Future questions we are lining up:}
+  \begin{itemize}
+    \item<2-> Train bilingual and code-switching variants (English+Italian, English+Mandarin) to test how cross-lingual transfer reshapes subject preferences.
+    \item<3-> Layer structural-priming probes onto our evaluation sets to surface implicit knowledge that surprisal alone might miss.
+    \item<4-> Compare multilingual trajectories against monolingual baselines to see how shared evidence reshapes the null-subject pathway.
+  \end{itemize}
+
+  \textbf{Analysis tools:}
+  \begin{itemize}
+    \item<5-> Explore linear Bayesian influence functions to quantify which training examples push null-subject behaviour during pretraining \parencite{Kreer2025-vj}.
+  \end{itemize}
+
+  \onslide<6->{
+  \begin{beamercolorbox}[wd=\textwidth,sep=0.3em,colsep=0pt]{block body}
+    These directions connect controlled rearing, bilingual transfer, structural priming, and influence-function analyses in a single framework.
+  \end{beamercolorbox}
+  }
+\end{frame}
+
+% ============================================================================
+% CONCLUSION
+% ============================================================================
+
+%\begin{frame}
+%  \frametitle{Take-Home Messages}
+%
+%  \begin{enumerate}
+%    \item<2-> \textbf{AI can help us understand human learning}\\
+%    \vspace{0.3em}
+%    Small models trained on child-scale data reveal learning mechanisms
+%
+%    \vspace{0.8em}
+%
+%    \item<3-> \textbf{Not all evidence is equal}\\
+%    \vspace{0.3em}
+%    Pronouns: necessary | Articles: powerful shortcuts | Word endings: red herrings
+%
+%    \vspace{0.8em}
+%
+%    \item<4-> \textbf{Simple experiments can challenge old theories}\\
+%    \vspace{0.3em}
+%    40 years of debate, resolved with targeted ablation studies
+%  \end{enumerate}
+%
+%  \vspace{1.5em}
+%
+%  \onslide<5->{
+%  \begin{center}
+%    \Large
+%    \textbf{Questions?}
+%  \end{center}
+%  }
+%\end{frame}
+
+% ============================================================================
+% BACKUP SLIDES
+% ============================================================================
+
+\appendix
+
+%\begin{frame}
+%  \frametitle{Technical Details}
+%
+%  \textbf{Model:} GPT-2 Small (124M parameters)
+%
+%  \textbf{Data:} BabyLM corpus (90M words)
+%  \begin{itemize}
+%    \item Child-directed speech
+%    \item Children's books
+%    \item Simple Wikipedia
+%  \end{itemize}
+%
+%  \textbf{Evaluation:} Minimal pairs
+%  \begin{itemize}
+%    \item "She walks" vs "*Walks"
+%    \item "It rains" vs "*Rains"
+%  \end{itemize}
+%
+%  \textbf{Statistics:}
+%  \begin{itemize}
+%    \item 3 random seeds per condition
+%    \item Logistic mixed models
+%    \item Age of Acquisition metrics
+%  \end{itemize}
+%\end{frame}
+
+\begin{frame}{Processing Effects}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.54\textwidth}
+      \begin{figure}
+      	\vspace{-1.5em}
+		\includegraphics[width=1\linewidth]{forest_form_baseline.pdf}
+		\vspace{-1.5em}
+		\caption{Effect of sentence complexity}
+      \end{figure}
+
+    \column{0.44\textwidth}
+      \raggedright
+      \textbf{Unexpected finding:}
+      \begin{itemize}
+        \item Negation increases subject use
+        \item Opposite of human children
+        \item Models don't "drop under pressure"
+      \end{itemize}
+
+      \vspace{0.5em}
+
+      \textbf{Implication:}\\
+      AI and humans might process difficulty differently
+  \end{columns}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography
+\end{frame}
+
+\end{document}

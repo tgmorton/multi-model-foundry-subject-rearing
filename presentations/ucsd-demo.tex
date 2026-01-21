@@ -1,0 +1,796 @@
+% Use the `standard` option to get 4x3 aspect ratio.
+% Use the `noul` option if there is a conflict with the `\ul` command.
+% Set theme with 'yellow', 'orange', 'red', 'blue', 'purple', or 'green'.
+\documentclass{ucsdbrief}
+
+% Remove overfull hbox warning markers
+\setlength{\overfullrule}{0pt}
+
+\pretitle{UCSD Presentation Template}
+\title{Language Models and Human Language Processing}
+\subtitle{Investigating Syntactic Learning in Neural Networks}
+\author{Dr. Jane Smith \\ Dr. John Doe}
+\date{October 16, 2025}
+\department{Department of Cognitive Science}
+\affiliation{University of California San Diego}
+\footertext{UCSD Cognitive Science Symposium 2025}
+% \copyrighted{2025}{UC San Diego}
+% \contact{Custom contact information here}
+% \extralogo{path/to/department/logo.png}
+\motto{Fiat Lux - Let There Be Light}
+
+% AI-friendly metadata (optional)
+\topic{Language Models and Psycholinguistics}
+\audience{Researchers, Graduate Students, Faculty}
+\duration{45 minutes}
+\keywords{language models, syntax, psycholinguistics, learning}
+
+% Distribution and Control (optional for research use)
+% \distributionA
+% \cui{
+%     Controlled By: UCSD \\
+%     CUI Category(ies): PRVCY \\
+%     Distribution: Limited \\
+%     POC: Jane Smith, 858-555-1234}
+% \banner{draft}
+
+\begin{document}
+\maketitle
+
+\outline{
+    \item Introduction and Features
+    \item Research Methods and Data
+    \item Code Examples
+    \item Advanced Features
+    \item AI-Friendly Features
+    \item Research Presentation Patterns (NEW!)
+}
+
+\chapter{Introduction}
+
+\section{Single Column}
+
+Write your presentation like a normal \LaTeX\ file with a \verb|\maketitle|
+command and \verb|\chapter| and \verb|\section| headings. The \verb|\maketitle|
+contents are defined by the following macros:
+\begin{center}
+    \begin{tabular}{l@{\qquad}l@{\qquad}l}
+        \verb|\pretitle| &
+        \verb|\title| &
+        \verb|\subtitle| \\
+        \verb|\author| &
+        \verb|\extralogo| &
+        \verb|\motto|
+    \end{tabular}
+\end{center}
+The \verb|\extralogo| command specifies an extra logo below the UCSD logo. The
+\verb|\chapter| heading creates a slide with just the chapter name. The
+\verb|\section| heading sets the title of a new slide. However, if no text
+follows the section, no slide will be created. Text which does not fit on one
+slide will flow onto the next slide automatically. To get 4-by-3 aspect ratio
+slides, specify \verb|standard| as an option to the document class.
+
+\section{Double Column}\twocolumn\raggedright
+
+Use the \verb|\twocolumn| and \verb|\onecolumn| commands right after the section
+heading to control the number of columns. Text will flow from the left column to
+the right.
+\begin{itemize}
+    \item Syntactic priming studies
+    \item Language model evaluation
+    \item Cross-linguistic processing
+    \item Sentence comprehension
+    \item Neural network analysis
+    \item Developmental trajectories
+    \item Representational learning
+    \item Computational modeling
+    \item Behavioral experiments
+    \item Transfer learning effects
+    \item Attention mechanisms
+    \item Gradient-based analysis
+\end{itemize}
+You can use \verb|\pagebreak| to force text onto the next column.
+
+\section{Table of Research Areas}
+
+You can create any variety of subdivisions on your slide by using the
+\verb|tabular| environment.
+\begin{center}
+\begin{tabular}{C{0.25\textwidth}cC{0.25\textwidth}cC{0.25\textwidth}}
+    \cellcolor{dark}\textcolor{white}{Linguistics} &&
+    \cellcolor{dark}\textcolor{white}{Psychology} &&
+    \cellcolor{dark}\textcolor{white}{Computation} \\
+    Syntax && Cognition && Architectures \\
+    Semantics && Processing && Training \\[1em]
+    \cellcolor{dark}\textcolor{white}{Methods} &&
+    \cellcolor{dark}\textcolor{white}{Theory} &&
+    \cellcolor{dark}\textcolor{white}{Applications} \\
+    Experiments && Frameworks && NLP \\
+    Analysis && Models && Translation
+\end{tabular}
+\end{center}
+The \verb|\cellcolor| command sets the background color of a table cell using
+UCSD colors (\verb|dark| for navy blue, \verb|light| for gold).
+
+\section{Quad Charts}
+
+\quadchart{% Top-left content
+    \textbf{Research Budget}\scriptsize\vspace{0.5cm}
+
+    \begin{itemize}
+        \item Budget: \$2,500,000
+        \item Spent to Date: \$1,750,000
+        \item Remaining: \$750,000
+        \item Burn Rate: \$250,000/yr
+        \item Projection: On track
+    \end{itemize}
+}{% Top-right content
+    \textbf{Research Progress}\tiny\vspace{1ex}
+
+    \begin{center}
+    \begin{tikzpicture}[scale=0.4]
+        \path (-4,0) -- (5,0);
+        \foreach \p/\C [count=\n] in {75/lime, 65/azure, 50/orange,
+                35/purple, 25/red} {
+            \pgfmathsetmacro{\ang}{3.6*\p}
+            \pgfmathsetmacro{\rad}{1.0*\n}
+            \draw[\C, line width=5pt] (\rad,0) arc (0:\ang:\rad)
+                node[anchor={\ang-90}, inner sep=0pt]{\p\%};
+        }
+    \end{tikzpicture}
+    \end{center}
+}{% Bottom-left content
+    \textbf{Publications}\tiny\vspace{1em}
+
+    \begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{@{}lrrr@{}}
+        \hline
+        \textbf{Type} & \textbf{Planned} &
+            \textbf{Published} & \textbf{Remaining} \\
+        \hline
+        Journal Articles  & 15       & 10      & 5 \\
+        Conference Papers & 8        & 6       & 2  \\
+        Book Chapters     & 3        & 2       & 1  \\
+        Reviews           & 5        & 3       & 2  \\
+        Theses            & 4        & 4       & 0  \\
+        \hline
+        \textbf{Total}    & \textbf{35} &
+            \textbf{25} & \textbf{10} \\
+        \hline
+    \end{tabular}
+    \end{center}
+}{% Bottom-right content
+    \textbf{Research Impact}\tiny
+
+    Our interdisciplinary research program has made significant contributions
+    to understanding language acquisition and neural network learning. Key
+    findings have been published in leading journals and have informed the
+    development of more human-like language models. Continued support will
+    enable groundbreaking discoveries in psycholinguistics and computational
+    modeling of language.
+}
+
+\section{Centering}
+
+\begin{Center}
+    \Large Use the \texttt{Center} environment \\
+    to center horizontally \emph{and} vertically.
+\end{Center}
+
+\chapter{Code Examples}
+
+\section{Python}\onecolumn
+
+Use the \verb|python| environment for Python code.
+\begin{python}
+def analyze_surprisal(model, sentences, threshold):
+    """Analyze model surprisal for grammatical anomalies."""
+    results = []
+    for sent in sentences:
+        surprisal = model.compute_surprisal(sent)
+        perplexity = model.compute_perplexity(sent)
+`\HL`        if surprisal > threshold or perplexity > 100:
+            results.append({
+                'sentence': sent,
+                'anomaly_type': 'high_surprisal',
+                'surprisal': surprisal,
+                'perplexity': perplexity
+            })
+    return results
+\end{python}
+
+\section{MATLAB}
+
+Use the \verb|matlab| environment for MATLAB code.
+\begin{matlab}
+function analyze_training_dynamics(epochs, loss, accuracy)
+    % Analyze language model training dynamics
+    % epochs, loss, accuracy are column vectors
+    figure('Position', [100, 100, 800, 600]);
+
+    subplot(1, 2, 1);
+    plot(epochs, loss, 'LineWidth', 2);
+    xlabel('Training Epoch');
+    ylabel('Loss');
+    title('Training Loss Curve');
+
+    subplot(1, 2, 2);
+    plot(epochs, accuracy, 'LineWidth', 2);
+    xlabel('Training Epoch');
+    ylabel('Accuracy');
+    title('Model Accuracy');
+end
+\end{matlab}
+
+% \section{R Language}
+
+%Use the \verb|rlang| environment for R code.
+%\begin{rlang}
+%analyze_species_diversity <- function(data) {
+%    # Calculate Shannon diversity index
+%    species_counts <- table(data$species)
+%    proportions <- species_counts / sum(species_counts)
+%    diversity <- -sum(proportions * log(proportions))
+%
+%    return(list(
+%        richness = length(species_counts),
+%        shannon = diversity,
+%        evenness = diversity / log(length(species_counts))
+%    ))
+%}
+%\end{rlang}
+
+\section{Pseudocode}
+
+Use the \verb|pseudocode| environment for non-language-specific code.
+\begin{pseudocode}
+function compute_syntactic_priming($sentence$, $prime$, $model$)
+    $surprisal_{null} \gets model.surprisal(sentence, prime_{null})$
+    $surprisal_{overt} \gets model.surprisal(sentence, prime_{overt})$
+    $priming\_effect \gets surprisal_{null} - surprisal_{overt}$
+
+    if $|priming\_effect| > threshold$ then
+        return $(priming\_effect, "significant")$
+    else
+        return $(priming\_effect, "not\_significant")$
+    end if
+end function
+\end{pseudocode}
+
+\chapter{Research Methods}
+
+\section{Study Design}
+
+Our research employs a multi-method approach to understanding language learning,
+combining behavioral experiments, computational modeling, and neural network
+analysis. Key methodologies include:
+
+\subsection{Behavioral Experiments}
+We conduct controlled experiments measuring human language processing using
+eye-tracking, reaction time, and acceptability judgment tasks across various
+linguistic constructions and populations.
+
+\subsection{Computational Analysis}
+Language model representations are analyzed using state-of-the-art techniques including:
+\begin{itemize}
+    \item Probing classifiers for syntactic representations
+    \item Gradient-based attribution methods
+    \item Attention pattern visualization
+    \item Surprisal and perplexity metrics
+\end{itemize}
+
+\subsection{Neural Network Modeling}
+We develop and train transformer-based language models to test hypotheses about
+human language acquisition and predict behavioral patterns.
+
+\section{Data Management}
+
+All research data are archived following FAIR principles (Findable, Accessible,
+Interoperable, and Reusable) and made publicly available through appropriate
+repositories.
+
+\chapter{Advanced Features}
+
+\section{Callout Boxes}
+
+The template now includes themed callout boxes for highlighting important information:
+
+\alertbox{This is an alert box with the Note prefix. Use it to draw attention to important points or warnings.}
+
+\vspace{1ex}
+
+\infobox{This is an info box with subtle styling. Use it for supplementary information that readers should be aware of.}
+
+\vspace{1ex}
+
+\highlightbox{This is a highlight box for emphasizing key takeaways or important findings.}
+
+\section{Theorem Environments}
+
+\begin{theorem}[Surprisal-Frequency Relationship]
+Let $M$ be a language model with word frequency distribution $f$ and surprisal function $S$. The surprisal of word $w$ satisfies:
+$$S(w) \propto -\log f(w)$$
+\end{theorem}
+
+\begin{definition}[Cross-Entropy Loss]
+The cross-entropy loss $\mathcal{L}$ for a language model over corpus $C$ is defined as:
+$$\mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N} \log P(w_i | w_{<i})$$
+where $P(w_i | w_{<i})$ is the model's predicted probability of word $w_i$ given context.
+\end{definition}
+
+\begin{example}
+For a uniform distribution over a 5-word vocabulary, $P(w_i) = 0.2$ for all $i$, yielding perplexity $2^H = 2^{2.32} = 5.0$.
+\end{example}
+
+\section{QR Codes}
+
+Share your research data or paper easily with QR codes:
+
+\begin{Center}
+\qrlink[2cm]{https://doi.org/10.example/ucsd-language-models}
+
+\small Link to research paper
+\end{Center}
+
+% You can create blank pages for placing full-page graphics or text with the
+% `\blankpage` command.
+\blankpage
+% You can place images and text at arbitrary locations with the `\pos` command.
+\pos{0pt}{0pt}{\tikz{
+    \newcounter{density}\setcounter{density}{10}
+    \def\mainColor{light}
+    \path[coordinate] (0,0) coordinate(A)
+        ++(\paperwidth,0) coordinate(B)
+        ++(0,-\paperheight) coordinate(C)
+        ++(-\paperwidth,0) coordinate(D);
+    \fill[\mainColor!\thedensity]
+        (A) -- (B) -- (C) -- (D) -- cycle;
+    \foreach \x in {1,...,18}{%
+        \pgfmathsetcounter{density}{\thedensity+5}
+        \setcounter{density}{\thedensity}
+        \path[coordinate] coordinate(X) at (A){};
+        \path[coordinate] (A)
+            -- (B) coordinate[pos=0.15](A)
+            -- (C) coordinate[pos=0.15](B)
+            -- (D) coordinate[pos=0.15](C)
+            -- (X) coordinate[pos=0.15](D);
+        \draw[\mainColor!80!black, fill=\mainColor!\thedensity]
+            (A) -- (B) -- (C) -- (D) -- cycle;
+    }
+}}
+\pos[8cm]{0.125\textwidth}{2cm}{
+    \raggedright\Large\color{dark}
+    \textbf{Blank Page Example}
+
+    \normalsize
+    Use the \texttt{\textbackslash blankpage} command to create pages with
+    custom graphics and layouts.
+}
+\pos[8cm]{0.125\textwidth}{6cm}{
+    \raggedright\Large\color{dark}
+    \textbf{Arbitrary Positioning}
+
+    \normalsize
+    The \texttt{\textbackslash pos} command allows precise placement of
+    content anywhere on the page using absolute coordinates.
+}
+
+\chapter{AI-Friendly Features}
+
+\section{Structured Content Blocks}
+
+The template includes structured content blocks that help AI agents understand
+the purpose and organization of slide content:
+
+\slidegoal{Demonstrate how structured content blocks improve clarity and
+organization for both human readers and AI agents.}
+
+\context{These commands provide semantic meaning to slide content, making it
+easier for AI to generate, parse, and understand presentation materials.}
+
+Key benefits:
+\begin{itemize}
+    \item Clear communication of slide objectives
+    \item Contextual information for better understanding
+    \item Highlighted key takeaways
+    \item Proper source attribution
+\end{itemize}
+
+\takeaway{Structured content blocks make presentations more maintainable and
+AI-friendly while improving clarity for human audiences.}
+
+\source{UCSD Presentation Template Documentation}
+
+\keypoint{Key Points}{Machine Learning transforms marine research through
+automated species classification and ecosystem modeling.}
+
+\section{Timeline Example}
+
+\timeline{Evolution of Marine Research Technology}{
+    \timelineitem{1960s}{Development of early underwater cameras and basic
+    sonar systems}
+    \timelineitem{1980s}{Introduction of remotely operated vehicles (ROVs) for
+    deep sea exploration}
+    \timelineitem{2000s}{Autonomous underwater vehicles (AUVs) with advanced
+    sensors}
+    \timelineitem{2020s}{AI-powered analysis of underwater imagery and
+    environmental DNA sequencing}
+}
+
+\splitslide{Split Slide Layout}{
+    \textbf{Left Column}
+
+    This is the left side of a split slide. Perfect for comparisons or
+    presenting two related concepts side by side.
+
+    \begin{itemize}
+        \item Traditional methods
+        \item Manual data collection
+        \item Limited coverage
+        \item Time-intensive analysis
+    \end{itemize}
+}{
+    \textbf{Right Column}
+
+    This is the right side of the split. The content automatically flows into
+    two equal columns.
+
+    \begin{itemize}
+        \item Modern AI approaches
+        \item Automated sensors
+        \item Large-scale monitoring
+        \item Real-time insights
+    \end{itemize}
+}
+
+\comparison{Research Approaches}{Traditional Field Work}{
+    \begin{itemize}
+        \item Ship-based sampling
+        \item Manual species identification
+        \item Limited temporal coverage
+        \item High cost per sample
+        \item Expert taxonomist required
+    \end{itemize}
+}{Automated Monitoring}{
+    \begin{itemize}
+        \item Continuous sensor deployment
+        \item AI-powered image analysis
+        \item Long-term time series
+        \item Cost-effective at scale
+        \item Accessible to more researchers
+    \end{itemize}
+}
+
+\problemsolution{Challenges in Ocean Monitoring}{
+    \textbf{The Problem:}
+
+    Monitoring vast ocean ecosystems requires extensive resources, yet climate
+    change impacts demand comprehensive, real-time data. Traditional methods
+    cannot scale to meet these needs, creating critical gaps in our
+    understanding of marine ecosystem health.
+
+    Key challenges:
+    \begin{itemize}
+        \item Insufficient spatial coverage
+        \item Limited temporal resolution
+        \item High operational costs
+        \item Data processing bottlenecks
+    \end{itemize}
+}{
+    \textbf{Our Solution:}
+
+    Deploy a network of autonomous sensors combined with AI-powered analysis to
+    provide continuous, large-scale ocean monitoring at reduced cost.
+
+    Approach:
+    \begin{itemize}
+        \item Low-cost sensor arrays
+        \item Satellite data integration
+        \item Machine learning models
+        \item Cloud-based processing
+        \item Open data sharing
+    \end{itemize}
+}
+
+\beforeafter{Impact of Conservation Efforts}{
+    \textbf{Status in 2010:}
+
+    \begin{itemize}
+        \item Coral cover: 15\%
+        \item Fish species: 45
+        \item Water quality: Poor
+        \item Tourist impact: High
+        \item Protection: Minimal
+    \end{itemize}
+
+    Significant ecosystem degradation with declining biodiversity and
+    deteriorating water quality.
+}{
+    \textbf{Status in 2024:}
+
+    \begin{itemize}
+        \item Coral cover: 42\%
+        \item Fish species: 87
+        \item Water quality: Excellent
+        \item Tourist impact: Managed
+        \item Protection: Marine reserve
+    \end{itemize}
+
+    Remarkable ecosystem recovery following implementation of conservation
+    measures and community engagement.
+}
+
+\proscons{AI in Marine Research}{
+    \item Rapid analysis of large datasets
+    \item Consistent, objective classification
+    \item 24/7 monitoring capability
+    \item Scales to global coverage
+    \item Reduces human bias
+    \item Cost-effective long-term
+}{
+    \item Requires training data
+    \item May miss novel species
+    \item Initial setup costs
+    \item Needs validation
+    \item Limited contextual understanding
+    \item Dependent on sensor quality
+}
+
+\section{Icon Items}
+
+\iconitem{\textbf{1}}{First, deploy autonomous sensors across study sites to
+establish baseline environmental measurements.}
+
+\iconitem{\textbf{2}}{Next, collect and aggregate data through satellite
+uplinks for centralized processing.}
+
+\iconitem{\textbf{3}}{Then, apply machine learning models to identify patterns
+and anomalies in the data streams.}
+
+\iconitem{\textbf{4}}{Finally, generate actionable insights for conservation
+and policy decisions.}
+
+\section{Grid Layout Example}
+
+\gridlayout{Four Research Areas}{
+    \textbf{Biodiversity}
+
+    Species distribution mapping using eDNA and imaging
+}{
+    \textbf{Climate Impact}
+
+    Temperature and pH monitoring for acidification studies
+}{
+    \textbf{Conservation}
+
+    Protected area effectiveness assessment
+}{
+    \textbf{Human Impact}
+
+    Pollution tracking and coastal development effects
+}
+
+\dataslide{Research Output Metrics}{
+    Below is sample data visualization showing our research productivity:
+
+    \vspace{2ex}
+
+    \simpletable{Publication Metrics by Year}{l|r|r|r}{
+        \textbf{Year} & \textbf{Papers} & \textbf{Citations} & \textbf{h-index} \\
+        \hline
+        2022 & 18 & 342 & 12 \\
+        2023 & 24 & 478 & 15 \\
+        2024 & 31 & 621 & 18 \\
+    }
+
+    \vspace{2ex}
+
+    Note how structured data commands make it easy for AI to parse and
+    generate tables.
+}
+
+\section{Simple Bar Graph}
+
+The \texttt{\textbackslash bargraph} command creates quick visualizations:
+
+\bargraph{Quarterly Research Funding (\$K)}{Q1,Q2,Q3,Q4}{(Q1,250) (Q2,380) (Q3,420) (Q4,510)}
+
+This makes it easy for AI agents to generate data visualizations from simple
+numerical inputs.
+
+\chapter{Research Presentation Patterns}
+
+\statements{Research Motivation}{
+    I want to investigate \textbf{how language models learn} syntactic
+    generalizations from linguistic input.
+}{
+    I seek to use \textbf{controlled training experiments} as a method to
+    \textbf{isolate evidence sources} that drive language acquisition.
+}{
+    I chose to focus on \textbf{null-subject constraints} as a case study in
+    this investigation.
+}
+
+\researchquestions{Study Overview}{
+    \begin{itemize}
+        \item Do small language models acquire null-subject constraints in a
+        human-like way?
+        \item What linguistic evidence types are necessary for learning the
+        constraint?
+        \item Can we predict acquisition trajectories from training data
+        properties?
+        \item How do bilingual models show cross-linguistic transfer in null
+        subject learning?
+    \end{itemize}
+}
+
+\methodslide{Experimental Design}{
+    Controlled rearing study with systematic ablation of linguistic evidence
+}{
+  	\\ \textbf{Training Conditions:}
+    \begin{itemize}
+        \item 6 experimental conditions (5 ablations + baseline)
+        \item 90M word developmentally-plausible corpus
+        \item Transformer architecture (GPT-2 small)
+        \item Training period: 5 epochs with dense checkpointing
+    \end{itemize}
+
+    \vspace{1ex}
+
+    \textbf{Evaluation Methods:}
+    \begin{itemize}
+        \item Surprisal-based preference measurements
+        \item Minimal pair comparisons (null vs. overt subjects)
+        \item Age of acquisition analysis
+        \item Cross-linguistic transfer testing
+    \end{itemize}
+}
+
+\designmatrix{Experimental Conditions}{
+    {\small
+    \begin{tabular}{p{0.28\columnwidth}|p{0.32\columnwidth}|p{0.28\columnwidth}}
+        \textbf{Condition} & \textbf{Ablation} & \textbf{Prediction} \\
+        \hline
+        Baseline & None & Adult-like preference \\
+        Remove Expletives & No \textit{it}/\textit{there} & Delayed acquisition \\
+        Impoverish Determiners & \textit{a}/\textit{the} $\rightarrow$ DET & Slower learning \\
+        Remove Articles & No \textit{a}/\textit{the} & Moderate delay \\
+        Lemmatize Verbs & No inflections & Faster learning \\
+        Remove Pronouns & No subject pronouns & Near-chance \\
+        \hline
+    \end{tabular}
+    }
+
+    \vspace{2ex}
+
+    {\small \textbf{Measurement:} Overt subject preference measured at
+    log-spaced checkpoints throughout training}
+}
+
+\section{Results Example with Mock Figure}
+
+% Note: In real usage, replace this with an actual figure path
+\begin{minipage}[t]{0.52\columnwidth}
+    \begin{center}
+        % Placeholder for figure - in real use: \includegraphics[width=\linewidth]{your_figure.pdf}
+        \begin{tikzpicture}
+            \draw[fill=light!30] (0,0) rectangle (6,4);
+            \node at (3,2) {\textbf{[Your Figure Here]}};
+            \node[align=center] at (3,1.2) {\small Overt Preference\\by Training Epoch};
+        \end{tikzpicture}
+        \captionof{figure}{Learning curves showing baseline model (blue)
+        acquires overt preference faster than ablated models (red)}
+    \end{center}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\columnwidth}
+    \raggedright
+    \vspace{-8em}
+    \textbf{Key Findings:}
+    \begin{itemize}
+        \item Baseline achieved \textbf{AoA at checkpoint 727} (95\% CI
+        [664, 791], p$<$.001)
+        \item Subject pronouns were the strongest predictor of successful
+        acquisition (r=0.89)
+        \item Models with determiners learned more consistently across runs
+        \item All models showed initial null-subject preference before reversal
+    \end{itemize}
+\end{minipage}
+
+\section{Cross-Model Comparison Matrix}
+
+\begin{center}
+    \begin{tabular}{l|c|c|c}
+        \textbf{Model} & \textbf{Overt Pref (\%)} & \textbf{AoA (epochs)} & \textbf{$\Delta$AoA} \\
+        \hline
+        Baseline & 69.6 & 727 & -- \\
+        Remove Expletives & 67.2 & 767 & +39* \\
+        Impoverish Determiners & 64.7 & 3400 & +2672*** \\
+        Remove Articles & 66.4 & 807 & +80** \\
+        Lemmatize Verbs & 62.2 & 705 & -22* \\
+        Remove Pronouns & 56.1 & 774 & +47* \\
+        \hline
+        \textbf{Mean Direct Evidence} & \textbf{68.4} & \textbf{747} & -- \\
+        \textbf{Mean Indirect Evidence} & \textbf{64.4} & \textbf{1637} & -- \\
+    \end{tabular}
+\end{center}
+
+\vspace{2ex}
+
+Statistical analysis reveals significant differences between evidence types
+across all acquisition metrics (* p$<$.05, ** p$<$.01, *** p$<$.001).
+
+\comparison{Theoretical Accounts}{Competence-Based Learning}{
+    \begin{itemize}
+        \item Grammatical parameter setting
+        \item Direct evidence from input
+        \item Gradual statistical learning
+        \item Adult-like end state
+        \item Evidence-driven acquisition
+    \end{itemize}
+}{Performance-Based Errors}{
+    \begin{itemize}
+        \item Processing load effects
+        \item Resource limitations
+        \item Context-dependent omissions
+        \item Developmental trajectory
+        \item Cognitive constraints
+    \end{itemize}
+}
+
+\problemsolution{Poverty of the Stimulus Challenge}{
+    \textbf{The Problem:}
+
+    Children acquire complex syntactic constraints from limited positive
+    evidence, with little to no negative feedback. Current theoretical accounts
+    struggle to explain how learners converge on correct grammars from
+    ambiguous input.
+
+    \textbf{Critical Issues:}
+    \begin{itemize}
+        \item Indirect evidence may be insufficient for learning
+        \item Direct negative evidence is rare or absent
+        \item Multiple hypotheses consistent with input
+        \item Cross-linguistic variation requires parameter setting
+    \end{itemize}
+}{
+    \textbf{Proposed Solution:}
+
+    Use controlled rearing experiments with language models to test which
+    evidence types are sufficient for constraint acquisition.
+
+    \textbf{Research Plan:}
+    \begin{itemize}
+        \item Train models on developmentally-plausible corpora
+        \item Systematically ablate specific evidence sources
+        \item Measure acquisition trajectories and end-state competence
+        \item Test cross-linguistic transfer and priming effects
+        \item Compare model learning to child developmental patterns
+    \end{itemize}
+}
+
+\section{Implications for Acquisition Theory}
+
+\takeaway{Subject pronouns provide critical direct evidence for null-subject
+constraints, while determiner systems facilitate learning through indirect cues.
+Models show human-like developmental patterns, validating the use of controlled
+rearing as a method for testing acquisition theories.}
+
+\vspace{2ex}
+
+\textbf{Theoretical Implications:}
+\begin{enumerate}
+    \item Hyams' direct evidence account receives strong support from pronoun
+    ablation effects
+    \item Duguine's determiner hypothesis explains accelerated learning with
+    rich nominal morphology
+    \item Yang's expletive-based account shows minimal effect in our models
+    \item Processing accounts fail to predict model behavior under complexity
+    manipulations
+    \item Evidence hierarchy emerges: pronouns $>$ determiners $>$ verbal morphology $>$ expletives
+\end{enumerate}
+
+\source{Morton et al. (2025), Cognitive Science}
+
+\closing
+\end{document}
