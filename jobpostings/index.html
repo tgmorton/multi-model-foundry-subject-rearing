@@ -12,7 +12,7 @@
         <meta name="author" content="Model Foundry Team">
       
       
-        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/preprocessing/">
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/jobpostings/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Preprocessing: Linguistic Ablations - Model Foundry Documentation</title>
+        <title>Jobpostings - Model Foundry Documentation</title>
       
     
     
@@ -75,11 +75,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#preprocessing-linguistic-ablations" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -110,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Preprocessing: Linguistic Ablations
+              Jobpostings
             
           </span>
         </div>
@@ -323,7 +318,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="USER_GUIDE/" class="md-tabs__link">
+        <a href="../preprocessing/USER_GUIDE/" class="md-tabs__link">
           
   
   
@@ -1340,7 +1335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="USER_GUIDE/" class="md-nav__link">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
         
   
   
@@ -1368,7 +1363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="ADVANCED_USAGE.md" class="md-nav__link">
+      <a href="../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
         
   
   
@@ -1413,104 +1408,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-this-does" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What This Does
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#available-ablations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Available Ablations
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#choose-your-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Choose Your Path
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#core-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-research-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example: Research Workflow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-tasks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Tasks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#getting-help" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Getting Help
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -1530,127 +1427,215 @@
   
 
 
-<h1 id="preprocessing-linguistic-ablations">Preprocessing: Linguistic Ablations<a class="headerlink" href="#preprocessing-linguistic-ablations" title="Permanent link">&para;</a></h1>
-<p>Apply systematic transformations to text corpora to study how models learn language features.</p>
-<h2 id="what-this-does">What This Does<a class="headerlink" href="#what-this-does" title="Permanent link">&para;</a></h2>
-<p>Remove or modify specific linguistic features (articles, pronouns, verb forms) to create controlled experiments. For example, remove all articles to test whether models can learn grammar without "the", "a", or "an".</p>
-<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">preprocessing.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">AblationConfig</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">preprocessing.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">AblationPipeline</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AblationConfig</span><span class="p">(</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;remove_articles&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;data/raw/corpus/&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;data/processed/corpus/&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AblationPipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">manifest</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">process_corpus</span><span class="p">()</span>
-</code></pre></div>
-<h2 id="available-ablations">Available Ablations<a class="headerlink" href="#available-ablations" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Ablation</th>
-<th>What It Does</th>
-<th>Research Use</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>remove_articles</code></td>
-<td>Removes 'a', 'an', 'the'</td>
-<td>Test determiner acquisition</td>
-</tr>
-<tr>
-<td><code>remove_expletives</code></td>
-<td>Removes dummy pronouns (non-referential "it")</td>
-<td>Test pronoun understanding</td>
-</tr>
-<tr>
-<td><code>impoverish_determiners</code></td>
-<td>Replaces all determiners with 'the'</td>
-<td>Test morphological learning</td>
-</tr>
-<tr>
-<td><code>lemmatize_verbs</code></td>
-<td>Reduces verbs to base form</td>
-<td>Test verb inflection learning</td>
-</tr>
-<tr>
-<td><code>remove_subject_pronominals</code></td>
-<td>Removes subject pronouns</td>
-<td>Test subject-drop patterns</td>
-</tr>
-</tbody>
-</table>
-<h2 id="choose-your-path">Choose Your Path<a class="headerlink" href="#choose-your-path" title="Permanent link">&para;</a></h2>
-<p><strong>New to preprocessing?</strong> → <a href="USER_GUIDE/">User Guide</a> - Learn by doing</p>
-<p><strong>Need to customize?</strong> → <a href="DEVELOPER_GUIDE/">Developer Guide</a> - Add your own ablations</p>
-<p><strong>Large-scale processing?</strong> → <a href="ADVANCED_USAGE.md">Advanced Usage</a> - Performance tuning and production features</p>
-<p><strong>Testing your changes?</strong> → <a href="TESTING/">Testing Guide</a> - Run and write tests</p>
-<h2 id="core-features">Core Features<a class="headerlink" href="#core-features" title="Permanent link">&para;</a></h2>
-<p><strong>Reproducibility</strong>: Every run generates complete provenance metadata with checksums, environment info, and random seeds.</p>
-<p><strong>Robustness</strong>: Failed files don't crash entire runs. Detailed error logging helps you fix issues quickly.</p>
-<p><strong>Performance</strong>: Process large corpora efficiently with configurable batch sizes and component disabling.</p>
-<p><strong>Maintainability</strong>: Registry-based architecture makes adding new ablations straightforward.</p>
-<h2 id="example-research-workflow">Example: Research Workflow<a class="headerlink" href="#example-research-workflow" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Remove articles from training corpus</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AblationConfig</span><span class="p">(</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;remove_articles&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;data/bnc_train/&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;data/bnc_no_articles/&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">replacement_pool_dir</span><span class="o">=</span><span class="s2">&quot;data/pool/&quot;</span><span class="p">,</span>  <span class="c1"># Maintain corpus size</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AblationPipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">manifest</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">process_corpus</span><span class="p">()</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># Check results</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed: </span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">total_files_processed</span><span class="si">}</span><span class="s2"> files&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed: </span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">total_items_ablated</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> articles&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time: </span><span class="si">{</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">processing_time_seconds</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># Provenance saved to: output_path/ABLATION_MANIFEST.json</span>
-</code></pre></div>
-<h2 id="common-tasks">Common Tasks<a class="headerlink" href="#common-tasks" title="Permanent link">&para;</a></h2>
-<p><strong>Process a single corpus:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AblationConfig</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;remove_articles&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;data/train.txt&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;data/train_ablated.txt&quot;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
-</code></pre></div></p>
-<p><strong>Optimize for speed:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AblationConfig</span><span class="p">(</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;remove_articles&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;data/large_corpus/&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;data/processed/&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">spacy_batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">spacy_disable_components</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;ner&quot;</span><span class="p">,</span> <span class="s2">&quot;textcat&quot;</span><span class="p">],</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">skip_validation</span><span class="o">=</span><span class="kc">True</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">)</span>
-</code></pre></div></p>
-<p><strong>Handle errors gracefully:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">config</span> <span class="o">=</span> <span class="n">AblationConfig</span><span class="p">(</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;remove_articles&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;data/messy_corpus/&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;data/processed/&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Detailed error logs</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">AblationPipeline</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">manifest</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">process_corpus</span><span class="p">()</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="k">if</span> <span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">failed_files</span><span class="p">:</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">failed_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files failed&quot;</span><span class="p">)</span>
-</code></pre></div></p>
-<h2 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h2>
-<p><strong>Can't find what you need?</strong> Check the <a href="USER_GUIDE/">User Guide</a> for complete examples.</p>
-<p><strong>Hit an error?</strong> See <a href="USER_GUIDE/#troubleshooting">Troubleshooting</a> section.</p>
-<p><strong>Want to contribute?</strong> Read the <a href="DEVELOPER_GUIDE/">Developer Guide</a>.</p>
+  <h1>Jobpostings</h1>
+
+<p>Research Engineer, Model Evaluations
+San Francisco, CA | New York City, NY
+About Anthropic</p>
+<p>Anthropic’s mission is to create reliable, interpretable, and steerable AI systems. We want AI to be safe and beneficial for our users and for society as a whole. Our team is a quickly growing group of committed researchers, engineers, policy experts, and business leaders working together to build beneficial AI systems.</p>
+<p>About the role</p>
+<p>As a Research Engineer on the Model Evaluations team, you'll lead the design and implementation of Anthropic's evaluation platform—a critical system that shapes how we understand, measure, and improve our models' capabilities and safety. You'll work at the intersection of research and engineering to develop and implement model evaluations that give us insight into emerging capabilities and build robust evaluation infrastructure that directly influences our training decisions and model development roadmap.</p>
+<p>Your work will be essential to Anthropic's mission of building safe, beneficial AI systems. You'll collaborate closely with training teams, alignment researchers, and safety teams to ensure our models meet the highest standards before deployment. This is a technical leadership role where you'll drive both the strategic vision and hands-on implementation of our evaluation systems.</p>
+<p>Responsibilities</p>
+<p>Design novel evaluation methodologies to assess model capabilities across diverse domains including reasoning, safety, helpfulness, and harmlessness
+Lead the design and architecture of Anthropic's evaluation platform, ensuring it scales with our rapidly evolving model capabilities and research needs
+Implement and maintain high-throughput evaluation pipelines that run during production training, providing real-time insights to guide training decisions
+Analyze evaluation results to identify patterns, failure modes, and opportunities for model improvement, translating complex findings into actionable insights
+Partner with research teams to develop domain-specific evaluations that probe for emerging capabilities and potential risks
+Build infrastructure to enable rapid iteration on evaluation design, supporting both automated and human-in-the-loop assessment approaches
+Establish best practices and standards for evaluation development across the organization
+Mentor team members and contribute to the growth of evaluation expertise at Anthropic
+Coordinate evaluation efforts during critical training runs, ensuring comprehensive coverage and timely results
+Contribute to research publications and external communications about evaluation methodologies and findings
+You may be a good fit if you</p>
+<p>Have experience designing and implementing evaluation systems for machine learning models, particularly large language models
+Have demonstrated technical leadership experience, either formally or through leading complex technical projects
+Are skilled at both systems engineering and experimental design, comfortable building infrastructure while maintaining scientific rigor
+Have strong programming skills in Python and experience with distributed computing frameworks
+Can translate between research needs and engineering constraints, finding pragmatic solutions to complex problems
+Are results-oriented and thrive in fast-paced environments where priorities can shift based on research findings
+Enjoy collaborative work and can effectively communicate technical concepts to diverse stakeholders
+Care deeply about AI safety and the societal impacts of the systems we build
+Have experience with statistical analysis and can draw meaningful conclusions from large-scale experimental data
+Strong candidates may also have</p>
+<p>Experience with evaluation during model training, particularly in production environments
+Familiarity with safety evaluation frameworks and red teaming methodologies
+Background in psychometrics, experimental psychology, or other fields focused on measurement and assessment
+Experience with reinforcement learning evaluation or multi-agent systems
+Contributions to open-source evaluation benchmarks or frameworks
+Knowledge of prompt engineering and its role in evaluation design
+Experience managing evaluation infrastructure at scale (thousands of experiments)
+Published research in machine learning evaluation, benchmarking, or related areas
+Representative projects</p>
+<p>Designing comprehensive evaluation suites that assess models across hundreds of capability dimensions
+Building real-time evaluation dashboards that surface critical insights during multi-week training runs
+Developing novel evaluation approaches for emerging capabilities like multi-step reasoning or tool use
+Creating automated systems to detect regression in model performance or safety properties
+Implementing efficient evaluation sampling strategies that balance coverage with computational constraints
+Collaborating with external partners to develop industry-standard evaluation benchmarks
+Building infrastructure to support human evaluation at scale, including quality control and aggregation systems 
+The expected base compensation for this position is below. Our total compensation package for full-time employees includes equity, benefits, and may include incentive compensation.</p>
+<p>Annual Salary:
+$300,000 - $405,000 USD
+Logistics</p>
+<p>Education requirements: We require at least a Bachelor's degree in a related field or equivalent experience.</p>
+<p>Location-based hybrid policy: Currently, we expect all staff to be in one of our offices at least 25% of the time. However, some roles may require more time in our offices.</p>
+<p>Visa sponsorship: We do sponsor visas! However, we aren't able to successfully sponsor visas for every role and every candidate. But if we make you an offer, we will make every reasonable effort to get you a visa, and we retain an immigration lawyer to help with this.</p>
+<p>We encourage you to apply even if you do not believe you meet every single qualification. Not all strong candidates will meet every single qualification as listed.  Research shows that people who identify as being from underrepresented groups are more prone to experiencing imposter syndrome and doubting the strength of their candidacy, so we urge you not to exclude yourself prematurely and to submit an application if you're interested in this work. We think AI systems like the ones we're building have enormous social and ethical implications. We think this makes representation even more important, and we strive to include a range of diverse perspectives on our team.</p>
+<p>How we're different</p>
+<p>We believe that the highest-impact AI research will be big science. At Anthropic we work as a single cohesive team on just a few large-scale research efforts. And we value impact — advancing our long-term goals of steerable, trustworthy AI — rather than work on smaller and more specific puzzles. We view AI research as an empirical science, which has as much in common with physics and biology as with traditional efforts in computer science. We're an extremely collaborative group, and we host frequent research discussions to ensure that we are pursuing the highest-impact work at any given time. As such, we greatly value communication skills.</p>
+<p>The easiest way to understand our research directions is to read our recent research. This research continues many of the directions our team worked on prior to Anthropic, including: GPT-3, Circuit-Based Interpretability, Multimodal Neurons, Scaling Laws, AI &amp; Compute, Concrete Problems in AI Safety, and Learning from Human Preferences.</p>
+<p>Come work with us!</p>
+<p>Anthropic is a public benefit corporation headquartered in San Francisco. We offer competitive compensation and benefits, optional equity donation matching, generous vacation and parental leave, flexible working hours, and a lovely office space in which to collaborate with colleagues. Guidance on Candidates' AI Usage: Learn about our policy for using AI in our application process</p>
+<p>Research Engineer, Pre-training
+Remote-Friendly (Travel-Required) | San Francisco, CA | Seattle, WA | New York City, NY
+About Anthropic</p>
+<p>Anthropic’s mission is to create reliable, interpretable, and steerable AI systems. We want AI to be safe and beneficial for our users and for society as a whole. Our team is a quickly growing group of committed researchers, engineers, policy experts, and business leaders working together to build beneficial AI systems.</p>
+<p>Anthropic is at the forefront of AI research, dedicated to developing safe, ethical, and powerful artificial intelligence. Our mission is to ensure that transformative AI systems are aligned with human interests. We are seeking a Research Engineer to join our Pre-training team, responsible for developing the next generation of large language models. In this role, you will work at the intersection of cutting-edge research and practical engineering, contributing to the development of safe, steerable, and trustworthy AI systems.</p>
+<p>Key Responsibilities:</p>
+<p>Conduct research and implement solutions in areas such as model architecture, algorithms, data processing, and optimizer development
+Independently lead small research projects while collaborating with team members on larger initiatives
+Design, run, and analyze scientific experiments to advance our understanding of large language models
+Optimize and scale our training infrastructure to improve efficiency and reliability
+Develop and improve dev tooling to enhance team productivity
+Contribute to the entire stack, from low-level optimizations to high-level model design
+Qualifications:</p>
+<p>Advanced degree (MS or PhD) in Computer Science, Machine Learning, or a related field
+Strong software engineering skills with a proven track record of building complex systems
+Expertise in Python and experience with deep learning frameworks (PyTorch preferred)
+Familiarity with large-scale machine learning, particularly in the context of language models
+Ability to balance research goals with practical engineering constraints
+Strong problem-solving skills and a results-oriented mindset
+Excellent communication skills and ability to work in a collaborative environment
+Care about the societal impacts of your work
+Preferred Experience:</p>
+<p>Work on high-performance, large-scale ML systems
+Familiarity with GPUs, Kubernetes, and OS internals
+Experience with language modeling using transformer architectures
+Knowledge of reinforcement learning techniques
+Background in large-scale ETL processes
+You'll thrive in this role if you:</p>
+<p>Have significant software engineering experience
+Are results-oriented with a bias towards flexibility and impact
+Willingly take on tasks outside your job description to support the team
+Enjoy pair programming and collaborative work
+Are eager to learn more about machine learning research
+Are enthusiastic to work at an organization that functions as a single, cohesive team pursuing large-scale AI research projects
+Are working to align state of the art models with human values and preferences, understand and interpret deep neural networks, or develop new models to support these areas of research
+View research and engineering as two sides of the same coin, and seek to understand all aspects of our research program as well as possible, to maximize the impact of your insights
+Have ambitious goals for AI safety and general progress in the next few years, and you’re working to create the best outcomes over the long-term.
+Sample Projects:</p>
+<p>Optimizing the throughput of novel attention mechanisms
+Comparing compute efficiency of different Transformer variants
+Preparing large-scale datasets for efficient model consumption
+Scaling distributed training jobs to thousands of GPUs
+Designing fault tolerance strategies for our training infrastructure
+Creating interactive visualizations of model internals, such as attention patterns
+At Anthropic, we are committed to fostering a diverse and inclusive workplace. We strongly encourage applications from candidates of all backgrounds, including those from underrepresented groups in tech.</p>
+<p>If you're excited about pushing the boundaries of AI while prioritizing safety and ethics, we want to hear from you!</p>
+<p>The expected base compensation for this position is below. Our total compensation package for full-time employees includes equity, benefits, and may include incentive compensation.</p>
+<p>Annual Salary:
+$340,000 - $425,000 USD
+Logistics</p>
+<p>Education requirements: We require at least a Bachelor's degree in a related field or equivalent experience.</p>
+<p>Location-based hybrid policy: Currently, we expect all staff to be in one of our offices at least 25% of the time. However, some roles may require more time in our offices.</p>
+<p>Visa sponsorship: We do sponsor visas! However, we aren't able to successfully sponsor visas for every role and every candidate. But if we make you an offer, we will make every reasonable effort to get you a visa, and we retain an immigration lawyer to help with this.</p>
+<p>We encourage you to apply even if you do not believe you meet every single qualification. Not all strong candidates will meet every single qualification as listed.  Research shows that people who identify as being from underrepresented groups are more prone to experiencing imposter syndrome and doubting the strength of their candidacy, so we urge you not to exclude yourself prematurely and to submit an application if you're interested in this work. We think AI systems like the ones we're building have enormous social and ethical implications. We think this makes representation even more important, and we strive to include a range of diverse perspectives on our team.</p>
+<p>How we're different</p>
+<p>We believe that the highest-impact AI research will be big science. At Anthropic we work as a single cohesive team on just a few large-scale research efforts. And we value impact — advancing our long-term goals of steerable, trustworthy AI — rather than work on smaller and more specific puzzles. We view AI research as an empirical science, which has as much in common with physics and biology as with traditional efforts in computer science. We're an extremely collaborative group, and we host frequent research discussions to ensure that we are pursuing the highest-impact work at any given time. As such, we greatly value communication skills.</p>
+<p>The easiest way to understand our research directions is to read our recent research. This research continues many of the directions our team worked on prior to Anthropic, including: GPT-3, Circuit-Based Interpretability, Multimodal Neurons, Scaling Laws, AI &amp; Compute, Concrete Problems in AI Safety, and Learning from Human Preferences.</p>
+<p>Come work with us!</p>
+<p>Anthropic is a public benefit corporation headquartered in San Francisco. We offer competitive compensation and benefits, optional equity donation matching, generous vacation and parental leave, flexible working hours, and a lovely office space in which to collaborate with colleagues. Guidance on Candidates' AI Usage: Learn about our policy for using AI in our application process</p>
+<p>Research Engineer, Pretraining Scaling
+San Francisco, CA
+About Anthropic</p>
+<p>Anthropic’s mission is to create reliable, interpretable, and steerable AI systems. We want AI to be safe and beneficial for our users and for society as a whole. Our team is a quickly growing group of committed researchers, engineers, policy experts, and business leaders working together to build beneficial AI systems.</p>
+<p>About the Role:</p>
+<p>Anthropic's ML Performance and Scaling team trains our production pretrained models, work that directly shapes the company's future and our mission to build safe, beneficial AI systems. As a Research Engineer on this team, you'll ensure our frontier models train reliably, efficiently, and at scale. This is demanding, high-impact work that requires both deep technical expertise and a genuine passion for the craft of large-scale ML systems.</p>
+<p>This role lives at the boundary between research and engineering. You'll work across our entire production training stack: performance optimization, hardware debugging, experimental design, and launch coordination. During launches, the team works in tight lockstep, responding to production issues that can't wait for tomorrow.</p>
+<p>Responsibilities: </p>
+<p>Own critical aspects of our production pretraining pipeline, including model operations, performance optimization, observability, and reliability
+Debug and resolve complex issues across the full stack—from hardware errors and networking to training dynamics and evaluation infrastructure
+Design and run experiments to improve training efficiency, reduce step time, increase uptime, and enhance model performance
+Respond to on-call incidents during model launches, diagnosing problems quickly and coordinating solutions across teams
+Build and maintain production logging, monitoring dashboards, and evaluation infrastructure
+Add new capabilities to the training codebase, such as long context support or novel architectures
+Collaborate closely with teammates across SF and London, as well as with Tokens, Architectures, and Systems teams
+Contribute to the team's institutional knowledge by documenting systems, debugging approaches, and lessons learned
+You May Be a Good Fit If You:</p>
+<p>Have hands-on experience training large language models, or deep expertise with JAX, TPU, PyTorch, or large-scale distributed systems
+Genuinely enjoy both research and engineering work—you'd describe your ideal split as roughly 50/50 rather than heavily weighted toward one or the other
+Are excited about being on-call for production systems, working long days during launches, and solving hard problems under pressure
+Thrive when working on whatever is most impactful, even if that changes day-to-day based on what the production model needs
+Excel at debugging complex, ambiguous problems across multiple layers of the stack
+Communicate clearly and collaborate effectively, especially when coordinating across time zones or during high-stress incidents
+Are passionate about the work itself and want to refine your craft as a research engineer
+Care about the societal impacts of AI and responsible scaling
+Strong Candidates May Also Have: </p>
+<p>Previous experience training LLM’s or working extensively with JAX/TPU, PyTorch, or other ML frameworks at scale
+Contributed to open-source LLM frameworks (e.g., open_lm, llm-foundry, mesh-transformer-jax)
+Published research on model training, scaling laws, or ML systems
+Experience with production ML systems, observability tools, or evaluation infrastructure
+Background as a systems engineer, quant, or in other roles requiring both technical depth and operational excellence
+What Makes This Role Unique: </p>
+<p>This is not a typical research engineering role. The work is highly operational—you'll be deeply involved in keeping our production models training smoothly, which means being responsive to incidents, flexible about priorities, and comfortable with uncertainty. During launches, the team often works extended hours and may need to respond to issues on evenings and weekends.</p>
+<p>However, this operational intensity comes with extraordinary learning opportunities. You'll gain hands-on experience with some of the largest, most sophisticated training runs in the industry. You'll work alongside world-class researchers and engineers, and the institutional knowledge you build will compound in ways that can't be easily transferred. For people who thrive on this type of work, it's uniquely rewarding.</p>
+<p>We're building a close-knit team of people who genuinely care about doing excellent work together. If you're someone who wants to be part of training the models that will define the future of AI—and you're excited about the full reality of what that entails—we'd love to hear from you.</p>
+<p>Location:This role requires working in-office 5 days per week in San Francisco. </p>
+<p>Deadline to apply: None. Applications will be reviewed on a rolling basis.</p>
+<p>The expected base compensation for this position is below. Our total compensation package for full-time employees includes equity, benefits, and may include incentive compensation.</p>
+<p>Annual Salary:
+$315,000 - $560,000 USD</p>
+<p>Research Engineer / Research Scientist, Pre-training
+Zürich, CH
+About Anthropic</p>
+<p>Anthropic’s mission is to create reliable, interpretable, and steerable AI systems. We want AI to be safe and beneficial for our users and for society as a whole. Our team is a quickly growing group of committed researchers, engineers, policy experts, and business leaders working together to build beneficial AI systems.</p>
+<p>About the team</p>
+<p>We are seeking passionate Research Scientists and Engineers to join our growing Pre-training team in Zurich. We are involved in developing the next generation of large language models. The team primarily focuses on multimodal capabilities: giving LLMs the ability to understand and interact with modalities other than text.</p>
+<p>In this role, you will work at the intersection of cutting-edge research and practical engineering, contributing to the development of safe, steerable, and trustworthy AI systems.</p>
+<p>Responsibilities</p>
+<p>In this role you will interact with many parts of the engineering and research stacks.</p>
+<p>Conduct research and implement solutions in areas such as model architecture, algorithms, data processing, and optimizer development
+Independently lead small research projects while collaborating with team members on larger initiatives
+Design, run, and analyze scientific experiments to advance our understanding of large language models
+Optimize and scale our training infrastructure to improve efficiency and reliability
+Develop and improve dev tooling to enhance team productivity
+Contribute to the entire stack, from low-level optimizations to high-level model design
+Qualifications &amp; Experience</p>
+<p>We encourage you to apply even if you do not believe you meet every single criterion. Because we focus on so many areas, the team is looking for both experienced engineers and strong researchers, and encourage anyone along the researcher/engineer spectrum to apply.</p>
+<p>Degree (BA required, MS or PhD preferred) in Computer Science, Machine Learning, or a related field
+Strong software engineering skills with a proven track record of building complex systems
+Expertise in Python and deep learning frameworks
+Have worked on high-performance, large-scale ML systems, particularly in the context of language modeling
+Familiarity with ML Accelerators, Kubernetes, and large-scale data processing
+Strong problem-solving skills and a results-oriented mindset
+Excellent communication skills and ability to work in a collaborative environment
+You'll thrive in this role if you</p>
+<p>Have significant software engineering experience
+Are able to balance research goals with practical engineering constraints
+Are happy to take on tasks outside your job description to support the team
+Enjoy pair programming and collaborative work
+Are eager to learn more about machine learning research
+Are enthusiastic to work at an organization that functions as a single, cohesive team pursuing large-scale AI research projects
+Have ambitious goals for AI safety and general progress in the next few years, and you’re excited to create the best outcomes over the long-term
+Sample Projects</p>
+<p>Optimizing the throughput of novel attention mechanisms
+Proposing Transformer variants, and experimentally comparing their performance
+Preparing large-scale datasets for model consumption
+Scaling distributed training jobs to thousands of accelerators
+Designing fault tolerance strategies for training infrastructure
+Creating interactive visualizations of model internals, such as attention patterns
+If you're excited about pushing the boundaries of AI while prioritizing safety and ethics, we want to hear from you!</p>
+<p>Logistics</p>
+<p>Education requirements: We require at least a Bachelor's degree in a related field or equivalent experience.</p>
+<p>Location-based hybrid policy: Currently, we expect all staff to be in one of our offices at least 25% of the time. However, some roles may require more time in our offices.</p>
+<p>Visa sponsorship: We do sponsor visas! However, we aren't able to successfully sponsor visas for every role and every candidate. But if we make you an offer, we will make every reasonable effort to get you a visa, and we retain an immigration lawyer to help with this.</p>
+<p>We encourage you to apply even if you do not believe you meet every single qualification. Not all strong candidates will meet every single qualification as listed.  Research shows that people who identify as being from underrepresented groups are more prone to experiencing imposter syndrome and doubting the strength of their candidacy, so we urge you not to exclude yourself prematurely and to submit an application if you're interested in this work. We think AI systems like the ones we're building have enormous social and ethical implications. We think this makes representation even more important, and we strive to include a range of diverse perspectives on our team.</p>
+<p>How we're different</p>
+<p>We believe that the highest-impact AI research will be big science. At Anthropic we work as a single cohesive team on just a few large-scale research efforts. And we value impact — advancing our long-term goals of steerable, trustworthy AI — rather than work on smaller and more specific puzzles. We view AI research as an empirical science, which has as much in common with physics and biology as with traditional efforts in computer science. We're an extremely collaborative group, and we host frequent research discussions to ensure that we are pursuing the highest-impact work at any given time. As such, we greatly value communication skills.</p>
+<p>The easiest way to understand our research directions is to read our recent research. This research continues many of the directions our team worked on prior to Anthropic, including: GPT-3, Circuit-Based Interpretability, Multimodal Neurons, Scaling Laws, AI &amp; Compute, Concrete Problems in AI Safety, and Learning from Human Preferences.</p>
+<p>Come work with us!</p>
+<p>Anthropic is a public benefit corporation headquartered in San Francisco. We offer competitive compensation and benefits, optional equity donation matching, generous vacation and parental leave, flexible working hours, and a lovely office space in which to collaborate with colleagues. Guidance on Candidates' AI Usage: Learn about our policy for using AI in our application process</p>
 
 
 
