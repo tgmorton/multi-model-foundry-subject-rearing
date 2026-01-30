@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: corpus-analysis-pull-10m
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: analyzer
+        image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml &&
+          python -m spacy download en_core_web_trf &&
+          cd /opt/repo &&
+          python -m analysis.corpus_descriptives.run \
+            --config configs/corpus_analysis_pull10m.yaml
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "4"
+            nvidia.com/gpu: "1"
+          limits:
+            memory: 12Gi
+            cpu: "6"
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+        - name: dshm
+          mountPath: /dev/shm
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+      restartPolicy: Never
