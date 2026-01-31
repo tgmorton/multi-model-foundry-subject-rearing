@@ -1,0 +1,36 @@
+# Step 5: Model training (Italian)
+synthetic_data_path: data/pronoun_recovery/synthetic/it
+annotation_data_path: data/pronoun_recovery/annotations/it/llm_validated
+output_path: data/pronoun_recovery/models/it
+language: it
+
+# Model
+model_name: microsoft/mdeberta-v3-base
+num_labels: 9
+
+# Phase A: pretrain on synthetic data
+phase_a_lr: 3.0e-5
+phase_a_batch_size: 32
+phase_a_epochs: 3
+phase_a_max_samples: 500000
+phase_a_patience: 2
+
+# Phase B: finetune on annotations
+phase_b_lr: 1.0e-5
+phase_b_batch_size: 16
+phase_b_epochs: 10
+phase_b_patience: 3
+
+# Common
+fp16: true
+warmup_ratio: 0.1
+max_seq_length: 256
+seed: 42
+
+# Logging
+wandb_project: pronoun-recovery
+wandb_run_name: mdeberta-v3-base-it
+
+# Gates
+min_detection_f1: 0.85
+min_label_accuracy: 0.80

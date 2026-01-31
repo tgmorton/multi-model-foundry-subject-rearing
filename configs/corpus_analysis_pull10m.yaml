@@ -1,11 +1,11 @@
 input_path: /mnt/data/raw/pull_10M/
 output_path: /mnt/data/output/pull_10M/
 split_name: pull_10M
-spacy_model: en_core_web_trf
-spacy_batch_size: 50
+spacy_model: en_core_web_lg
+spacy_batch_size: 256
 spacy_disable_components:
   - ner
-chunk_size: 1000
+chunk_size: 5000
 language: en
 checkpoint_dir: /mnt/data/checkpoints/pull_10M/
 checkpoint_interval: 10000

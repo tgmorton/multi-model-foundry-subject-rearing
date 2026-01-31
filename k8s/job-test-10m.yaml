@@ -6,15 +6,6 @@ spec:
   backoffLimit: 3
   template:
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-                - k8s-gpu-01.calit2.optiputer.net
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -36,39 +27,31 @@ spec:
           mountPath: /opt/repo
       containers:
       - name: analyzer
-        image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+        image: python:3.10-slim
         command: ["/bin/bash", "-c"]
         args:
         - |
           pip install --no-cache-dir spacy pydantic tqdm pyyaml &&
-          python -m spacy download en_core_web_trf &&
+          python -m spacy download en_core_web_lg &&
           cd /opt/repo &&
           python -m analysis.corpus_descriptives.run \
             --config configs/corpus_analysis_test10m.yaml
         resources:
           requests:
-            memory: 10Gi
-            cpu: "5"
-            nvidia.com/gpu: "1"
+            memory: 4Gi
+            cpu: "4"
           limits:
-            memory: 12Gi
-            cpu: "6"
-            nvidia.com/gpu: "1"
+            memory: 4Gi
+            cpu: "4"
         volumeMounts:
         - name: repo
           mountPath: /opt/repo
         - name: data
           mountPath: /mnt/data
-        - name: dshm
-          mountPath: /dev/shm
       volumes:
       - name: repo
         emptyDir: {}
       - name: data
         persistentVolumeClaim:
           claimName: corpus-analysis-data
-      - name: dshm
-        emptyDir:
-          medium: Memory
-          sizeLimit: 2Gi
       restartPolicy: Never

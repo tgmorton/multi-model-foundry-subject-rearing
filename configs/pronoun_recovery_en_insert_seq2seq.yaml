@@ -1,0 +1,24 @@
+# Seq2seq pronoun insertion (English)
+input_path: data/chunked/train_90M
+output_path: data/pronoun_recovery/inserted_seq2seq/en
+model_path: data/pronoun_recovery/models_seq2seq/en/final
+language: en
+
+# Generation
+max_input_length: 256
+max_target_length: 256
+num_beams: 4
+length_penalty: 1.0
+batch_size: 32
+
+# Processing
+chunk_size: 1000
+
+# Genre mapping
+genre_map:
+  childes: CHILDES
+  bnc_spoken: BNC
+  gutenberg: Gutenberg
+  open_subtitles: OpenSubtitles
+  simple_wiki: SimpleWikipedia
+  switchboard: Switchboard

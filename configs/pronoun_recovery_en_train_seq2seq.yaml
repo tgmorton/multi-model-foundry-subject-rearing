@@ -1,0 +1,38 @@
+# Seq2seq (mT5) model training (English)
+synthetic_data_path: data/pronoun_recovery/synthetic/en
+annotation_data_path: data/pronoun_recovery/annotations/en/llm_validated
+output_path: data/pronoun_recovery/models_seq2seq/en
+language: en
+
+# Model
+model_name: google/mt5-base
+
+# Tokenization
+max_input_length: 256
+max_target_length: 256
+
+# Phase A: pretrain on synthetic data
+phase_a_lr: 3.0e-4
+phase_a_batch_size: 16
+phase_a_epochs: 5
+phase_a_max_samples: 500000
+phase_a_patience: 2
+
+# Phase B: finetune on annotations
+phase_b_lr: 1.0e-4
+phase_b_batch_size: 8
+phase_b_epochs: 10
+phase_b_patience: 3
+
+# Generation
+num_beams: 4
+length_penalty: 1.0
+
+# Common
+fp16: true
+warmup_ratio: 0.1
+seed: 42
+
+# Logging
+wandb_project: pronoun-recovery
+wandb_run_name: mt5-base-en
