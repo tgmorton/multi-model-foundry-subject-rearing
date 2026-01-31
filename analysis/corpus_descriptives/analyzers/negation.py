@@ -102,8 +102,8 @@ class NegationAnalyzer(BaseAnalyzer):
 
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
-        data["position_counts"] = {g: dict(c) for g, c in self._position_counts.items()}
-        data["crosstab"] = {g: dict(c) for g, c in self._crosstab.items()}
+        data["position_counts"] = {g: self._counter_to_json(c) for g, c in self._position_counts.items()}
+        data["crosstab"] = {g: self._counter_to_json(c) for g, c in self._crosstab.items()}
         return data
 
     def from_checkpoint(self, data: Dict[str, Any]) -> None:

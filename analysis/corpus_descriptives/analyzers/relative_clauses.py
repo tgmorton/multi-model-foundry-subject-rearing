@@ -114,7 +114,7 @@ class RelativeClauseAnalyzer(BaseAnalyzer):
 
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
-        data["counts"] = {g: dict(c) for g, c in self._counts.items()}
+        data["counts"] = {g: self._counter_to_json(c) for g, c in self._counts.items()}
         return data
 
     def from_checkpoint(self, data: Dict[str, Any]) -> None:

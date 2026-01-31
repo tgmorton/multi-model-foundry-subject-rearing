@@ -6,6 +6,15 @@ spec:
   backoffLimit: 3
   template:
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - k8s-gpu-01.calit2.optiputer.net
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -15,6 +24,13 @@ spec:
         - --depth=1
         - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
         - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
         volumeMounts:
         - name: repo
           mountPath: /opt/repo
@@ -31,8 +47,8 @@ spec:
             --config configs/corpus_analysis_train90m.yaml
         resources:
           requests:
-            memory: 8Gi
-            cpu: "4"
+            memory: 10Gi
+            cpu: "5"
             nvidia.com/gpu: "1"
           limits:
             memory: 12Gi

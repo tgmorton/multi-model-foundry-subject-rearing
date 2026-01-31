@@ -120,7 +120,7 @@ class PronounInventoryAnalyzer(BaseAnalyzer):
 
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
-        data["counts"] = {g: dict(c) for g, c in self._counts.items()}
+        data["counts"] = {g: self._counter_to_json(c) for g, c in self._counts.items()}
         data["pronoun_totals"] = dict(self._pronoun_totals)
         data["token_totals"] = dict(self._token_totals)
         return data

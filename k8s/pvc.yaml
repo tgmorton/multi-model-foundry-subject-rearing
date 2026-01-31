@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: corpus-analysis-data
 spec:
-  storageClassName: rook-ceph-block
+  storageClassName: rook-cephfs
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 5Gi

@@ -103,8 +103,8 @@ class ClauseStructureAnalyzer(BaseAnalyzer):
 
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
-        data["finite_counts"] = {g: dict(c) for g, c in self._finite_counts.items()}
-        data["xcomp_verbs"] = {g: dict(c) for g, c in self._xcomp_verbs.items()}
+        data["finite_counts"] = {g: self._counter_to_json(c) for g, c in self._finite_counts.items()}
+        data["xcomp_verbs"] = {g: self._counter_to_json(c) for g, c in self._xcomp_verbs.items()}
         return data
 
     def from_checkpoint(self, data: Dict[str, Any]) -> None:

@@ -89,8 +89,8 @@ class ExpletiveAnalyzer(BaseAnalyzer):
 
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
-        data["class_counts"] = {g: dict(c) for g, c in self._class_counts.items()}
-        data["verb_counts"] = {g: dict(c) for g, c in self._verb_counts.items()}
+        data["class_counts"] = {g: self._counter_to_json(c) for g, c in self._class_counts.items()}
+        data["verb_counts"] = {g: self._counter_to_json(c) for g, c in self._verb_counts.items()}
         return data
 
     def from_checkpoint(self, data: Dict[str, Any]) -> None:

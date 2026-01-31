@@ -64,6 +64,11 @@ class BaseAnalyzer(ABC):
     # ----- helpers -----
 
     @staticmethod
+    def _counter_to_json(counter: Counter) -> Dict[str, int]:
+        """Convert Counter to JSON-safe dict (stringify tuple keys)."""
+        return {str(k): v for k, v in counter.items()}
+
+    @staticmethod
     def _sum_counters(counter: Counter) -> Dict[str, int]:
         """Convert Counter to plain dict for JSON serialization."""
         return dict(counter)

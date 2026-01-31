@@ -213,11 +213,11 @@ class ThatTraceAnalyzer(BaseAnalyzer):
     def to_checkpoint(self) -> Dict[str, Any]:
         data = super().to_checkpoint()
         data["bridge_verb_counts"] = {
-            g: dict(c) for g, c in self._bridge_verb_counts.items()
+            g: self._counter_to_json(c) for g, c in self._bridge_verb_counts.items()
         }
-        data["crosstab"] = {g: dict(c) for g, c in self._crosstab.items()}
-        data["comp_subject"] = {g: dict(c) for g, c in self._comp_subject.items()}
-        data["comp_rate"] = {g: dict(c) for g, c in self._comp_rate.items()}
+        data["crosstab"] = {g: self._counter_to_json(c) for g, c in self._crosstab.items()}
+        data["comp_subject"] = {g: self._counter_to_json(c) for g, c in self._comp_subject.items()}
+        data["comp_rate"] = {g: self._counter_to_json(c) for g, c in self._comp_rate.items()}
         return data
 
     def from_checkpoint(self, data: Dict[str, Any]) -> None:
