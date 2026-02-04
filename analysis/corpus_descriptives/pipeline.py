@@ -524,9 +524,28 @@ class CorpusAnnotationPipeline:
                         # Write base
                         writer.write_base(base_annotation, get_base_schema())
 
+                        # Mapping from annotator class names to schema layer names
+                        ANNOTATOR_TO_LAYER = {
+                            "ClauseStructureAnnotator": "clause_structure",
+                            "ThatTraceAnnotator": "that_trace",
+                            "ExpletiveAnnotator": "expletives",
+                            "PronounAnnotator": "pronouns",
+                            "NegationAnnotator": "negation",
+                            "WhExtractionAnnotator": "wh_extraction",
+                            "RelativeClauseAnnotator": "relative_clauses",
+                            "VerbAnnotator": "verbs",
+                            "ArgumentStructureAnnotator": "argument_structure",
+                            "TopicAnnotator": "topic_continuity",
+                            "ComplexityAnnotator": "complexity",
+                            "FragmentAnnotator": "complexity",  # shares with complexity
+                        }
+
                         # Write each layer
                         for annotator in self.annotators:
-                            layer_name = annotator.name.replace("Annotator", "").lower()
+                            layer_name = ANNOTATOR_TO_LAYER.get(
+                                annotator.name,
+                                annotator.name.replace("Annotator", "").lower()
+                            )
                             # Extract just this annotator's fields + sentence_id
                             layer_data = {"sentence_id": sentence_id}
 

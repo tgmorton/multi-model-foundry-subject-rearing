@@ -249,6 +249,329 @@ def compute_negation_aggregates(
     }
 
 
+def compute_expletive_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute expletive aggregates.
+    """
+    expletives_df = (
+        df.select(["genre", "expletives"])
+        .explode("expletives")
+        .filter(pl.col("expletives").is_not_null())
+        .unnest("expletives")
+        .collect()
+    )
+
+    if expletives_df.is_empty():
+        return {"overall": {"class_counts": {}, "verb_counts": {}, "total_expletives": 0}, "by_genre": {}}
+
+    # Class counts
+    class_counts = (
+        expletives_df
+        .group_by("expletive_class")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Verb counts
+    verb_counts = (
+        expletives_df
+        .group_by("verb_lemma")
+        .agg(pl.count().alias("count"))
+        .sort("count", descending=True)
+        .head(20)
+        .to_dicts()
+    )
+
+    return {
+        "overall": {
+            "class_counts": {r["expletive_class"]: r["count"] for r in class_counts},
+            "verb_counts": [{"verb_lemma": r["verb_lemma"], "count": r["count"]} for r in verb_counts],
+            "total_expletives": expletives_df.height,
+        },
+        "by_genre": {},
+    }
+
+
+def compute_verb_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute verb aggregates including tense/aspect/mood distributions.
+    """
+    verbs_df = (
+        df.select(["genre", "verbs"])
+        .explode("verbs")
+        .filter(pl.col("verbs").is_not_null())
+        .unnest("verbs")
+        .collect()
+    )
+
+    if verbs_df.is_empty():
+        return {"overall": {"verb_form_counts": {}, "tense_counts": {}, "total_verbs": 0}, "by_genre": {}}
+
+    # Verb form distribution
+    verb_form_counts = (
+        verbs_df
+        .group_by("verb_form")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Tense distribution
+    tense_counts = (
+        verbs_df
+        .filter(pl.col("tense").is_not_null())
+        .group_by("tense")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Aspect distribution
+    aspect_counts = (
+        verbs_df
+        .filter(pl.col("aspect").is_not_null())
+        .group_by("aspect")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Mood distribution
+    mood_counts = (
+        verbs_df
+        .filter(pl.col("mood").is_not_null())
+        .group_by("mood")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    return {
+        "overall": {
+            "verb_form_counts": {r["verb_form"]: r["count"] for r in verb_form_counts},
+            "tense_counts": {r["tense"]: r["count"] for r in tense_counts},
+            "aspect_counts": {r["aspect"]: r["count"] for r in aspect_counts},
+            "mood_counts": {r["mood"]: r["count"] for r in mood_counts},
+            "total_verbs": verbs_df.height,
+        },
+        "by_genre": {},
+    }
+
+
+def compute_wh_extraction_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute wh-extraction aggregates.
+    """
+    wh_df = (
+        df.select(["genre", "wh_extractions"])
+        .explode("wh_extractions")
+        .filter(pl.col("wh_extractions").is_not_null())
+        .unnest("wh_extractions")
+        .collect()
+    )
+
+    if wh_df.is_empty():
+        return {"overall": {"extraction_type_counts": {}, "wh_lemma_counts": {}, "total_extractions": 0}, "by_genre": {}}
+
+    # Extraction type distribution
+    extraction_types = (
+        wh_df
+        .group_by("extraction_type")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Wh-lemma distribution
+    wh_lemmas = (
+        wh_df
+        .group_by("wh_lemma")
+        .agg(pl.count().alias("count"))
+        .sort("count", descending=True)
+        .to_dicts()
+    )
+
+    # Clause level distribution
+    clause_levels = (
+        wh_df
+        .group_by("clause_level")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    return {
+        "overall": {
+            "extraction_type_counts": {r["extraction_type"]: r["count"] for r in extraction_types},
+            "wh_lemma_counts": [{"wh_lemma": r["wh_lemma"], "count": r["count"]} for r in wh_lemmas],
+            "clause_level_counts": {r["clause_level"]: r["count"] for r in clause_levels},
+            "total_extractions": wh_df.height,
+        },
+        "by_genre": {},
+    }
+
+
+def compute_relative_clause_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute relative clause aggregates.
+    """
+    relcl_df = (
+        df.select(["genre", "relative_clauses"])
+        .explode("relative_clauses")
+        .filter(pl.col("relative_clauses").is_not_null())
+        .unnest("relative_clauses")
+        .collect()
+    )
+
+    if relcl_df.is_empty():
+        return {"overall": {"rel_type_counts": {}, "total_relative_clauses": 0}, "by_genre": {}}
+
+    # Relative type distribution (subject vs object)
+    rel_types = (
+        relcl_df
+        .group_by("rel_type")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Relativizer distribution
+    relativizers = (
+        relcl_df
+        .filter(pl.col("relativizer_lemma").is_not_null())
+        .group_by("relativizer_lemma")
+        .agg(pl.count().alias("count"))
+        .sort("count", descending=True)
+        .to_dicts()
+    )
+
+    return {
+        "overall": {
+            "rel_type_counts": {r["rel_type"]: r["count"] for r in rel_types},
+            "relativizer_counts": [{"relativizer": r["relativizer_lemma"], "count": r["count"]} for r in relativizers],
+            "total_relative_clauses": relcl_df.height,
+        },
+        "by_genre": {},
+    }
+
+
+def compute_argument_structure_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute argument structure aggregates.
+    """
+    arg_df = (
+        df.select(["genre", "argument_structure"])
+        .explode("argument_structure")
+        .filter(pl.col("argument_structure").is_not_null())
+        .unnest("argument_structure")
+        .collect()
+    )
+
+    if arg_df.is_empty():
+        return {"overall": {"transitivity_counts": {}, "subject_status_counts": {}, "total_verbs": 0}, "by_genre": {}}
+
+    # Transitivity distribution
+    transitivity = (
+        arg_df
+        .group_by("transitivity")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Subject status distribution
+    subject_status = (
+        arg_df
+        .group_by("subject_status")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    # Object status distribution
+    object_status = (
+        arg_df
+        .group_by("object_status")
+        .agg(pl.count().alias("count"))
+        .to_dicts()
+    )
+
+    return {
+        "overall": {
+            "transitivity_counts": {r["transitivity"]: r["count"] for r in transitivity},
+            "subject_status_counts": {r["subject_status"]: r["count"] for r in subject_status},
+            "object_status_counts": {r["object_status"]: r["count"] for r in object_status},
+            "total_verbs": arg_df.height,
+        },
+        "by_genre": {},
+    }
+
+
+def compute_complexity_aggregates(
+    df: pl.LazyFrame,
+) -> Dict[str, Any]:
+    """
+    Compute complexity aggregates.
+    """
+    # Extract complexity struct fields
+    complexity_df = (
+        df.select([
+            "genre",
+            pl.col("complexity").struct.field("n_clauses").alias("n_clauses"),
+            pl.col("complexity").struct.field("max_embedding_depth").alias("max_depth"),
+            pl.col("complexity").struct.field("has_coordination").alias("has_coordination"),
+            pl.col("complexity").struct.field("n_conjuncts").alias("n_conjuncts"),
+            "is_fragment",
+            "is_imperative",
+        ])
+        .collect()
+    )
+
+    if complexity_df.is_empty():
+        return {"overall": {}, "by_genre": {}}
+
+    # Clause count distribution
+    clause_dist = (
+        complexity_df
+        .group_by("n_clauses")
+        .agg(pl.count().alias("count"))
+        .sort("n_clauses")
+        .to_dicts()
+    )
+
+    # Embedding depth distribution
+    depth_dist = (
+        complexity_df
+        .group_by("max_depth")
+        .agg(pl.count().alias("count"))
+        .sort("max_depth")
+        .to_dicts()
+    )
+
+    # Fragment and imperative rates
+    total = complexity_df.height
+    fragment_count = complexity_df.filter(pl.col("is_fragment") == True).height
+    imperative_count = complexity_df.filter(pl.col("is_imperative") == True).height
+    coordination_count = complexity_df.filter(pl.col("has_coordination") == True).height
+
+    return {
+        "overall": {
+            "clause_count_distribution": [{"n_clauses": r["n_clauses"], "count": r["count"]} for r in clause_dist],
+            "depth_distribution": [{"depth": r["max_depth"], "count": r["count"]} for r in depth_dist],
+            "mean_clauses": complexity_df["n_clauses"].mean(),
+            "mean_depth": complexity_df["max_depth"].mean(),
+            "fragment_count": fragment_count,
+            "fragment_rate": fragment_count / total if total else 0,
+            "imperative_count": imperative_count,
+            "imperative_rate": imperative_count / total if total else 0,
+            "coordination_rate": coordination_count / total if total else 0,
+            "total_sentences": total,
+        },
+        "by_genre": {},
+    }
+
+
 def compute_all_aggregates(
     annotations_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
@@ -270,6 +593,12 @@ def compute_all_aggregates(
         "that_trace": compute_that_trace_aggregates(df),
         "pronoun_inventory": compute_pronoun_aggregates(df),
         "negation": compute_negation_aggregates(df),
+        "expletive": compute_expletive_aggregates(df),
+        "verb": compute_verb_aggregates(df),
+        "wh_extraction": compute_wh_extraction_aggregates(df),
+        "relative_clause": compute_relative_clause_aggregates(df),
+        "argument_structure": compute_argument_structure_aggregates(df),
+        "complexity": compute_complexity_aggregates(df),
     }
 
     if output_path:

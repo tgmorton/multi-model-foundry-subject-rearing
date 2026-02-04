@@ -10,10 +10,35 @@ import spacy
 from spacy.tokens import Doc
 
 
+def _spacy_model_available(model_name: str) -> bool:
+    """Check if a spaCy model is installed."""
+    try:
+        spacy.load(model_name)
+        return True
+    except OSError:
+        return False
+
+
 @pytest.fixture
-def nlp():
+def blank_nlp():
     """Blank English spaCy pipeline (no model needed)."""
     return spacy.blank("en")
+
+
+@pytest.fixture
+def nlp():
+    """
+    spaCy pipeline for testing annotators.
+
+    Uses en_core_web_sm if available, otherwise blank pipeline with sentencizer.
+    """
+    if _spacy_model_available("en_core_web_sm"):
+        return spacy.load("en_core_web_sm")
+    else:
+        # Fallback: blank pipeline with sentencizer
+        _nlp = spacy.blank("en")
+        _nlp.add_pipe("sentencizer")
+        return _nlp
 
 
 def make_doc(nlp, words, pos=None, deps=None, heads=None, morphs=None, lemmas=None):
