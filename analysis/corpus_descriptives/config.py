@@ -56,6 +56,35 @@ class CorpusAnalysisConfig(BaseModel):
         10000, gt=0, description="Lines between checkpoints"
     )
 
+    # === Annotation mode settings ===
+    annotation_mode: bool = Field(
+        False,
+        description="If True, run annotation pipeline instead of analyzer pipeline",
+    )
+    annotators: List[str] = Field(
+        default_factory=lambda: [
+            "clause_structure",
+            "that_trace",
+            "expletive",
+            "pronoun",
+            "negation",
+            "wh_extraction",
+            "relative_clause",
+            "verb",
+            "argument_structure",
+            "topic",
+            "complexity",
+        ],
+        description="Annotators to run in annotation mode",
+    )
+    layered_output: bool = Field(
+        True,
+        description="If True, write separate Parquet files per layer",
+    )
+    annotation_batch_size: int = Field(
+        10000, gt=0, description="Batch size for writing annotations to Parquet"
+    )
+
     @field_validator("input_path", "output_path", "checkpoint_dir", mode="before")
     @classmethod
     def resolve_paths(cls, v):

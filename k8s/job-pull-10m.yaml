@@ -31,7 +31,7 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
-          pip install --no-cache-dir spacy pydantic tqdm pyyaml &&
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
           python -m spacy download en_core_web_lg &&
           cd /opt/repo &&
           python -m analysis.corpus_descriptives.run \

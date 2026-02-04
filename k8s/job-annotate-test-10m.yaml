@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: corpus-analysis-test-10m
+  name: corpus-annotate-test-10m
 spec:
   backoffLimit: 3
   template:
@@ -26,7 +26,7 @@ spec:
         - name: repo
           mountPath: /opt/repo
       containers:
-      - name: analyzer
+      - name: annotator
         image: python:3.10-slim
         command: ["/bin/bash", "-c"]
         args:
@@ -35,13 +35,14 @@ spec:
           python -m spacy download en_core_web_lg &&
           cd /opt/repo &&
           python -m analysis.corpus_descriptives.run \
-            --config configs/corpus_analysis_test10m.yaml
+            --config configs/corpus_analysis_test10m.yaml \
+            --annotate
         resources:
           requests:
-            memory: 4Gi
+            memory: 6Gi
             cpu: "4"
           limits:
-            memory: 4Gi
+            memory: 8Gi
             cpu: "4"
         volumeMounts:
         - name: repo

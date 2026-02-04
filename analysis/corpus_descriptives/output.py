@@ -1,13 +1,18 @@
 """
 Output formatters for corpus descriptive analysis.
 
-Produces JSON (per-analyzer + combined) and CSV (flat, R-friendly) output.
+Produces JSON (per-analyzer + combined), CSV (flat, R-friendly), and
+Parquet (sentence-level annotations) output.
 """
 
 import csv
 import json
+import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 
 def save_results(
@@ -129,3 +134,208 @@ def _flatten_section(
             })
 
     return rows
+
+
+# === Parquet Annotation Writer ===
+
+
+class AnnotationWriter:
+    """
+    Streaming Parquet writer for sentence-level annotations.
+
+    Buffers annotations in memory and writes in batches to minimize I/O.
+    Supports both single-file and partitioned output.
+    """
+
+    def __init__(
+        self,
+        output_path: Path,
+        schema: pa.Schema,
+        batch_size: int = 10000,
+        partition_cols: Optional[List[str]] = None,
+    ):
+        """
+        Initialize the annotation writer.
+
+        Args:
+            output_path: Path to output Parquet file or directory (if partitioned)
+            schema: PyArrow schema for annotations
+            batch_size: Number of annotations to buffer before writing
+            partition_cols: Columns to partition by (e.g., ["split", "genre"])
+        """
+        self.output_path = Path(output_path)
+        self.schema = schema
+        self.batch_size = batch_size
+        self.partition_cols = partition_cols
+        self._buffer: List[Dict[str, Any]] = []
+        self._writer: Optional[pq.ParquetWriter] = None
+        self._total_written = 0
+        self.logger = logging.getLogger("corpus_descriptives.output")
+
+        # Create output directory if partitioned
+        if partition_cols:
+            self.output_path.mkdir(parents=True, exist_ok=True)
+        else:
+            self.output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def write_annotation(self, annotation: Dict[str, Any]) -> None:
+        """
+        Add a single annotation to the buffer.
+
+        Automatically flushes when buffer reaches batch_size.
+        """
+        self._buffer.append(annotation)
+        if len(self._buffer) >= self.batch_size:
+            self._flush()
+
+    def write_batch(self, annotations: List[Dict[str, Any]]) -> None:
+        """
+        Add multiple annotations to the buffer.
+
+        More efficient than calling write_annotation in a loop.
+        """
+        self._buffer.extend(annotations)
+        if len(self._buffer) >= self.batch_size:
+            self._flush()
+
+    def _flush(self) -> None:
+        """Write buffered annotations to Parquet."""
+        if not self._buffer:
+            return
+
+        # Convert to PyArrow table
+        try:
+            table = pa.Table.from_pylist(self._buffer, schema=self.schema)
+        except (pa.ArrowInvalid, pa.ArrowTypeError) as e:
+            # Try with permissive schema inference if strict fails
+            self.logger.warning(f"Schema mismatch, using inferred schema: {e}")
+            table = pa.Table.from_pylist(self._buffer)
+
+        if self.partition_cols:
+            # Write to partitioned dataset
+            pq.write_to_dataset(
+                table,
+                root_path=self.output_path,
+                partition_cols=self.partition_cols,
+                existing_data_behavior="overwrite_or_ignore",
+            )
+        else:
+            # Write to single file
+            if self._writer is None:
+                self._writer = pq.ParquetWriter(
+                    self.output_path,
+                    self.schema,
+                    compression="snappy",
+                )
+            self._writer.write_table(table)
+
+        self._total_written += len(self._buffer)
+        self.logger.debug(f"Wrote {len(self._buffer)} annotations (total: {self._total_written})")
+        self._buffer = []
+
+    def close(self) -> None:
+        """Flush remaining buffer and close the writer."""
+        self._flush()
+        if self._writer is not None:
+            self._writer.close()
+            self._writer = None
+        self.logger.info(f"Annotation writer closed. Total annotations: {self._total_written}")
+
+    def __enter__(self) -> "AnnotationWriter":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    @property
+    def total_written(self) -> int:
+        """Return total number of annotations written (including buffer)."""
+        return self._total_written + len(self._buffer)
+
+
+class LayeredAnnotationWriter:
+    """
+    Writer for incremental layer storage architecture.
+
+    Writes base annotations and separate layer files that can be
+    joined on sentence_id for queries.
+    """
+
+    def __init__(
+        self,
+        output_dir: Path,
+        split_name: str,
+        batch_size: int = 10000,
+    ):
+        """
+        Initialize layered writer.
+
+        Args:
+            output_dir: Root directory for annotated corpus
+            split_name: Split identifier (e.g., "train_90M")
+            batch_size: Batch size for each layer writer
+        """
+        self.output_dir = Path(output_dir)
+        self.split_name = split_name
+        self.batch_size = batch_size
+        self._layer_writers: Dict[str, AnnotationWriter] = {}
+        self._layer_buffers: Dict[str, List[Dict[str, Any]]] = {}
+        self.logger = logging.getLogger("corpus_descriptives.output")
+
+        # Create directory structure
+        (self.output_dir / "base").mkdir(parents=True, exist_ok=True)
+        (self.output_dir / "layers").mkdir(parents=True, exist_ok=True)
+
+    def _get_layer_writer(self, layer_name: str, schema: pa.Schema) -> AnnotationWriter:
+        """Get or create writer for a specific layer."""
+        if layer_name not in self._layer_writers:
+            if layer_name == "base":
+                path = self.output_dir / "base" / f"{self.split_name}.parquet"
+            else:
+                layer_dir = self.output_dir / "layers" / layer_name
+                layer_dir.mkdir(parents=True, exist_ok=True)
+                path = layer_dir / f"{self.split_name}.parquet"
+
+            self._layer_writers[layer_name] = AnnotationWriter(
+                output_path=path,
+                schema=schema,
+                batch_size=self.batch_size,
+            )
+        return self._layer_writers[layer_name]
+
+    def write_base(
+        self,
+        annotation: Dict[str, Any],
+        base_schema: pa.Schema,
+    ) -> None:
+        """Write base annotation (identifiers, text, tokens)."""
+        writer = self._get_layer_writer("base", base_schema)
+        writer.write_annotation(annotation)
+
+    def write_layer(
+        self,
+        layer_name: str,
+        annotation: Dict[str, Any],
+        layer_schema: pa.Schema,
+    ) -> None:
+        """Write annotation to a specific layer."""
+        writer = self._get_layer_writer(layer_name, layer_schema)
+        writer.write_annotation(annotation)
+
+    def close(self) -> None:
+        """Close all layer writers."""
+        for name, writer in self._layer_writers.items():
+            writer.close()
+            self.logger.info(f"Layer '{name}' written: {writer.total_written} annotations")
+        self._layer_writers = {}
+
+    def __enter__(self) -> "LayeredAnnotationWriter":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    def write_metadata(self, metadata: Dict[str, Any]) -> None:
+        """Write metadata.json to the output directory."""
+        meta_path = self.output_dir / "metadata.json"
+        meta_path.write_text(json.dumps(metadata, indent=2, default=str))

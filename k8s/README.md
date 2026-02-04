@@ -55,6 +55,8 @@ kubectl delete pod data-upload
 
 ## Running Jobs
 
+### Analyzer Mode (Aggregated Counts)
+
 ```bash
 # Submit one at a time (they share the PVC with ReadWriteOnce)
 kubectl apply -f k8s/job-train-90m.yaml
@@ -65,6 +67,35 @@ kubectl logs -f job/corpus-analysis-train-90m
 # After completion, submit next
 kubectl apply -f k8s/job-test-10m.yaml
 kubectl apply -f k8s/job-pull-10m.yaml
+```
+
+### Annotation Mode (Per-Sentence Parquet)
+
+Annotation mode produces sentence-level Parquet files for downstream queries
+and influence function analysis. Uses more memory (6-8Gi) due to Parquet buffering.
+
+```bash
+# Run annotation pipeline
+kubectl apply -f k8s/job-annotate-train-90m.yaml
+
+# Monitor
+kubectl logs -f job/corpus-annotate-train-90m
+
+# After completion
+kubectl apply -f k8s/job-annotate-test-10m.yaml
+```
+
+Output structure:
+```
+/mnt/data/output/{split}/annotated_corpus/
+├── base/                      # Core annotations (sentence_id, text, tokens)
+│   └── {split}.parquet
+├── layers/                    # Per-layer annotations
+│   ├── clause_structure/
+│   ├── that_trace/
+│   ├── pronouns/
+│   └── ...
+└── metadata.json
 ```
 
 ## Retrieving Output
