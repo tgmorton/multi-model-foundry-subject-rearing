@@ -1,0 +1,2143 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/nrp-docs/fpgas/esnet_running/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>ESnet SmartNIC FPGA - Running - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#esnet-smartnic-fpga-running" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ESnet SmartNIC FPGA - Running
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../checkpoint_scheduling/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../preprocessing/USER_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="esnet-smartnic-fpga-running">ESnet SmartNIC FPGA - Running<a class="headerlink" href="#esnet-smartnic-fpga-running" title="Permanent link">&para;</a></h1>
+<p><strong>Source:</strong> https://nrp.ai/documentation/userdocs/fpgas/esnet_running</p>
+<h1 id="esnet-smartnic-fpga-running_1">ESnet SmartNIC FPGA - Running<a class="headerlink" href="#esnet-smartnic-fpga-running_1" title="Permanent link">&para;</a></h1>
+<h2 id="running-notebook-33-running-smartnic-logic-on-the-fpga">Running (Notebook 3/3): Running SmartNIC Logic on the FPGA<a class="headerlink" href="#running-notebook-33-running-smartnic-logic-on-the-fpga" title="Permanent link">&para;</a></h2>
+<p>This notebook is <strong>Part 3</strong> of the <strong>ESnet SmartNIC Tutorial on NRP</strong> series. It continues from <strong>Notebook 2</strong> to provide an example for building the FPGA logic from our SmartNIC P4 code.</p>
+<hr />
+<h3 id="test-environment">Test Environment<a class="headerlink" href="#test-environment" title="Permanent link">&para;</a></h3>
+<p>This notebook was tested on the <strong>National Research Platform (NRP)</strong> using the <strong>AMD/Xilinx Alveo U55C FPGA</strong> and <strong>Vivado 2023.1</strong>. The Kubernetes pods were provisioned by <a href="https://coder.nrp-nautilus.io">Coder</a>.</p>
+<p>If you run into any issues, please refer to the official <a href="https://docs.nrp.ai">NRP Documentation</a>, or reach out to us via <a href="https://element.nrp-nautilus.io">Matrix</a> or <a href="/cdn-cgi/l/email-protection#4a393f3a3a25383e0a242b3e2325242b26382f392f2b3829223a262b3e2c2538276425382d">email</a>.</p>
+<p>Before using the ESnet SmartNIC tools, kindly review the official <a href="https://github.com/esnet/esnet-smartnic-hw">ESnet SmartNIC Copyright Notice</a>.</p>
+<hr />
+<p>This notebook doesn’t require Vivado or special software.</p>
+<h3 id="step-1-acquiring-the-artifcats">Step 1: Acquiring the artifcats<a class="headerlink" href="#step-1-acquiring-the-artifcats" title="Permanent link">&para;</a></h3>
+<p>You can start directly from this notebook if you have different development and deployment environments and already have the artifacts</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>echo &quot;$BASH_VERSION&quot;
+</code></pre></div>
+<p>If the above command doesn’t show a bash version, <strong>you may be running with a Python kernel. Please switch to a Bash kernel.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cd ~/esnet-smartnic/esnet-smartnic-hw/examples/p4_only/artifacts
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>ls
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cp artifacts.u55c.p4_only.0.zip to ~/artifacts.u55c.p4_only.0.zip
+</code></pre></div>
+<p>You should see your artifacts here.</p>
+<p>For the sake of demonstration, we will be using an artifacts zip file that we have made publicly available. <strong>Please note that the artifacts use an evaluation license and will only work for 48 hours.</strong> As a best practice, <strong>always build fresh.</strong> The way this issue materializes is with a SmartNIC that drops 100% of the packets, and stuck DPDK counters.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cd ~/
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>wget &quot;https://nextcloud.nrp-nautilus.io/s/5LmLADJtNKmTYSp/download&quot; -O &quot;artifacts.au55c.p4_only.0.zip&quot;
+</code></pre></div>
+<h3 id="step-2-setting-up-docker">Step 2: Setting up Docker<a class="headerlink" href="#step-2-setting-up-docker" title="Permanent link">&para;</a></h3>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker image ls
+</code></pre></div>
+<p>The <code>ESnet SmartNIC</code> stack requires 3 Docker images:</p>
+<ol>
+<li><strong>esnet-smartnic-fw</strong>: The firmware image, requires the artifacts zip file (built for every logic).<br />
+   Repo: <a href="https://github.com/esnet/esnet-smartnic-fw">esnet-smartnic-fw</a></li>
+<li><strong>smartnic-dpdk-docker</strong>: A containerized DPDK with <code>pktgen</code>, patched and built for Alveo FPGAs. Consistent for all FPGA models. Build once, pull, and run everywhere.<br />
+   Repo: <a href="https://github.com/esnet/smartnic-dpdk-docker">smartnic-dpdk-docker</a></li>
+<li><strong>xilinx-labtools-docker</strong>: A Vivado Lab image that provides tools for flashing the cards. Consistent for all FPGA models. Build once, pull, and run everywhere.<br />
+   Repo: <a href="https://github.com/esnet/xilinx-labtools-docker">xilinx-labtools-docker</a></li>
+</ol>
+<p>We have provided publicly hosted versions of the <code>smartnic-dpdk-docker</code> and <code>xilinx-labtools-docker</code> images. These images are hosted on our community gitlab (<a href="https://gitlab.nrp-nautilus.io">gitlab.nrp-nautilus.io</a>) in repositories. <strong>The versions are not universal, the images with the latest tag are the ones tested with the versions of esnet-smartnic-hw and esnet-smartnic-fw that we refer to in most recent docs and notebooks.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker pull gitlab-registry.nrp-nautilus.io/esnet/xilinx-labtools-docker
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>docker tag gitlab-registry.nrp-nautilus.io/esnet/xilinx-labtools-docker xilinx-labtools-docker:${USER}-dev
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>docker pull gitlab-registry.nrp-nautilus.io/esnet/smartnic-dpdk-docker
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>docker tag gitlab-registry.nrp-nautilus.io/esnet/smartnic-dpdk-docker smartnic-dpdk-docker:${USER}-dev
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker image ls
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>whoami
+</code></pre></div>
+<h3 id="step-3-prep-the-esnet-smartnic-fw-repo">Step 3: Prep the <code>esnet-smartnic-fw</code> repo<a class="headerlink" href="#step-3-prep-the-esnet-smartnic-fw-repo" title="Permanent link">&para;</a></h3>
+<p>The last step is building the <code>esnet-smartnic-fw</code> image.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pwd
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>cd ~/esnet-smartnic &amp;&amp; \
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>git clone https://github.com/esnet/esnet-smartnic-fw.git &amp;&amp; \
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>cd esnet-smartnic-fw &amp;&amp; \
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>git checkout c064d4ac775ed1a4c50ec72dea3615f9c644433e &amp;&amp; \
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>git submodule update --init --recursive &amp;&amp; \
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>ls
+</code></pre></div>
+<p><strong>Copy the artifacts to sn-hw without renaming.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>cp ~/artifacts.au55c.p4_only.0.zip sn-hw/
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>ls sn-hw
+</code></pre></div>
+<p><code>artifacts</code> is a prefix all <code>hw</code> artifacts start with.</p>
+<p><code>au55c</code> is the board model (U55C). For U280, it would be <code>au280</code>.</p>
+<p><code>p4_only</code> is the name of the example we built. Had we built our own, it would’ve had a name we specified.</p>
+<p><code>0</code> is the version. Specified in the Makefile..</p>
+<h3 id="step-4-building-the-docker-image">Step 4: Building the docker image<a class="headerlink" href="#step-4-building-the-docker-image" title="Permanent link">&para;</a></h3>
+<p>The root director of the repo requires a correctly filled <code>.env</code> file.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>cat example.env | grep -i required -A 4
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>cat &lt;&lt;EOL &gt; .env
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>SN_HW_APP_NAME=p4_only
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>SN_HW_BOARD=au55c
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>SN_HW_VER=0
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>EOL
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>cat .env
+</code></pre></div>
+<p>Now we can build the image with <code>./build.sh</code>. This might take ~30-40 minutes.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>./build.sh
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>docker image ls
+</code></pre></div>
+<h3 id="step-5-configuring-the-environment-for-the-stack">Step 5: Configuring the environment for the stack<a class="headerlink" href="#step-5-configuring-the-environment-for-the-stack" title="Permanent link">&para;</a></h3>
+<p>The stack with the docker compose profile is in the <code>sn-stack</code> directory.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>cd sn-stack &amp;&amp; \
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>cat example.env
+</code></pre></div>
+<p>Similar to the root directory, the <code>sn-stack</code> directory requires a <code>.env</code> file correctly populated. There are three main environment variables that are needed for the stack to work:</p>
+<p>1- The PCI bus address for the FPGA (this is always needed).</p>
+<p>2- The USB iSerial for the correct FPGA (this is needed in a multi-FPGA scenario).</p>
+<p>3- The profile to run in. In this experiment, we are running in <code>smartnic-mgr-vfio-unlock</code>, which allows us to use the smartnic directly without it being locked by DPDK and pktgen.</p>
+<p>The command below gets us the list of all Xilinx pci devices that the pod sees. We pick the FPGA we want. Normally, users would reserve the FPGAs per node.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>lspci -d 10ee:
+</code></pre></div>
+<p>The command below lists all USB devices with an iSerial, and looks for the iSerial starting with XF. You might get multiple results, for the mapping, please contact us.</p>
+<p><strong>This works on our systems because the only USB devices with a serial number are the JTAG connections, but for different systems, there may be more USB connections, please carefully go through lsusb -vvv to get the correct device.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>sudo lsusb -vvv | grep -i iserial | grep -i XF
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>cat &lt;&lt;EOL &gt; .env
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>FPGA_PCIE_DEV=0000:c1:00
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>HW_TARGET_SERIAL=XFL1QYVIDV45A
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>COMPOSE_PROFILES=smartnic-mgr-vfio-unlock
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>EOL
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>docker compose up -d
+</code></pre></div>
+<p>Now, our stack is up.</p>
+<p>This will show information about the device such as the build version, build date/time and temperature:</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>docker compose exec smartnic-fw sn-cli dev version
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>docker compose exec smartnic-fw sn-cli dev temp
+</code></pre></div>
+<p>The USR_ACCESS value is typically the unique build pipeline number that produced the embedded FPGA bitfile. The BUILD_STATUS value holds an encoded date/time (Aug 30 at 05:32am) which is when the embedded FPGA bitfile build was started. The DNA value holds the factory-programmed unique ID of the FPGA</p>
+<p>The script below resets the names of the ports, sets up app0 and app0 port and routes all egress packets to the propoer egress.</p>
+<p>For more details about the commands and options, please check out the appendix (Appendix A) below.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>docker compose exec smartnic-fw bash -c &#39;
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>sn-cli dev version
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>sn-cli sw in-port-rename cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>sn-cli sw app0-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>sn-cli sw app1-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>sn-cli sw bypass-connect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>sn-cli sw in-port-connect cmac0:app0 cmac1:app0 host0:app0 host1:app0
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>sn-cli sw status
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>sn-cli qdma setqs 1 1
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>sn-cli cmac enable
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a>sn-cli cmac status
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>&#39;
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>docker compose exec smartnic-fw sn-cli dev temp
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>docker compose exec smartnic-fw sn-cli probe stats
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>docker compose exec smartnic-fw sn-p4-cli info
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>docker compose exec smartnic-fw sn-p4-cli table-insert --help
+</code></pre></div>
+<h3 id="step-6-running-dpdk">Step 6: Running DPDK<a class="headerlink" href="#step-6-running-dpdk" title="Permanent link">&para;</a></h3>
+<p><strong>Always make sure the stack is down before changing profiles.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>docker compose down
+</code></pre></div>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>cat &lt;&lt;EOL &gt; .env
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>FPGA_PCIE_DEV=0000:c1:00
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>HW_TARGET_SERIAL=XFL1QYVIDV45A
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>COMPOSE_PROFILES=smartnic-mgr-dpdk-manual
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>EOL
+</code></pre></div>
+<p>We bring the stack up with the correct profile for DPDK.</p>
+<p>Please note that running in the DPDK profile requries <strong>re-running the setup script we used previously, and whenever pktgen is close, the card is locked and all registers return 0s and Fs.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>docker compose up -d
+</code></pre></div>
+<p><strong>Please run pktgen in a terminal, otherwise it will hang.</strong></p>
+<p>For more details about the commands and options, please check out the appendix (Appendix A) below.</p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>##docker compose exec smartnic-dpdk pktgen -a $SN_PCIE_DEV.0 -a $SN_PCIE_DEV.1 -l 3-7 -n 3 -d librte_net_qdma.so --file-prefix $SN_PCIE_DEV- -- -v -m [4:5].0 -m [6:7].1
+</code></pre></div>
+<p><strong>Always make sure the stack is down before finishing your work.</strong></p>
+<p>Terminal window</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>docker compose down -v --remove-orphans
+</code></pre></div>
+<p>For more details about the commands and options, please check out the appendix (Appendix A) below.</p>
+<h3 id="appendix-a-sn-cli-and-pktgen-options-and-commands">Appendix A: <code>sn-cli</code> and <code>pktgen</code> options and commands:<a class="headerlink" href="#appendix-a-sn-cli-and-pktgen-options-and-commands" title="Permanent link">&para;</a></h3>
+<h4 id="using-the-sn-cli-tool">Using the sn-cli tool<a class="headerlink" href="#using-the-sn-cli-tool" title="Permanent link">&para;</a></h4>
+<p>The sn-cli tool provides subcommands to help you accomplish many common tasks for inspecting and configuring the smartnic platform components.</p>
+<p>All commands described below are expected to be executed within the <code>smartnic-fw</code> container environment. Use this command to enter the appropriate environment.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>docker compose exec smartnic-fw bash
+</code></pre></div>
+<p>The <code>sn-cli</code> tool will automatically look for an environment variable called <code>SN_CLI_SLOTADDR</code> which can be set to the PCIe BDF address of the device that you would like to interact with. In the <code>smartnic-fw</code> container, this value will already be set for you.</p>
+<h5 id="displaying-device-information-with-the-dev-subcommand">Displaying device information with the “dev” subcommand<a class="headerlink" href="#displaying-device-information-with-the-dev-subcommand" title="Permanent link">&para;</a></h5>
+<p>This will show information about the device such as the build version, build date/time, and temperature.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>root@smartnic-fw:/# sn-cli dev version
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>Device Version Info
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>DNA:           0x40020000012306a21c10c285
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>USR_ACCESS:    0x000086d3 (34515)
+<a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>
+<a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>BUILD_STATUS:  0x04130920
+<a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>
+<a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>root@smartnic-fw:/# sn-cli dev temp
+<a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>
+<a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>Temperature Monitors
+<a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>
+<a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>FPGA SLR0:    45.551 (deg C)
+</code></pre></div>
+<p>The <code>USR_ACCESS</code> value is typically the unique build pipeline number that produced the embedded FPGA bitfile.<br />
+The <code>BUILD_STATUS</code> value holds an encoded date/time (Aug 30 at 05:32am) which is when the embedded FPGA bitfile build was started.<br />
+The <code>DNA</code> value holds the factory-programmed unique ID of the FPGA.</p>
+<h5 id="inspecting-and-configuring-the-cmac-100g-interfaces-with-the-cmac-subcommand">Inspecting and Configuring the CMAC (100G) Interfaces with the “cmac” subcommand<a class="headerlink" href="#inspecting-and-configuring-the-cmac-100g-interfaces-with-the-cmac-subcommand" title="Permanent link">&para;</a></h5>
+<p>Enable/Disable one or more (or all by default) 100G MAC interfaces using these commands:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>sn-cli cmac enable
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>sn-cli cmac disable
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>sn-cli cmac -p 0 enable
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>sn-cli cmac -p 1 disable
+</code></pre></div>
+<p>Enabling a CMAC interface allows frames to pass (Rx/Tx) at the MAC layer. These commands <strong>do not affect</strong> whether the underlying physical layer (PHY) is operational.</p>
+<p>Display the current MAC and PHY status of one or more (or all by default) 100G MAC interfaces using these commands:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>root@smartnic-fw:/# sn-cli cmac status
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>CMAC0
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>
+<a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>Tx (MAC ENABLED/PHY UP)
+<a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
+<a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a>Rx (MAC ENABLED/PHY UP)
+<a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>
+<a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>CMAC1
+<a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>
+<a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>Tx (MAC ENABLED/PHY UP)
+<a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a>
+<a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a>Rx (MAC ENABLED/PHY DOWN)
+</code></pre></div>
+<p>In the example output above, CMAC0 PHY layer is <strong>UP</strong> in both the Tx and Rx directions. The MAC is fully enabled. This link is operational and should be passing packets normally.</p>
+<p>In the example output above, CMAC1 PHY layer is <strong>DOWN</strong> in the Rx (receive) direction. Possible causes for this are:</p>
+<ul>
+<li>No QSFP28 plugged into 100G port 0 the U280 card</li>
+<li>Wrong type of QSFP28 module plugged into 100G port 0</li>
+<li>100G QSFP28 SR4 or LR4 modules are supported</li>
+<li>Some 100G AOC or DACs are known to work</li>
+<li>QSFP+ 40G modules <strong>are not supported</strong></li>
+<li>QSFP 5G modules <strong>are not supported</strong></li>
+<li>QSFP28 card improperly seated in the U280 card</li>
+<li>Check if the QSFP28 module is inserted upside down and physically blocked from being fully inserted</li>
+<li>Unplug/replug the module, ensuring that it is properly oriented and firmly seated</li>
+<li>Fiber not properly inserted</li>
+<li>Unplug/replug the fiber connection at each end</li>
+<li>Far end is operating in 4x25G or 2x50G split mode</li>
+<li>The smartnic platform <strong>does not support</strong> 4x25G or 2x50G mode</li>
+<li>Only 100G mode is supported on each of the U280 100G interfaces</li>
+<li>Configure far end in 100G mode</li>
+<li>Far end has RS-FEC (Reed-Solomon Forward Error Correction) enabled</li>
+<li>The smartnic platform <strong>does not support</strong> RS-FEC</li>
+<li>Disable RS-FEC on the far end equipment</li>
+</ul>
+<p>A more detailed status can also be displayed using the <code>--verbose</code> option. Note that the <code>--verbose</code> option is a global option and thus must be positioned <strong>before</strong> the <code>cmac</code> subcommand.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>root@smartnic-fw:/# sn-cli --verbose cmac -p 1 status
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>CMAC1
+<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>
+<a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>Tx (MAC ENABLED/PHY UP)
+<a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>
+<a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a>tx_local_fault 0
+<a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>
+<a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a>Rx (MAC ENABLED/PHY DOWN)
+<a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a>
+<a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a>rx_got_signal_os 0
+<a id="__codelineno-36-12" name="__codelineno-36-12" href="#__codelineno-36-12"></a>
+<a id="__codelineno-36-13" name="__codelineno-36-13" href="#__codelineno-36-13"></a>rx_bad_sfd 0
+<a id="__codelineno-36-14" name="__codelineno-36-14" href="#__codelineno-36-14"></a>
+<a id="__codelineno-36-15" name="__codelineno-36-15" href="#__codelineno-36-15"></a>rx_bad_preamble 0
+<a id="__codelineno-36-16" name="__codelineno-36-16" href="#__codelineno-36-16"></a>
+<a id="__codelineno-36-17" name="__codelineno-36-17" href="#__codelineno-36-17"></a>rx_test_pattern_mismatch 0
+<a id="__codelineno-36-18" name="__codelineno-36-18" href="#__codelineno-36-18"></a>
+<a id="__codelineno-36-19" name="__codelineno-36-19" href="#__codelineno-36-19"></a>rx_received_local_fault 0
+<a id="__codelineno-36-20" name="__codelineno-36-20" href="#__codelineno-36-20"></a>
+<a id="__codelineno-36-21" name="__codelineno-36-21" href="#__codelineno-36-21"></a>rx_internal_local_fault 1
+<a id="__codelineno-36-22" name="__codelineno-36-22" href="#__codelineno-36-22"></a>
+<a id="__codelineno-36-23" name="__codelineno-36-23" href="#__codelineno-36-23"></a>rx_local_fault 1
+<a id="__codelineno-36-24" name="__codelineno-36-24" href="#__codelineno-36-24"></a>
+<a id="__codelineno-36-25" name="__codelineno-36-25" href="#__codelineno-36-25"></a>rx_remote_fault 0
+<a id="__codelineno-36-26" name="__codelineno-36-26" href="#__codelineno-36-26"></a>
+<a id="__codelineno-36-27" name="__codelineno-36-27" href="#__codelineno-36-27"></a>rx_hi_ber 0
+<a id="__codelineno-36-28" name="__codelineno-36-28" href="#__codelineno-36-28"></a>
+<a id="__codelineno-36-29" name="__codelineno-36-29" href="#__codelineno-36-29"></a>rx_aligned_err 0
+<a id="__codelineno-36-30" name="__codelineno-36-30" href="#__codelineno-36-30"></a>
+<a id="__codelineno-36-31" name="__codelineno-36-31" href="#__codelineno-36-31"></a>rx_misaligned 0
+<a id="__codelineno-36-32" name="__codelineno-36-32" href="#__codelineno-36-32"></a>
+<a id="__codelineno-36-33" name="__codelineno-36-33" href="#__codelineno-36-33"></a>rx_aligned 0
+<a id="__codelineno-36-34" name="__codelineno-36-34" href="#__codelineno-36-34"></a>
+<a id="__codelineno-36-35" name="__codelineno-36-35" href="#__codelineno-36-35"></a>rx_status 0
+</code></pre></div>
+<p>Display summary statistics for packets Rx’d and Tx’d from CMAC ports:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>root@smartnic-fw:/# sn-cli cmac stats
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>
+<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>CMAC0: TX      0 RX      0 RX-DISC      0 RX-ERR      0
+<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>
+<a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>CMAC1: TX      0 RX      0 RX-DISC      0 RX-ERR      0
+</code></pre></div>
+<p>Note: The CMAC counters are only cleared/reset when the FPGA is reprogrammed.</p>
+<h5 id="inspecting-and-configuring-the-pcie-queue-dma-qdma-block-with-the-qdma-subcommand">Inspecting and Configuring the PCIe Queue DMA (QDMA) block with the “qdma” subcommand<a class="headerlink" href="#inspecting-and-configuring-the-pcie-queue-dma-qdma-block-with-the-qdma-subcommand" title="Permanent link">&para;</a></h5>
+<p>The QDMA block is responsible for managing all DMA queues used for transferring packets and/or events bidirectionally between the U280 card and the Host CPU over the PCIe bus. In order for any DMA transfers to be allowed on either of the PCIe Physical Functions (PF), an appropriate number of DMA Queue IDs must be provisioned. This can be done using the <code>qdma</code> subcommand.</p>
+<p>Configure the number of queues allocated to each of the PCIe Physical Functions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>sn-cli qdma setqs 1 1
+</code></pre></div>
+<p>This assigns 1 QID to PF0 and 1 QID to PF1. The <code>setqs</code> subcommand also takes care of configuring the RSS entropy -&gt; QID map with an equal weighted distribution of all allocated queues. If you’re unsure of how many QIDs to allocate, using <code>1 1</code> here is your best choice.</p>
+<p>Inspect the configuration of the QDMA block:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>sn-cli qdma status
+</code></pre></div>
+<p>Packet, byte, and error counters are tracked for packets heading between the QDMA engine and the user application. You can display them with this command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>sn-cli qdma stats
+</code></pre></div>
+<p>Refer to the <code>open-nic-shell</code> documentation for an explanation of exactly where in the FPGA design these statistics are measured.</p>
+<h5 id="inspecting-packet-counters-in-the-smartnic-platform-with-the-probe-subcommand">Inspecting packet counters in the smartnic platform with the “probe” subcommand<a class="headerlink" href="#inspecting-packet-counters-in-the-smartnic-platform-with-the-probe-subcommand" title="Permanent link">&para;</a></h5>
+<p>The smartnic platform implements monitoring points in the datapath at various locations. You can inspect these counters using this command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>sn-cli probe stats
+</code></pre></div>
+<p>Refer to the <code>esnet-smartnic-hw</code> documentation for an explanation of exactly where in the FPGA design these statistics are measured.</p>
+<h5 id="configuring-the-smartnic-platform-ingressegressbypass-switch-port-remapping-functions-with-the-sw-subcommand">Configuring the smartnic platform ingress/egress/bypass switch port remapping functions with the “sw” subcommand<a class="headerlink" href="#configuring-the-smartnic-platform-ingressegressbypass-switch-port-remapping-functions-with-the-sw-subcommand" title="Permanent link">&para;</a></h5>
+<p>The smartnic platform implements reconfigurable ingress and egress port remapping, connections, and redirecting. You can inspect and modify these configuration points using the “sw” subcommand.</p>
+<p>Most of the <code>sw</code> subcommands take one or more port bindings as parameters. The port bindings are of the form:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>&lt;port&gt;:&lt;port-connector&gt;
+</code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>&lt;port&gt;</code> is one of:</li>
+<li>cmac0 — 100G port 0</li>
+<li>cmac1 — 100G port 1</li>
+<li>host0 — DMA over PCIe Physical Function 0 (PF0)</li>
+<li>host1 — DMA over PCIe Physical Function 1 (PF1)</li>
+<li><code>&lt;port-connector&gt;</code> is context dependent and is one of:</li>
+<li>cmac0</li>
+<li>cmac1</li>
+<li>host0</li>
+<li>host1</li>
+<li>bypass — a high bandwidth channel through the smartnic which does <strong>NOT</strong> pass through the user’s application</li>
+<li>app0 — user application port 0 (typically a p4 program ingress)</li>
+<li>app1 — user application port 1 (only available when user implements it in verilog)</li>
+<li>drop — infinite blackhole that discards all packets sent to it</li>
+</ul>
+<h5 id="display-the-current-configuration-status">Display the current configuration status<a class="headerlink" href="#display-the-current-configuration-status" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>sn-cli sw status
+</code></pre></div>
+<h5 id="remaprename-physical-input-ports-to-logical-input-ports">Remap/rename physical input ports to logical input ports<a class="headerlink" href="#remaprename-physical-input-ports-to-logical-input-ports" title="Permanent link">&para;</a></h5>
+<p>The <code>in-port-rename</code> subcommand allows you to remap the identity of a smartnic platform physical ingress port to any logical port as seen by the user logic. Once remapped (eg. from <code>a</code>-&gt;<code>b</code>), all following logic in the smartnic will perceive that the packet arrived on ingress port <code>b</code> even though it physically arrived on port <code>a</code>. This can be useful for test injection scenarios but would typically be set to a straight-through mapping in production.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>sn-cli sw in-port-rename a:b
+</code></pre></div>
+<p>To reset this mapping so each port maps to its usual identity:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>sn-cli sw in-port-rename cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+</code></pre></div>
+<h5 id="attach-logical-input-ports-to-pipelines">Attach logical input ports to pipelines<a class="headerlink" href="#attach-logical-input-ports-to-pipelines" title="Permanent link">&para;</a></h5>
+<p>The <code>in-port-connect</code> subcommand allows you to connect a logical input port to different processing pipelines within the smartnic. This can be used to connect to a p4 program or to custom logic within the user application. It can also be used to shunt all packets to a blackhole or to bypass packets around the user application entirely.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>sn-cli sw in-port-connect cmac0:app0 cmac1:app0 host0:bypass host1:bypass
+</code></pre></div>
+<h5 id="connect-input-ports-to-output-ports-in-the-bypass-path">Connect input ports to output ports in the bypass path<a class="headerlink" href="#connect-input-ports-to-output-ports-in-the-bypass-path" title="Permanent link">&para;</a></h5>
+<p>The <code>bypass-connect</code> subcommand allows you to connect input ports directly to output ports as they pass through the bypass path (ie. not through the user application). This is useful for providing direct connectivity from host PCIe PFs to 100G CMAC interfaces for network testing.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>sn-cli sw bypass-connect host0:cmac0 host1:cmac1 cmac0:host0 cmac1:host1
+</code></pre></div>
+<p><strong>NOTE</strong> any packets that follow the bypass path will not be processed by the user’s p4 program</p>
+<h5 id="override-user-application-output-port-decisions-and-redirect-to-an-alternate-port">Override user application output port decisions and redirect to an alternate port<a class="headerlink" href="#override-user-application-output-port-decisions-and-redirect-to-an-alternate-port" title="Permanent link">&para;</a></h5>
+<p>The <code>app0-port-redirect</code> and <code>app1-port-redirect</code> subcommands allow the user to override the forwarding decisions made by the user application and/or p4 program and redirect any given output port to a different output port. This can be useful during development/debugging and in test fixtures.</p>
+<p><strong>NOTE</strong> there are separate overrides for the app0 outputs and the app1 outputs.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>sn-cli sw app0-port-redirect cmac0:host0 cmac1:host1
+<a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>
+<a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>sn-cli sw app1-port-redirect cmac0:host0 cmac1:host1
+</code></pre></div>
+<p>To reset this mapping so each output ports maps to its usual destination:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>sn-cli sw app0-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>
+<a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a>sn-cli sw app1-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+</code></pre></div>
+<h4 id="using-the-sn-p4-cli-tool">Using the sn-p4-cli tool<a class="headerlink" href="#using-the-sn-p4-cli-tool" title="Permanent link">&para;</a></h4>
+<p>The user’s p4 application embedded within the smartnic design may have configurable lookup tables which are used during the wire-speed execution of the packet processing pipeline. The sn-p4-cli tool provides subcommands to help you to manage the rules in all of the lookup tables defined in your p4 program.</p>
+<p>All commands described below are expected to be executed within the <code>smartnic-fw</code> container environment. Use this command to enter the appropriate environment.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a>docker compose exec smartnic-fw bash
+</code></pre></div>
+<p>The <code>sn-p4-cli</code> tool will automatically look for an environment variable called <code>SN_P4_CLI_SERVER</code> which can be set to the hostname of the <code>sn-p4-agent</code> that will perform all of the requested actions on the real hardware. In the <code>smartnic-fw</code> container, this value will already be set for you.</p>
+<h5 id="inspecting-the-pipeline-structure-with-the-info-subcommand">Inspecting the pipeline structure with the “info” subcommand<a class="headerlink" href="#inspecting-the-pipeline-structure-with-the-info-subcommand" title="Permanent link">&para;</a></h5>
+<p>The <code>info</code> subcommand is used to display the pipeline structure, including table names, match fields (and their types), action names and the list of parameters for each action. This information can be used to formulate new rule definitions for the other subcommands.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a>sn-p4-cli info
+</code></pre></div>
+<h5 id="inserting-a-new-rule-into-a-table">Inserting a new rule into a table<a class="headerlink" href="#inserting-a-new-rule-into-a-table" title="Permanent link">&para;</a></h5>
+<p>The <code>table-insert</code> subcommand allows you to insert a new rule into a specified table.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a>sn-p4-cli table-insert &lt;table-name&gt; &lt;action-name&gt; --match &lt;match-expr&gt; [--param &lt;param-expr&gt;] [--priority &lt;prio-val&gt;]
+</code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>&lt;table-name&gt;</code> is the name of the table to be operated on</li>
+<li><code>&lt;action-name&gt;</code> is the action that you would like to activate when this rule matches</li>
+<li><code>&lt;match-expr&gt;</code> is one or more match expressions which collectively define when this rule should match a given packet</li>
+<li>The number and type of the match fields depends on the p4 definition of the table</li>
+<li>The <code>--match</code> option may be specified multiple times and all <code>match-expr</code>s will be concatenated</li>
+<li><code>&lt;param-expr&gt;</code> is one or more parameter values which will be returned as a result when this rule matches a given packet</li>
+<li>The number and type of the action parameters depends on the p4 definition of the action within the table</li>
+<li>Some actions require zero parameters. In this case, omit the optional <code>--param</code> option entirely.</li>
+<li><code>&lt;prio-val&gt;</code> is the priority to be used to resolve scenarios where multiple matches could occur</li>
+<li>The <code>--priority</code> option is <em>required</em> for tables with CAM/TCAM type matches (prefix/range/ternary)</li>
+<li>The <code>--priority</code> option is <em>prohibited</em> for tables without CAM/TCAM type mathes</li>
+</ul>
+<p><strong>NOTE</strong>: You can find details about your pipeline structure and valid names by running the <code>info</code> subcommand.</p>
+<h5 id="updating-an-existing-rule-within-a-table">Updating an existing rule within a table<a class="headerlink" href="#updating-an-existing-rule-within-a-table" title="Permanent link">&para;</a></h5>
+<p>The <code>table-update</code> subcommand allows you to update the action and parameters for an existing rule within a table</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a>sn-p4-cli table-update &lt;table-name&gt; &lt;new-action-name&gt; --match &lt;match-expr&gt; [--param &lt;new-param-expr&gt;]
+</code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>&lt;table-name&gt;</code> is the table containing the rule to be updated</li>
+<li><code>&lt;new-action-name&gt;</code> is the new action that should be applied when this rule matches</li>
+<li><code>&lt;match-expr&gt;</code> is the exact original <code>&lt;match-expr&gt;</code> used when the original rule was inserted</li>
+<li><code>&lt;new-param-expr&gt;</code> is the set of new parameters to be returned when this rule matches</li>
+<li><strong>NOTE</strong>: the new parameters must be consistent with the new action</li>
+</ul>
+<h5 id="removing-previously-inserted-rules">Removing previously inserted rules<a class="headerlink" href="#removing-previously-inserted-rules" title="Permanent link">&para;</a></h5>
+<p>The <code>clear-all</code> and <code>table-clear</code> and <code>table-delete</code> subcommands allow you to remove rules from tables with varying precision.</p>
+<p>Clear all rules from <em>all tables</em> in the pipeline.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>sn-p4-cli clear-all`
+</code></pre></div>
+<p>Clear all rules from a <em>single</em> specified table.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a>sn-p4-cli table-clear &lt;table-name&gt;
+</code></pre></div>
+<p>Remove a specific rule from a specific table.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a>table-delete &lt;table-name&gt; --match &lt;match-expr&gt;
+</code></pre></div>
+<h5 id="bulk-changes-of-rules-using-a-p4bm-simulator-rules-file">Bulk changes of rules using a p4bm simulator rules file<a class="headerlink" href="#bulk-changes-of-rules-using-a-p4bm-simulator-rules-file" title="Permanent link">&para;</a></h5>
+<p>Using the the <code>p4bm-apply</code> subcommand, a list of pipeline modifications can be applied from a file. A subset of the full p4bm simulator file format is supported by the <code>sn-p4-cli</code> command.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a>sn-p4-cli p4bm-apply &lt;filename&gt;
+</code></pre></div>
+<p>Supported actions within the p4bm file are:</p>
+<ul>
+<li><code>table_insert &lt;table-name&gt; &lt;action-name&gt; &lt;match-expr&gt; =&gt; &lt;param-expr&gt; [priority]</code></li>
+<li>Insert a rule</li>
+<li><code>clear_all</code></li>
+<li>Clear all rules from all tables</li>
+<li><code>table_clear &lt;table-name&gt;</code></li>
+<li>Clear all rules from a specified table</li>
+</ul>
+<p>All comment characters <code>#</code> and text following them up to the end of the line are ignored.</p>
+<h4 id="stopping-the-runtime-environment">Stopping the runtime environment<a class="headerlink" href="#stopping-the-runtime-environment" title="Permanent link">&para;</a></h4>
+<p>When we’re finished using the smartnic runtime environment, we can stop and remove our docker containers.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a>docker compose down -v
+</code></pre></div>
+<h3 id="using-the-smartnic-dpdk-container">Using the smartnic-dpdk container<a class="headerlink" href="#using-the-smartnic-dpdk-container" title="Permanent link">&para;</a></h3>
+<p>The <code>sn-stack</code> environment can be started in a mode where the FPGA can be controlled by a DPDK application. Running in this mode requires a few carefully ordered steps.</p>
+<p>Broadly speaking, the steps required to bring up a DPDK application are as follows:</p>
+<ul>
+<li>Bind the <code>vfio-pci</code> kernel driver to each FPGA PCIe physical function (PF)</li>
+<li>This is handled automatically by the sn-stack.</li>
+<li>Run a DPDK application with appropriate DPDK Environment Abstraction Layer (EAL) settings</li>
+<li>Use <code>-a $SN_PCIE_DEV.0</code> to allow control of one or more specific FPGA PCIe PFs</li>
+<li>Use <code>-d librte_net_qdma.so</code> to dynamically link the correct Userspace Polled-Mode Driver (PMD) for the smartnic QDMA engine</li>
+<li>The EAL will<ul>
+<li>Open the PCIe PFs using the kernel’s <code>vfio-pci</code> driver</li>
+<li>Take the FPGA device out of reset</li>
+<li>Open and map large memory regions for DMA using the kernel’s <code>hugepages</code> driver</li>
+</ul>
+</li>
+<li>The application is responsible for assigning buffers to one or more of the FPGA’s DMA queues</li>
+<li>Use the <code>sn-cli</code> tool to configure some of the low-level hardware components in the FPGA</li>
+<li>Configure the set of valid DMA queues in the FPGA (must match what is set in the DPDK application)</li>
+<li>Bring up the physical ethernet ports</li>
+</ul>
+<p>In the examples below, we will be running the <code>pktgen-dpdk</code> application to control packet tx/rx via the FPGA’s PCIe physical functions. This can be very useful for injecting packets into a design for testing behaviour on real hardware.</p>
+<p>For more information about DPDK in general, see:</p>
+<ul>
+<li><a href="http://core.dpdk.org/doc/">http://core.dpdk.org/doc/</a></li>
+</ul>
+<p>For more information about the <code>pktgen-dpdk</code> application, see:</p>
+<ul>
+<li><a href="https://pktgen-dpdk.readthedocs.io/en/latest/index.html">https://pktgen-dpdk.readthedocs.io/en/latest/index.html</a></li>
+</ul>
+<p>Before you bring up the <code>sn-stack</code>, please ensure that you have uncommented this line in your <code>.env</code> file</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a>COMPOSE_PROFILES=smartnic-dpdk
+</code></pre></div>
+<p>If you changed this while the stack was already running, you’ll need to restart the stack with down/up.</p>
+<p>First, you’ll need to start up the <code>pktgen</code> application to open the vfio-pci device for PF0 and PF1 and take the FPGA out of reset.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a>$ docker compose exec smartnic-dpdk bash
+<a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a>
+<a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a>root@smartnic-dpdk:/# pktgen -a $SN_PCIE_DEV.0 -a $SN_PCIE_DEV.1 -l 4-8 -n 4 -d librte_net_qdma.so --file-prefix $SN_PCIE_DEV- -- -v -m [5:6].0 -m [7:8].1
+<a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a>
+<a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a>Pktgen:/&gt; help
+</code></pre></div>
+<p>NOTE: Leave this application running while doing the remaining setup steps. The setup steps below must be re-run after each time you restart the pktgen application since the FPGA gets reset between runs.</p>
+<p>Open a <strong>separate</strong> shell window which you will use for doing the low-level smartnic platform configuration.</p>
+<p>Configure the Queue mappings for host PF0 and PF1 interfaces and bring up the physical ethernet ports using the <code>smartnic-fw</code> container.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a>$ docker compose exec smartnic-fw bash
+<a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a>
+<a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a>root@smartnic-fw:/# sn-cli qdma setqs 1 1
+<a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a>
+<a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a>root@smartnic-fw:/# sn-cli qdma status
+<a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a>
+<a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a>root@smartnic-fw:/# sn-cli cmac enable
+<a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a>
+<a id="__codelineno-61-9" name="__codelineno-61-9" href="#__codelineno-61-9"></a>root@smartnic-fw:/# sn-cli cmac status
+</code></pre></div>
+<p>Setting up the queue mappings tells the smartnic platform which QDMA queues to use for h2c and c2h packets. Enabling the CMACs allows Rx and Tx packets to flow (look for <code>MAC ENABLED/PHY UP</code>).</p>
+<h3 id="advanced-usage-of-the-pktgen-dpdk-application">Advanced usage of the pktgen-dpdk application<a class="headerlink" href="#advanced-usage-of-the-pktgen-dpdk-application" title="Permanent link">&para;</a></h3>
+<p>Example of streaming packets out of an interface from a pcap file rather than generating the packets within the UI. Note the <code>-s &lt;P&gt;:file.pcap</code> option where <code>P</code> refers to the port number to bind the pcap file to.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a>root@smartnic-dpdk:/# pktgen -a $SN_PCIE_DEV.0 -a $SN_PCIE_DEV.1 -l 4-8 -n 4 -d librte_net_qdma.so --file-prefix $SN_PCIE_DEV- -- -v -m [5:6].0 -m [7:8].1 -s 1:your_custom.pcap
+<a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a>
+<a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a>Pktgen:/&gt; port 1
+<a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a>
+<a id="__codelineno-62-5" name="__codelineno-62-5" href="#__codelineno-62-5"></a>Pktgen:/&gt; page pcap
+<a id="__codelineno-62-6" name="__codelineno-62-6" href="#__codelineno-62-6"></a>
+<a id="__codelineno-62-7" name="__codelineno-62-7" href="#__codelineno-62-7"></a>Pktgen:/&gt; page main
+<a id="__codelineno-62-8" name="__codelineno-62-8" href="#__codelineno-62-8"></a>
+<a id="__codelineno-62-9" name="__codelineno-62-9" href="#__codelineno-62-9"></a>Pktgen:/&gt; start 1
+<a id="__codelineno-62-10" name="__codelineno-62-10" href="#__codelineno-62-10"></a>
+<a id="__codelineno-62-11" name="__codelineno-62-11" href="#__codelineno-62-11"></a>Pktgen:/&gt; stop 1
+<a id="__codelineno-62-12" name="__codelineno-62-12" href="#__codelineno-62-12"></a>
+<a id="__codelineno-62-13" name="__codelineno-62-13" href="#__codelineno-62-13"></a>Pktgen:/&gt; clr
+</code></pre></div>
+<p>Example of running a particular test case via a script rather than typing at the UI</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a>cat &lt;&lt;_EOF &gt; /tmp/test.pkt
+<a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a>
+<a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a>clr
+<a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a>
+<a id="__codelineno-63-5" name="__codelineno-63-5" href="#__codelineno-63-5"></a>set 1 size 1400
+<a id="__codelineno-63-6" name="__codelineno-63-6" href="#__codelineno-63-6"></a>
+<a id="__codelineno-63-7" name="__codelineno-63-7" href="#__codelineno-63-7"></a>set 1 count 1000000
+<a id="__codelineno-63-8" name="__codelineno-63-8" href="#__codelineno-63-8"></a>
+<a id="__codelineno-63-9" name="__codelineno-63-9" href="#__codelineno-63-9"></a>enable 0 capture
+<a id="__codelineno-63-10" name="__codelineno-63-10" href="#__codelineno-63-10"></a>
+<a id="__codelineno-63-11" name="__codelineno-63-11" href="#__codelineno-63-11"></a>start 1
+<a id="__codelineno-63-12" name="__codelineno-63-12" href="#__codelineno-63-12"></a>
+<a id="__codelineno-63-13" name="__codelineno-63-13" href="#__codelineno-63-13"></a>disable 0 capture
+<a id="__codelineno-63-14" name="__codelineno-63-14" href="#__codelineno-63-14"></a>
+<a id="__codelineno-63-15" name="__codelineno-63-15" href="#__codelineno-63-15"></a>_EOF
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a>root@smartnic-dpdk:/# pktgen -a $SN_PCIE_DEV.0 -a SN_PCIE_DEV.1 -l 4-8 -n 4 -d librte_net_qdma.so --file-prefix $SN_PCIE_DEV- -- -v -m [5:6].0 -m [7:8].1 -f /tmp/test.pkt
+</code></pre></div>
+<h3 id="troubleshooting-the-pktgen-dpdk-application">Troubleshooting the pktgen-dpdk Application<a class="headerlink" href="#troubleshooting-the-pktgen-dpdk-application" title="Permanent link">&para;</a></h3>
+<p>If pktgen isn’t starting, please consider the following troubleshooting steps:</p>
+<p>Ensure you are using the correct profile in your <code>sn-stack/.env</code> file and that you are starting pktgen with the right command. For a more detailed understanding of the command, please refer to the pktgen documentation provided earlier.</p>
+<p>If pktgen is starting, but packets aren’t flowing as expected, you can check the packet path using the following command inside the <code>smartnic-fw</code> container:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a>sn-cli probe stats
+</code></pre></div>
+<p>If packets sent to/from the host aren’t achieving line rate (100Gbps per port), it could be due to QDMA queue allocation. You can attempt to allocate more QDMA queues per port by setting <code>sn-cli qdma setqs</code> to values higher than <code>1 1</code>.</p>
+<p>If packets are egressing to the wrong port (whether CMAC or PF), it might be due to the <code>sn-cli</code> configuration. For example, here’s a script that routes all egress packets to CMAC1:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-66-1" name="__codelineno-66-1" href="#__codelineno-66-1"></a>#!/bin/bash
+<a id="__codelineno-66-2" name="__codelineno-66-2" href="#__codelineno-66-2"></a>
+<a id="__codelineno-66-3" name="__codelineno-66-3" href="#__codelineno-66-3"></a>sn-cli dev version
+<a id="__codelineno-66-4" name="__codelineno-66-4" href="#__codelineno-66-4"></a>
+<a id="__codelineno-66-5" name="__codelineno-66-5" href="#__codelineno-66-5"></a>sn-cli sw in-port-rename cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-66-6" name="__codelineno-66-6" href="#__codelineno-66-6"></a>
+<a id="__codelineno-66-7" name="__codelineno-66-7" href="#__codelineno-66-7"></a>sn-cli sw app0-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-66-8" name="__codelineno-66-8" href="#__codelineno-66-8"></a>
+<a id="__codelineno-66-9" name="__codelineno-66-9" href="#__codelineno-66-9"></a>sn-cli sw app1-port-redirect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-66-10" name="__codelineno-66-10" href="#__codelineno-66-10"></a>
+<a id="__codelineno-66-11" name="__codelineno-66-11" href="#__codelineno-66-11"></a>sn-cli sw bypass-connect cmac0:cmac0 cmac1:cmac1 host0:host0 host1:host1
+<a id="__codelineno-66-12" name="__codelineno-66-12" href="#__codelineno-66-12"></a>
+<a id="__codelineno-66-13" name="__codelineno-66-13" href="#__codelineno-66-13"></a>sn-cli sw in-port-connect cmac0:app0 cmac1:app0 host0:app0 host1:app0
+<a id="__codelineno-66-14" name="__codelineno-66-14" href="#__codelineno-66-14"></a>
+<a id="__codelineno-66-15" name="__codelineno-66-15" href="#__codelineno-66-15"></a>sn-cli sw status
+<a id="__codelineno-66-16" name="__codelineno-66-16" href="#__codelineno-66-16"></a>
+<a id="__codelineno-66-17" name="__codelineno-66-17" href="#__codelineno-66-17"></a>sn-cli qdma setqs 1 1
+<a id="__codelineno-66-18" name="__codelineno-66-18" href="#__codelineno-66-18"></a>
+<a id="__codelineno-66-19" name="__codelineno-66-19" href="#__codelineno-66-19"></a>sn-cli cmac enable
+<a id="__codelineno-66-20" name="__codelineno-66-20" href="#__codelineno-66-20"></a>
+<a id="__codelineno-66-21" name="__codelineno-66-21" href="#__codelineno-66-21"></a>sn-cli cmac status
+</code></pre></div>
+<p>These steps should help you troubleshoot issues related to the pktgen-dpdk application effectively.</p>
+<hr />
+<hr />
+<hr />
+<p>Now we reach the end of our tutorial.</p>
+<p>For more information, please refer to some other documentations that we have authored:</p>
+<h2 id="1-the-tutorial-on-my-github">1. The tutorial on my <a href="https://groundsada.github.io/esnet-smartnic-tutorial/">GitHub</a><a class="headerlink" href="#1-the-tutorial-on-my-github" title="Permanent link">&para;</a></h2>
+<h2 id="2-the-fabric-testbed-esnet-smartnic-docs-fabric-esnet-smartnic-docs">2. The FABRIC Testbed ESnet SmartNIC docs: <a href="https://learn.fabric-testbed.net/knowledge-base/using-esnet-p4-workflow-on-fabric/">FABRIC ESnet SmartNIC docs</a><a class="headerlink" href="#2-the-fabric-testbed-esnet-smartnic-docs-fabric-esnet-smartnic-docs" title="Permanent link">&para;</a></h2>
+<h2 id="3-the-video-tutorial-on-my-youtube">3. The video tutorial on my <a href="https://www.youtube.com/watch?v=fiZMPPW_oRk&amp;list=PL5Ght4QkHL8QK75R3ThqU7vzob5f65_Zi&amp;ab_channel=MohammadFirasSada">YouTube</a><a class="headerlink" href="#3-the-video-tutorial-on-my-youtube" title="Permanent link">&para;</a></h2>
+<hr />
+<p>This notebook is part 3 out of 3 in the <strong>ESnet SmartNIC Tutorial on NRP</strong> series.</p>
+<p>This was last modified on March 4th, 2025.</p>
+<p>For any inquiries, questions, feedback, please contact: <a href="/cdn-cgi/l/email-protection#7419120715101534011707105a111001">[email protected]</a></p>
+<p><a href="https://gitlab.nrp-nautilus.io/prp/nrp-site/-/tree/main/src/content/docs/Documentation/userdocs/fpgas/esnet_running.md">Edit page</a></p>
+<p><a href="/documentation/userdocs/fpgas/esnet_building">Previous<br />
+SmartNIC: Building</a>  <a href="/documentation/userdocs/storage/intro">Next<br />
+Intro</a></p>
+<p><img alt="NSF Logo" src="/nsf-logo.png" /></p>
+<p>This work was supported in part by National Science Foundation (NSF) awards CNS-1730158, ACI-1540112, ACI-1541349, OAC-1826967, OAC-2112167, CNS-2100237, CNS-2120019.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

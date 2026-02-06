@@ -1,0 +1,2779 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/NEW_CORPUS_ANALYSIS_PLAN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Corpus Descriptive Analysis: Revised Specification - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#corpus-descriptive-analysis-revised-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Corpus Descriptive Analysis: Revised Specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../checkpoint_scheduling/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/USER_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hypothesisanalysis-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hypothesis–Analysis Mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-corpus-overview-and-baseline-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §1. Corpus Overview and Baseline Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§1. Corpus Overview and Baseline Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-basic-corpus-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Basic Corpus Statistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-genre-composition-babylm-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Genre Composition (BabyLM only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-clause-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Clause Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-pronoun-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §2. Pronoun Distribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§2. Pronoun Distribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-subject-pronoun-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Subject Pronoun Inventory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-object-pronoun-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Object Pronoun Inventory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-case-marked-pronouns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Case-Marked Pronouns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-genre-breakdown-of-pronoun-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Genre Breakdown of Pronoun Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-pointwise-mutual-information-of-pronouns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3. Pointwise Mutual Information of Pronouns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§3. Pointwise Mutual Information of Pronouns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-pmi-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 PMI Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-pmi-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 PMI Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-interpretation-for-h4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Interpretation for H4
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-that-trace-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §4. That-Trace Environments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§4. That-Trace Environments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-bridge-verb-complement-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Bridge Verb Complement Clauses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-complementizer-presence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Complementizer Presence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-extraction-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Extraction Type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-cross-tabulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Cross-Tabulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-genre-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Genre Breakdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-expletive-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §5. Expletive Distribution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§5. Expletive Distribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-expletive-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Expletive Identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-expletive-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Expletive Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-manipulation-feasibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Manipulation Feasibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-verbal-morphology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §6. Verbal Morphology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§6. Verbal Morphology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-agreement-paradigm-completeness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Agreement Paradigm Completeness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-corpus-distribution-of-agreement-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Corpus Distribution of Agreement Cells
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-manipulation-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Manipulation Specification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-manipulation-feasibility-and-overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §7. Manipulation Feasibility and Overlap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§7. Manipulation Feasibility and Overlap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-proportion-of-corpus-affected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Proportion of Corpus Affected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-overlap-between-manipulations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Overlap Between Manipulations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-interpretation-for-h6d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Interpretation for H6d
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-negation-and-subject-realization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §8. Negation and Subject Realization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§8. Negation and Subject Realization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-negation-identification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Negation Identification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-negation-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Negation Position
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-subject-realization-in-negated-vs-non-negated-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Subject Realization in Negated vs. Non-Negated Clauses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-evaluation-context-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §9. Evaluation Context Frequency
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§9. Evaluation Context Frequency">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-wh-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §10. Wh-Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="§10. Wh-Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-wh-question-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Wh-Question Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analyses-not-included" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyses Not Included
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-pronoun-recovery-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Pronoun Recovery Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Samples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#presentation-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Presentation Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Presentation Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-corpus-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §1: Corpus Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pronoun-distribution_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §2: Pronoun Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-pmi-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §3: PMI Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-that-trace-environments_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §4: That-Trace Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-expletive-distribution_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §5: Expletive Distribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-verbal-morphology_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §6: Verbal Morphology
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-manipulation-feasibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §7: Manipulation Feasibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-negation-and-subject-realization_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §8: Negation and Subject Realization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-evaluation-context-frequency_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §9: Evaluation Context Frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-wh-questions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        §10: Wh-Questions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figure-and-table-numbering-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Figure and Table Numbering Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="corpus-descriptive-analysis-revised-specification">Corpus Descriptive Analysis: Revised Specification<a class="headerlink" href="#corpus-descriptive-analysis-revised-specification" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This document specifies the descriptive corpus analyses for the null-subject controlled rearing study. It is organized around the preregistered hypotheses: each analysis is motivated by the hypothesis it serves and the experimental decision it informs. Analyses that do not serve a preregistered hypothesis are explicitly labeled exploratory.</p>
+<p>The analyses operate over English (BabyLM, ~90M tokens) and Italian (bebe-lm, ~90M tokens) training corpora.</p>
+<hr />
+<h2 id="hypothesisanalysis-mapping">Hypothesis–Analysis Mapping<a class="headerlink" href="#hypothesisanalysis-mapping" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Hypothesis</th>
+<th>What corpus analysis must establish</th>
+<th>Analysis section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1 (baseline learnability)</td>
+<td>Basic corpus properties; sufficient signal for target grammar</td>
+<td>§1</td>
+</tr>
+<tr>
+<td>H2 (pronoun manipulation)</td>
+<td>Pronoun frequencies by person/number/case/function; genre distribution; what "remove pronouns" and "insert pronouns" affects</td>
+<td>§2</td>
+</tr>
+<tr>
+<td>H3 (developmental trajectory)</td>
+<td>Checkpoint-relevant input structure; when in training different evidence types are encountered</td>
+<td>§1, §2</td>
+</tr>
+<tr>
+<td>H4 (PMI vs. random removal)</td>
+<td>PMI distribution of subject pronouns in context; whether PMI-based and random removal select different tokens</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>H5 (distal effects)</td>
+<td>That-trace environment frequencies; extraction distributions; co-occurrence of null-subject-cluster phenomena</td>
+<td>§4</td>
+</tr>
+<tr>
+<td>H6a (expletive removal)</td>
+<td>Expletive frequency; proportion of input affected by removal</td>
+<td>§5</td>
+</tr>
+<tr>
+<td>H6b (morphology manipulation)</td>
+<td>Agreement paradigm completeness; person×number distribution of inflected forms; what "rich" vs. "impoverished" means</td>
+<td>§6</td>
+</tr>
+<tr>
+<td>H6c (case neutralization)</td>
+<td>Case-marked pronoun frequencies; what neutralization removes</td>
+<td>§2 (subsection)</td>
+</tr>
+<tr>
+<td>H6d (stacked ablations)</td>
+<td>Overlap/independence of above; proportion of corpus affected by each manipulation individually and jointly</td>
+<td>§7</td>
+</tr>
+<tr>
+<td>H7–H10 (architecture)</td>
+<td>No corpus analysis needed (these are model-side hypotheses)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-corpus-overview-and-baseline-properties">§1. Corpus Overview and Baseline Properties<a class="headerlink" href="#1-corpus-overview-and-baseline-properties" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H1 (baseline learnability), H3 (developmental trajectory), all hypotheses (interpretive context)</p>
+<h3 id="11-basic-corpus-statistics">1.1 Basic Corpus Statistics<a class="headerlink" href="#11-basic-corpus-statistics" title="Permanent link">&para;</a></h3>
+<p>Token counts, type counts, type-token ratio, mean sentence length — by language and genre. This is the denominator for all subsequent proportions.</p>
+<p><strong>Output:</strong> Summary table with basic descriptives by language × genre.</p>
+<h3 id="12-genre-composition-babylm-only">1.2 Genre Composition (BabyLM only)<a class="headerlink" href="#12-genre-composition-babylm-only" title="Permanent link">&para;</a></h3>
+<p>The BabyLM corpus comprises multiple sources (CHILDES, BNC, Gutenberg, OpenSubtitles, Simple Wikipedia, Switchboard) that differ in register, formality, and likely pronoun distribution. Genre composition determines what the model sees during training and at what rate.</p>
+<p><strong>Key question:</strong> Does CHILDES (child-directed speech) differ from other sources in the properties relevant to our manipulations? If pronouns are disproportionately frequent in CDS, genre-weighted effects of pronoun removal will differ from uniform effects.</p>
+<p><strong>Output:</strong> Token counts by source; proportion of total corpus per source. Genre breakdowns are reported for §2 and §3 (pronoun-relevant analyses) and §5 (that-trace environments) only — not for all analyses.</p>
+<h3 id="13-clause-structure">1.3 Clause Structure<a class="headerlink" href="#13-clause-structure" title="Permanent link">&para;</a></h3>
+<p>Clause structure provides the scaffold for all subsequent analyses. Every analysis below references finite verbs, their subjects, and their embedding context.</p>
+<p><strong>Finite root clauses</strong> (<code>dep=ROOT</code>, <code>VerbForm=Fin</code>):</p>
+<ul>
+<li>with overt subject (<code>nsubj</code> or <code>nsubj:pass</code> child)</li>
+<li>with expletive subject (<code>expl</code> child)</li>
+<li>without overt subject (candidate null-subject site)</li>
+</ul>
+<p><strong>Subordinate finite clauses</strong> (<code>dep=ccomp/advcl/acl:relcl</code>, <code>VerbForm=Fin</code>):</p>
+<ul>
+<li>same subject-presence breakdown</li>
+</ul>
+<p><strong>Infinitival complements</strong> (<code>dep=xcomp</code>, <code>VerbForm=Inf</code>):</p>
+<ul>
+<li>classified as control vs. raising by matrix verb lemma</li>
+</ul>
+<p><strong>Output:</strong> Counts and proportions for each cell; cross-tabulation of clause type × subject status × language. This table is the primary reference for interpreting all subsequent analyses.</p>
+<hr />
+<h2 id="2-pronoun-distribution">§2. Pronoun Distribution<a class="headerlink" href="#2-pronoun-distribution" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H2 (pronoun manipulation), H6c (case neutralization)</p>
+<p>This section characterizes what the pronoun removal (English) and pronoun insertion (Italian) manipulations actually affect.</p>
+<h3 id="21-subject-pronoun-inventory">2.1 Subject Pronoun Inventory<a class="headerlink" href="#21-subject-pronoun-inventory" title="Permanent link">&para;</a></h3>
+<p>Frequency of each subject pronoun by person/number:</p>
+<ul>
+<li>English: I, you, he, she, it, we, they</li>
+<li>Italian: io, tu, lui/lei, noi, voi, loro</li>
+</ul>
+<p>Detection: <code>dep=nsubj</code>, <code>pos=PRON</code>, with <code>Person</code> and <code>Number</code> morphological features.</p>
+<p><strong>Key question for H2:</strong> What is the overall subject pronoun rate (proportion of finite verbs with pronominal subjects)? This determines the magnitude of the pronoun removal manipulation at each sweep level (0–100%, step 10%).</p>
+<h3 id="22-object-pronoun-inventory">2.2 Object Pronoun Inventory<a class="headerlink" href="#22-object-pronoun-inventory" title="Permanent link">&para;</a></h3>
+<ul>
+<li>English: me, you, him, her, it, us, them</li>
+<li>Italian: mi, ti, lo/la, ci, vi, li/le (clitics)</li>
+</ul>
+<p>Detection: <code>dep=obj/iobj</code>, <code>pos=PRON</code>.</p>
+<p><strong>Relevance:</strong> Object pronouns are not directly manipulated in the preregistered design, but they serve as a control — object pronoun acceptability should not change under subject pronoun manipulation unless distal effects are present.</p>
+<h3 id="23-case-marked-pronouns">2.3 Case-Marked Pronouns<a class="headerlink" href="#23-case-marked-pronouns" title="Permanent link">&para;</a></h3>
+<p><strong>Serves:</strong> H6c (case neutralization)</p>
+<p>English distinguishes nominative (I, he, she, we, they) from accusative (me, him, her, us, them). The case neutralization ablation collapses this distinction (e.g., replacing all nominatives with a case-neutral form, or replacing accusatives with nominatives).</p>
+<p><strong>Key question:</strong> How many tokens are affected by case neutralization? What proportion of pronouns carry unambiguous case marking? ("you" and "it" are case-ambiguous and would not be affected.)</p>
+<p><strong>Output:</strong> Frequency table by pronoun × case; count and proportion of case-marked tokens; proportion of total corpus affected by neutralization.</p>
+<h3 id="24-genre-breakdown-of-pronoun-distribution">2.4 Genre Breakdown of Pronoun Distribution<a class="headerlink" href="#24-genre-breakdown-of-pronoun-distribution" title="Permanent link">&para;</a></h3>
+<p><strong>Serves:</strong> H2, H4</p>
+<p>Report §2.1 and §2.3 broken down by BabyLM genre. The critical comparison is CHILDES vs. other sources.</p>
+<p><strong>Key question:</strong> If CHILDES has disproportionately high 1sg/2sg pronoun rates (as expected in child-directed speech), then pronoun removal disproportionately affects CDS input. Does this matter for interpretation?</p>
+<p><strong>Output:</strong> Pronoun frequency by person/number × genre.</p>
+<hr />
+<h2 id="3-pointwise-mutual-information-of-pronouns">§3. Pointwise Mutual Information of Pronouns<a class="headerlink" href="#3-pointwise-mutual-information-of-pronouns" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H4 (PMI vs. random removal)</p>
+<p>H4 tests whether removing pronouns by contextual predictability (PMI) produces different model outcomes than random removal at matched rates. This analysis characterizes the PMI distribution that determines what the PMI sweep actually targets.</p>
+<h3 id="31-pmi-computation">3.1 PMI Computation<a class="headerlink" href="#31-pmi-computation" title="Permanent link">&para;</a></h3>
+<p>For each subject pronoun token in the corpus, compute the pointwise mutual information between the pronoun and its local context (preceding N tokens or dependency context). PMI quantifies how predictable a given pronoun is in its context — high-PMI pronouns are highly expected; low-PMI pronouns are surprising.</p>
+<p><strong>Method:</strong> Use a background unigram model and a contextual model (5-gram or simple neural LM trained on the corpus) to compute:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>PMI(pronoun, context) = log p(pronoun | context) - log p(pronoun)
+</code></pre></div>
+<h3 id="32-pmi-distribution">3.2 PMI Distribution<a class="headerlink" href="#32-pmi-distribution" title="Permanent link">&para;</a></h3>
+<p><strong>Key questions:</strong></p>
+<ul>
+<li>What does the PMI distribution of subject pronouns look like? Is it unimodal, bimodal, skewed?</li>
+<li>Are high-PMI pronouns concentrated in certain persons (e.g., 1sg "I" in narrative contexts), genres (e.g., CHILDES), or syntactic positions (e.g., topic continuity)?</li>
+<li>At each removal level (10%, 20%, ..., 100%), which tokens does PMI-based removal select vs. random removal? How much overlap is there?</li>
+</ul>
+<p><strong>Output:</strong> PMI distribution histogram; PMI by person/number; PMI by genre; overlap between PMI-ranked and random removal sets at each sweep level.</p>
+<h3 id="33-interpretation-for-h4">3.3 Interpretation for H4<a class="headerlink" href="#33-interpretation-for-h4" title="Permanent link">&para;</a></h3>
+<p>If the PMI distribution is relatively uniform, PMI-based and random removal will select similar tokens and H4 will show null results for uninformative reasons. If the distribution is heavily skewed — e.g., topic-continuing 3sg pronouns are highly predictable while discourse-initial 1sg pronouns are not — then PMI-based removal selectively targets a linguistically coherent subset. This analysis must be completed before interpreting H4 results.</p>
+<hr />
+<h2 id="4-that-trace-environments">§4. That-Trace Environments<a class="headerlink" href="#4-that-trace-environments" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H5 (distal effects)</p>
+<p>The that-trace effect is the key test of distal effects: it is syntactically related to null-subject licensing but distributionally independent of pronoun frequency. If pronoun manipulation affects that-trace judgments, this is strong evidence for structured grammatical representations.</p>
+<p>This analysis characterizes how much that-trace-relevant input the model receives during training.</p>
+<h3 id="41-bridge-verb-complement-clauses">4.1 Bridge Verb Complement Clauses<a class="headerlink" href="#41-bridge-verb-complement-clauses" title="Permanent link">&para;</a></h3>
+<p>Identify all finite <code>ccomp</code> clauses under bridge verbs (verbs that permit extraction from their complement).</p>
+<p><strong>English bridge verbs:</strong> think, believe, say, know, assume, expect, hope, suppose, claim, report, imagine, feel, suspect, guess, figure, reckon, suggest, declare, announce, predict</p>
+<p><strong>Italian bridge verbs:</strong> pensare, credere, dire, sapere, supporre, sperare, immaginare, sentire, ritenere, affermare, dichiarare, sostenere, annunciare, prevedere</p>
+<p>Lists are seed lists; any verb appearing with <code>ccomp</code> and a fronted wh-word is a candidate bridge verb and will be flagged for review.</p>
+<h3 id="42-complementizer-presence">4.2 Complementizer Presence<a class="headerlink" href="#42-complementizer-presence" title="Permanent link">&para;</a></h3>
+<p>For each bridge verb complement clause, classify:</p>
+<ul>
+<li><strong>+Comp:</strong> "that"/"che" present (mark dependent with appropriate lemma)</li>
+<li><strong>−Comp:</strong> complementizer absent</li>
+</ul>
+<p><strong>Key question:</strong> What is the "that"-omission rate in English? This optionality is what creates the learning environment for the that-trace constraint. If "that" is nearly always omitted, the model rarely sees +Comp environments and the constraint may be hard to learn.</p>
+<h3 id="43-extraction-type">4.3 Extraction Type<a class="headerlink" href="#43-extraction-type" title="Permanent link">&para;</a></h3>
+<p>Using heuristics (see original spec §1.8 Steps 3–4 for details):</p>
+<ul>
+<li><strong>Subject extraction:</strong> Matrix clause contains wh-word; embedded clause has no <code>nsubj</code></li>
+<li><strong>Object extraction:</strong> Matrix clause contains wh-word; embedded clause has <code>nsubj</code> but missing <code>obj</code></li>
+<li><strong>No extraction:</strong> Declarative complement</li>
+</ul>
+<p>These heuristics will produce errors. We validate against a manually annotated sample of 100 sentences.</p>
+<h3 id="44-cross-tabulation">4.4 Cross-Tabulation<a class="headerlink" href="#44-cross-tabulation" title="Permanent link">&para;</a></h3>
+<p>The critical output: <strong>complementizer × extraction type × language</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>+Comp</th>
+<th>−Comp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subject extraction</td>
+<td>Should be ~0 in English (that-trace violation), attested in Italian</td>
+<td>Grammatical both</td>
+</tr>
+<tr>
+<td>Object extraction</td>
+<td>Grammatical both</td>
+<td>Grammatical both</td>
+</tr>
+<tr>
+<td>No extraction</td>
+<td>Grammatical both</td>
+<td>Grammatical both</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key question for H5:</strong> How many that-trace-relevant contexts (bridge verb + complement clause + extraction) exist in the training corpus? If the count is very low (e.g., &lt;100 per 90M tokens), any distal effect would be remarkable — the model would be generalizing from minimal direct evidence.</p>
+<h3 id="45-genre-breakdown">4.5 Genre Breakdown<a class="headerlink" href="#45-genre-breakdown" title="Permanent link">&para;</a></h3>
+<p>Report §4.4 by BabyLM genre. Wh-extraction from complement clauses likely concentrates in conversational registers (CHILDES, Switchboard, OpenSubtitles) rather than written prose.</p>
+<p><strong>Output:</strong> Per-genre cross-tabulation; bridge verb frequency by lemma; complementizer rate overall and by verb.</p>
+<hr />
+<h2 id="5-expletive-distribution">§5. Expletive Distribution<a class="headerlink" href="#5-expletive-distribution" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H6a (expletive removal)</p>
+<h3 id="51-expletive-identification">5.1 Expletive Identification<a class="headerlink" href="#51-expletive-identification" title="Permanent link">&para;</a></h3>
+<p>English expletive subjects: tokens with <code>dep=expl</code> (primarily "it" and "there").</p>
+<p>Italian: no overt expletives; count verbs that would take expletive subjects (weather verbs, raising verbs, existentials) — these appear with null expletive subjects.</p>
+<h3 id="52-expletive-classification">5.2 Expletive Classification<a class="headerlink" href="#52-expletive-classification" title="Permanent link">&para;</a></h3>
+<p>By verb class:</p>
+<ul>
+<li><strong>Weather verbs:</strong> rain, snow, etc. / piovere, nevicare, etc.</li>
+<li><strong>Raising verbs:</strong> seem, appear, happen / sembrare, apparire, capitare</li>
+<li><strong>Existentials:</strong> "there is/are" constructions / "c'è/ci sono"</li>
+</ul>
+<h3 id="53-manipulation-feasibility">5.3 Manipulation Feasibility<a class="headerlink" href="#53-manipulation-feasibility" title="Permanent link">&para;</a></h3>
+<p><strong>Key question:</strong> What proportion of the English corpus consists of expletive-containing sentences? If expletives are &lt;1% of sentences, removing them may not produce detectable effects regardless of theoretical predictions. This directly informs whether H6a is well-powered.</p>
+<p><strong>Output:</strong> Expletive counts by class; proportion of sentences containing expletives; proportion of total tokens in expletive-containing sentences.</p>
+<hr />
+<h2 id="6-verbal-morphology">§6. Verbal Morphology<a class="headerlink" href="#6-verbal-morphology" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H6b (morphology manipulation)</p>
+<h3 id="61-agreement-paradigm-completeness">6.1 Agreement Paradigm Completeness<a class="headerlink" href="#61-agreement-paradigm-completeness" title="Permanent link">&para;</a></h3>
+<p>For each language, tabulate the person×number distribution of finite verb forms.</p>
+<p><strong>English paradigm (present tense):</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Singular</th>
+<th>Plural</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1st</td>
+<td>walk</td>
+<td>walk</td>
+</tr>
+<tr>
+<td>2nd</td>
+<td>walk</td>
+<td>walk</td>
+</tr>
+<tr>
+<td>3rd</td>
+<td>walk<strong>s</strong></td>
+<td>walk</td>
+</tr>
+</tbody>
+</table>
+<p>English has massive syncretism: 5 of 6 cells are identical. The only morphological cue to person/number is 3sg -s.</p>
+<p><strong>Italian paradigm (present tense, 1st conjugation):</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Singular</th>
+<th>Plural</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1st</td>
+<td>parl<strong>o</strong></td>
+<td>parl<strong>iamo</strong></td>
+</tr>
+<tr>
+<td>2nd</td>
+<td>parl<strong>i</strong></td>
+<td>parl<strong>ate</strong></td>
+</tr>
+<tr>
+<td>3rd</td>
+<td>parl<strong>a</strong></td>
+<td>parl<strong>ano</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Italian has 6 distinct forms. This is what "rich agreement" means: the verb form uniquely identifies the subject's person and number, licensing null subjects.</p>
+<h3 id="62-corpus-distribution-of-agreement-cells">6.2 Corpus Distribution of Agreement Cells<a class="headerlink" href="#62-corpus-distribution-of-agreement-cells" title="Permanent link">&para;</a></h3>
+<p>Count the frequency of each person×number×tense combination in the corpus, using morphological features (<code>Person</code>, <code>Number</code>, <code>Tense</code>, <code>VerbForm=Fin</code>).</p>
+<p><strong>Key questions:</strong></p>
+<ul>
+<li>Is the paradigm evenly distributed, or are certain cells (e.g., 3sg present) massively overrepresented?</li>
+<li>What is the frequency of the English 3sg -s form relative to bare forms? This is the primary morphological cue to agreement in English.</li>
+<li>For Italian, are there syncretic forms across tenses that reduce the effective paradigm richness?</li>
+</ul>
+<h3 id="63-manipulation-specification">6.3 Manipulation Specification<a class="headerlink" href="#63-manipulation-specification" title="Permanent link">&para;</a></h3>
+<p>The morphology manipulation (H6b) involves "adding rich agreement to English" and "impoverishing Italian agreement." This analysis determines what that means concretely:</p>
+<ul>
+<li><strong>English enrichment:</strong> Replace syncretic bare forms with morphologically marked forms (e.g., "walk" → "walko" for 1sg, "walkiamo" for 1pl). What proportion of verb tokens are affected?</li>
+<li><strong>Italian impoverishment:</strong> Collapse distinct forms into a single syncretic form (e.g., all present tense → 3sg form). What proportion of verb tokens are affected?</li>
+</ul>
+<p><strong>Output:</strong> Person×number×tense frequency table by language; syncretism rate; proportion of corpus affected by each manipulation direction.</p>
+<hr />
+<h2 id="7-manipulation-feasibility-and-overlap">§7. Manipulation Feasibility and Overlap<a class="headerlink" href="#7-manipulation-feasibility-and-overlap" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H6d (stacked ablations), all hypotheses (power/interpretability)</p>
+<p>This is a cross-cutting analysis that takes the per-manipulation estimates from §2–§6 and examines their joint properties.</p>
+<h3 id="71-proportion-of-corpus-affected">7.1 Proportion of Corpus Affected<a class="headerlink" href="#71-proportion-of-corpus-affected" title="Permanent link">&para;</a></h3>
+<p>For each manipulation, what percentage of the corpus (by tokens and by sentences) is directly altered?</p>
+<table>
+<thead>
+<tr>
+<th>Manipulation</th>
+<th>Tokens affected</th>
+<th>Sentences affected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pronoun removal (100%)</td>
+<td>from §2</td>
+<td>from §2</td>
+</tr>
+<tr>
+<td>Pronoun removal (50%)</td>
+<td>from §2</td>
+<td>from §2</td>
+</tr>
+<tr>
+<td>Expletive removal</td>
+<td>from §5</td>
+<td>from §5</td>
+</tr>
+<tr>
+<td>Morphology manipulation</td>
+<td>from §6</td>
+<td>from §6</td>
+</tr>
+<tr>
+<td>Case neutralization</td>
+<td>from §2.3</td>
+<td>from §2.3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key question:</strong> Are any manipulations too sparse to produce detectable effects? If expletive removal affects 0.3% of tokens and case neutralization affects 2%, the stacked ablation (H6d) is dominated by the larger manipulations and the small ones may contribute nothing.</p>
+<h3 id="72-overlap-between-manipulations">7.2 Overlap Between Manipulations<a class="headerlink" href="#72-overlap-between-manipulations" title="Permanent link">&para;</a></h3>
+<p>For stacked ablations, how much do manipulations overlap? A sentence containing an expletive subject also contains a pronoun (the expletive itself) and potentially a case-marked pronoun. Removing expletives AND removing pronouns double-counts these sentences.</p>
+<p><strong>Output:</strong> Pairwise overlap matrix (proportion of sentences affected by manipulation A that are also affected by manipulation B).</p>
+<h3 id="73-interpretation-for-h6d">7.3 Interpretation for H6d<a class="headerlink" href="#73-interpretation-for-h6d" title="Permanent link">&para;</a></h3>
+<p>If manipulations are largely non-overlapping, stacked effects should be roughly additive under a statistical learning account. If they overlap substantially, additive predictions need to be adjusted for shared sentences.</p>
+<hr />
+<h2 id="8-negation-and-subject-realization">§8. Negation and Subject Realization<a class="headerlink" href="#8-negation-and-subject-realization" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H3 (developmental trajectory), exploratory</p>
+<p>Performance-based accounts of children's early null subjects (Bloom, 1990; Valian, 1991) propose that children omit subjects more in longer or more complex sentences due to processing limitations. Negation increases sentence complexity, and children show higher subject omission rates in negated clauses. If models show a similar pattern (higher null-subject rates in negated contexts, especially early in training), this would be consistent with processing-based accounts; if they don't, it would support grammatical rather than performance-based explanations of the developmental trajectory (H3).</p>
+<h3 id="81-negation-identification">8.1 Negation Identification<a class="headerlink" href="#81-negation-identification" title="Permanent link">&para;</a></h3>
+<p>Negated clauses: contain <code>advmod</code> or dependent with <code>Polarity=Neg</code> (English: not, n't; Italian: non).</p>
+<h3 id="82-negation-position">8.2 Negation Position<a class="headerlink" href="#82-negation-position" title="Permanent link">&para;</a></h3>
+<p>Token index of negation relative to finite verb. English: preverbal (with auxiliary) or postverbal (with "not"). Italian: strictly preverbal "non."</p>
+<h3 id="83-subject-realization-in-negated-vs-non-negated-clauses">8.3 Subject Realization in Negated vs. Non-Negated Clauses<a class="headerlink" href="#83-subject-realization-in-negated-vs-non-negated-clauses" title="Permanent link">&para;</a></h3>
+<p>Cross-tabulate negation × subject status (overt / null / expletive) for finite root clauses and subordinate clauses.</p>
+<p><strong>Key question:</strong> Is subject omission more frequent in negated clauses in either corpus? If so, this provides a corpus-level baseline for the performance-based prediction. If the corpus itself shows no negation effect on subject realization, then any model pattern must emerge from learning dynamics rather than input statistics.</p>
+<p><strong>Output:</strong> Negation frequency; positional distribution; subject realization cross-tabulation with negation; comparison across languages.</p>
+<hr />
+<h2 id="9-evaluation-context-frequency">§9. Evaluation Context Frequency<a class="headerlink" href="#9-evaluation-context-frequency" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> All hypotheses (interpretability of model evaluation results)</p>
+<p>How often do contexts resembling the 18 preregistered evaluation stimulus types actually occur in training? This determines whether model performance on evaluation items reflects generalization vs. memorization.</p>
+<h3 id="91-method">9.1 Method<a class="headerlink" href="#91-method" title="Permanent link">&para;</a></h3>
+<p>For each evaluation category, define a set of corpus-level features that approximate the stimulus structure. These are not exact pattern matches (the evaluation stimuli are constructed, not naturalistic) but structural proxies:</p>
+<table>
+<thead>
+<tr>
+<th>Evaluation category</th>
+<th>Corpus proxy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3sg/3pl subject drop</td>
+<td>Finite clause with 3sg/3pl pronominal subject</td>
+</tr>
+<tr>
+<td>3sg/3pl object drop</td>
+<td>Clause with 3sg/3pl pronominal object</td>
+</tr>
+<tr>
+<td>1sg/2sg/1pl/2pl subject drop</td>
+<td>Finite clause with 1sg/2sg/1pl/2pl pronominal subject</td>
+</tr>
+<tr>
+<td>Subordinate clause drop</td>
+<td><code>ccomp</code> with pronominal subject</td>
+</tr>
+<tr>
+<td>Subject control</td>
+<td><code>xcomp</code> under control verb</td>
+</tr>
+<tr>
+<td>Object control</td>
+<td><code>xcomp</code> under object-control verb</td>
+</tr>
+<tr>
+<td>Expletive "seems"</td>
+<td>Raising verb with expletive</td>
+</tr>
+<tr>
+<td>Expletive "be"</td>
+<td>Existential or presentational with expletive</td>
+</tr>
+<tr>
+<td>Long-distance binding</td>
+<td><code>ccomp</code> with pronominal embedded subject</td>
+</tr>
+<tr>
+<td>Conjunction ± topic shift</td>
+<td>Coordinated clauses with same/different subjects</td>
+</tr>
+<tr>
+<td>Subject extraction ± "that"</td>
+<td>That-trace environments (from §4)</td>
+</tr>
+<tr>
+<td>Object extraction ± "that"</td>
+<td>Object extraction from complement clause (from §4)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-output">9.2 Output<a class="headerlink" href="#92-output" title="Permanent link">&para;</a></h3>
+<p>Frequency table: evaluation category × language × genre. Flag any categories with very low counts (&lt;100 per 90M tokens) as items where model performance would necessarily reflect generalization rather than direct training exposure.</p>
+<hr />
+<h2 id="10-wh-questions">§10. Wh-Questions<a class="headerlink" href="#10-wh-questions" title="Permanent link">&para;</a></h2>
+<p><strong>Serves:</strong> H5 (distal effects, secondary)</p>
+<p>Wh-question structure is relevant to the null-subject cluster because subject extraction interacts with complementizer presence (that-trace) and with subject position (pre/postverbal). This analysis supplements §4 with the broader distribution of wh-questions.</p>
+<h3 id="101-wh-question-classification">10.1 Wh-Question Classification<a class="headerlink" href="#101-wh-question-classification" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Subject wh-questions:</strong> wh-word is <code>nsubj</code> of root verb</li>
+<li><strong>Object wh-questions:</strong> wh-word is <code>obj</code> of root verb</li>
+<li><strong>Embedded questions:</strong> <code>dep=ccomp</code> with wh-word as dependent of embedded verb</li>
+</ul>
+<p>Detection: <code>POS=PRON</code> or <code>POS=ADV</code> with <code>PronType=Int</code> or lemma in {who, what, which, where, when, why, how} / {chi, che, cosa, quale, dove, quando, perché, come}.</p>
+<h3 id="102-output">10.2 Output<a class="headerlink" href="#102-output" title="Permanent link">&para;</a></h3>
+<p>Subject/object extraction counts by language; embedded question frequency; proportion of wh-questions involving extraction from complement clause (overlap with §4).</p>
+<hr />
+<h2 id="analyses-not-included">Analyses Not Included<a class="headerlink" href="#analyses-not-included" title="Permanent link">&para;</a></h2>
+<p>The following analyses from the original specification are <strong>not included</strong> in the revised version because they do not serve a preregistered hypothesis:</p>
+<ul>
+<li><strong>Relative clauses (original §1.6):</strong> Subject/object relative clause distributions do not connect to any manipulation or evaluation item. Omitted.</li>
+<li><strong>Resumptive pronouns (original §1.6 subpart):</strong> Unreliable to detect without coreference resolution; no theoretical connection to preregistered hypotheses. Omitted.</li>
+</ul>
+<p>These could be conducted as exploratory analyses if time permits.</p>
+<hr />
+<h2 id="phase-2-pronoun-recovery-model">Phase 2: Pronoun Recovery Model<a class="headerlink" href="#phase-2-pronoun-recovery-model" title="Permanent link">&para;</a></h2>
+<p>Phase 2 enables two things: (1) the Italian pronoun insertion manipulation (H2, critical path), and (2) descriptive analysis of null-subject rates by context (supporting §8 and exploratory analyses). The architecture, training strategy, and validation procedures are unchanged from the original specification (see original §2.1–2.3).</p>
+<p><strong>Priority note:</strong> Function (1) — producing pronoun-inserted Italian text for the H2 ablation — is on the critical path. Function (2) — descriptive statistics on null-subject contexts — is secondary. Development effort should be allocated accordingly.</p>
+<hr />
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
+<h3 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">&para;</a></h3>
+<ul>
+<li>spaCy with <code>en_core_web_trf</code> / <code>it_core_news_lg</code> (or trf if available)</li>
+<li>Existing preprocessing infrastructure in <code>preprocessing/</code></li>
+<li>Simple N-gram or neural LM for PMI computation (§3)</li>
+<li>DeepSeek API for scaled annotation (Phase 2)</li>
+<li>HuggingFace Transformers for pronoun recovery model (Phase 2)</li>
+</ul>
+<h3 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">&para;</a></h3>
+<p>Per the layered annotation architecture: all analyses produce per-sentence annotations stored in Parquet. Aggregation scripts compute summary statistics from the annotated corpus. Summary CSVs are the input to the RMarkdown report.</p>
+<h3 id="validation-samples">Validation Samples<a class="headerlink" href="#validation-samples" title="Permanent link">&para;</a></h3>
+<p>For heuristic-based analyses (§4 extraction detection, §3 PMI computation), manually annotate a sample of 100 sentences per language to estimate precision and recall. Report these validation metrics alongside the corpus statistics.</p>
+<hr />
+<h2 id="presentation-plan">Presentation Plan<a class="headerlink" href="#presentation-plan" title="Permanent link">&para;</a></h2>
+<p>This section specifies how each analysis will be reported in the corpus descriptive results. The audience is the paper's methods/results section and supplementary materials. Each analysis is presented at two levels of granularity: a primary summary (for the main text) and a detailed breakdown (for supplement).</p>
+<h3 id="general-principles">General Principles<a class="headerlink" href="#general-principles" title="Permanent link">&para;</a></h3>
+<p>All analyses are presented as cross-linguistic comparisons (English vs. Italian) because the theoretical interest is in how the two languages differ in the input available to learners. Raw counts are always accompanied by proportions (per 1M tokens or per finite verb, as appropriate). Confidence intervals on proportions are computed by bootstrap over documents (not sentences) to account for within-document dependence.</p>
+<h3 id="1-corpus-overview">§1: Corpus Overview<a class="headerlink" href="#1-corpus-overview" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> A single summary table with token count, sentence count, mean sentence length, and type-token ratio by language. For BabyLM, a stacked bar or table showing genre composition by proportion of tokens.</p>
+<p><strong>Supplement:</strong> Full genre × basic-statistic table.</p>
+<h3 id="2-pronoun-distribution_1">§2: Pronoun Distribution<a class="headerlink" href="#2-pronoun-distribution_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> A figure showing subject pronoun frequency by person/number, comparing English and Italian, normalized per 1,000 finite verbs. A single summary statistic: overall subject pronoun rate (% of finite verbs with pronominal subjects) by language. For H6c: count and proportion of case-marked pronoun tokens.</p>
+<p><strong>Supplement:</strong> Full person × number × case × function frequency table. Genre breakdown of pronoun rates (table). Object pronoun frequency table.</p>
+<h3 id="3-pmi-distribution">§3: PMI Distribution<a class="headerlink" href="#3-pmi-distribution" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> A histogram or density plot of PMI values for subject pronouns in each language. A scatterplot or table showing the overlap between PMI-ranked and random removal sets at representative sweep levels (25%, 50%, 75%). A summary of whether high-PMI pronouns cluster by person, genre, or syntactic position.</p>
+<p><strong>Supplement:</strong> PMI by person/number table. PMI by genre table. Token-level overlap at all sweep levels.</p>
+<h3 id="4-that-trace-environments_1">§4: That-Trace Environments<a class="headerlink" href="#4-that-trace-environments_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> The cross-tabulation (complementizer × extraction type × language) as a table. Total count of that-trace-relevant contexts by language. Complementizer omission rate in English complement clauses.</p>
+<p><strong>Supplement:</strong> Bridge verb frequency table. Per-genre cross-tabulation. Validation metrics from manual annotation sample (precision/recall of extraction heuristics).</p>
+<h3 id="5-expletive-distribution_1">§5: Expletive Distribution<a class="headerlink" href="#5-expletive-distribution_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> Total expletive count by class (weather, raising, existential) and language. Proportion of sentences containing expletives (the manipulation feasibility number).</p>
+<p><strong>Supplement:</strong> Expletive verb lemma frequency table. English vs. Italian comparison of would-be-expletive verb contexts.</p>
+<h3 id="6-verbal-morphology_1">§6: Verbal Morphology<a class="headerlink" href="#6-verbal-morphology_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> Person × number paradigm tables for English and Italian (showing distinct vs. syncretic forms). Distribution of agreement cells in the corpus (as a heatmap or proportional table). A summary of paradigm richness: number of distinct surface forms per paradigm by language.</p>
+<p><strong>Supplement:</strong> Full person × number × tense frequency table. Syncretism analysis. Proportion of corpus affected by enrichment/impoverishment.</p>
+<h3 id="7-manipulation-feasibility">§7: Manipulation Feasibility<a class="headerlink" href="#7-manipulation-feasibility" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> A summary table showing proportion of corpus affected (tokens and sentences) by each manipulation. Pairwise overlap matrix as a small heatmap or table.</p>
+<p><strong>Supplement:</strong> Detailed overlap statistics. Sentence-level co-occurrence frequencies.</p>
+<h3 id="8-negation-and-subject-realization_1">§8: Negation and Subject Realization<a class="headerlink" href="#8-negation-and-subject-realization_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> Cross-tabulation of negation × subject status by language (2×3 table per language, or combined). Statistical test of association (χ² or equivalent). A brief statement of whether the corpus shows higher subject omission in negated clauses.</p>
+<p><strong>Supplement:</strong> Negation frequency and position distribution. Per-genre breakdown. Comparison with child language literature rates (if available from CHILDES metadata).</p>
+<h3 id="9-evaluation-context-frequency_1">§9: Evaluation Context Frequency<a class="headerlink" href="#9-evaluation-context-frequency_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> A table listing each evaluation category with its corpus frequency (count per 90M tokens) by language. Categories flagged as rare (&lt;100 occurrences) are highlighted.</p>
+<p><strong>Supplement:</strong> Per-genre breakdown. Example sentences for each category.</p>
+<h3 id="10-wh-questions_1">§10: Wh-Questions<a class="headerlink" href="#10-wh-questions_1" title="Permanent link">&para;</a></h3>
+<p><strong>Main text:</strong> Subject vs. object wh-question frequency by language. Embedded question frequency. Overlap with §4 (proportion of wh-questions that involve complement clause extraction).</p>
+<p><strong>Supplement:</strong> Wh-word lemma frequency table. Per-genre breakdown.</p>
+<h3 id="figure-and-table-numbering-convention">Figure and Table Numbering Convention<a class="headerlink" href="#figure-and-table-numbering-convention" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Tables 1–3:</strong> Corpus overview (§1), pronoun distribution summary (§2), manipulation feasibility (§7)</li>
+<li><strong>Figure 1:</strong> PMI distribution (§3)</li>
+<li><strong>Table 4:</strong> That-trace cross-tabulation (§4)</li>
+<li><strong>Tables 5–6:</strong> Expletive and morphology summaries (§5, §6)</li>
+<li><strong>Table 7:</strong> Negation × subject realization (§8)</li>
+<li><strong>Table 8:</strong> Evaluation context frequency (§9)</li>
+<li><strong>Remaining figures/tables:</strong> As needed for supplement</li>
+</ul>
+<p>This numbering follows the order of presentation in the methods section, which mirrors the hypothesis order. The corpus descriptives appear after the design overview and before the results, establishing the input properties that the manipulations target.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

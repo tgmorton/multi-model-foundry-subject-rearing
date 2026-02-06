@@ -12,7 +12,7 @@
         <meta name="author" content="Model Foundry Team">
       
       
-        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/CORPUS_ANALYSIS_SPEC/">
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/NRP_REGISTRY_SETUP/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Corpus Descriptive Analysis Specification - Model Foundry Documentation</title>
+        <title>NRP Container Registry Setup for Corpus Analysis - Model Foundry Documentation</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#corpus-descriptive-analysis-specification" class="md-skip">
+        <a href="#nrp-container-registry-setup-for-corpus-analysis" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Corpus Descriptive Analysis Specification
+              NRP Container Registry Setup for Corpus Analysis
             
           </span>
         </div>
@@ -1434,22 +1434,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-1-immediately-feasible-standard-nlp-pipeline" class="md-nav__link">
+  <a href="#step-by-step-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 1: Immediately Feasible (Standard NLP Pipeline)
+        Step-by-Step Setup
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 1: Immediately Feasible (Standard NLP Pipeline)">
+    <nav class="md-nav" aria-label="Step-by-Step Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-overt-pronoun-inventory" class="md-nav__link">
+  <a href="#1-create-a-gitlab-account" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Overt Pronoun Inventory
+        1. Create a GitLab Account
       
     </span>
   </a>
@@ -1457,10 +1457,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-expletives" class="md-nav__link">
+  <a href="#2-create-or-join-the-gitlab-project" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 Expletives
+        2. Create or Join the GitLab Project
       
     </span>
   </a>
@@ -1468,10 +1468,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-verb-finiteness" class="md-nav__link">
+  <a href="#3-log-in-to-the-container-registry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Verb Finiteness
+        3. Log In to the Container Registry
       
     </span>
   </a>
@@ -1479,10 +1479,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#14-clause-structure-dependency-based" class="md-nav__link">
+  <a href="#4-build-the-docker-image" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.4 Clause Structure (Dependency-Based)
+        4. Build the Docker Image
       
     </span>
   </a>
@@ -1490,10 +1490,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#15-wh-questions" class="md-nav__link">
+  <a href="#5-push-to-the-registry" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.5 Wh-Questions
+        5. Push to the Registry
       
     </span>
   </a>
@@ -1501,10 +1501,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#16-relative-clauses" class="md-nav__link">
+  <a href="#6-if-private-repo-create-a-kubernetes-pull-secret" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.6 Relative Clauses
+        6. (If Private Repo) Create a Kubernetes Pull Secret
       
     </span>
   </a>
@@ -1512,104 +1512,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#17-negation" class="md-nav__link">
+  <a href="#7-deploy-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.7 Negation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#18-that-trace-environments" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.8 That-Trace Environments
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1.8 That-Trace Environments">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-identify-complement-clauses-under-bridge-verbs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Identify complement clauses under bridge verbs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-classify-complementizer-presence" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Classify complementizer presence
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-classify-the-subject-status-of-the-embedded-clause" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Classify the subject status of the embedded clause
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-identify-extraction-contexts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Identify extraction contexts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-5-cross-tabulate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Cross-tabulate
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Limitations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#19-genre-analysis-babylm" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.9 Genre Analysis (BabyLM)
+        7. Deploy Jobs
       
     </span>
   </a>
@@ -1622,34 +1528,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-2-pronoun-recovery-model" class="md-nav__link">
+  <a href="#cicd-alternative-build-on-push-with-gitlab-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 2: Pronoun Recovery Model
+        CI/CD Alternative: Build on Push with GitLab CI
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Phase 2: Pronoun Recovery Model">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-architecture-two-stage-pipeline" class="md-nav__link">
+  <a href="#registry-login-failures" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 Architecture: Two-Stage Pipeline
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2.1 Architecture: Two-Stage Pipeline">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stage-1-detection-and-feature-classification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stage 1: Detection and Feature Classification
+        Registry Login Failures
       
     </span>
   </a>
@@ -1657,38 +1562,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stage-2-lexical-realization-and-insertion" class="md-nav__link">
+  <a href="#image-pull-errors-in-kubernetes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Stage 2: Lexical Realization and Insertion
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-training-data-construction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.2 Training Data Construction
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2.2 Training Data Construction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-synthetic-gold-data-via-pronoun-dropping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Synthetic gold data via pronoun dropping
+        Image Pull Errors in Kubernetes
       
     </span>
   </a>
@@ -1696,59 +1573,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-manual-annotation-seed-set" class="md-nav__link">
+  <a href="#push-permission-denied" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Manual annotation seed set
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-llm-scaled-annotation-via-deepseek" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: LLM-scaled annotation via DeepSeek
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-5-model-training" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Model training
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-descriptive-analysis-enabled-by-recovery" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.3 Descriptive Analysis (Enabled by Recovery)
+        Push Permission Denied
       
     </span>
   </a>
@@ -1761,22 +1589,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementation-notes" class="md-nav__link">
+  <a href="#gitlab-container-registry-metadata-database-errors-admin-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementation Notes
+        GitLab Container Registry Metadata Database Errors (Admin Reference)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Implementation Notes">
+    <nav class="md-nav" aria-label="GitLab Container Registry Metadata Database Errors (Admin Reference)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tools" class="md-nav__link">
+  <a href="#error-cannot-import-all-repositories-while-tags-table-has-entries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tools
+        Error: Cannot import all repositories while tags table has entries
       
     </span>
   </a>
@@ -1784,10 +1612,65 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#output-format" class="md-nav__link">
+  <a href="#error-database-in-use-lockfile-exists" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Output Format
+        Error: database-in-use lockfile exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-accessdenied-aws-s3-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: AccessDenied (AWS S3 backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-registry-filesystem-metadata-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: registry filesystem metadata in use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-registry-metadata-database-in-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: registry metadata database in use
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-permission-denied-for-schema-public-sqlstate-42501" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error: permission denied for schema public (SQLSTATE 42501)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-usage-not-decreasing-after-tag-deletion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage usage not decreasing after tag deletion
       
     </span>
   </a>
@@ -1796,17 +1679,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status
-      
-    </span>
-  </a>
   
 </li>
       
@@ -1830,263 +1702,150 @@
   
 
 
-<h1 id="corpus-descriptive-analysis-specification">Corpus Descriptive Analysis Specification<a class="headerlink" href="#corpus-descriptive-analysis-specification" title="Permanent link">&para;</a></h1>
+<h1 id="nrp-container-registry-setup-for-corpus-analysis">NRP Container Registry Setup for Corpus Analysis<a class="headerlink" href="#nrp-container-registry-setup-for-corpus-analysis" title="Permanent link">&para;</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Parallel descriptive analysis of English (BabyLM) and Italian (bebe-lm) corpora to characterize input distributions relevant to null-subject acquisition.</p>
+<p>The corpus analysis pipeline runs as Kubernetes Jobs on NRP/Nautilus, pulling Docker
+images from the NRP-hosted GitLab Container Registry at <code>gitlab-registry.nrp-nautilus.io</code>.</p>
+<p><strong>Registry image path:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest
+</code></pre></div></p>
 <hr />
-<h2 id="phase-1-immediately-feasible-standard-nlp-pipeline">Phase 1: Immediately Feasible (Standard NLP Pipeline)<a class="headerlink" href="#phase-1-immediately-feasible-standard-nlp-pipeline" title="Permanent link">&para;</a></h2>
-<p>These analyses use spaCy dependency parsing, POS tagging, and morphological features.</p>
-<h3 id="11-overt-pronoun-inventory">1.1 Overt Pronoun Inventory<a class="headerlink" href="#11-overt-pronoun-inventory" title="Permanent link">&para;</a></h3>
-<p><strong>Subject pronouns</strong>
-- English: I, you, he, she, it, we, they
-- Italian: io, tu, lui/lei, noi, voi, loro
-- UD features: <code>dep=nsubj</code>, <code>pos=PRON</code></p>
-<p><strong>Object pronouns</strong>
-- English: me, you, him, her, it, us, them
-- Italian: mi, ti, lo/la, ci, vi, li/le (clitics)
-- UD features: <code>dep=obj/iobj</code>, <code>pos=PRON</code></p>
-<p><strong>Person breakdown</strong>
-- Categories: 1sg, 2sg, 3sg, 1pl, 2pl, 3pl
-- UD features: <code>Person</code>, <code>Number</code> feats</p>
-<p><strong>Case marking</strong></p>
-<ul>
-<li>English: nom/acc distinction</li>
-<li>Italian: less morphological case</li>
-<li>UD features: <code>Case</code> feat</li>
-</ul>
-<p><strong>Output:</strong> Frequency tables by person/number/case/function; proportions relative to all tokens and all pronouns.</p>
-<h3 id="12-expletives">1.2 Expletives<a class="headerlink" href="#12-expletives" title="Permanent link">&para;</a></h3>
-<p><strong>Expletive subjects</strong>
-- English: it, there with <code>dep=expl</code>
-- Italian: null — count verbs that would take expletives</p>
-<p><strong>By verb class</strong>
-- Weather verbs, raising verbs, existentials (both languages)</p>
-<p><strong>Output:</strong> Expletive counts; verb lemmas that appear with expletives.</p>
-<h3 id="13-verb-finiteness">1.3 Verb Finiteness<a class="headerlink" href="#13-verb-finiteness" title="Permanent link">&para;</a></h3>
-<p><strong>Finite verbs:</strong> <code>VerbForm=Fin</code></p>
-<p><strong>Infinitival verbs:</strong> <code>VerbForm=Inf</code></p>
-<p><strong>By clause position:</strong> <code>dep=ROOT</code> vs <code>dep=xcomp/ccomp/advcl/acl</code></p>
-<p><strong>Output:</strong> Finite/infinitival counts; cross-tabulation with clause type.</p>
-<h3 id="14-clause-structure-dependency-based">1.4 Clause Structure (Dependency-Based)<a class="headerlink" href="#14-clause-structure-dependency-based" title="Permanent link">&para;</a></h3>
-<p><strong>Root finite verbs</strong> — <code>dep=ROOT</code> + <code>VerbForm=Fin</code></p>
-<ul>
-<li>with overt subject: has <code>nsubj</code> or <code>nsubj:pass</code> child</li>
-<li>with expletive: has <code>expl</code> child</li>
-<li>without subject: no subject dependent (candidate null-subject) (you don't need to reconstruct to know whether the subject exists)</li>
-</ul>
-<p><strong>Subordinate finite clauses</strong> — <code>dep=ccomp/advcl/acl:relcl</code> + <code>VerbForm=Fin</code></p>
-<ul>
-<li>same subject presence breakdown</li>
-</ul>
-<p><strong>Infinitival complements</strong> — <code>dep=xcomp</code> + <code>VerbForm=Inf</code></p>
-<ul>
-<li>control vs raising: classified by matrix verb lemma</li>
-</ul>
-<p><strong>Output:</strong> Counts and proportions for each cell; cross-tabulation.</p>
-<h3 id="15-wh-questions">1.5 Wh-Questions<a class="headerlink" href="#15-wh-questions" title="Permanent link">&para;</a></h3>
-<p><strong>Subject wh-questions:</strong> wh-word is <code>nsubj</code> of root verb</p>
-<p><strong>Object wh-questions:</strong> wh-word is <code>obj</code> of root verb</p>
-<p><strong>Embedded questions:</strong> <code>dep=ccomp</code> with wh-word</p>
-<p><strong>That/che presence:</strong> complementizer in embedded wh-clause</p>
-<p><strong>Detection:</strong> <code>POS=PRON</code> or <code>POS=ADV</code> with <code>PronType=Int</code> or lemma in {who, what, which, where, when, why, how} / {chi, che, cosa, quale, dove, quando, perché, come}.</p>
-<p><strong>Output:</strong> Subject/object extraction counts; that-trace environment frequency.</p>
-<h3 id="16-relative-clauses">1.6 Relative Clauses<a class="headerlink" href="#16-relative-clauses" title="Permanent link">&para;</a></h3>
-<p><strong>Subject relatives:</strong> relativizer is <code>nsubj</code> in <code>acl:relcl</code></p>
-<p><strong>Object relatives:</strong> relativizer is <code>obj</code> in <code>acl:relcl</code></p>
-<p><strong>Resumptive pronouns:</strong> pronoun coreferent with head in relative clause</p>
-<p><strong>Output:</strong> Subject/object relative counts; resumptive rate (if detectable).</p>
-<h3 id="17-negation">1.7 Negation<a class="headerlink" href="#17-negation" title="Permanent link">&para;</a></h3>
-<p><strong>Negated clauses:</strong> has <code>advmod</code> or <code>dep</code> with <code>Polarity=Neg</code></p>
-<p><strong>Negation position:</strong> token index relative to finite verb</p>
-<p><strong>Subject realization:</strong> cross-tab negated × subject presence</p>
-<p><strong>Output:</strong> Negation frequency; positional distribution; subject realization in negated clauses.</p>
-<h3 id="18-that-trace-environments">1.8 That-Trace Environments<a class="headerlink" href="#18-that-trace-environments" title="Permanent link">&para;</a></h3>
-<p>The that-trace effect is a constraint on subject extraction across an overt complementizer. In English, extracting a subject from a finite complement clause is grammatical only when "that" is absent: "Who do you think (*that) will win?" In Italian, no such restriction holds: "Chi pensi che vincerà?" is grammatical. This asymmetry is one of the phenomena that clusters with the null-subject parameter, making it a key test for distal effects (H5).</p>
-<p>Naturalistic corpora will not contain that-trace <em>violations</em> (they are ungrammatical in English). Instead, we characterize the <em>environments</em> in which the constraint is relevant — that is, the distribution of complement clauses, complementizer presence, and extraction type that together define the learner's exposure to that-trace-relevant contexts.</p>
-<h4 id="step-1-identify-complement-clauses-under-bridge-verbs">Step 1: Identify complement clauses under bridge verbs<a class="headerlink" href="#step-1-identify-complement-clauses-under-bridge-verbs" title="Permanent link">&para;</a></h4>
-<p>Find all finite clauses with <code>dep=ccomp</code> whose matrix verb is a bridge verb — a verb that permits extraction from its complement. Bridge verbs are identified by lemma from a curated list.</p>
-<p><strong>English bridge verbs:</strong> think, believe, say, know, assume, expect, hope, suppose, claim, report, imagine, feel, suspect, guess, figure, reckon, suggest, declare, announce, predict</p>
-<p><strong>Italian bridge verbs:</strong> pensare, credere, dire, sapere, supporre, sperare, immaginare, sentire, ritenere, affermare, dichiarare, sostenere, annunciare, prevedere</p>
-<p>These lists are not exhaustive but cover the high-frequency cases. They can be refined empirically: any verb that appears with <code>ccomp</code> and a fronted wh-word in the corpus is a candidate bridge verb.</p>
-<h4 id="step-2-classify-complementizer-presence">Step 2: Classify complementizer presence<a class="headerlink" href="#step-2-classify-complementizer-presence" title="Permanent link">&para;</a></h4>
-<p>For each <code>ccomp</code> clause under a bridge verb, check whether the embedded verb has a <code>mark</code> dependent with lemma "that" (English) or "che" (Italian). This yields two conditions:</p>
-<ul>
-<li><strong>+Comp:</strong> Complementizer present ("I think <em>that</em> he will win" / "Penso <em>che</em> vincerà")</li>
-<li><strong>-Comp:</strong> Complementizer absent ("I think he will win" / "Penso vincerà")</li>
-</ul>
-<p>The rate of optional "that"/"che" is itself informative: English speakers drop "that" frequently, and this optionality is what creates the learning environment for the that-trace constraint.</p>
-<h4 id="step-3-classify-the-subject-status-of-the-embedded-clause">Step 3: Classify the subject status of the embedded clause<a class="headerlink" href="#step-3-classify-the-subject-status-of-the-embedded-clause" title="Permanent link">&para;</a></h4>
-<p>For each <code>ccomp</code> clause, check the subject of the embedded verb:</p>
-<ul>
-<li><strong>Overt lexical subject:</strong> has <code>nsubj</code> dependent that is a noun/proper noun</li>
-<li><strong>Overt pronominal subject:</strong> has <code>nsubj</code> dependent that is a pronoun</li>
-<li><strong>No overt subject:</strong> no <code>nsubj</code> dependent — could indicate extraction, null subject (Italian), or imperative/fragment</li>
-</ul>
-<h4 id="step-4-identify-extraction-contexts">Step 4: Identify extraction contexts<a class="headerlink" href="#step-4-identify-extraction-contexts" title="Permanent link">&para;</a></h4>
-<p>Extraction from a complement clause produces a sentence where a wh-word in the matrix clause is semantically the subject or object of the embedded verb. In UD annotations, long-distance dependencies are not always reliably represented, so we use a heuristic:</p>
-<p><strong>Subject extraction heuristic:</strong>
-- The matrix clause contains a wh-word (lemma in {who, what, which} / {chi, che, cosa, quale})
-- The wh-word is <code>nsubj</code> of the matrix verb OR is <code>ROOT</code> of the sentence
-- The embedded <code>ccomp</code> verb has no <code>nsubj</code> dependent
-- This pattern identifies sentences like "Who do you think __ will win?"</p>
-<p><strong>Object extraction heuristic:</strong>
-- The matrix clause contains a wh-word
-- The embedded <code>ccomp</code> verb has an <code>nsubj</code> dependent but is missing an expected <code>obj</code>
-- OR the wh-word is parsed as <code>obj</code> of the embedded verb (long-distance parse)
-- This pattern identifies sentences like "What do you think the team will win __?"</p>
-<p>These heuristics will produce false positives (not every missing subject is extraction) and false negatives (parsers may mishandle long-distance dependencies). This is acceptable for corpus characterization — we are estimating distributions, not annotating individual sentences.</p>
-<h4 id="step-5-cross-tabulate">Step 5: Cross-tabulate<a class="headerlink" href="#step-5-cross-tabulate" title="Permanent link">&para;</a></h4>
-<p>The key cross-tabulation is <strong>complementizer presence × extraction type</strong>:</p>
-<ul>
-<li>+Comp, subject extraction — the that-trace violation environment (should be near-zero in English, attested in Italian)</li>
-<li>+Comp, object extraction — grammatical in both languages</li>
-<li>+Comp, no extraction (declarative complement) — grammatical in both languages</li>
-<li>-Comp, subject extraction — grammatical in both languages</li>
-<li>-Comp, object extraction — grammatical in both languages</li>
-<li>-Comp, no extraction (declarative complement) — grammatical in both languages</li>
-</ul>
-<p><strong>Output:</strong>
-- Bridge verb frequency (by lemma)
-- Complementizer rate in complement clauses (overall and by bridge verb)
-- Extraction type distribution (subject / object / none)
-- Cross-tabulation of complementizer × extraction type × language
-- Per-genre breakdown (for BabyLM)</p>
-<h4 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h4>
-<ul>
-<li>spaCy does not reliably annotate long-distance dependencies, so extraction detection is heuristic-based</li>
-<li>The distinction between a missing subject due to extraction vs. null subject vs. parse error requires judgment; the heuristics above will be validated against a manually annotated sample</li>
-<li>Some bridge verbs also take interrogative complements ("I wonder who will win") which are <code>ccomp</code> but not extraction from a declarative — these should be filtered by checking whether the wh-word is a dependent of the embedded verb rather than the matrix verb</li>
-</ul>
-<h3 id="19-genre-analysis-babylm">1.9 Genre Analysis (BabyLM)<a class="headerlink" href="#19-genre-analysis-babylm" title="Permanent link">&para;</a></h3>
-<p><strong>Sources and expected registers:</strong>
-- CHILDES — Child-directed speech
-- BNC — Mixed written/spoken British
-- Gutenberg — Literary prose
-- OpenSubtitles — Informal dialogue
-- Simple Wikipedia — Expository
-- Switchboard — Conversational</p>
-<p><strong>Output:</strong> All above measures broken down by source.</p>
+<h2 id="step-by-step-setup">Step-by-Step Setup<a class="headerlink" href="#step-by-step-setup" title="Permanent link">&para;</a></h2>
+<h3 id="1-create-a-gitlab-account">1. Create a GitLab Account<a class="headerlink" href="#1-create-a-gitlab-account" title="Permanent link">&para;</a></h3>
+<p>Register at https://gitlab.nrp-nautilus.io using your institutional credentials
+(CILogon federated authentication).</p>
+<h3 id="2-create-or-join-the-gitlab-project">2. Create or Join the GitLab Project<a class="headerlink" href="#2-create-or-join-the-gitlab-project" title="Permanent link">&para;</a></h3>
+<p>Either create a new project or get added to the existing <code>multi-model-foundry</code>
+group at <code>https://gitlab.nrp-nautilus.io/multi-model-foundry</code>.</p>
+<h3 id="3-log-in-to-the-container-registry">3. Log In to the Container Registry<a class="headerlink" href="#3-log-in-to-the-container-registry" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>login<span class="w"> </span>gitlab-registry.nrp-nautilus.io
+</code></pre></div>
+<p>Use your GitLab username and a <strong>personal access token</strong> (not your password).
+To create a token: GitLab &gt; User Settings &gt; Access Tokens &gt; create one with
+<code>read_registry</code> and <code>write_registry</code> scopes.</p>
+<h3 id="4-build-the-docker-image">4. Build the Docker Image<a class="headerlink" href="#4-build-the-docker-image" title="Permanent link">&para;</a></h3>
+<p>From the project root:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>-f<span class="w"> </span>k8s/Dockerfile<span class="w"> </span>.
+</code></pre></div>
+<h3 id="5-push-to-the-registry">5. Push to the Registry<a class="headerlink" href="#5-push-to-the-registry" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>push<span class="w"> </span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest
+</code></pre></div>
+<h3 id="6-if-private-repo-create-a-kubernetes-pull-secret">6. (If Private Repo) Create a Kubernetes Pull Secret<a class="headerlink" href="#6-if-private-repo-create-a-kubernetes-pull-secret" title="Permanent link">&para;</a></h3>
+<p>If the GitLab project is <strong>private</strong>, Kubernetes needs credentials to pull the image.</p>
+<p>a. In GitLab, go to <strong>Settings &gt; Repository &gt; Deploy Tokens</strong> and create a
+   deploy token with <code>read_registry</code> scope.</p>
+<p>b. Create a Kubernetes secret:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;<span class="w"> </span>secret<span class="w"> </span>docker-registry<span class="w"> </span>regcred<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--docker-server<span class="o">=</span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--docker-username<span class="o">=</span>gitlab+deploy-token-XXX<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--docker-password<span class="o">=</span>&lt;token-value&gt;
+</code></pre></div>
+<p>c. Add <code>imagePullSecrets</code> to your Job specs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">imagePullSecrets</span><span class="p">:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regcred</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">analyzer</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest</span>
+</code></pre></div>
+<h3 id="7-deploy-jobs">7. Deploy Jobs<a class="headerlink" href="#7-deploy-jobs" title="Permanent link">&para;</a></h3>
+<p>See <code>k8s/README.md</code> for the full deployment workflow (PVC creation, data upload,
+job submission, output retrieval).</p>
 <hr />
-<h2 id="phase-2-pronoun-recovery-model">Phase 2: Pronoun Recovery Model<a class="headerlink" href="#phase-2-pronoun-recovery-model" title="Permanent link">&para;</a></h2>
-<p>These analyses require reconstructing full-pronoun text — inserting overt subject pronouns where they have been dropped. This serves two purposes: (1) enabling the null-subject descriptive analysis, and (2) producing pronoun-inserted text for corpus ablation experiments (e.g., inserting overt pronouns into Italian to test H2).</p>
-<p>Separate models are trained for English and Italian. The task is fundamentally different in each language: Italian has systematic pro-drop recoverable from verbal morphology; English has rare, context-specific drops (diary drop, imperatives, topic continuity) where morphology is impoverished.</p>
-<h3 id="21-architecture-two-stage-pipeline">2.1 Architecture: Two-Stage Pipeline<a class="headerlink" href="#21-architecture-two-stage-pipeline" title="Permanent link">&para;</a></h3>
-<h4 id="stage-1-detection-and-feature-classification">Stage 1: Detection and Feature Classification<a class="headerlink" href="#stage-1-detection-and-feature-classification" title="Permanent link">&para;</a></h4>
-<p>A sequence labeling model that operates over verb tokens and predicts a structured label for each finite verb lacking an overt subject.</p>
-<p><strong>Label set:</strong>
-- <code>NONE</code> — no pronoun is missing (verb has an overt subject, or is non-finite with controlled PRO)
-- <code>PRO.1sg</code> / <code>PRO.2sg</code> / <code>PRO.3sg</code> / <code>PRO.1pl</code> / <code>PRO.2pl</code> / <code>PRO.3pl</code> — a subject pronoun with these features was dropped
-- <code>IMP</code> — imperative (understood 2nd person, not a dropped pronoun)
-- <code>CONJ</code> — conjunction reduction (shared subject with prior conjunct, not a dropped pronoun)</p>
-<p>The distinction between <code>PRO.*</code>, <code>IMP</code>, and <code>CONJ</code> matters for the descriptive analysis: only <code>PRO.*</code> labels count as true null subjects.</p>
-<p><strong>Why classification over seq2seq for Stage 1:</strong> The label set is small and closed. The model doesn't need to generate text — it needs to make a decision at each verb. This is a simpler, more constrained task with less room for hallucination. It also directly outputs the features needed for descriptive analysis (person/number counts by context).</p>
-<h4 id="stage-2-lexical-realization-and-insertion">Stage 2: Lexical Realization and Insertion<a class="headerlink" href="#stage-2-lexical-realization-and-insertion" title="Permanent link">&para;</a></h4>
-<p>Given the feature labels from Stage 1, reconstruct the full-pronoun text by inserting the appropriate lexical pronoun at the correct position.</p>
-<p><strong>Feature-to-pronoun mapping (deterministic except 3sg):</strong>
-- 1sg → English: "I" / Italian: "io"
-- 2sg → English: "you" / Italian: "tu"
-- 3sg → English: "he"/"she"/"it" / Italian: "lui"/"lei" (requires gender resolution)
-- 1pl → English: "we" / Italian: "noi"
-- 2pl → English: "you" / Italian: "voi"
-- 3pl → English: "they" / Italian: "loro"</p>
-<p><strong>Gender resolution for 3sg:</strong> The only case requiring context beyond morphology. Resolved by:
-- Dependency parse: look for a coreferent NP in the prior clause or sentence; use its grammatical gender (Italian) or semantic gender (English)
-- Fallback: Italian verb agreement on past participles encodes gender ("è andat<strong>a</strong>" → feminine); English defaults to "they" if ambiguous
-- For <code>IMP</code> and <code>CONJ</code> labels: no insertion (these are not dropped pronouns)</p>
-<p><strong>Insertion position:</strong>
-- English: immediately before the finite verb
-- Italian: immediately before the finite verb (canonical preverbal position; postverbal overt subjects are marked but the recovery task produces the unmarked order)</p>
-<h3 id="22-training-data-construction">2.2 Training Data Construction<a class="headerlink" href="#22-training-data-construction" title="Permanent link">&para;</a></h3>
-<h4 id="step-1-synthetic-gold-data-via-pronoun-dropping">Step 1: Synthetic gold data via pronoun dropping<a class="headerlink" href="#step-1-synthetic-gold-data-via-pronoun-dropping" title="Permanent link">&para;</a></h4>
-<p>Take sentences from the corpus that DO have overt subject pronouns. Programmatically drop them using the existing <code>remove_subject_pronominals.py</code> pipeline. This creates aligned pairs:</p>
-<ul>
-<li>Input: "Parla italiano molto bene."</li>
-<li>Target: "Lei parla italiano molto bene."</li>
-</ul>
-<p>This provides unlimited training data with perfect labels, since we know exactly which pronoun was dropped and what its features are.</p>
-<p><strong>Advantage:</strong> No annotation cost, perfect alignment, unlimited scale.</p>
-<p><strong>Risk:</strong> Domain mismatch — naturally dropped subjects may occur in different contexts than artificially dropped ones. Italian speakers drop subjects in nearly all contexts, so the mismatch is small. English has fewer natural drops, so the artificial data covers the space well.</p>
-<h4 id="step-2-manual-annotation-seed-set">Step 2: Manual annotation seed set<a class="headerlink" href="#step-2-manual-annotation-seed-set" title="Permanent link">&para;</a></h4>
-<p>Sample 1000 sequences from the corpus at the expected batch size. From these, select 10-20 sequences that contain naturally occurring null subjects (especially for Italian). A fluent speaker manually annotates these by inserting the dropped pronouns with feature labels.</p>
-<p><strong>Annotation format:</strong>
-- Original: "Parla italiano. Vuole imparare il francese."
-- Annotated: "[PRO.3sg:lei] Parla italiano. [PRO.3sg:lei] Vuole imparare il francese."</p>
-<p>This captures both the feature tag and the lexical realization, providing the gold standard for the task.</p>
-<h4 id="step-3-llm-scaled-annotation-via-deepseek">Step 3: LLM-scaled annotation via DeepSeek<a class="headerlink" href="#step-3-llm-scaled-annotation-via-deepseek" title="Permanent link">&para;</a></h4>
-<p>Use the 10-20 manually annotated sequences as few-shot examples to prompt DeepSeek (or comparable frontier model with strong Italian performance). Have DeepSeek annotate the remaining ~980 sequences from the sample.</p>
-<p><strong>Prompt structure:</strong>
-- System: "You are a linguist annotating null subjects. For each finite verb that lacks an overt subject pronoun, insert the dropped pronoun in brackets with its person/number features."
-- Few-shot: the 10-20 manually annotated examples
-- Input: unannotated sequence
-- Output: annotated sequence with <code>[PRO.Xsg/pl:lexical_form]</code> markers</p>
-<h4 id="step-4-validation">Step 4: Validation<a class="headerlink" href="#step-4-validation" title="Permanent link">&para;</a></h4>
-<p>Manually review a sample of 50-100 DeepSeek-annotated sentences to estimate:
-- Precision: what fraction of inserted pronouns are correct?
-- Recall: what fraction of true null subjects were identified?
-- Feature accuracy: when a pronoun is correctly identified, is the person/number/gender correct?</p>
-<p>Target: 90%+ on all three metrics before proceeding to model training.</p>
-<h4 id="step-5-model-training">Step 5: Model training<a class="headerlink" href="#step-5-model-training" title="Permanent link">&para;</a></h4>
-<p>Combine the synthetic data (Step 1) with the validated LLM-annotated data (Steps 3-4) to train the pronoun recovery model.</p>
-<p><strong>Training strategy:</strong>
-- Pre-train on synthetic data (abundant, clean, but potentially mismatched distribution)
-- Fine-tune on LLM-annotated data (smaller, closer to natural null-subject distribution)
-- Evaluate on held-out manually annotated examples</p>
-<p><strong>Model candidates:</strong>
-- Encoder-only + classification head (e.g., fine-tuned BERT/DeBERTa) — natural fit for Stage 1 (sequence labeling)
-- Seq2seq (e.g., T5/mT5) — can handle both stages end-to-end if preferred, outputting full reconstructed text
-- Decision to be made based on pilot experiments</p>
-<h3 id="23-descriptive-analysis-enabled-by-recovery">2.3 Descriptive Analysis (Enabled by Recovery)<a class="headerlink" href="#23-descriptive-analysis-enabled-by-recovery" title="Permanent link">&para;</a></h3>
-<p>Once the pronoun recovery model is validated, the following analyses become possible:</p>
-<p><strong>Null subject identification</strong></p>
-<p>A finite verb without an <code>nsubj</code> dependent could be:
-- True null subject (pro-drop) — labeled <code>PRO.*</code> by the recovery model
-- Imperative — labeled <code>IMP</code>
-- Conjunction reduction — labeled <code>CONJ</code>
-- Parse error — detectable by comparing recovery model output with dependency parse</p>
-<p><strong>Null subject contexts</strong></p>
-<ul>
-<li>Diary drop: <code>PRO.1sg</code> at utterance-initial position</li>
-<li>Imperatives: <code>IMP</code> label</li>
-<li>2nd person questions: <code>PRO.2sg</code> or <code>PRO.2pl</code> in interrogative context</li>
-<li>Topic continuity: <code>CONJ</code> label, or <code>PRO.*</code> matching features of prior subject</li>
-<li>Postverbal subjects: cases where the dependency parse shows a postverbal <code>nsubj</code> — these are NOT null subjects but have non-canonical word order (primarily Italian)</li>
-</ul>
-<p><strong>Null subject rate by context</strong>
-- Null rate = <code>PRO.*</code> labels / (<code>PRO.*</code> + overt pronouns) per context type
-- Breakdown by person/number
-- Comparison English vs Italian
-- Per-genre breakdown (for BabyLM)</p>
-<p><strong>Reconstructed text uses</strong>
-- Input to ablation experiments: insert overt pronouns into Italian corpus (H2)
-- Counterfactual corpora: what would English look like with systematic pro-drop?
-- Validation: compare reconstructed text against original overt-subject sentences</p>
+<h2 id="cicd-alternative-build-on-push-with-gitlab-ci">CI/CD Alternative: Build on Push with GitLab CI<a class="headerlink" href="#cicd-alternative-build-on-push-with-gitlab-ci" title="Permanent link">&para;</a></h2>
+<p>Instead of building locally, you can automate builds using GitLab CI.
+Add a <code>.gitlab-ci.yml</code> to the GitLab project:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/osscontainertools/kaniko:debug</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nt">stages</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build-and-push</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nt">build-and-push-job</span><span class="p">:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build-and-push</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">variables</span><span class="p">:</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">GODEBUG</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http2client=0&quot;</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nt">script</span><span class="p">:</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo &quot;{\&quot;auths\&quot;:{\&quot;$CI_REGISTRY\&quot;:{\&quot;username\&quot;:\&quot;$CI_REGISTRY_USER\&quot;,\&quot;password\&quot;:\&quot;$CI_REGISTRY_PASSWORD\&quot;}}}&quot; &gt; /kaniko/.docker/config.json</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/kaniko/executor --cache=true --push-retry=10 --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/k8s/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --destination $CI_REGISTRY_IMAGE:latest</span>
+</code></pre></div>
+<p>The <code>GODEBUG="http2client=0"</code> variable is required to work around a known
+Kaniko speed issue with GitLab's registry.</p>
 <hr />
-<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
-<h3 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">&para;</a></h3>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="registry-login-failures">Registry Login Failures<a class="headerlink" href="#registry-login-failures" title="Permanent link">&para;</a></h3>
 <ul>
-<li>spaCy with <code>en_core_web_trf</code> / <code>it_core_news_lg</code> (or trf if available)</li>
-<li>Existing preprocessing infrastructure in <code>preprocessing/</code></li>
-<li>DeepSeek API for scaled annotation</li>
-<li>HuggingFace Transformers for model training (Stage 1 classifier or seq2seq)</li>
+<li>Ensure you're using a <strong>personal access token</strong>, not your password</li>
+<li>Token must have <code>read_registry</code> and <code>write_registry</code> scopes</li>
+<li>Check the registry URL is exactly <code>gitlab-registry.nrp-nautilus.io</code></li>
 </ul>
-<h3 id="output-format">Output Format<a class="headerlink" href="#output-format" title="Permanent link">&para;</a></h3>
+<h3 id="image-pull-errors-in-kubernetes">Image Pull Errors in Kubernetes<a class="headerlink" href="#image-pull-errors-in-kubernetes" title="Permanent link">&para;</a></h3>
 <ul>
-<li>JSON/CSV frequency tables</li>
-<li>Aggregated statistics</li>
-<li>Per-sentence annotations for downstream analysis</li>
-<li>Reconstructed full-pronoun text files (parallel to original corpus)</li>
+<li><strong>ErrImagePull / ImagePullBackOff</strong>: Usually means missing <code>imagePullSecrets</code>
+  for a private repo, or the image tag doesn't exist</li>
+<li>Verify the image exists: <code>docker pull &lt;image-url&gt;</code> from your local machine</li>
+<li>If the project is public, no pull secret is needed</li>
+</ul>
+<h3 id="push-permission-denied">Push Permission Denied<a class="headerlink" href="#push-permission-denied" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ensure your GitLab account has at least <strong>Developer</strong> role in the project</li>
+<li>Re-authenticate: <code>docker logout gitlab-registry.nrp-nautilus.io &amp;&amp; docker login gitlab-registry.nrp-nautilus.io</code></li>
 </ul>
 <hr />
-<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] Phase 1 implementation</li>
-<li>[ ] Phase 2 Step 1: synthetic training data generation</li>
-<li>[ ] Phase 2 Step 2: manual annotation seed set</li>
-<li>[ ] Phase 2 Step 3: DeepSeek-scaled annotation</li>
-<li>[ ] Phase 2 Step 4: validation</li>
-<li>[ ] Phase 2 Step 5: model training</li>
-<li>[ ] Phase 2 descriptive analysis</li>
-</ul>
+<h2 id="gitlab-container-registry-metadata-database-errors-admin-reference">GitLab Container Registry Metadata Database Errors (Admin Reference)<a class="headerlink" href="#gitlab-container-registry-metadata-database-errors-admin-reference" title="Permanent link">&para;</a></h2>
+<p>The following errors apply to <strong>GitLab administrators</strong> managing the registry's
+internal metadata database. Regular users will not encounter these, but they
+are documented here for reference if coordinating with NRP support.</p>
+<h3 id="error-cannot-import-all-repositories-while-tags-table-has-entries">Error: Cannot import all repositories while tags table has entries<a class="headerlink" href="#error-cannot-import-all-repositories-while-tags-table-has-entries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>ERRO[0000] cannot import all repositories while the tags table has entries,
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>you must truncate the table manually before retrying
+</code></pre></div>
+<p><strong>Cause:</strong> Existing entries in the registry database <code>tags</code> table from a
+previous failed or interrupted import attempt.</p>
+<p><strong>Resolution (admin):</strong></p>
+<ol>
+<li>Disable the metadata database in <code>/etc/gitlab/gitlab.rb</code>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">registry</span><span class="o">[</span><span class="s1">&#39;database&#39;</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="s1">&#39;enabled&#39;</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kp">false</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
+</code></pre></div></li>
+<li>Connect to the registry PostgreSQL instance</li>
+<li>Truncate the tags table:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">TRUNCATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tags</span><span class="w"> </span><span class="k">RESTART</span><span class="w"> </span><span class="k">IDENTITY</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">;</span>
+</code></pre></div></li>
+<li>Re-run the import process</li>
+</ol>
+<h3 id="error-database-in-use-lockfile-exists">Error: database-in-use lockfile exists<a class="headerlink" href="#error-database-in-use-lockfile-exists" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>step two: import tags failed to import metadata: importing all repositories:
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>could not restore lockfiles: database-in-use lockfile exists
+</code></pre></div>
+<p><strong>Cause:</strong> A previous import completed step two and left a lock file.</p>
+<p><strong>Resolution (admin):</strong> Delete the lock file at
+<code>/path/to/rootdirectory/docker/registry/lockfiles/database-in-use</code>.
+Only do this if you are certain you need to re-import.</p>
+<h3 id="error-accessdenied-aws-s3-backend">Error: AccessDenied (AWS S3 backend)<a class="headerlink" href="#error-accessdenied-aws-s3-backend" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pre importing all repositories: AccessDenied: Access Denied
+</code></pre></div>
+<p><strong>Resolution (admin):</strong> Ensure the IAM user/role executing the import has
+the correct S3 permission scopes.</p>
+<h3 id="error-registry-filesystem-metadata-in-use">Error: registry filesystem metadata in use<a class="headerlink" href="#error-registry-filesystem-metadata-in-use" title="Permanent link">&para;</a></h3>
+<p>Registry won't start because the database is enabled in config but metadata
+hasn't been imported yet.</p>
+<p><strong>Resolution (admin):</strong> Run the metadata import before enabling the database.</p>
+<h3 id="error-registry-metadata-database-in-use">Error: registry metadata database in use<a class="headerlink" href="#error-registry-metadata-database-in-use" title="Permanent link">&para;</a></h3>
+<p>Registry won't start because metadata was imported but the database hasn't
+been enabled in config.</p>
+<p><strong>Resolution (admin):</strong> Set <code>registry['database'] = { 'enabled' =&gt; true }</code>.</p>
+<h3 id="error-permission-denied-for-schema-public-sqlstate-42501">Error: permission denied for schema public (SQLSTATE 42501)<a class="headerlink" href="#error-permission-denied-for-schema-public-sqlstate-42501" title="Permanent link">&para;</a></h3>
+<p>Occurs with PostgreSQL 15+ which removed default CREATE privileges on <code>public</code>.</p>
+<p><strong>Resolution (admin):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">ALTER</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="o">&lt;</span><span class="n">registry_database_name</span><span class="o">&gt;</span><span class="w"> </span><span class="k">OWNER</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">&lt;</span><span class="n">registry_user</span><span class="o">&gt;</span><span class="p">;</span>
+</code></pre></div></p>
+<h3 id="storage-usage-not-decreasing-after-tag-deletion">Storage usage not decreasing after tag deletion<a class="headerlink" href="#storage-usage-not-decreasing-after-tag-deletion" title="Permanent link">&para;</a></h3>
+<p>The online garbage collector has a 48-hour delay before deleting unreferenced
+layers. This prevents interference with in-progress image pushes.</p>
 
 
 

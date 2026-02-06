@@ -1,0 +1,2301 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/ABLATION_ENRICHMENT_IMPLEMENTATION/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Implementation Report: Ablation & Enrichment Procedures - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#implementation-report-ablation-enrichment-procedures" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Implementation Report: Ablation &amp; Enrichment Procedures
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../checkpoint_scheduling/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/USER_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#registered-ablation-inventory-after-this-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registered ablation inventory after this change
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-new-ablation-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. New Ablation Modules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. New Ablation Modules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-remove-expletive-sentences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Remove Expletive Sentences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 Remove Expletive Sentences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#english-remove_expletive_sentences_en" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        English (remove_expletive_sentences_en)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#italian-remove_expletive_sentences_it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Italian (remove_expletive_sentences_it)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-impoverish-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Impoverish Case
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Impoverish Case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shared-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#english-impoverish_case_en" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        English (impoverish_case_en)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#italian-impoverish_case_it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Italian (impoverish_case_it)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-enrich-verbal-morphology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Enrich Verbal Morphology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-italian-verb-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Italian Verb Constants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-validation-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Validation Protocol
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-archived-ablations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Archived Ablations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-updated-__init__py" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Updated __init__.py
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-experiment-configs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Experiment Configs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-file-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. File Manifest
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. File Manifest">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#created-12-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Created (12 files)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modified-2-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modified (2 files)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#moved-4-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Moved (4 files)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-known-limitations-and-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Known Limitations and Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="implementation-report-ablation-enrichment-procedures">Implementation Report: Ablation &amp; Enrichment Procedures<a class="headerlink" href="#implementation-report-ablation-enrichment-procedures" title="Permanent link">&para;</a></h1>
+<h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
+<p>This implementation adds the preregistered corpus manipulation procedures for the subject-drop acquisition experiments, covering both English and Italian. The work comprises three new ablation modules (6 registered ablation functions), a validation protocol script, 7 experiment configs, and the archiving of 4 superseded ablation modules. All new code follows the existing <code>AblationRegistry</code> pattern and is immediately usable with the <code>AblationPipeline</code> infrastructure.</p>
+<h3 id="registered-ablation-inventory-after-this-change">Registered ablation inventory after this change<a class="headerlink" href="#registered-ablation-inventory-after-this-change" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Registry name</th>
+<th>Module</th>
+<th>Language</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lemmatize_verbs</code></td>
+<td><code>lemmatize_verbs.py</code> (existing)</td>
+<td>Any (spaCy-agnostic)</td>
+</tr>
+<tr>
+<td><code>remove_expletive_sentences_en</code></td>
+<td><code>remove_expletive_sentences.py</code></td>
+<td>English</td>
+</tr>
+<tr>
+<td><code>remove_expletive_sentences_it</code></td>
+<td><code>remove_expletive_sentences.py</code></td>
+<td>Italian</td>
+</tr>
+<tr>
+<td><code>impoverish_case_en</code></td>
+<td><code>impoverish_case.py</code></td>
+<td>English</td>
+</tr>
+<tr>
+<td><code>impoverish_case_it</code></td>
+<td><code>impoverish_case.py</code></td>
+<td>Italian</td>
+</tr>
+<tr>
+<td><code>enrich_verbal_morphology</code></td>
+<td><code>enrich_verbal_morphology.py</code></td>
+<td>English</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-new-ablation-modules">2. New Ablation Modules<a class="headerlink" href="#2-new-ablation-modules" title="Permanent link">&para;</a></h2>
+<h3 id="21-remove-expletive-sentences">2.1 Remove Expletive Sentences<a class="headerlink" href="#21-remove-expletive-sentences" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <code>preprocessing/ablations/remove_expletive_sentences.py</code></p>
+<p><strong>Purpose:</strong> Remove entire lines containing expletive constructions, rather than individual expletive tokens (the approach used by the now-archived <code>remove_expletives.py</code>). This provides a cleaner ablation — the replacement pool in <code>base.py:_rebuild_to_target_size</code> backfills removed lines to maintain corpus size.</p>
+<p><strong>Interface:</strong> Returns <code>("", 1)</code> for lines to remove, <code>(doc.text_with_ws, 0)</code> for lines to keep.</p>
+<h4 id="english-remove_expletive_sentences_en">English (<code>remove_expletive_sentences_en</code>)<a class="headerlink" href="#english-remove_expletive_sentences_en" title="Permanent link">&para;</a></h4>
+<p>Detection: any token with <code>dep_ == "expl"</code>. In spaCy's UD annotation scheme for English, this primarily captures existential-<em>there</em> constructions ("There are three cats", "There exists a solution"). Weather-<em>it</em> and raising-<em>it</em> constructions ("It seems that...", "It is raining") are annotated as <code>nsubj</code> by spaCy rather than <code>expl</code>, so they are not caught by this filter — this is a known property of spaCy's English UD parser, not a code limitation.</p>
+<p>Implementation: a factory function <code>make_remove_expletive_sentences_en()</code> returns the closure, which is called at registration time and bound to the registry name <code>"remove_expletive_sentences_en"</code>.</p>
+<h4 id="italian-remove_expletive_sentences_it">Italian (<code>remove_expletive_sentences_it</code>)<a class="headerlink" href="#italian-remove_expletive_sentences_it" title="Permanent link">&para;</a></h4>
+<p>Italian has no overt expletive pronouns. Detection uses four heuristic categories, each implemented as a check over <code>VERB</code>/<code>AUX</code> tokens in the doc:</p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Detection logic</th>
+<th>Verb list source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Weather verbs</td>
+<td><code>tok.lemma_.lower() in WEATHER_VERBS_IT</code></td>
+<td><code>constants.py</code> (10 verbs)</td>
+</tr>
+<tr>
+<td>Existential <em>ci + essere</em></td>
+<td><code>tok.lemma_ == "essere"</code> with a child where <code>child.lower_ == "ci"</code> and <code>child.dep_ in ("expl", "advmod")</code></td>
+<td>hardcoded</td>
+</tr>
+<tr>
+<td>Impersonal raising</td>
+<td><code>tok.lemma_ in IMPERSONAL_VERBS_IT</code> with a clausal complement (<code>ccomp</code>/<code>xcomp</code>/<code>csubj</code>) and no <code>nsubj</code></td>
+<td><code>constants.py</code> (7 verbs)</td>
+</tr>
+<tr>
+<td>Impersonal necessity</td>
+<td><code>tok.lemma_ in NECESSITY_VERBS_IT</code> with no <code>nsubj</code></td>
+<td><code>constants.py</code> (4 verbs)</td>
+</tr>
+</tbody>
+</table>
+<p>If any category matches, the line is removed.</p>
+<p><strong>Validation:</strong> For each language, a validator is generated via <code>_make_validator(detect_fn)</code>. It re-parses the original line; if an expletive was detected, the ablated text must be empty; otherwise, it must match the original.</p>
+<hr />
+<h3 id="22-impoverish-case">2.2 Impoverish Case<a class="headerlink" href="#22-impoverish-case" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <code>preprocessing/ablations/impoverish_case.py</code></p>
+<p><strong>Purpose:</strong> Collapse all pronoun case forms to their nominative equivalent, removing case morphology evidence from the corpus.</p>
+<h4 id="shared-infrastructure">Shared infrastructure<a class="headerlink" href="#shared-infrastructure" title="Permanent link">&para;</a></h4>
+<p>Both languages share a core <code>_impoverish_case(doc, mapping, target_pos)</code> function that iterates over tokens, checks if <code>tok.lower_</code> appears in the mapping dict and <code>tok.pos_</code> is in the target POS set, and if so replaces the token with the nominative form. A <code>_match_capitalization(replacement, original)</code> helper preserves the original's capitalization pattern (ALL CAPS, Title Case, or lowercase).</p>
+<p>Identity mappings (e.g., Italian reflexive <code>"si" -&gt; "si"</code>) are detected and skipped to avoid inflating the replacement count.</p>
+<h4 id="english-impoverish_case_en">English (<code>impoverish_case_en</code>)<a class="headerlink" href="#english-impoverish_case_en" title="Permanent link">&para;</a></h4>
+<p>The <code>ENGLISH_CASE_TO_NOM</code> dict maps 26 non-nominative forms to their nominative equivalent:</p>
+<ul>
+<li><strong>1sg:</strong> me, my, mine, myself -&gt; i</li>
+<li><strong>2sg/pl:</strong> your, yours, yourself, yourselves -&gt; you</li>
+<li><strong>3sg.m:</strong> him, his, himself -&gt; he</li>
+<li><strong>3sg.f:</strong> her, hers, herself -&gt; she</li>
+<li><strong>3sg.n:</strong> its, itself -&gt; it</li>
+<li><strong>1pl:</strong> us, our, ours, ourselves -&gt; we</li>
+<li><strong>3pl:</strong> them, their, theirs, themselves -&gt; they</li>
+<li><strong>rel/interrog:</strong> whom, whose -&gt; who</li>
+</ul>
+<p>Target POS: <code>{"PRON", "DET"}</code> — spaCy tags possessive determiners (my, your, his, her, our, their) as <code>DET</code>.</p>
+<p><strong>Smoke test result:</strong> <code>"She gave him her book and they liked it."</code> -&gt; <code>"She gave he she book and they liked it."</code> (2 replacements: him-&gt;he, her-&gt;she). "She" is already nominative (not in the mapping). "they" and "it" are nominative. Correct.</p>
+<h4 id="italian-impoverish_case_it">Italian (<code>impoverish_case_it</code>)<a class="headerlink" href="#italian-impoverish_case_it" title="Permanent link">&para;</a></h4>
+<p>The <code>ITALIAN_CASE_TO_NOM</code> dict maps 31 non-nominative forms across three classes:</p>
+<ul>
+<li><strong>Strong obliques:</strong> me -&gt; io, te -&gt; tu</li>
+<li><strong>Clitics (direct object):</strong> mi -&gt; io, ti -&gt; tu, lo -&gt; lui, la -&gt; lei, ci -&gt; noi, vi -&gt; voi, li -&gt; loro, le -&gt; loro</li>
+<li><strong>Clitics (indirect object):</strong> gli -&gt; lui</li>
+<li><strong>Reflexive:</strong> si -&gt; si (identity, skipped)</li>
+<li><strong>Possessives (all gender/number forms):</strong> mio/mia/miei/mie -&gt; io, tuo/tua/tuoi/tue -&gt; tu, suo/sua/suoi/sue -&gt; lui, nostro/nostra/nostri/nostre -&gt; noi, vostro/vostra/vostri/vostre -&gt; voi</li>
+</ul>
+<p>"loro" (possessive) is already invariant and coincides with the nominative form, so it is not in the mapping.</p>
+<p><strong>Design note:</strong> Replacing clitics with strong nominative forms is intentionally aggressive. E.g., "lo vedo" -&gt; "lui vedo". This destroys clitic-placement evidence alongside case evidence, which serves the experimental purpose.</p>
+<p><strong>Validation:</strong> For each language, counts non-nominative pronouns in original vs. ablated; expects the ablated count to be lower.</p>
+<hr />
+<h3 id="23-enrich-verbal-morphology">2.3 Enrich Verbal Morphology<a class="headerlink" href="#23-enrich-verbal-morphology" title="Permanent link">&para;</a></h3>
+<p><strong>File:</strong> <code>preprocessing/ablations/enrich_verbal_morphology.py</code></p>
+<p><strong>Purpose:</strong> Add synthetic, unambiguous agreement morphology to English verbs. This is the enrichment counterpart to the impoverishment provided by <code>lemmatize_verbs</code>. Only English is implemented — Italian already has rich agreement morphology and enrichment is not in the preregistered intervention list.</p>
+<p><strong>Algorithm:</strong> For each <code>VERB</code> or <code>AUX</code> token:</p>
+<ol>
+<li><strong>Find the subject</strong> via <code>_find_subject(verb)</code>:</li>
+<li>First checks direct children for <code>nsubj</code> or <code>nsubj:pass</code></li>
+<li>If not found, walks up the auxiliary chain (if the verb's dep is <code>aux</code>, <code>auxpass</code>, or <code>xcomp</code>) to find the subject attached to a head verb</li>
+<li>
+<p>Handles direct subjects, auxiliary chains ("he has been walking"), and passive subjects</p>
+</li>
+<li>
+<p><strong>Extract person/number</strong> via <code>_get_person_number(subject)</code>:</p>
+</li>
+<li>Primary: reads UD morph features <code>Person</code> and <code>Number</code> from the token</li>
+<li>
+<p>Fallback: if morph features are absent, looks up the pronoun form in <code>_PRONOUN_TO_PERSON_NUMBER</code> (maps "i"-&gt;1sg, "you"-&gt;2sg, "he"/"she"/"it"-&gt;3sg, "we"-&gt;1pl, "they"-&gt;3pl)</p>
+</li>
+<li>
+<p><strong>Lemmatize + suffix:</strong> Strips the verb to <code>tok.lemma_</code> and appends the synthetic suffix from <code>DEFAULT_SUFFIX_MAP</code></p>
+</li>
+<li>
+<p><strong>Fallback:</strong> If no subject is found or person/number cannot be determined (imperatives, infinitives, fragments), the verb is reduced to its bare lemma — effectively impoverishing rather than enriching.</p>
+</li>
+</ol>
+<p><strong>Default synthetic paradigm (Latin-inspired):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Person/Number</th>
+<th>Suffix</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1sg</td>
+<td><code>-o</code></td>
+<td>walk -&gt; walko</td>
+</tr>
+<tr>
+<td>2sg</td>
+<td><code>-as</code></td>
+<td>walk -&gt; walkas</td>
+</tr>
+<tr>
+<td>3sg</td>
+<td><code>-at</code></td>
+<td>walk -&gt; walkat</td>
+</tr>
+<tr>
+<td>1pl</td>
+<td><code>-amus</code></td>
+<td>walk -&gt; walkamus</td>
+</tr>
+<tr>
+<td>2pl</td>
+<td><code>-atis</code></td>
+<td>walk -&gt; walkatis</td>
+</tr>
+<tr>
+<td>3pl</td>
+<td><code>-ant</code></td>
+<td>walk -&gt; walkant</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>DEFAULT_SUFFIX_MAP</code> dict can be overridden by creating a custom factory or modifying the dict before registration.</p>
+<p><strong>Smoke test results:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Output</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"She walks to school every day."</td>
+<td>"She walkat to school every day."</td>
+<td>3sg subject "She" -&gt; suffix <code>-at</code></td>
+</tr>
+<tr>
+<td>"They have been running all morning."</td>
+<td>"They haveant beant runant all morning."</td>
+<td>3pl subject "They" propagates to all three verb/aux tokens</td>
+</tr>
+<tr>
+<td>"I like cats and you like dogs."</td>
+<td>"I likeo cats and you like dogs."</td>
+<td>1sg "I" -&gt; <code>-o</code>; second "like" with subject "you" was not enriched with <code>en_core_web_sm</code> (model-quality limitation; <code>en_core_web_trf</code> should handle coordination better)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validation:</strong> Checks that at least some verb forms in the ablated text differ from the original (novel tokens introduced by the synthetic suffixes).</p>
+<hr />
+<h2 id="3-italian-verb-constants">3. Italian Verb Constants<a class="headerlink" href="#3-italian-verb-constants" title="Permanent link">&para;</a></h2>
+<p><strong>File:</strong> <code>analysis/corpus_descriptives/constants.py</code></p>
+<p>Three new frozen sets were added for the Italian expletive-equivalent detection:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">WEATHER_VERBS_IT</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s2">&quot;piovere&quot;</span><span class="p">,</span> <span class="s2">&quot;nevicare&quot;</span><span class="p">,</span> <span class="s2">&quot;grandinare&quot;</span><span class="p">,</span> <span class="s2">&quot;tuonare&quot;</span><span class="p">,</span> <span class="s2">&quot;lampeggiare&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="s2">&quot;gelare&quot;</span><span class="p">,</span> <span class="s2">&quot;albeggiare&quot;</span><span class="p">,</span> <span class="s2">&quot;annottare&quot;</span><span class="p">,</span> <span class="s2">&quot;imbrunire&quot;</span><span class="p">,</span> <span class="s2">&quot;diluviare&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">})</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">IMPERSONAL_VERBS_IT</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="s2">&quot;sembrare&quot;</span><span class="p">,</span> <span class="s2">&quot;parere&quot;</span><span class="p">,</span> <span class="s2">&quot;risultare&quot;</span><span class="p">,</span> <span class="s2">&quot;capitare&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="s2">&quot;succedere&quot;</span><span class="p">,</span> <span class="s2">&quot;accadere&quot;</span><span class="p">,</span> <span class="s2">&quot;avvenire&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">})</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">NECESSITY_VERBS_IT</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="s2">&quot;bisognare&quot;</span><span class="p">,</span> <span class="s2">&quot;bastare&quot;</span><span class="p">,</span> <span class="s2">&quot;convenire&quot;</span><span class="p">,</span> <span class="s2">&quot;occorrere&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">})</span>
+</code></pre></div>
+<p>These are placed in the shared <code>constants.py</code> alongside the existing <code>WEATHER_VERBS</code> (English) list, under a clearly labeled section. The lists are designed to be expandable.</p>
+<hr />
+<h2 id="4-validation-protocol">4. Validation Protocol<a class="headerlink" href="#4-validation-protocol" title="Permanent link">&para;</a></h2>
+<p><strong>File:</strong> <code>scripts/validate_ablation.py</code></p>
+<p>A standalone CLI script for producing a stratified i.i.d. sample for hand review. It is independent of the preprocessing pipeline (no spaCy dependency) and operates purely on file comparison.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>scripts/validate_ablation.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>--original<span class="w"> </span>data/raw/train_90M/<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--ablated<span class="w">  </span>data/processed/exp_remove_expletive_sentences_en/<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span>--n-per-genre<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span>--output<span class="w"> </span>validation/remove_expletive_sentences_en_sample.tsv
+</code></pre></div>
+<p><strong>Behavior:</strong></p>
+<ol>
+<li>Matches files by filename across both directories (skipping <code>.json</code> manifests)</li>
+<li>For each matched genre file, randomly samples N line indices using a seeded <code>random.Random</code> instance</li>
+<li>Reads both the original and ablated lines at those indices. For line-removal ablations where the ablated file is shorter, out-of-range indices yield <code>&lt;LINE_REMOVED&gt;</code></li>
+<li>Writes a TSV with columns: <code>genre | line_num | original | ablated | correct? | notes</code> — the last two columns are empty for the reviewer</li>
+<li>Prints a per-genre summary table to stdout with: original line count, ablated line count, line delta, and character-level delta percentage</li>
+</ol>
+<hr />
+<h2 id="5-archived-ablations">5. Archived Ablations<a class="headerlink" href="#5-archived-ablations" title="Permanent link">&para;</a></h2>
+<p><strong>Directory:</strong> <code>preprocessing/ablations/archived/</code></p>
+<p>Four modules were moved from <code>preprocessing/ablations/</code> to <code>preprocessing/ablations/archived/</code> via <code>git mv</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Former registry name</th>
+<th>Reason for archiving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remove_articles.py</code></td>
+<td><code>remove_articles</code></td>
+<td>Not in preregistered intervention list</td>
+</tr>
+<tr>
+<td><code>impoverish_determiners.py</code></td>
+<td><code>impoverish_determiners</code></td>
+<td>Not in preregistered intervention list</td>
+</tr>
+<tr>
+<td><code>remove_subject_pronominals.py</code></td>
+<td><code>remove_subject_pronominals</code></td>
+<td>Not in preregistered intervention list</td>
+</tr>
+<tr>
+<td><code>remove_expletives.py</code></td>
+<td><code>remove_expletives</code></td>
+<td>Superseded by sentence-level <code>remove_expletive_sentences</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code>archived/</code> directory has its own <code>__init__.py</code> with a docstring explaining these modules are preserved for reference but not auto-registered. The modules are structurally intact and could be re-activated by importing them.</p>
+<hr />
+<h2 id="6-updated-__init__py">6. Updated <code>__init__.py</code><a class="headerlink" href="#6-updated-__init__py" title="Permanent link">&para;</a></h2>
+<p><strong>File:</strong> <code>preprocessing/ablations/__init__.py</code></p>
+<p>The package init now imports only the four active modules:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">lemmatize_verbs</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">remove_expletive_sentences</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">impoverish_case</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">enrich_verbal_morphology</span>
+</code></pre></div>
+<p>This triggers registration of the 6 ablation functions at import time (2 from <code>remove_expletive_sentences</code>, 2 from <code>impoverish_case</code>, 1 from <code>enrich_verbal_morphology</code>, 1 from <code>lemmatize_verbs</code>).</p>
+<hr />
+<h2 id="7-experiment-configs">7. Experiment Configs<a class="headerlink" href="#7-experiment-configs" title="Permanent link">&para;</a></h2>
+<p>Seven new YAML configs were created in <code>configs/</code>, all based on the structure of the existing <code>experiment_1_remove_expletives.yaml</code>. Each config specifies the ablation type, spaCy model, data paths, and the full model architecture/training procedure:</p>
+<table>
+<thead>
+<tr>
+<th>Config file</th>
+<th>Ablation</th>
+<th>Language</th>
+<th>spaCy model</th>
+<th>Data root</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>experiment_en_remove_expletive_sentences.yaml</code></td>
+<td><code>remove_expletive_sentences_en</code></td>
+<td>EN</td>
+<td><code>en_core_web_trf</code></td>
+<td><code>data/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_it_remove_expletive_sentences.yaml</code></td>
+<td><code>remove_expletive_sentences_it</code></td>
+<td>IT</td>
+<td><code>it_core_news_trf</code></td>
+<td><code>data/italian/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_en_impoverish_case.yaml</code></td>
+<td><code>impoverish_case_en</code></td>
+<td>EN</td>
+<td><code>en_core_web_trf</code></td>
+<td><code>data/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_it_impoverish_case.yaml</code></td>
+<td><code>impoverish_case_it</code></td>
+<td>IT</td>
+<td><code>it_core_news_trf</code></td>
+<td><code>data/italian/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_en_lemmatize_verbs.yaml</code></td>
+<td><code>lemmatize_verbs</code></td>
+<td>EN</td>
+<td><code>en_core_web_trf</code></td>
+<td><code>data/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_it_lemmatize_verbs.yaml</code></td>
+<td><code>lemmatize_verbs</code></td>
+<td>IT</td>
+<td><code>it_core_news_trf</code></td>
+<td><code>data/italian/raw/train_90M/</code></td>
+</tr>
+<tr>
+<td><code>experiment_en_enrich_verbal_morphology.yaml</code></td>
+<td><code>enrich_verbal_morphology</code></td>
+<td>EN</td>
+<td><code>en_core_web_trf</code></td>
+<td><code>data/raw/train_90M/</code></td>
+</tr>
+</tbody>
+</table>
+<p>All configs share the same model architecture (12-layer GPT-2, 768 hidden, 12 heads) and training procedure (lr=4e-4, 20 epochs, gradient accumulation 8, flash attention, mixed precision) as the existing baseline configs. Italian configs use the <code>data/italian/</code> directory tree.</p>
+<hr />
+<h2 id="8-file-manifest">8. File Manifest<a class="headerlink" href="#8-file-manifest" title="Permanent link">&para;</a></h2>
+<h3 id="created-12-files">Created (12 files)<a class="headerlink" href="#created-12-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Lines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preprocessing/ablations/remove_expletive_sentences.py</code></td>
+<td>165</td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/impoverish_case.py</code></td>
+<td>211</td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/enrich_verbal_morphology.py</code></td>
+<td>221</td>
+</tr>
+<tr>
+<td><code>scripts/validate_ablation.py</code></td>
+<td>185</td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/archived/__init__.py</code></td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>configs/experiment_en_remove_expletive_sentences.yaml</code></td>
+<td>68</td>
+</tr>
+<tr>
+<td><code>configs/experiment_it_remove_expletive_sentences.yaml</code></td>
+<td>68</td>
+</tr>
+<tr>
+<td><code>configs/experiment_en_impoverish_case.yaml</code></td>
+<td>68</td>
+</tr>
+<tr>
+<td><code>configs/experiment_it_impoverish_case.yaml</code></td>
+<td>68</td>
+</tr>
+<tr>
+<td><code>configs/experiment_en_lemmatize_verbs.yaml</code></td>
+<td>67</td>
+</tr>
+<tr>
+<td><code>configs/experiment_it_lemmatize_verbs.yaml</code></td>
+<td>67</td>
+</tr>
+<tr>
+<td><code>configs/experiment_en_enrich_verbal_morphology.yaml</code></td>
+<td>68</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modified-2-files">Modified (2 files)<a class="headerlink" href="#modified-2-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preprocessing/ablations/__init__.py</code></td>
+<td>Replaced 5 archived imports with 4 active imports</td>
+</tr>
+<tr>
+<td><code>analysis/corpus_descriptives/constants.py</code></td>
+<td>Added 3 Italian verb frozensets (21 verbs total)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="moved-4-files">Moved (4 files)<a class="headerlink" href="#moved-4-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preprocessing/ablations/remove_articles.py</code></td>
+<td><code>preprocessing/ablations/archived/remove_articles.py</code></td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/impoverish_determiners.py</code></td>
+<td><code>preprocessing/ablations/archived/impoverish_determiners.py</code></td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/remove_subject_pronominals.py</code></td>
+<td><code>preprocessing/ablations/archived/remove_subject_pronominals.py</code></td>
+</tr>
+<tr>
+<td><code>preprocessing/ablations/remove_expletives.py</code></td>
+<td><code>preprocessing/ablations/archived/remove_expletives.py</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-verification">9. Verification<a class="headerlink" href="#9-verification" title="Permanent link">&para;</a></h2>
+<p>Registration was verified programmatically — <code>AblationRegistry.list_ablations()</code> returns all 6 expected names with correct function references.</p>
+<p>Smoke tests were run with <code>en_core_web_sm</code> (the model available at test time). Results:</p>
+<ul>
+<li><strong>impoverish_case_en:</strong> "She gave him her book and they liked it." -&gt; "She gave he she book and they liked it." — correctly replaces <code>him</code> -&gt; <code>he</code> and <code>her</code> -&gt; <code>she</code>, leaves nominative forms unchanged.</li>
+<li><strong>enrich_verbal_morphology:</strong> "She walks to school every day." -&gt; "She walkat to school every day." — correctly identifies 3sg subject and appends <code>-at</code>.</li>
+<li><strong>remove_expletive_sentences_en:</strong> Correctly detects <code>expl</code> dep on "There are..." and "There exists..." constructions. Does not fire on non-expletive sentences.</li>
+</ul>
+<p>The <code>en_core_web_trf</code> model (specified in all production configs) was also tested for <code>expl</code> annotation: it tags "There" as <code>expl</code> in existential constructions but not "It" in weather/raising constructions (consistent with spaCy's UD scheme).</p>
+<hr />
+<h2 id="10-known-limitations-and-notes">10. Known Limitations and Notes<a class="headerlink" href="#10-known-limitations-and-notes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>spaCy <code>expl</code> scope (English):</strong> The UD annotation scheme used by spaCy's English models tags only existential-<em>there</em> as <code>expl</code>. Weather-<em>it</em> and raising-<em>it</em> receive <code>nsubj</code>. This means <code>remove_expletive_sentences_en</code> targets there-expletives specifically. If broader expletive-<em>it</em> coverage is desired, the detection function would need to be extended with heuristics similar to the Italian module (weather verb lemma checks, raising verb + clausal complement patterns).</p>
+</li>
+<li>
+<p><strong>Enrichment subject-finding quality:</strong> The <code>_find_subject</code> function handles direct subjects and auxiliary chains but may miss subjects in complex coordination or long-distance dependencies, depending on the spaCy model's parse quality. The <code>en_core_web_trf</code> model is recommended for production runs. Verbs without identifiable subjects fall back to bare lemmatization.</p>
+</li>
+<li>
+<p><strong>Italian clitic replacement:</strong> Replacing clitics (mi, ti, lo, la, etc.) with strong nominative forms creates syntactically anomalous output. This is by design — the experimental purpose is to destroy case evidence, not to produce grammatical Italian.</p>
+</li>
+<li>
+<p><strong>Italian spaCy model:</strong> The Italian configs specify <code>it_core_news_trf</code>, which must be installed (<code>python -m spacy download it_core_news_trf</code>) before running Italian experiments.</p>
+</li>
+<li>
+<p><strong>Capitalization of "I":</strong> The case impoverishment maps lowercase "my" -&gt; lowercase "i" (preserving the original's capitalization pattern). The English convention of always capitalizing "I" is not enforced, since the ablation's purpose is to destroy morphological distinctions rather than produce natural English.</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
