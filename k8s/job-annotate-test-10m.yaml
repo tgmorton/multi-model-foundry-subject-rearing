@@ -34,6 +34,9 @@ spec:
           pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
           python -m spacy download en_core_web_lg &&
           cd /opt/repo &&
+          python scripts/generate_childes_metadata.py \
+            /mnt/data/raw/test_10M/childes.test \
+            -o /mnt/data/raw/test_10M/childes_metadata.json &&
           python -m analysis.corpus_descriptives.run \
             --config configs/corpus_analysis_test10m.yaml \
             --annotate
