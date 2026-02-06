@@ -6,19 +6,20 @@ Each module implements a specific linguistic ablation and registers itself
 with the AblationRegistry.
 
 Available ablations are automatically discovered and registered on import.
+
+Archived (inactive) ablations live in ``preprocessing/ablations/archived/``
+and are NOT imported here.
 """
 
-# Import all ablation modules to trigger registration
-from . import remove_articles
-from . import remove_expletives
-from . import impoverish_determiners
+# Import all active ablation modules to trigger registration
 from . import lemmatize_verbs
-from . import remove_subject_pronominals
+from . import remove_expletive_sentences
+from . import impoverish_case
+from . import enrich_verbal_morphology
 
 __all__ = [
-    "remove_articles",
-    "remove_expletives",
-    "impoverish_determiners",
     "lemmatize_verbs",
-    "remove_subject_pronominals",
+    "remove_expletive_sentences",
+    "impoverish_case",
+    "enrich_verbal_morphology",
 ]
