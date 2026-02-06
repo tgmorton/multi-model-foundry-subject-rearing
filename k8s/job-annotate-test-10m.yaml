@@ -39,11 +39,11 @@ spec:
             --annotate
         resources:
           requests:
-            memory: 6Gi
-            cpu: "4"
+            memory: 8Gi
+            cpu: "7"
           limits:
             memory: 8Gi
-            cpu: "4"
+            cpu: "7"
         volumeMounts:
         - name: repo
           mountPath: /opt/repo
