@@ -186,6 +186,9 @@ def get_base_schema() -> pa.Schema:
         ("text", pa.string()),
         ("n_tokens", pa.int32()),
 
+        # === CHILDES metadata (null for non-CHILDES genres) ===
+        ("child_age_months", pa.int32()),
+
         # === LAYER: spacy_base (token-level arrays) ===
         ("tokens", pa.list_(pa.string())),
         ("lemmas", pa.list_(pa.string())),

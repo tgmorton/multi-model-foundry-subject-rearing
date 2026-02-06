@@ -161,7 +161,7 @@ class CorpusAnalysisPipeline:
                 total_lines += self._file_line_counts[fpath.name]
                 continue
 
-            cleaner = get_cleaner(genre)
+            cleaner = get_cleaner(genre, metadata_dir=Path(self.config.input_path))
             file_lines = self._process_file(fpath, genre, cleaner)
             self._file_line_counts[fpath.name] = file_lines
             total_lines += file_lines
@@ -441,7 +441,7 @@ class CorpusAnnotationPipeline:
         """Process a single corpus file. Returns sentence count."""
         self.logger.info(f"Processing {fpath.name} (genre={genre}, file_idx={file_idx})")
 
-        cleaner = get_cleaner(genre)
+        cleaner = get_cleaner(genre, metadata_dir=Path(self.config.input_path))
 
         with open(fpath, "r", encoding="utf-8") as f:
             raw_lines = f.readlines()
@@ -509,6 +509,8 @@ class CorpusAnnotationPipeline:
                         "sent_idx": global_sent_idx,
                         "text": sent.text,
                         "n_tokens": len(sent),
+                        # CHILDES age metadata (null for non-CHILDES)
+                        "child_age_months": meta.get("child_age_months"),
                         # Token-level arrays
                         "tokens": [tok.text for tok in sent],
                         "lemmas": [tok.lemma_ for tok in sent],
