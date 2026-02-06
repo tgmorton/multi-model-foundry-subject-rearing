@@ -1,5 +1,5 @@
 # Step 5: Model training (English)
-synthetic_data_path: data/pronoun_recovery/synthetic/en
+# No synthetic_data_path — train directly on LLM annotations
 annotation_data_path: data/pronoun_recovery/annotations/en/llm_validated
 output_path: data/pronoun_recovery/models/en
 language: en
@@ -8,14 +8,7 @@ language: en
 model_name: microsoft/deberta-v3-base
 num_labels: 9
 
-# Phase A: pretrain on synthetic data
-phase_a_lr: 3.0e-5
-phase_a_batch_size: 32
-phase_a_epochs: 3
-phase_a_max_samples: 500000
-phase_a_patience: 2
-
-# Phase B: finetune on annotations
+# Training (Phase B hyperparams used for annotation-only training)
 phase_b_lr: 1.0e-5
 phase_b_batch_size: 16
 phase_b_epochs: 10

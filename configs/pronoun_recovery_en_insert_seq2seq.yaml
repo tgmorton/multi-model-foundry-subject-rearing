@@ -1,5 +1,5 @@
 # Seq2seq pronoun insertion (English)
-input_path: data/chunked/train_90M
+input_path: data/raw/train_90M
 output_path: data/pronoun_recovery/inserted_seq2seq/en
 model_path: data/pronoun_recovery/models_seq2seq/en/final
 language: en

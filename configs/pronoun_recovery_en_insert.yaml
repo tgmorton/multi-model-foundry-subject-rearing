@@ -1,5 +1,5 @@
 # Stage 2: Deterministic pronoun insertion (English)
-input_path: data/chunked/train_90M
+input_path: data/raw/train_90M
 output_path: data/pronoun_recovery/inserted/en
 model_path: data/pronoun_recovery/models/en/best_checkpoint
 language: en

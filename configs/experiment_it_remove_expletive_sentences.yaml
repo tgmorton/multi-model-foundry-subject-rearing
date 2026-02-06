@@ -1,0 +1,74 @@
+# ===================================================================
+# EXPERIMENT: Remove Expletive Sentences (Italian)
+# GOAL: Train a model on Italian corpus with expletive-equivalent
+#       sentences removed (weather verbs, existential ci+essere,
+#       impersonal raising/necessity constructions).
+# ===================================================================
+
+experiment_name: "exp_remove_expletive_sentences_it"
+
+# --- Data Configuration ---
+data:
+  source_corpus: "data/italian/raw/train_90M/"
+  training_corpus: "data/italian/processed/exp_remove_expletive_sentences_it/"
+  test_corpus: "data/italian/raw/test_10M/"
+  batch_size: 32
+  max_sequence_length: 1000
+
+# --- Dataset Manipulation Pipeline ---
+dataset_manipulation:
+  - type: remove_expletive_sentences_it
+    input_path: "data/italian/raw/train_90M/"
+    output_path: "data/italian/processed/exp_remove_expletive_sentences_it/"
+    spacy_model: "it_core_news_trf"
+    parameters:
+      chunk_size: 1000
+      replacement_pool_dir: "data/italian/raw/pull_10M/"
+      skip_validation: false
+      verbose: true
+
+# --- Tokenizer Configuration ---
+tokenizer:
+  output_dir: "tokenizers/exp_remove_expletive_sentences_it/"
+  vocab_size: 50004
+
+# --- Model Architecture ---
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+# --- Training Procedure ---
+training:
+  output_dir: "models/exp_remove_expletive_sentences_it/"
+  learning_rate: 0.0004
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: null
+  warmup_ratio: 0.1
+  train_steps: null
+  epochs: 20
+  use_amp: true
+  gradient_accumulation_steps: 8
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+  use_flash_attention: true
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
+# --- Logging & Reproducibility ---
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+random_seed: 9
