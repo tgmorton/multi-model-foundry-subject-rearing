@@ -8,15 +8,60 @@ Comparing Generative Linguistics and Information Theoretic Accounts of Subject D
 
 ## Description
 
-This study compares generative linguistics and information theoretic accounts of subject drop in English and Italian. A majority of languages in the world allow for speakers to not pronounce the subject of sentences. This generalization within a language, whether to allow subject drop or disallow it broadly, has long been a subject of investigation in classical linguistics. Such approaches require that learners are pre-endowed with knowledge of the breadth of linguistic structures available to them, and that this innate knowledge allows them to learn given the data available to them. On the other hand, information theoretic and usage based accounts propose that learners do not need innate knowledge to aid learning, instead learners make inferences about language in context that lead to adult-like language use. We use statistical language models as candidate learners, manipulating the kind of information available to learners motivated by generative and information theoretic accounts, and compare learning across models and manipulations.
+### The Null Subject Question
 
-**[TODO: Talk about the generative accounts]**
+A majority of the world's languages allow speakers to omit the subject of sentences. In Italian, "Parla italiano" (speaks Italian) is a complete, grammatical sentence; in English, "*Speaks Italian" is not. This typological split has been a central question in linguistics for over forty years: does it reflect a deep grammatical distinction, a surface-level frequency effect, or something in between?
 
-**[TODO: Talk about an information theoretic account]**
+### Two Traditions
 
-**[TODO: predicted results]**
+One tradition, rooted in theoretical linguistics, argues that null-subject licensing is part of a cluster of grammatical properties that pattern together across languages: null subjects, free subject-verb inversion, restrictions on extraction (the "that-trace effect"), and verbal agreement patterns. This clustering suggests that what learners acquire is not simply a pattern of pronoun use, but a grammatical system with interconnected parts. Under this view, the evidence children use is often indirect: the presence of expletive subjects like "it" and "there," patterns in verbal morphology, and case distinctions on pronouns all provide information about the underlying grammatical system.
 
-**[TODO: potential interpretation of results - maybe a middle ground]**
+The theoretical apparatus developed to explain this clustering is substantial. It typically requires assumptions about innate linguistic knowledge that constrains the space of possible grammars, allowing learners to acquire adult-like systems from limited input. These assumptions have made this tradition controversial: the commitment to domain-specific innate knowledge is difficult to test directly and remains contentious.
+
+An alternative tradition proposes that learners make inferences about language from its statistical properties in context. Under such accounts, speakers are sensitive to the relationship between pronouns and their recoverability: when pronouns are dropped in contexts where they're predictable, this provides evidence for a grammar permitting omission; when pronouns are retained despite being predictable, this provides evidence for a grammar requiring overt subjects. This tradition has the virtue of parsimony (it requires no domain-specific innate knowledge) but struggles to explain why phenomena that are distributionally independent (null subjects, that-trace effects) should pattern together grammatically.
+
+### Controlled Rearing with Language Models
+
+Adjudicating between these accounts with human subjects is difficult. We cannot experimentally manipulate the input children receive, create counterfactual languages, or isolate specific evidence types. Language models offer a methodological alternative: by training models on corpora with systematic manipulations, we can conduct causal investigations into learnability that are impossible with human learners.
+
+Language models are not models of human cognition. But they are learners that acquire grammatical knowledge from distributional evidence alone, without innate linguistic structure. This makes them useful for testing which aspects of grammatical knowledge can emerge from learning versus which might require something more.
+
+### Why Distal Effects Might Emerge Without Innate Structure
+
+There is reason to expect that learners, even those without domain-specific linguistic knowledge, might converge on structured grammatical representations. Recent work in machine learning has documented a striking phenomenon: diverse learning systems trained on different data with different architectures tend to converge toward similar internal representations. This has been termed the "Platonic Representation Hypothesis" (Huh et al., 2024): the idea that there exists a shared statistical structure underlying reality, and that sufficiently powerful learners will converge on representations that capture this structure regardless of their starting point.
+
+Applied to language, this suggests a reframing of classic debates about universals. The questions asked by Universal Grammar research (What grammatical distinctions are possible? What phenomena cluster together? What evidence is sufficient for acquisition?) were the right questions. The extensive cross-linguistic documentation of grammatical patterns was genuine scientific discovery. What may have been wrong was the assumption that these patterns require innate specification.
+
+If language has inherent structure (regularities in how meaning maps to form, how dependencies are organized, how information is distributed) then learners optimizing for prediction or comprehension will be pushed toward representations that capture this structure. The "universals" would be attractors in the space of possible learned representations: not arbitrary conventions, not innate endowment, but inevitable consequences of learning systems operating over structured input.
+
+This view preserves what was valuable in theoretical linguistics: the careful documentation of cross-linguistic patterns, the insight that grammatical phenomena are interconnected. It relocates the source of these patterns from biology to the structure of language itself and the dynamics of learning. If language models show distal effects, this supports such a view: the clustering of grammatical phenomena is real and discoverable by learners, even learners with no built-in linguistic knowledge.
+
+Of course, language models differ from children in many ways: they receive vastly more data, lack embodiment and social interaction, and optimize for different objectives. Findings from models constrain but do not determine theories of human acquisition. What models can show is what is learnable in principle from distributional evidence, and this is precisely what's at stake in debates about the necessity of innate linguistic structure.
+
+### Core Research Questions
+
+This study asks three fundamental questions:
+
+**Question 1: Can models learn this?**
+Can language models, trained on naturalistic input, learn the target grammatical patterns? Specifically, can English-trained models learn that overt subjects are required, and can Italian-trained models learn that null subjects are permitted? This establishes baseline learnability.
+
+**Question 2: Do models mis-learn when evidence is altered?**
+When we systematically manipulate the input—removing pronouns, adding pronouns, altering morphology—do models develop incorrect grammatical preferences? This tests the causal role of specific evidence types: if removing pronouns causes models to accept null subjects in English, this demonstrates that pronoun distribution is necessary for learning the target grammar.
+
+**Question 3: Do models show child-like developmental trajectories?**
+English-acquiring children initially over-accept null subjects before learning they are ungrammatical. Italian-acquiring children do not show this pattern because null subjects are grammatical in Italian. Do language models show the same developmental asymmetry? Early preference for null subjects in English (that is later overcome) but not in Italian would suggest that models and children face similar learning problems and arrive at similar solutions.
+
+### Theoretical Stakes
+
+Beyond these empirical questions, the pattern of results bears on deeper theoretical issues. If manipulating one aspect of the input (pronoun distribution) affects not only pronoun acceptability but also judgments about syntactically-related phenomena (that-trace effects, extraction, embedded subjects), this would suggest grammatical knowledge involves structured representations—even in learners without innate linguistic structure.
+
+**Local effects only** would suggest grammatical knowledge is built from surface statistics; phenomena that don't co-occur in training are learned independently.
+
+**Distal effects** would suggest grammatical knowledge involves interconnected representations where syntactically-related phenomena cluster together, as documented across human languages.
+
+### Design Overview
+
+We train models on English and Italian corpora with targeted manipulations: removing pronouns (randomly and by contextual predictability), removing expletives, manipulating verbal morphology, and neutralizing case distinctions. We evaluate models not only on null-subject acceptability, but on the full set of related phenomena: that-trace effects, extraction, subordinate clauses, control constructions. The pattern of results (local vs. distal) will inform our understanding of how grammatical knowledge is organized and acquired.
 
 ---
 
@@ -31,13 +76,133 @@ This study compares generative linguistics and information theoretic accounts of
 
 ## Tags
 
-*[TODO: Enter specific keywords that describe the key elements and concepts of your research. These keywords will improve the discoverability of your registration in search results and databases.]*
+null subjects, pro-drop, language acquisition, language models, controlled rearing, grammatical knowledge, English, Italian, cross-linguistic, BabyLM
 
 ---
 
 ## Hypotheses
 
-*[TODO: List specific, concise, and testable hypotheses. Please state if the hypotheses are directional or non-directional. If directional, state the direction. A predicted effect is also appropriate here. If a specific interaction or moderation is important to your research, you can list that as a separate hypothesis.]*
+### Core Hypotheses
+
+**H1: Baseline Learnability (Can models learn this?)**
+
+Models trained on unmanipulated corpora will acquire the target grammatical patterns:
+- **English models** will prefer overt subjects over null subjects (accuracy above chance on null-subject minimal pairs)
+- **Italian models** will accept null subjects (accuracy above chance, with preference for null over overt in appropriate contexts)
+
+This establishes that the target grammar is learnable from naturalistic input before testing the effects of manipulations.
+
+---
+
+**H2: Evidence Manipulation (Do models mis-learn when evidence is altered?)**
+
+Manipulating the input will cause models to acquire incorrect grammatical preferences:
+- **English models** trained without pronouns will fail to learn overt-subject requirements (reduced accuracy, preference shift toward null subjects)
+- **Italian models** trained with inserted overt pronouns will show reduced null-subject acceptance (preference shift toward overt subjects)
+
+| Manipulation | Predicted Effect |
+|--------------|------------------|
+| Remove pronouns (English) | ↑ Null subject acceptance (mis-learning) |
+| Insert pronouns (Italian) | ↓ Null subject acceptance (mis-learning) |
+
+This tests whether pronoun distribution is *causally necessary* for learning the target grammar.
+
+---
+
+**H3: Developmental Trajectory (Do models show child-like learning patterns?)**
+
+Models will show developmental patterns paralleling child language acquisition:
+- **English models** will show early preference for null subjects that is overcome during training (matching the pattern in English-acquiring children)
+- **Italian models** will NOT show early null-subject preference followed by reversal (matching Italian-acquiring children, for whom null subjects are grammatical throughout)
+
+| Language | Child Pattern | Predicted Model Pattern |
+|----------|--------------|------------------------|
+| English | Early null-subject acceptance → learned rejection | Early null preference → learned overt preference |
+| Italian | Consistent null-subject acceptance | Consistent null preference (no reversal) |
+
+This tests whether models face the same learning problem as children and arrive at similar developmental solutions.
+
+---
+
+**H4: Informativity-Based vs. Random Removal**
+
+Does targeting pronouns by their contextual predictability (pointwise mutual information) produce different effects than random removal at matched rates?
+
+| Pattern | Implication |
+|---------|-------------|
+| **Informativity matters** | Learning is sensitive to the information-theoretic properties of individual tokens |
+| **No difference** | What matters is the aggregate statistical pattern, not the specific properties of removed items |
+
+*Both PMI-based and random removal sweeps (0–100%, 10% increments) will be conducted.*
+
+---
+
+### Secondary Hypotheses: Local vs. Distal Effects
+
+**H5: Distal Effects (Theoretical Test)**
+
+Does manipulating pronoun distribution affect only pronoun-related judgments, or does it also affect judgments about syntactically-related but distributionally-independent phenomena (that-trace effects, extraction, embedded subjects)?
+
+| Pattern | Implication |
+|---------|-------------|
+| **Local effects only** | Grammatical knowledge is built from surface statistics; phenomena are learned independently |
+| **Distal effects** | Grammatical knowledge involves structured representations; syntactically-related phenomena are interconnected |
+
+*Distal effects would demonstrate that learners, even without innate linguistic structure, converge on interconnected grammatical representations.*
+
+---
+
+### Secondary Hypotheses: Indirect Evidence
+
+These test whether models are sensitive to evidence types that linguistic theory identifies as relevant to null-subject licensing, beyond direct pronoun distributions:
+
+**H6a: Expletive Removal**
+Removing expletive-containing sentences will facilitate null-subject preferences.
+- *Structured learning prediction*: Effect (expletives signal overt Spec,TP requirement)
+- *Statistical learning prediction*: Weak/no effect (expletives are not informative about referential pronoun distribution)
+
+**H6b: Verbal Morphology Manipulation**
+Adding rich agreement morphology to English will facilitate null subjects; impoverishing Italian agreement will push toward overt subjects.
+- *Structured learning prediction*: Effect (morphological uniformity affects grammatical licensing)
+- *Statistical learning prediction*: Weak/no effect (morphology is indirect)
+
+**H6c: Case Neutralization**
+Removing morphological case distinctions on pronouns will facilitate null-subject preferences.
+- *Structured learning prediction*: Effect (removes dependent-case evidence for obligatory subjects)
+- *Statistical learning prediction*: Weak/no effect (case is not directly relevant to pronoun frequency)
+
+**H6d: Stacked Ablations**
+Combined removal of expletives + morphology manipulation + case neutralization will produce synergistic effects.
+- *Structured learning prediction*: Synergistic (these are independent factors affecting grammatical structure)
+- *Statistical learning prediction*: Additive at most (no structural interaction)
+
+---
+
+### Architectural Hypotheses
+
+**H7: N-gram vs. Deep Models (Surface vs. Structured Learning)**
+
+N-gram models capture local co-occurrence statistics but lack capacity for structured representations. If deep models (transformers, LSTMs, Mamba) show distal effects that n-gram models do not, this is evidence that grammatical knowledge requires representations beyond surface statistics.
+- *Prediction*: N-grams will show local effects only; deep models will show distal effects
+- *Tests both*: (a) whether early deep model learning resembles n-gram patterns, (b) whether final performance diverges
+
+**H8: Architectural Convergence (Platonic Representation Hypothesis)**
+
+If grammatical structure emerges from the data rather than architecture-specific inductive biases, different deep learning architectures (GPT, BERT, LSTM, Mamba) should converge on similar patterns of grammatical sensitivity.
+- *Prediction*: Qualitatively similar patterns across deep architectures
+- *Quantitative differences expected*: Speed of learning, magnitude of effects
+- *Implication*: Convergence supports the view that structured representations are attractors that diverse learners discover
+
+**H9: GPT Scaling**
+
+Larger models may learn structured representations faster or show stronger effects, but should converge on qualitatively similar patterns.
+- *Prediction*: Quantitative differences (small < medium < large in speed/magnitude)
+- *Not predicted*: Qualitative differences in the pattern of distal effects
+
+**H10: Mamba (Exploratory)**
+
+State space models represent a distinct computational paradigm. Including Mamba tests whether architectural convergence extends beyond attention-based and recurrent models.
+- *Prediction*: Exploratory, but convergence would further support PRH
 
 ---
 
@@ -45,7 +210,7 @@ This study compares generative linguistics and information theoretic accounts of
 
 *Please check one of the following statements:*
 
-- [ ] **Experiment** — A researcher randomly assigns treatments to study subjects, this includes field or lab experiments. This is also known as an intervention experiment and includes randomized controlled trials.
+- [x] **Experiment** — A researcher randomly assigns treatments to study subjects, this includes field or lab experiments. This is also known as an intervention experiment and includes randomized controlled trials.
 - [ ] **Observational Study** — Data is collected from study subjects that are not randomly assigned to a treatment. This includes surveys, "natural experiments," and regression discontinuity designs.
 - [ ] **Meta-Analysis** — A systematic review of published studies.
 - [ ] **Other**
@@ -56,20 +221,42 @@ This study compares generative linguistics and information theoretic accounts of
 
 *Blinding describes who is aware of the experimental manipulations within a study. Mark all that apply.*
 
-- [ ] No blinding is involved in this study.
+- [x] No blinding is involved in this study.
 - [ ] For studies that involve human subjects, they will not know the treatment group to which they have been assigned.
 - [ ] Personnel who interact directly with the study subjects (either human or non-human subjects) will not be aware of the assigned treatments. (Commonly known as "double blind")
 - [ ] Personnel who analyze the data collected from the study are not aware of the treatment applied to any given group.
 
 **Is there any additional blinding in this study?**
 
+This is a computational experiment. Evaluation is automated via model probability comparisons (SLOR), with no human judgment involved in data collection.
+
 ---
 
 ## Study Design
 
-This study investigates learning in English and Italian Language Models by performing target manipulations on baseline English and Italian corpora which are then used to train Language Models. Each dataset is 90 million words and is tokenized for each model: broken up into computable vectors to be operated on within the models (see Appendix 1). Tokenized datasets are broken up into batches of 1024 tokens to be fed into the models. Models are trained in Epochs, where for each Epoch a model is trained on the whole 90 million words in its corpus. Each model is trained for twenty epochs—the same 90 million words 20 times over. Over the course of training, each model saves a checkpoint, which is a frozen copy of all of its weights and its tokenizer, 40 times in even log-space over the course of training. These checkpoints will be spaced in such a way that within-model they are comparable against each other, and between-model as close enough as reasonable for cross-model comparison (e.g. transformers are bound by optimizer steps for gradient accumulation in a way that an n-gram model would not be). So in a way, intervention-type is compared between and within-model, which makes for a fairly vast between-subjects matrix. However these comparisons are done with repeated-measures of the same evaluation tasks. Making this a between-subject repeated-measures design.
+This study investigates learning in English and Italian language models by performing targeted manipulations on baseline corpora. We train multiple model architectures on each manipulated dataset, saving checkpoints throughout training to track learning dynamics. The experimental design crosses architecture with data manipulation, yielding a between-subjects matrix with repeated measures across evaluation tasks.
 
-The factor chart, which can be split as Model × Intervention is fairly large as enabled by the computational design.
+### Training Replication
+
+Each experimental condition (architecture × language × ablation) is trained with 10 random initializations to assess training variability. This allows us to distinguish signal from noise in model learning trajectories.
+
+### Datasets
+
+- **English**: BabyLM corpus (90M tokens training, 10M held out for evaluation)
+- **Italian**: bebe-lm corpus (custom dataset, parallel construction, 90M training, 10M evaluation)
+
+### Checkpoint Schedule
+
+Each model saves 40 checkpoints over the course of training, spaced in log-time. This captures learning dynamics with higher resolution early in training (where rapid changes occur) and lower resolution later (where learning plateaus). Checkpoints are matched across architectures as closely as possible by optimizer steps, though some architectures (e.g., n-grams) do not use gradient-based optimization.
+
+### Factor Structure
+
+The study crosses two dimensions:
+
+1. **Architecture**: n-gram (1-5), GPT-2 (small, medium, large), BERT, LSTM, Mamba
+2. **Data manipulation**: Baseline, plus ablations (pronoun removal, expletive removal, morphology manipulation, case neutralization, stacked ablations) and sweeps (PMI-based and random pronoun removal 0-100%)
+
+This yields a large between-subjects matrix, with within-model repeated measures across evaluation tasks. The factor chart, which can be split as Model × Intervention, is fairly large as enabled by the computational design.
 
 ### English
 
@@ -93,13 +280,13 @@ As the language model state is reset between evaluation sets, there is no need t
 
 ## Existing Data
 
-*[TODO: Preregistration is designed to make clear the distinction between confirmatory tests, specified prior to seeing the data, and exploratory analyses conducted after observing the data. Therefore, creating a research plan in which existing data will be used presents unique challenges. Please select the description that best describes your situation. See https://cos.io/prereg for more information.]*
+**Registration prior to creation of data.** As of the date of submission of this research plan for preregistration, the data have not yet been collected, created, or realized.
 
 ---
 
 ## Explanation of Existing Data
 
-*[TODO: If you indicate that you will be using some data that already exist in this study, please describe the steps you have taken to assure that you are unaware of any patterns or summary statistics in the data. This may include an explanation of how access to the data has been limited, who has observed the data, or how you have avoided observing any analysis of the specific data you will use in your study.]*
+N/A — No existing data will be used in this study.
 
 ---
 
@@ -185,7 +372,13 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
 
 #### 1st Plural Pronoun Subject Drop
 
-**[TODO: To be completed]**
+> **English:**
+> 1. We reviewed the contract. We agree with the terms.
+> 2. ??We reviewed the contract. Agree with the terms.
+>
+> **Italian:**
+> 1. Abbiamo rivisto il contratto. Noi siamo d'accordo con i termini.
+> 2. Abbiamo rivisto il contratto. Siamo d'accordo con i termini.
 
 #### Subordinate Clause Pronoun Dropping
 
@@ -199,31 +392,79 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
 
 #### Subject Control
 
-**[TODO: To be completed]**
+*Note: Control constructions test PRO in infinitival complements. English children do not show early preference for subordinate null subjects, making this an important test of the grammatical cluster.*
+
+> **English:**
+> 1. Marco dares to ask for help. (grammatical: PRO subject)
+> 2. \*Marco dares him to ask for help. (ungrammatical: overt embedded subject)
+>
+> **Italian:**
+> 1. Marco osa chiedere aiuto. (grammatical: PRO subject)
+> 2. \*Marco osa lui chiedere aiuto. (ungrammatical: overt embedded subject)
 
 #### Object Control
 
-**[TODO: To be completed]**
+> **English:**
+> 1. The doctor urges the patient to rest. (grammatical: PRO controlled by object)
+> 2. \*The doctor urges the patient him to rest. (ungrammatical: overt embedded subject)
+>
+> **Italian:**
+> 1. Il medico esorta il paziente a riposare. (grammatical: PRO controlled by object)
+> 2. \*Il medico esorta il paziente lui a riposare. (ungrammatical: overt embedded subject)
 
 #### Expletive Contexts with Verb "seems"
 
-**[TODO: To be completed]**
+> **English:**
+> 1. The light turns off often. It seems that the light turns off.
+> 2. \*The light turns off often. Seems that the light turns off.
+>
+> **Italian:**
+> 1. La luce si spegne spesso. Sembra che la luce si spenga.
+> 2. La luce si spegne spesso. Sembra che la luce si spenga. (grammatical in Italian: null expletive)
 
 #### Expletive Contexts with Verb "be"
 
-**[TODO: To be completed]**
+> **English:**
+> 1. Were you looking for someone? It is the guy you were looking for.
+> 2. \*Were you looking for someone? Is the guy you were looking for.
+>
+> **Italian:**
+> 1. Cercavi qualcuno? È il ragazzo che cercavi.
+> 2. Cercavi qualcuno? È il ragazzo che cercavi. (grammatical in Italian: null expletive)
 
-#### Long-distance Binding
+#### Long-distance Binding (Embedded Clauses)
 
-**[TODO: To be completed]**
+> **English:**
+> 1. Luca orders a pizza. Luca says that he prepares dinner.
+> 2. \*Luca orders a pizza. Luca says that prepares dinner.
+>
+> **Italian:**
+> 1. Luca ordina una pizza. Luca dice che lui prepara la cena.
+> 2. Luca ordina una pizza. Luca dice che prepara la cena. (grammatical in Italian)
 
-#### Conjunction Without Topic Drop
+#### Conjunction Without Topic Shift
 
-**[TODO: To be completed]**
+*Note: In same-subject coordinations, English allows subject omission in the second conjunct (conjunction reduction). This tests whether the grammar distinguishes topic continuity from topic shift.*
 
-#### Conjunction With Topic Drop
+> **English:**
+> 1. Luca is hungry. Luca opens the fridge and he takes a sandwich.
+> 2. Luca is hungry. Luca opens the fridge and takes a sandwich. (grammatical: conjunction reduction)
+>
+> **Italian:**
+> 1. Luca ha fame. Luca apre il frigo e lui prende un panino.
+> 2. Luca ha fame. Luca apre il frigo e prende un panino. (grammatical: null subject)
 
-**[TODO: To be completed]**
+#### Conjunction With Topic Shift
+
+*Note: When the subject changes across conjuncts, English requires an overt pronoun. This tests sensitivity to topic shift.*
+
+> **English:**
+> 1. Antonio is in the garden. Antonio calls the gardener and she plants the flowers for him.
+> 2. \*Antonio is in the garden. Antonio calls the gardener and plants the flowers for him. (ungrammatical: topic shift requires overt subject)
+>
+> **Italian:**
+> 1. Antonio è in giardino. Antonio chiama il giardiniere e lei pianta i fiori per lui.
+> 2. Antonio è in giardino. Antonio chiama il giardiniere e pianta i fiori per lui. (marginal: topic shift prefers overt subject even in Italian)
 
 #### Subject Extraction (target pronounced 'that')
 
@@ -249,19 +490,21 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
 
 ## Sample Size
 
-*[TODO: Describe the sample size of your study. How many units will be analyzed in the study? This could be the number of people, birds, classrooms, plots, or countries included. If the units are not individuals, then describe the size requirements for each unit. If you are using a clustered or multilevel design, describe how many units are you collecting at each level of the analysis. This might be the number of samples or a range, minimum, or maximum.]*
+Each stimuli set contains 12 minimal pairs (24 sentences) per language. Each model is evaluated at 40 checkpoints across training. Each experimental condition is replicated with 10 random initializations.
+
+**Observations per stimuli set per condition:** 12 pairs × 2 languages × 40 checkpoints × 10 replications = 9,600 observations
 
 ---
 
 ## Sample Size Rationale
 
-*[TODO: This could include a power analysis or an arbitrary constraint such as time, money, or personnel.]*
+No formal power analysis. Sample size is determined by the experimental design (number of architectures, checkpoints, and replications) rather than statistical power considerations. The repeated-measures structure provides substantial observations per condition.
 
 ---
 
 ## Stopping Rule
 
-*[TODO: If your data collection procedures do not give you full control over your exact sample size, specify how you will decide when to terminate your data collection. If you are using sequential analysis, include your pre-specified thresholds.]*
+No stopping rule. Each model is trained for a fixed 20 epochs. All 40 checkpoints are collected and evaluated regardless of intermediate results.
 
 ---
 
@@ -324,7 +567,29 @@ The difference score of `SLOR(grammatical) – SLOR(ungrammatical)` will be take
 
 ## Transformations
 
-*[TODO: If you plan on transforming, centering, recoding the data, or requiring a coding scheme for categorical variables, please describe that process.]*
+### Continuous Predictors
+
+**Checkpoint number** will be transformed in two ways for modeling:
+
+1. **Log transformation:** `log_checkpoint = log₁₀(checkpoint_num + 1)` — captures the non-linear learning dynamics where early checkpoints show rapid change and later checkpoints plateau.
+
+2. **Centering and scaling:** `checkpoint_centered = checkpoint_num - mean(checkpoint_num)` and `checkpoint_scaled = checkpoint_num / max(checkpoint_num)` — for model stability and interpretability of intercepts.
+
+### Bounded Outcome Variables
+
+**Accuracy** (binary correct/incorrect aggregated to proportions) will be logit-transformed for analysis:
+
+```
+accuracy_logit = log(p / (1 - p))
+```
+
+Where p is the proportion correct. Boundary cases (p = 0 or p = 1) will be adjusted using `p = 0.001` or `p = 0.999` to avoid undefined values.
+
+### Categorical Variables
+
+- **Architecture:** Treated as a categorical factor with n-gram models as the reference level for comparisons with deep learning architectures.
+- **Intervention/Ablation:** Treated as a categorical factor with Baseline as the reference level.
+- **Language:** Categorical factor (English, Italian).
 
 ---
 

@@ -27,6 +27,7 @@ These analyses use spaCy dependency parsing, POS tagging, and morphological feat
 - UD features: `Person`, `Number` feats
 
 **Case marking**
+
 - English: nom/acc distinction
 - Italian: less morphological case
 - UD features: `Case` feat
@@ -57,14 +58,17 @@ These analyses use spaCy dependency parsing, POS tagging, and morphological feat
 ### 1.4 Clause Structure (Dependency-Based)
 
 **Root finite verbs** — `dep=ROOT` + `VerbForm=Fin`
+
 - with overt subject: has `nsubj` or `nsubj:pass` child
 - with expletive: has `expl` child
-- without subject: no subject dependent (candidate null-subject)
+- without subject: no subject dependent (candidate null-subject) (you don't need to reconstruct to know whether the subject exists)
 
 **Subordinate finite clauses** — `dep=ccomp/advcl/acl:relcl` + `VerbForm=Fin`
+
 - same subject presence breakdown
 
 **Infinitival complements** — `dep=xcomp` + `VerbForm=Inf`
+
 - control vs raising: classified by matrix verb lemma
 
 **Output:** Counts and proportions for each cell; cross-tabulation.
