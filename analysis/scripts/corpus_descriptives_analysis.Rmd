@@ -26,8 +26,8 @@ knitr::opts_chunk$set(
 )
 
 # Create output directories if they don't exist
-dir.create("analysis/corpus_descriptives_figures", showWarnings = FALSE, recursive = TRUE)
-dir.create("analysis/corpus_descriptives_tables", showWarnings = FALSE, recursive = TRUE)
+dir.create("analysis/output/corpus_descriptives/figures", showWarnings = FALSE, recursive = TRUE)
+dir.create("analysis/output/corpus_descriptives/tables", showWarnings = FALSE, recursive = TRUE)
 ```
 
 ```{r libraries}
@@ -83,7 +83,7 @@ ANALYZER_NAMES <- c(
 
 SPLITS <- c("train_90M", "test_10M", "pull_10M")
 
-load_analyzer_csv <- function(analyzer, split, base_dir = "analysis/corpus_descriptives/output") {
+load_analyzer_csv <- function(analyzer, split, base_dir = "analysis/output/corpus_descriptives/data") {
   path <- file.path(base_dir, split, paste0(analyzer, ".csv"))
   if (!file.exists(path)) return(NULL)
   read.csv(path, stringsAsFactors = FALSE)
@@ -182,7 +182,7 @@ theme_corpus <- function(base_size = 12) {
 #' Save figure to output directory
 save_figure <- function(plot, name, width = 10, height = 6) {
   ggsave(
-    filename = paste0("analysis/corpus_descriptives_figures/", name, ".png"),
+    filename = paste0("analysis/output/corpus_descriptives/figures/", name, ".png"),
     plot = plot,
     width = width,
     height = height,
@@ -193,7 +193,7 @@ save_figure <- function(plot, name, width = 10, height = 6) {
 #' Save table to output directory
 save_table <- function(df, name) {
   write.csv(df,
-            file = paste0("analysis/corpus_descriptives_tables/", name, ".csv"),
+            file = paste0("analysis/output/corpus_descriptives/tables/", name, ".csv"),
             row.names = FALSE)
 }
 ```
@@ -1746,6 +1746,6 @@ kable(summary_stats %>%
 
 *Report generated on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`*
 
-*Figures saved to `analysis/corpus_descriptives_figures/`*
+*Figures saved to `analysis/output/corpus_descriptives/figures/`*
 
-*Tables saved to `analysis/corpus_descriptives_tables/`*
+*Tables saved to `analysis/output/corpus_descriptives/tables/`*

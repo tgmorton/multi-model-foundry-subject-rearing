@@ -205,12 +205,8 @@ data/corpus_summaries_*/
 data/italian/
 data/pronoun_recovery/
 
-# Corpus descriptive analysis output (regenerable)
-analysis/corpus_descriptives_output/
-analysis/corpus_descriptives_report/
-analysis/corpus_descriptives_figures/
-analysis/corpus_descriptives_tables/
-analysis/corpus_descriptives/output/
+# Analysis output (regenerable)
+analysis/output/
 
 # Word temp/lock files
 ~$*.docx

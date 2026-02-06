@@ -6,11 +6,11 @@
 # and split-consistency checks.
 #
 # Expects results in:
-#   analysis/corpus_descriptives/output/{split_name}/{analyzer}.csv
+#   analysis/output/corpus_descriptives/data/{split_name}/{analyzer}.csv
 #
 # Outputs:
-#   analysis/corpus_descriptives_figures/   (PDF + PNG)
-#   analysis/corpus_descriptives_tables/    (LaTeX .tex)
+#   analysis/output/corpus_descriptives/figures/   (PDF + PNG)
+#   analysis/output/corpus_descriptives/tables/    (LaTeX .tex)
 ###############################################################################
 
 # ── Section 0: Setup ─────────────────────────────────────────────────────────
@@ -26,8 +26,8 @@ suppressPackageStartupMessages({
 source("analysis/scripts/paper_figures/figure_dimensions.R")
 
 # Output directories
-fig_dir <- "analysis/corpus_descriptives_figures"
-tab_dir <- "analysis/corpus_descriptives_tables"
+fig_dir <- "analysis/output/corpus_descriptives/figures"
+tab_dir <- "analysis/output/corpus_descriptives/tables"
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(tab_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -57,7 +57,7 @@ ANALYZER_NAMES <- c(
 
 SPLITS <- c("train_90M", "test_10M", "pull_10M")
 
-load_analyzer_csv <- function(analyzer, split, base_dir = "analysis/corpus_descriptives/output") {
+load_analyzer_csv <- function(analyzer, split, base_dir = "analysis/output/corpus_descriptives/data") {
 
   path <- file.path(base_dir, split, paste0(analyzer, ".csv"))
   if (!file.exists(path)) {

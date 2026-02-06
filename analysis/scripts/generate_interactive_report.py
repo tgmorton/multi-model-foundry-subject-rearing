@@ -12,7 +12,7 @@ Usage
     PYTHONPATH=. python analysis/scripts/generate_interactive_report.py \
         data/annotated_corpus_test_10M/ \
         --layered \
-        --output analysis/corpus_descriptives_report/interactive_report.html
+        --output analysis/output/corpus_descriptives/reports/interactive_report.html
 """
 
 from __future__ import annotations
@@ -1687,7 +1687,7 @@ def main():
     )
     parser.add_argument(
         "--output", "-o", type=Path, default=None,
-        help="Output .html file (default: corpus_descriptives_report/interactive_report.html)",
+        help="Output .html file (default: analysis/output/corpus_descriptives/reports/interactive_report.html)",
     )
     parser.add_argument(
         "--layered", action="store_true",
@@ -1711,7 +1711,7 @@ def main():
     # Default output path
     output = args.output
     if output is None:
-        output = Path("analysis/corpus_descriptives_report/interactive_report.html")
+        output = Path("analysis/output/corpus_descriptives/reports/interactive_report.html")
 
     print(f"Loading annotations from: {args.input_path}", file=sys.stderr)
     lf = _load_data(args.input_path, args.layered)

@@ -7,19 +7,19 @@ Usage
     # Single Parquet file (non-layered output)
     python analysis/scripts/run_corpus_descriptives.py \\
         data/annotated_corpus/test_10M.parquet \\
-        --output analysis/corpus_descriptives_output/test_10M
+        --output analysis/output/corpus_descriptives/data/test_10M
 
     # Layered directory
     python analysis/scripts/run_corpus_descriptives.py \\
         data/annotated_corpus/ \\
         --layered \\
-        --output analysis/corpus_descriptives_output/train_90M
+        --output analysis/output/corpus_descriptives/data/train_90M
 
     # Specific analyses only
     python analysis/scripts/run_corpus_descriptives.py \\
         data/annotated_corpus/test_10M.parquet \\
         --analyses overview phenomenon_rates childes \\
-        --output analysis/corpus_descriptives_output/test_10M
+        --output analysis/output/corpus_descriptives/data/test_10M
 """
 
 from __future__ import annotations

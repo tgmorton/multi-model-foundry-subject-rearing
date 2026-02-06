@@ -119,7 +119,7 @@ kubectl run data-download --image=busybox --restart=Never --overrides='
 }'
 
 kubectl wait --for=condition=Ready pod/data-download --timeout=60s
-kubectl cp data-download:/mnt/data/output/ ./analysis/corpus_descriptives/output/
+kubectl cp data-download:/mnt/data/output/ ./analysis/output/corpus_descriptives/data/
 kubectl delete pod data-download
 ```
 

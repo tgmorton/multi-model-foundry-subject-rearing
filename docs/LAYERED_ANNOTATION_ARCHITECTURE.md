@@ -242,7 +242,7 @@ Annotated Corpus (Parquet)
     ↓
 aggregation/compute_summaries.py
     ↓
-analysis/corpus_descriptives/output/{split}/*.csv
+analysis/output/corpus_descriptives/data/{split}/*.csv
 ```
 
 The RMarkdown report reads from CSVs (unchanged), but researchers can also query the Parquet directly for deeper analysis.

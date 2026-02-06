@@ -7,7 +7,7 @@ Usage
     python analysis/scripts/generate_corpus_report.py \
         data/annotated_corpus_test_10M/ \
         --layered \
-        --output analysis/corpus_descriptives_report/test_10M_report.md
+        --output analysis/output/corpus_descriptives/reports/test_10M_report.md
 """
 
 from __future__ import annotations
