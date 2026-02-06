@@ -29,6 +29,23 @@ if TYPE_CHECKING:
     from .annotators.base import BaseSentenceAnnotator
 
 
+# Mapping from annotator class names to schema layer names
+ANNOTATOR_TO_LAYER = {
+    "ClauseStructureAnnotator": "clause_structure",
+    "ThatTraceAnnotator": "that_trace",
+    "ExpletiveAnnotator": "expletives",
+    "PronounAnnotator": "pronouns",
+    "NegationAnnotator": "negation",
+    "WhExtractionAnnotator": "wh_extraction",
+    "RelativeClauseAnnotator": "relative_clauses",
+    "VerbAnnotator": "verbs",
+    "ArgumentStructureAnnotator": "argument_structure",
+    "TopicAnnotator": "topic_continuity",
+    "ComplexityAnnotator": "complexity",
+    "FragmentAnnotator": "complexity",  # shares layer with complexity
+}
+
+
 def generate_sentence_id(
     split: str,
     genre: str,
@@ -500,7 +517,8 @@ class CorpusAnnotationPipeline:
                         "dep_heads": [tok.head.i - sent.start for tok in sent],
                     }
 
-                    # Run annotators
+                    # Run annotators once and cache results
+                    annotator_results = {}
                     all_annotations = dict(base_annotation)
                     all_flags = {}
 
@@ -511,10 +529,10 @@ class CorpusAnnotationPipeline:
                             speaker=speaker,
                             metadata={"role": role, "file_name": fpath.stem},
                         )
-                        all_annotations.update(ann_result)
-
-                        # Get flags
                         flags = annotator.get_sentence_flags(ann_result)
+                        annotator_results[annotator.name] = (ann_result, flags)
+
+                        all_annotations.update(ann_result)
                         all_flags.update(flags)
 
                     all_annotations.update(all_flags)
@@ -524,48 +542,21 @@ class CorpusAnnotationPipeline:
                         # Write base
                         writer.write_base(base_annotation, get_base_schema())
 
-                        # Mapping from annotator class names to schema layer names
-                        ANNOTATOR_TO_LAYER = {
-                            "ClauseStructureAnnotator": "clause_structure",
-                            "ThatTraceAnnotator": "that_trace",
-                            "ExpletiveAnnotator": "expletives",
-                            "PronounAnnotator": "pronouns",
-                            "NegationAnnotator": "negation",
-                            "WhExtractionAnnotator": "wh_extraction",
-                            "RelativeClauseAnnotator": "relative_clauses",
-                            "VerbAnnotator": "verbs",
-                            "ArgumentStructureAnnotator": "argument_structure",
-                            "TopicAnnotator": "topic_continuity",
-                            "ComplexityAnnotator": "complexity",
-                            "FragmentAnnotator": "complexity",  # shares with complexity
-                        }
-
-                        # Write each layer
+                        # Write each layer using cached results
                         for annotator in self.annotators:
                             layer_name = ANNOTATOR_TO_LAYER.get(
                                 annotator.name,
                                 annotator.name.replace("Annotator", "").lower()
                             )
-                            # Extract just this annotator's fields + sentence_id
+                            ann_result, flags = annotator_results[annotator.name]
                             layer_data = {"sentence_id": sentence_id}
-
-                            # Get the annotator's output
-                            ann_result = annotator.annotate_sentence(
-                                sent=sent,
-                                genre=effective_genre,
-                                speaker=speaker,
-                                metadata={"role": role, "file_name": fpath.stem},
-                            )
                             layer_data.update(ann_result)
-
-                            flags = annotator.get_sentence_flags(ann_result)
                             layer_data.update(flags)
 
                             try:
                                 layer_schema = get_layer_schema(layer_name)
                                 writer.write_layer(layer_name, layer_data, layer_schema)
                             except ValueError:
-                                # Layer schema not defined, skip
                                 pass
                     else:
                         # Write full annotation

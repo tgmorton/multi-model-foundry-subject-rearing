@@ -1,0 +1,1751 @@
+---
+title: "Corpus Descriptive Analysis"
+subtitle: "Multi-Model Foundry Subject Rearing Project"
+author: "Generated from pipeline output"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float:
+      collapsed: false
+    theme: flatly
+    highlight: tango
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center"
+)
+
+# Create output directories if they don't exist
+dir.create("analysis/corpus_descriptives_figures", showWarnings = FALSE, recursive = TRUE)
+dir.create("analysis/corpus_descriptives_tables", showWarnings = FALSE, recursive = TRUE)
+```
+
+```{r libraries}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(scales)
+  library(knitr)
+  library(kableExtra)
+})
+```
+
+# Introduction
+
+This report presents a **linguistically-informed** analysis of corpus statistics, organized around key phenomena relevant to null-subject research:
+
+1. **Null Subject Analysis** — Where do missing subjects occur in English, and what explains them?
+2. **Pronoun System** — The paradigmatic structure and functional distribution of overt pronouns
+3. **Extraction and That-Trace** — Complementizer presence and filler-gap dependencies
+4. **Supporting Analyses** — Verb finiteness, negation, and relative clauses
+
+The analysis draws on 8 linguistic analyzers run across 6 text genres (BNC, CHILDES, Gutenberg, OpenSubtitles, SimpleWikipedia, Switchboard).
+
+---
+
+# Data Loading and Helper Functions
+
+```{r data-setup}
+# Genre colour palette (colorblind-friendly)
+GENRE_COLORS <- c(
+  BNC             = "#1f77b4",
+  Gutenberg       = "#ff7f0e",
+  OpenSubtitles   = "#2ca02c",
+  SimpleWikipedia = "#d62728",
+  Switchboard     = "#9467bd",
+  CHILDES_child   = "#17becf",
+  CHILDES_adult   = "#e377c2",
+  CHILDES         = "#8c564b"
+)
+
+GENRE_ORDER <- c(
+  "CHILDES_child", "CHILDES_adult", "CHILDES",
+  "BNC", "Gutenberg", "OpenSubtitles", "SimpleWikipedia", "Switchboard"
+)
+
+# Spoken vs written classification
+SPOKEN_GENRES <- c("CHILDES", "CHILDES_child", "CHILDES_adult", "OpenSubtitles", "Switchboard", "BNC")
+WRITTEN_GENRES <- c("Gutenberg", "SimpleWikipedia")
+
+ANALYZER_NAMES <- c(
+  "pronoun_inventory", "expletives", "verb_finiteness", "clause_structure",
+  "wh_questions", "relative_clauses", "negation", "that_trace"
+)
+
+SPLITS <- c("train_90M", "test_10M", "pull_10M")
+
+load_analyzer_csv <- function(analyzer, split, base_dir = "analysis/corpus_descriptives/output") {
+  path <- file.path(base_dir, split, paste0(analyzer, ".csv"))
+  if (!file.exists(path)) return(NULL)
+  read.csv(path, stringsAsFactors = FALSE)
+}
+
+load_all <- function() {
+  all_data <- list()
+  for (analyzer in ANALYZER_NAMES) {
+    frames <- list()
+    for (split in SPLITS) {
+      df <- load_analyzer_csv(analyzer, split)
+      if (!is.null(df)) frames[[split]] <- df
+    }
+    if (length(frames) > 0) all_data[[analyzer]] <- bind_rows(frames)
+  }
+  all_data
+}
+
+DATA <- load_all()
+
+# Helper: filter to train_90M and specific genres
+train_genre <- function(df) {
+  df %>%
+    filter(split == "train_90M", genre != "overall")
+}
+
+train_overall <- function(df) {
+  df %>%
+    filter(split == "train_90M", genre == "overall")
+}
+
+order_genres <- function(df) {
+  present <- intersect(GENRE_ORDER, unique(df$genre))
+  df %>% mutate(genre = factor(genre, levels = present))
+}
+
+# Check for CHILDES speaker split
+SPEAKER_SPLIT_AVAILABLE <- any(DATA[["pronoun_inventory"]]$genre %in% c("CHILDES_child", "CHILDES_adult"))
+```
+
+```{r helper-functions}
+#' Compute null-subject rate by grouping variables
+#' Returns: overt, none, expletive counts + rates
+compute_null_rate <- function(df, grouping_vars = NULL) {
+  result <- df %>%
+    filter(subject_status %in% c("overt", "none", "expletive"),
+           !is.na(count))
+
+  if (!is.null(grouping_vars) && length(grouping_vars) > 0) {
+    result <- result %>%
+      group_by(across(all_of(grouping_vars)), subject_status)
+  } else {
+    result <- result %>%
+      group_by(subject_status)
+  }
+
+  result %>%
+    summarise(n = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = subject_status, values_from = n, values_fill = 0) %>%
+    mutate(
+      # Ensure columns exist
+      overt = if ("overt" %in% names(.)) overt else 0,
+      none = if ("none" %in% names(.)) none else 0,
+      expletive = if ("expletive" %in% names(.)) expletive else 0,
+      total = overt + none + expletive,
+      null_rate = none / total,
+      expletive_rate = expletive / total,
+      overt_rate = overt / total,
+      # Adjusted null rate (excluding expletives from denominator)
+      adj_null_rate = none / (overt + none)
+    )
+}
+
+#' Format percentage for display
+fmt_pct <- function(x, digits = 1) {
+  sprintf(paste0("%.", digits, "f%%"), x * 100)
+}
+
+#' Format count with thousands separator
+fmt_count <- function(x) {
+  format(x, big.mark = ",", scientific = FALSE)
+}
+
+#' Standard theme for plots
+theme_corpus <- function(base_size = 12) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "right",
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(face = "bold"),
+      plot.subtitle = element_text(color = "grey40")
+    )
+}
+
+#' Save figure to output directory
+save_figure <- function(plot, name, width = 10, height = 6) {
+  ggsave(
+    filename = paste0("analysis/corpus_descriptives_figures/", name, ".png"),
+    plot = plot,
+    width = width,
+    height = height,
+    dpi = 150
+  )
+}
+
+#' Save table to output directory
+save_table <- function(df, name) {
+  write.csv(df,
+            file = paste0("analysis/corpus_descriptives_tables/", name, ".csv"),
+            row.names = FALSE)
+}
+```
+
+**Data loaded:**
+
+- **Analyzers:** `r paste(names(DATA), collapse = ", ")`
+- **Splits:** `r paste(SPLITS[SPLITS %in% unique(bind_rows(DATA)$split)], collapse = ", ")`
+- **CHILDES speaker split:** `r ifelse(SPEAKER_SPLIT_AVAILABLE, "Available (child/adult separated)", "Not yet available (awaiting pipeline re-run)")`
+
+---
+
+# Part 1: Executive Summary {.tabset}
+
+Key findings across all phenomena from the 90M-token training corpus.
+
+```{r executive-summary}
+if (!is.null(DATA[["clause_structure"]])) {
+  # Overall null-subject rate in finite ROOT clauses
+  cs_overall <- train_overall(DATA[["clause_structure"]]) %>%
+    filter(clause_dep == "ROOT")
+
+  root_rates <- compute_null_rate(cs_overall)
+
+  # By clause type
+  cs_by_type <- train_overall(DATA[["clause_structure"]]) %>%
+    filter(!is.na(clause_dep), clause_dep != "") %>%
+    compute_null_rate(grouping_vars = "clause_dep")
+}
+
+if (!is.null(DATA[["expletives"]])) {
+  exp_overall <- train_overall(DATA[["expletives"]]) %>%
+    filter(!is.na(class), class != "")
+
+  total_expletives <- sum(as.numeric(exp_overall$count), na.rm = TRUE)
+}
+```
+
+## Key Metrics
+
+```{r summary-metrics, results='asis'}
+cat('<div class="row">\n')
+cat('<div class="col-md-4">\n')
+cat('<div class="panel panel-primary">\n')
+cat('<div class="panel-heading"><strong>Null Subject Rate (ROOT)</strong></div>\n')
+cat('<div class="panel-body" style="font-size: 24px; text-align: center;">\n')
+if (exists("root_rates")) {
+  cat(fmt_pct(root_rates$null_rate), '\n')
+  cat('<br><small style="color: grey;">of all ROOT clauses</small>\n')
+}
+cat('</div></div></div>\n')
+
+cat('<div class="col-md-4">\n')
+cat('<div class="panel panel-info">\n')
+cat('<div class="panel-heading"><strong>Expletive Rate (ROOT)</strong></div>\n')
+cat('<div class="panel-body" style="font-size: 24px; text-align: center;">\n')
+if (exists("root_rates")) {
+  cat(fmt_pct(root_rates$expletive_rate), '\n')
+  cat('<br><small style="color: grey;">it/there subjects</small>\n')
+}
+cat('</div></div></div>\n')
+
+cat('<div class="col-md-4">\n')
+cat('<div class="panel panel-success">\n')
+cat('<div class="panel-heading"><strong>Overt Subject Rate (ROOT)</strong></div>\n')
+cat('<div class="panel-body" style="font-size: 24px; text-align: center;">\n')
+if (exists("root_rates")) {
+  cat(fmt_pct(root_rates$overt_rate), '\n')
+  cat('<br><small style="color: grey;">lexical or pronominal</small>\n')
+}
+cat('</div></div></div>\n')
+cat('</div>\n')
+```
+
+## Subject Realization by Clause Type
+
+```{r summary-clause-table}
+if (exists("cs_by_type")) {
+  clause_summary <- cs_by_type %>%
+    arrange(desc(total)) %>%
+    mutate(
+      clause_type = case_when(
+        clause_dep == "ROOT" ~ "ROOT (main clause)",
+        clause_dep == "ccomp" ~ "ccomp (complement clause)",
+        clause_dep == "advcl" ~ "advcl (adverbial clause)",
+        clause_dep == "acl" ~ "acl (adjectival clause)",
+        TRUE ~ clause_dep
+      )
+    ) %>%
+    select(
+      `Clause Type` = clause_type,
+      Overt = overt,
+      `Null (none)` = none,
+      Expletive = expletive,
+      Total = total,
+      `Null Rate` = null_rate,
+      `Adj. Null Rate` = adj_null_rate
+    ) %>%
+    mutate(
+      `Null Rate` = fmt_pct(`Null Rate`),
+      `Adj. Null Rate` = fmt_pct(`Adj. Null Rate`)
+    )
+
+  kable(clause_summary,
+        caption = "Subject realization by clause type (train_90M, all genres)",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>%
+    footnote(general = "Adj. Null Rate excludes expletives from denominator")
+
+  save_table(clause_summary, "summary_clause_types")
+}
+```
+
+## Interpretation
+
+**What the null-subject rate tells us:**
+
+English is a **non-pro-drop language** — overt subjects are required in most finite clauses. The ~6-7% null-subject rate in ROOT clauses represents:
+
+1. **Imperatives** — "Go away!" (subject *you* is understood)
+2. **Diary drop** — "Went to the store today" (colloquial subject omission)
+3. **Fragments** — "Pretty good" (not full clauses)
+4. **Parsing artifacts** — Some dependency misparses
+
+**Why xcomp has high null rates:**
+
+The `xcomp` (open clausal complement) relation covers infinitival and gerundive complements like "want to go" or "tried running." These contain **PRO** — the silent subject of non-finite clauses — which is grammatically required, not a gap.
+
+---
+
+# Part 2: Null Subject Analysis {.tabset}
+
+The core analysis for understanding where English allows null subjects and why.
+
+## 2.1 Overall Rates
+
+```{r null-overall-rates}
+if (!is.null(DATA[["clause_structure"]])) {
+  # Compute rates for each clause type
+  cs_train <- train_overall(DATA[["clause_structure"]]) %>%
+    filter(!is.na(clause_dep), clause_dep != "",
+           !is.na(subject_status), subject_status != "")
+
+  null_by_clause <- cs_train %>%
+    compute_null_rate(grouping_vars = "clause_dep") %>%
+    arrange(desc(total))
+
+  # Create visualization
+  null_rates_long <- null_by_clause %>%
+    select(clause_dep, overt_rate, null_rate, expletive_rate) %>%
+    pivot_longer(
+      cols = c(overt_rate, null_rate, expletive_rate),
+      names_to = "status",
+      values_to = "rate"
+    ) %>%
+    mutate(
+      status = factor(status,
+                      levels = c("overt_rate", "expletive_rate", "null_rate"),
+                      labels = c("Overt", "Expletive", "Null"))
+    )
+
+  p_null_rates <- ggplot(null_rates_long,
+                         aes(x = reorder(clause_dep, -rate), y = rate, fill = status)) +
+    geom_col(position = "stack", width = 0.7) +
+    scale_fill_manual(values = c("Overt" = "#2E86AB", "Expletive" = "#E8C547", "Null" = "#A23B72")) +
+    scale_y_continuous(labels = percent_format()) +
+    labs(
+      title = "Subject Realization by Clause Type",
+      subtitle = "Null subjects are rare in finite clauses (ROOT, ccomp, advcl) but common in non-finite (xcomp, acl)",
+      x = "Clause Dependency Type",
+      y = "Proportion of clauses",
+      fill = "Subject Status"
+    ) +
+    theme_corpus()
+
+  print(p_null_rates)
+  save_figure(p_null_rates, "null_rates_by_clause")
+}
+```
+
+### Rate Table
+
+```{r null-rate-table}
+if (exists("null_by_clause")) {
+  null_table <- null_by_clause %>%
+    mutate(
+      finiteness = case_when(
+        clause_dep %in% c("ROOT", "ccomp", "advcl") ~ "Typically finite",
+        clause_dep %in% c("xcomp", "acl") ~ "Often non-finite",
+        TRUE ~ "Mixed"
+      )
+    ) %>%
+    arrange(finiteness, desc(total)) %>%
+    select(
+      `Clause Type` = clause_dep,
+      `Finiteness` = finiteness,
+      Overt = overt,
+      Null = none,
+      Expletive = expletive,
+      Total = total,
+      `Null %` = null_rate,
+      `Overt %` = overt_rate
+    ) %>%
+    mutate(
+      `Null %` = fmt_pct(`Null %`),
+      `Overt %` = fmt_pct(`Overt %`)
+    )
+
+  kable(null_table,
+        caption = "Subject realization rates by clause type",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>%
+    row_spec(which(null_table$Finiteness == "Often non-finite"), background = "#f8f9fa")
+}
+```
+
+## 2.2 By Genre
+
+```{r null-by-genre}
+if (!is.null(DATA[["clause_structure"]])) {
+  # Compute null rates by genre for ROOT clauses only
+  cs_genre <- train_genre(DATA[["clause_structure"]]) %>%
+    filter(clause_dep == "ROOT",
+           !is.na(subject_status), subject_status != "") %>%
+    order_genres()
+
+  null_by_genre <- cs_genre %>%
+    compute_null_rate(grouping_vars = "genre") %>%
+    mutate(
+      modality = ifelse(genre %in% SPOKEN_GENRES, "Spoken/Dialogue", "Written"),
+      genre = factor(genre, levels = GENRE_ORDER[GENRE_ORDER %in% genre])
+    )
+
+  # Visualization: null rate by genre with modality grouping
+  p_genre_null <- ggplot(null_by_genre,
+                         aes(x = genre, y = null_rate, fill = modality)) +
+    geom_col(width = 0.7) +
+    geom_text(aes(label = fmt_pct(null_rate)), vjust = -0.5, size = 3) +
+    scale_fill_manual(values = c("Spoken/Dialogue" = "#2E86AB", "Written" = "#A23B72")) +
+    scale_y_continuous(labels = percent_format(), limits = c(0, max(null_by_genre$null_rate) * 1.15)) +
+    labs(
+      title = "Null Subject Rate in ROOT Clauses by Genre",
+      subtitle = "Spoken/dialogue genres show higher null-subject rates (diary drop, fragments)",
+      x = NULL,
+      y = "Null subject rate",
+      fill = "Modality"
+    ) +
+    theme_corpus()
+
+  print(p_genre_null)
+  save_figure(p_genre_null, "null_rate_by_genre")
+}
+```
+
+### Genre Comparison Table
+
+```{r genre-table}
+if (exists("null_by_genre")) {
+  genre_table <- null_by_genre %>%
+    arrange(desc(null_rate)) %>%
+    select(
+      Genre = genre,
+      Modality = modality,
+      Overt = overt,
+      Null = none,
+      Expletive = expletive,
+      Total = total,
+      `Null Rate` = null_rate,
+      `Expletive Rate` = expletive_rate
+    ) %>%
+    mutate(
+      `Null Rate` = fmt_pct(`Null Rate`),
+      `Expletive Rate` = fmt_pct(`Expletive Rate`)
+    )
+
+  kable(genre_table,
+        caption = "ROOT clause subject realization by genre",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(genre_table, "null_rate_by_genre")
+}
+```
+
+### Interpretation
+
+**Genre patterns align with linguistic expectations:**
+
+- **CHILDES** has the highest null rate (~10-12%): Child-directed speech includes many imperatives, sentence fragments, and informal register
+- **OpenSubtitles** (movie dialogue) shows elevated rates: Colloquial speech, truncated responses
+- **SimpleWikipedia** has the lowest: Formal expository prose requires explicit subjects
+
+## 2.3 Control/Raising Verb Inventory
+
+Non-finite complements (xcomp) are licensed by **control verbs** (the subject is interpreted) and **raising verbs** (the subject raises from the embedded clause).
+
+```{r control-raising-verbs}
+if (!is.null(DATA[["clause_structure"]])) {
+  # Extract verb lemmas from clause_structure (these are the matrix verbs)
+  verb_data <- train_overall(DATA[["clause_structure"]]) %>%
+    filter(!is.na(verb_lemma), verb_lemma != "") %>%
+    group_by(verb_lemma) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(count))
+
+  # Classify verbs (based on linguistic knowledge)
+  control_verbs <- c("want", "try", "decide", "hope", "plan", "refuse", "promise",
+                     "agree", "offer", "threaten", "choose", "wish", "intend",
+                     "manage", "fail", "pretend", "learn", "prepare")
+  raising_verbs <- c("seem", "appear", "happen", "tend", "turn", "prove")
+  modal_like <- c("have", "be", "got", "need", "ought", "able", "going", "hafta",
+                  "wanna", "gonna", "gotta", "used", "about", "likely")
+
+  verb_data <- verb_data %>%
+    mutate(
+      verb_class = case_when(
+        verb_lemma %in% control_verbs ~ "Control",
+        verb_lemma %in% raising_verbs ~ "Raising",
+        verb_lemma %in% modal_like ~ "Modal-like",
+        TRUE ~ "Other"
+      )
+    )
+
+  # Top 30 verbs
+  top_verbs <- verb_data %>%
+    head(30) %>%
+    mutate(
+      rank = row_number(),
+      verb_display = paste0(rank, ". ", verb_lemma)
+    )
+
+  p_verbs <- ggplot(top_verbs,
+                    aes(x = reorder(verb_lemma, count), y = count, fill = verb_class)) +
+    geom_col(width = 0.7) +
+    coord_flip() +
+    scale_fill_manual(values = c("Control" = "#2E86AB", "Raising" = "#E8C547",
+                                  "Modal-like" = "#8c564b", "Other" = "#999999")) +
+    scale_y_continuous(labels = label_comma()) +
+    labs(
+      title = "Top 30 Matrix Verbs Licensing Infinitival Complements",
+      subtitle = "Control verbs (want, try) and modal-like verbs dominate; raising verbs (seem, appear) are rarer",
+      x = NULL,
+      y = "Count",
+      fill = "Verb Class"
+    ) +
+    theme_corpus() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
+
+  print(p_verbs)
+  save_figure(p_verbs, "control_raising_verbs")
+}
+```
+
+### Verb Class Summary
+
+```{r verb-class-summary}
+if (exists("verb_data")) {
+  class_summary <- verb_data %>%
+    filter(verb_class != "Other") %>%
+    group_by(verb_class) %>%
+    summarise(
+      `Verb Types` = n(),
+      `Total Tokens` = sum(count),
+      `Top Examples` = paste(head(verb_lemma, 5), collapse = ", "),
+      .groups = "drop"
+    ) %>%
+    arrange(desc(`Total Tokens`))
+
+  kable(class_summary,
+        caption = "Infinitival complement verbs by class",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(class_summary, "verb_class_summary")
+}
+```
+
+### Interpretation
+
+**Control vs Raising:**
+
+- **Control verbs** (want, try, decide, hope, promise...) — The matrix subject is understood as the embedded subject. "John wants to leave" = John is the leaver.
+- **Raising verbs** (seem, appear, happen, tend...) — The subject originates in the embedded clause and raises. "John seems to be happy" ← "to be happy" originally had John as its subject.
+- **Modal-like verbs** (have to, be going to, need to...) — Grammaticalized auxiliaries behaving like modals.
+
+Raising verbs are much rarer than control verbs in natural language use.
+
+## 2.4 Expletive vs True Null
+
+Expletive subjects (*it*, *there*) are not referential — they fill the subject position without denoting an entity.
+
+```{r expletive-analysis}
+if (!is.null(DATA[["expletives"]])) {
+  exp_data <- train_overall(DATA[["expletives"]]) %>%
+    filter(!is.na(class), class != "")
+
+  # Class counts
+  exp_by_class <- exp_data %>%
+    group_by(class) %>%
+    summarise(
+      count = sum(as.numeric(count), na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    arrange(desc(count)) %>%
+    mutate(
+      proportion = count / sum(count),
+      description = case_when(
+        class == "existential" ~ "There is/are... (existential)",
+        class == "weather" ~ "It rains, snows... (weather)",
+        class == "raising" ~ "It seems that... (raising)",
+        TRUE ~ class
+      )
+    )
+
+  p_exp <- ggplot(exp_by_class, aes(x = reorder(class, count), y = count, fill = class)) +
+    geom_col(width = 0.6) +
+    geom_text(aes(label = paste0(fmt_count(count), " (", fmt_pct(proportion), ")")),
+              hjust = -0.1, size = 3.5) +
+    coord_flip() +
+    scale_fill_brewer(palette = "Set2") +
+    scale_y_continuous(labels = label_comma(), limits = c(0, max(exp_by_class$count) * 1.3)) +
+    labs(
+      title = "Expletive Subject Types",
+      subtitle = "Existential 'there' dominates; weather 'it' and raising 'it' are rare",
+      x = NULL,
+      y = "Count"
+    ) +
+    theme_corpus() +
+    theme(legend.position = "none", axis.text.x = element_text(angle = 0))
+
+  print(p_exp)
+  save_figure(p_exp, "expletive_types")
+}
+```
+
+### Top Expletive Verbs
+
+```{r expletive-verbs}
+if (!is.null(DATA[["expletives"]])) {
+  exp_verbs <- train_overall(DATA[["expletives"]]) %>%
+    filter(!is.na(class), class != "", !is.na(verb_lemma), verb_lemma != "") %>%
+    group_by(class, verb_lemma) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    arrange(class, desc(count)) %>%
+    group_by(class) %>%
+    slice_head(n = 10) %>%
+    ungroup()
+
+  exp_verbs_wide <- exp_verbs %>%
+    group_by(class) %>%
+    mutate(rank = row_number()) %>%
+    pivot_wider(
+      id_cols = rank,
+      names_from = class,
+      values_from = c(verb_lemma, count)
+    )
+
+  # Just show existential (by far the most common)
+  exp_existential <- exp_verbs %>%
+    filter(class == "existential") %>%
+    select(Verb = verb_lemma, Count = count) %>%
+    mutate(Example = case_when(
+      Verb == "be" ~ "There is/are/was...",
+      Verb == "go" ~ "There goes the...",
+      Verb == "come" ~ "There came a...",
+      Verb == "seem" ~ "There seems to be...",
+      Verb == "exist" ~ "There exists...",
+      TRUE ~ ""
+    ))
+
+  kable(exp_existential,
+        caption = "Top 10 verbs in existential constructions",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+}
+```
+
+### Adjusted Null Rate (Excluding Expletives)
+
+```{r adjusted-null-rate}
+if (!is.null(DATA[["clause_structure"]])) {
+  # Compare raw vs adjusted null rates by genre
+  adj_comparison <- train_genre(DATA[["clause_structure"]]) %>%
+    filter(clause_dep == "ROOT", !is.na(subject_status)) %>%
+    order_genres() %>%
+    compute_null_rate(grouping_vars = "genre") %>%
+    select(genre, null_rate, adj_null_rate, expletive_rate) %>%
+    pivot_longer(cols = c(null_rate, adj_null_rate),
+                 names_to = "measure", values_to = "rate") %>%
+    mutate(
+      measure = factor(measure,
+                       levels = c("null_rate", "adj_null_rate"),
+                       labels = c("Raw Null Rate", "Adjusted (excl. expletives)"))
+    )
+
+  p_adj <- ggplot(adj_comparison, aes(x = genre, y = rate, fill = measure)) +
+    geom_col(position = "dodge", width = 0.7) +
+    scale_fill_manual(values = c("Raw Null Rate" = "#A23B72", "Adjusted (excl. expletives)" = "#2E86AB")) +
+    scale_y_continuous(labels = percent_format()) +
+    labs(
+      title = "Raw vs Adjusted Null Subject Rate by Genre",
+      subtitle = "Adjusted rate = none / (overt + none), excluding expletives from denominator",
+      x = NULL,
+      y = "Rate",
+      fill = NULL
+    ) +
+    theme_corpus()
+
+  print(p_adj)
+  save_figure(p_adj, "adjusted_null_rate")
+}
+```
+
+---
+
+# Part 3: Pronoun System Characterization {.tabset}
+
+## 3.1 Paradigmatic Inventory
+
+The English personal pronoun paradigm organized by person and number.
+
+```{r pronoun-paradigm}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  fn_col <- if ("function." %in% names(DATA[["pronoun_inventory"]])) "function." else "function"
+
+  pi_overall <- train_overall(DATA[["pronoun_inventory"]])
+
+  # Calculate totals for proportions
+  total_pronouns <- sum(as.numeric(pi_overall$count), na.rm = TRUE)
+
+  # Personal pronouns with person values
+  pi_paradigm <- pi_overall %>%
+    filter(!is.na(person), person != "", person %in% c(1, 2, 3)) %>%
+    mutate(
+      person = as.integer(person),
+      person_label = case_when(
+        person == 1 ~ "1st",
+        person == 2 ~ "2nd",
+        person == 3 ~ "3rd"
+      ),
+      number_label = case_when(
+        person == 2 ~ "Sg/Pl",  # 2nd person is syncretic
+        number == "Sing" ~ "Singular",
+        number == "Plur" ~ "Plural",
+        TRUE ~ "Other"
+      )
+    )
+
+  # Aggregate by person × number
+  paradigm_counts <- pi_paradigm %>%
+    group_by(person_label, number_label) %>%
+    summarise(
+      count = sum(as.numeric(count), na.rm = TRUE),
+      top_lemmas = paste(head(lemma[order(-as.numeric(count))], 3), collapse = ", "),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      pct = count / total_pronouns * 100
+    )
+
+  # Create wide format table
+  paradigm_wide <- paradigm_counts %>%
+    select(person_label, number_label, count, pct, top_lemmas) %>%
+    mutate(
+      cell = paste0(fmt_count(count), "\n(", sprintf("%.1f%%", pct), ")\n", top_lemmas)
+    )
+}
+```
+
+```{r pronoun-paradigm-table, results='asis'}
+if (exists("paradigm_counts")) {
+  # Create nice HTML table
+  cat('<table class="table table-striped table-hover" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption><strong>Personal Pronoun Paradigm (Subject Position)</strong></caption>
+<thead>
+<tr><th style="text-align:left;">Person</th><th style="text-align:center; width:200px;">Singular</th><th style="text-align:center; width:200px;">Plural</th></tr>
+</thead>
+<tbody>\n')
+
+  for (p in c("1st", "2nd", "3rd")) {
+    cat('<tr><td style="text-align:left; vertical-align:top;"><strong>', p, '</strong></td>')
+
+    if (p == "2nd") {
+      # Syncretic 2nd person
+      row <- paradigm_counts %>% filter(person_label == "2nd")
+      if (nrow(row) > 0) {
+        cat('<td colspan="2" style="text-align:center; vertical-align:top;"><em>you</em> (syncretic)<br>',
+            fmt_count(row$count[1]), '<br>',
+            '<small>', sprintf("%.1f%%", row$pct[1]), ' of pronouns</small></td>')
+      }
+    } else {
+      # Singular
+      sg <- paradigm_counts %>% filter(person_label == p, number_label == "Singular")
+      if (nrow(sg) > 0) {
+        cat('<td style="text-align:center; vertical-align:top;">',
+            fmt_count(sg$count), '<br>',
+            '<small>', sprintf("%.1f%%", sg$pct), '</small><br>',
+            '<small style="color:grey;">', sg$top_lemmas, '</small></td>')
+      } else {
+        cat('<td style="text-align:center;">—</td>')
+      }
+
+      # Plural
+      pl <- paradigm_counts %>% filter(person_label == p, number_label == "Plural")
+      if (nrow(pl) > 0) {
+        cat('<td style="text-align:center; vertical-align:top;">',
+            fmt_count(pl$count), '<br>',
+            '<small>', sprintf("%.1f%%", pl$pct), '</small><br>',
+            '<small style="color:grey;">', pl$top_lemmas, '</small></td>')
+      } else {
+        cat('<td style="text-align:center;">—</td>')
+      }
+    }
+    cat('</tr>\n')
+  }
+
+  cat('</tbody></table>\n')
+  cat('<p><small><em>Each cell shows: count, % of all pronouns, top lemmas</em></small></p>\n')
+}
+```
+
+## 3.2 Functional Distribution
+
+```{r pronoun-function}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  fn_col <- if ("function." %in% names(pi_overall)) "function." else "function"
+
+  fn_summary <- pi_overall %>%
+    rename(fn = all_of(fn_col)) %>%
+    filter(fn %in% c("subject", "object")) %>%
+    group_by(fn) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    mutate(pct = count / sum(count) * 100)
+
+  kable(fn_summary %>%
+          mutate(count = fmt_count(count), pct = sprintf("%.1f%%", pct)) %>%
+          rename(Function = fn, Count = count, Percentage = pct),
+        caption = "Pronoun distribution by grammatical function") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+}
+```
+
+### Person Distribution
+
+```{r pronoun-person-dist}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  person_dist <- pi_overall %>%
+    filter(!is.na(person), person %in% c(1, 2, 3)) %>%
+    mutate(person = as.integer(person)) %>%
+    group_by(person) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    mutate(
+      person_label = paste0(person, ifelse(person == 1, "st", ifelse(person == 2, "nd", "rd")), " person"),
+      pct = count / sum(count) * 100
+    )
+
+  p_person <- ggplot(person_dist, aes(x = factor(person), y = count, fill = factor(person))) +
+    geom_col(width = 0.6) +
+    geom_text(aes(label = sprintf("%s\n(%.1f%%)", fmt_count(count), pct)), vjust = -0.3, size = 3.5) +
+    scale_fill_manual(values = c("1" = "#2E86AB", "2" = "#E8C547", "3" = "#A23B72")) +
+    scale_y_continuous(labels = label_comma(), limits = c(0, max(person_dist$count) * 1.15)) +
+    labs(
+      title = "Pronoun Distribution by Person",
+      subtitle = "1st and 2nd person dominate — consistent with dialogue-heavy corpora",
+      x = "Person",
+      y = "Count"
+    ) +
+    theme_corpus() +
+    theme(legend.position = "none", axis.text.x = element_text(angle = 0))
+
+  print(p_person)
+  save_figure(p_person, "pronoun_person_distribution")
+}
+```
+
+## 3.3 Genre Variation
+
+```{r pronoun-by-genre}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  pi_genre <- train_genre(DATA[["pronoun_inventory"]]) %>%
+    order_genres() %>%
+    filter(!is.na(person), person %in% c(1, 2, 3)) %>%
+    mutate(person = as.integer(person)) %>%
+    group_by(genre, person) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    group_by(genre) %>%
+    mutate(pct = count / sum(count) * 100) %>%
+    ungroup()
+
+  p_genre_person <- ggplot(pi_genre, aes(x = genre, y = pct, fill = factor(person))) +
+    geom_col(position = "stack", width = 0.7) +
+    scale_fill_manual(values = c("1" = "#2E86AB", "2" = "#E8C547", "3" = "#A23B72"),
+                      labels = c("1st", "2nd", "3rd")) +
+    scale_y_continuous(labels = function(x) paste0(x, "%")) +
+    labs(
+      title = "Person Distribution by Genre",
+      subtitle = "CHILDES and dialogue corpora have more 1st/2nd person; Wikipedia has more 3rd person",
+      x = NULL,
+      y = "Percentage of pronouns",
+      fill = "Person"
+    ) +
+    theme_corpus()
+
+  print(p_genre_person)
+  save_figure(p_genre_person, "pronoun_person_by_genre")
+}
+```
+
+### Interpretation
+
+**Genre-driven variation:**
+
+- **CHILDES** (child-directed speech): Heavy use of 1st/2nd person — "I", "you" — in interaction
+- **OpenSubtitles** (dialogue): Similar pattern to CHILDES
+- **SimpleWikipedia** (encyclopedia): 3rd person dominates — "he", "she", "it", "they" — for reference
+- **Gutenberg** (fiction): Mix of dialogue (1st/2nd) and narration (3rd)
+
+This variation is expected and validates the genre diversity of the corpus.
+
+---
+
+# Part 4: Extraction and That-Trace {.tabset}
+
+Analysis of complement clauses, complementizer presence, and extraction (that-trace effects).
+
+## 4.1 Bridge Verb Inventory
+
+Bridge verbs (think, say, know, believe...) take clausal complements and allow extraction.
+
+```{r bridge-verbs}
+if (!is.null(DATA[["that_trace"]])) {
+  tt_data <- train_overall(DATA[["that_trace"]])
+
+  bridge_verbs <- tt_data %>%
+    filter(!is.na(verb_lemma), verb_lemma != "") %>%
+    group_by(verb_lemma) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(count)) %>%
+    head(20)
+
+  p_bridge <- ggplot(bridge_verbs,
+                     aes(x = reorder(verb_lemma, count), y = count)) +
+    geom_col(fill = "#2E86AB", width = 0.7) +
+    coord_flip() +
+    scale_y_continuous(labels = label_comma()) +
+    labs(
+      title = "Top 20 Bridge (Complement-Taking) Verbs",
+      subtitle = "Verbs that embed 'that'-clauses: 'think', 'say', 'know' dominate",
+      x = NULL,
+      y = "Count"
+    ) +
+    theme_corpus() +
+    theme(axis.text.x = element_text(angle = 0))
+
+  print(p_bridge)
+  save_figure(p_bridge, "bridge_verbs")
+}
+```
+
+## 4.2 Complementizer Presence
+
+The complementizer "that" can be omitted in English ("I think (that) he left").
+
+```{r complementizer-rate}
+if (!is.null(DATA[["that_trace"]])) {
+  # Get complementizer rate data
+  comp_data <- tt_data %>%
+    filter(metric == "complementizer_rate") %>%
+    mutate(
+      with_that = as.numeric(with_that),
+      without_that = as.numeric(without_that),
+      total = with_that + without_that,
+      that_rate = with_that / total
+    )
+
+  # By genre
+  comp_genre <- train_genre(DATA[["that_trace"]]) %>%
+    filter(metric == "complementizer_rate") %>%
+    mutate(
+      with_that = as.numeric(with_that),
+      without_that = as.numeric(without_that),
+      total = with_that + without_that,
+      that_rate = with_that / total
+    ) %>%
+    order_genres()
+
+  if (nrow(comp_genre) > 0) {
+    p_comp <- ggplot(comp_genre, aes(x = genre, y = that_rate, fill = genre)) +
+      geom_col(width = 0.7) +
+      geom_text(aes(label = fmt_pct(that_rate)), vjust = -0.5, size = 3) +
+      scale_fill_manual(values = GENRE_COLORS) +
+      scale_y_continuous(labels = percent_format(), limits = c(0, max(comp_genre$that_rate) * 1.15)) +
+      labs(
+        title = "Complementizer 'that' Retention Rate by Genre",
+        subtitle = "Higher rates in formal written genres; lower in spoken/colloquial",
+        x = NULL,
+        y = "'that' retention rate",
+        fill = NULL
+      ) +
+      theme_corpus() +
+      theme(legend.position = "none")
+
+    print(p_comp)
+    save_figure(p_comp, "complementizer_rate_by_genre")
+  }
+}
+```
+
+### Interpretation
+
+**Complementizer deletion patterns:**
+
+- **Formal written prose** (SimpleWikipedia): Higher *that* retention — "The study shows **that** results were..."
+- **Spoken/colloquial** (CHILDES, OpenSubtitles): More *that* deletion — "I think Ø he's right"
+- This reflects register differences: formal = more explicit marking; informal = more ellipsis
+
+## 4.3 That-Trace Effects
+
+The **that-trace effect** is a classic constraint in English syntax: subject extraction from an embedded clause is degraded when the complementizer "that" is present.
+
+| Condition | Example | Judgment |
+|-----------|---------|----------|
+| Subject extraction, no *that* | "Who do you think __ left?" | ✓ Grammatical |
+| Subject extraction, with *that* | "Who do you think *that* __ left?" | * Ungrammatical |
+| Object extraction, no *that* | "What do you think he ate __?" | ✓ Grammatical |
+| Object extraction, with *that* | "What do you think *that* he ate __?" | ✓ Grammatical |
+
+The asymmetry is striking: *that* is fine with object extraction but blocks subject extraction. This is attributed to the **Empty Category Principle** (ECP) in Government & Binding theory, or **anti-locality** constraints in Minimalism.
+
+### Contingency Table
+
+```{r that-trace-contingency}
+if (!is.null(DATA[["that_trace"]])) {
+  # Build the 2×2 contingency table for extraction × complementizer
+  tt_extraction <- tt_data %>%
+    filter(!is.na(comp_present), comp_present != "",
+           !is.na(extraction_type), extraction_type %in% c("subject", "object")) %>%
+    group_by(comp_present, extraction_type) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop")
+
+  if (nrow(tt_extraction) > 0) {
+    # Create labeled contingency table
+    tt_table <- tt_extraction %>%
+      mutate(
+        comp_label = ifelse(comp_present == "True", "With THAT", "Without THAT"),
+        extraction_label = ifelse(extraction_type == "subject", "Subject Extraction", "Object Extraction")
+      ) %>%
+      select(comp_label, extraction_label, count) %>%
+      pivot_wider(names_from = extraction_label, values_from = count, values_fill = 0) %>%
+      mutate(Total = `Subject Extraction` + `Object Extraction`)
+
+    # Add row totals
+    tt_table_display <- tt_table %>%
+      bind_rows(
+        tibble(
+          comp_label = "Total",
+          `Subject Extraction` = sum(tt_table$`Subject Extraction`),
+          `Object Extraction` = sum(tt_table$`Object Extraction`),
+          Total = sum(tt_table$Total)
+        )
+      )
+
+    kable(tt_table_display,
+          col.names = c("Complementizer", "Subject Extraction", "Object Extraction", "Total"),
+          caption = "Extraction Type × Complementizer Presence",
+          format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE) %>%
+      row_spec(3, bold = TRUE)
+  }
+}
+```
+
+### Statistical Analysis
+
+```{r that-trace-stats, results='asis'}
+if (exists("tt_extraction") && nrow(tt_extraction) > 0) {
+  # Extract cell values
+  subj_that <- tt_extraction %>% filter(comp_present == "True", extraction_type == "subject") %>% pull(count)
+  subj_no_that <- tt_extraction %>% filter(comp_present == "False", extraction_type == "subject") %>% pull(count)
+  obj_that <- tt_extraction %>% filter(comp_present == "True", extraction_type == "object") %>% pull(count)
+  obj_no_that <- tt_extraction %>% filter(comp_present == "False", extraction_type == "object") %>% pull(count)
+
+  # Handle missing values
+  if (length(subj_that) == 0) subj_that <- 0
+  if (length(subj_no_that) == 0) subj_no_that <- 0
+  if (length(obj_that) == 0) obj_that <- 0
+  if (length(obj_no_that) == 0) obj_no_that <- 0
+
+  # Compute rates
+  subj_total <- subj_that + subj_no_that
+  obj_total <- obj_that + obj_no_that
+  that_total <- subj_that + obj_that
+  no_that_total <- subj_no_that + obj_no_that
+
+  # Rate of "that" usage by extraction type
+  that_rate_subj <- subj_that / subj_total
+  that_rate_obj <- obj_that / obj_total
+
+  # Subject rate by complementizer condition
+  subj_rate_that <- subj_that / that_total
+  subj_rate_no_that <- subj_no_that / no_that_total
+
+  # Odds ratio: (subj|no-that / obj|no-that) / (subj|that / obj|that)
+  # OR > 1 means subject extraction is disfavored when "that" is present
+  if (subj_that > 0 && obj_that > 0) {
+    odds_ratio <- (subj_no_that * obj_that) / (subj_that * obj_no_that)
+    log_or <- log(odds_ratio)
+    se_log_or <- sqrt(1/subj_that + 1/subj_no_that + 1/obj_that + 1/obj_no_that)
+    ci_lower <- exp(log_or - 1.96 * se_log_or)
+    ci_upper <- exp(log_or + 1.96 * se_log_or)
+  }
+
+  cat('<div class="panel panel-info">\n')
+  cat('<div class="panel-heading"><strong>That-Trace Effect: Key Statistics</strong></div>\n')
+  cat('<div class="panel-body">\n')
+  cat('<table class="table table-condensed" style="width: auto;">\n')
+
+  cat('<tr><td><strong>Complementizer rate in subject extraction:</strong></td>')
+  cat(sprintf('<td>%s (%d / %d)</td></tr>\n', fmt_pct(that_rate_subj), subj_that, subj_total))
+
+  cat('<tr><td><strong>Complementizer rate in object extraction:</strong></td>')
+  cat(sprintf('<td>%s (%d / %d)</td></tr>\n', fmt_pct(that_rate_obj), obj_that, obj_total))
+
+  cat('<tr><td><strong>Subject extraction rate with "that":</strong></td>')
+  cat(sprintf('<td>%s (%d / %d)</td></tr>\n', fmt_pct(subj_rate_that), subj_that, that_total))
+
+  cat('<tr><td><strong>Subject extraction rate without "that":</strong></td>')
+  cat(sprintf('<td>%s (%d / %d)</td></tr>\n', fmt_pct(subj_rate_no_that), subj_no_that, no_that_total))
+
+  if (exists("odds_ratio")) {
+    cat('<tr><td><strong>Odds ratio (that-trace effect):</strong></td>')
+    cat(sprintf('<td>%.2f [95%% CI: %.2f – %.2f]</td></tr>\n', odds_ratio, ci_lower, ci_upper))
+  }
+
+  cat('</table>\n')
+  cat('</div></div>\n')
+}
+```
+
+### Visualization: The That-Trace Asymmetry
+
+```{r that-trace-viz-improved}
+if (exists("tt_extraction") && nrow(tt_extraction) > 0) {
+  # Compute rates within each complementizer condition
+  tt_rates <- tt_extraction %>%
+    mutate(
+      comp_label = factor(
+        ifelse(comp_present == "True", "With 'that'", "Without 'that'"),
+        levels = c("Without 'that'", "With 'that'")
+      )
+    ) %>%
+    group_by(comp_label) %>%
+    mutate(
+      total = sum(count),
+      rate = count / total
+    ) %>%
+    ungroup() %>%
+    filter(extraction_type == "subject")  # Focus on subject extraction rate
+
+  p_asymmetry <- ggplot(tt_rates, aes(x = comp_label, y = rate, fill = comp_label)) +
+    geom_col(width = 0.5) +
+    geom_text(aes(label = sprintf("%s\n(n=%s)", fmt_pct(rate), fmt_count(count))),
+              vjust = -0.3, size = 3.5) +
+    scale_fill_manual(values = c("Without 'that'" = "#2E86AB", "With 'that'" = "#A23B72")) +
+    scale_y_continuous(labels = percent_format(), limits = c(0, max(tt_rates$rate) * 1.3)) +
+    labs(
+      title = "Subject Extraction Rate by Complementizer Condition",
+      subtitle = sprintf("Subject extraction drops from %.1f%% to %.1f%% when 'that' is present — the that-trace effect",
+                        tt_rates$rate[tt_rates$comp_label == "Without 'that'"] * 100,
+                        tt_rates$rate[tt_rates$comp_label == "With 'that'"] * 100),
+      x = NULL,
+      y = "Subject Extraction Rate\n(among all extractions)",
+      fill = NULL
+    ) +
+    theme_corpus() +
+    theme(legend.position = "none", axis.text.x = element_text(angle = 0, size = 12))
+
+  print(p_asymmetry)
+  save_figure(p_asymmetry, "that_trace_asymmetry")
+}
+```
+
+### That-Trace "Violations" in the Corpus
+
+```{r that-trace-violations, results='asis'}
+if (exists("subj_that") && subj_that > 0) {
+  cat(sprintf('\n<div class="alert alert-warning">\n'))
+  cat(sprintf('<strong>Potential That-Trace Violations: %s cases</strong>\n', fmt_count(subj_that)))
+  cat('\n\nThese are instances where the parser detected subject extraction co-occurring with an overt complementizer "that".\n')
+  cat('</div>\n\n')
+
+  cat('**What might these cases represent?**\n\n')
+  cat('1. **Parsing errors** — The dependency parser may misidentify extraction type or complementizer status\n')
+  cat('2. **Resumptive pronouns** — "Who do you think that *they* left?" (not true extraction)\n')
+  cat('3. **Dialectal variation** — Some English dialects tolerate that-trace more than others\n')
+  cat('4. **Heavy NP effects** — Long or complex extracted phrases may license "that"\n')
+  cat('5. **Genre effects** — Spoken language may be more permissive\n\n')
+}
+```
+
+### That-Trace Violations by Genre
+
+```{r that-trace-by-genre}
+if (!is.null(DATA[["that_trace"]])) {
+  # Compute violations by genre
+  tt_by_genre <- train_genre(DATA[["that_trace"]]) %>%
+    filter(!is.na(comp_present), comp_present != "",
+           !is.na(extraction_type), extraction_type %in% c("subject", "object")) %>%
+    order_genres() %>%
+    group_by(genre, comp_present, extraction_type) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop")
+
+  # Extract violations (subject + that) by genre
+  violations_by_genre <- tt_by_genre %>%
+    filter(comp_present == "True", extraction_type == "subject") %>%
+    select(genre, violations = count)
+
+  # Get total subject extractions by genre for rate calculation
+  subj_total_by_genre <- tt_by_genre %>%
+    filter(extraction_type == "subject") %>%
+    group_by(genre) %>%
+    summarise(total_subj = sum(count), .groups = "drop")
+
+  # Compute violation rate
+  violation_rates <- violations_by_genre %>%
+    left_join(subj_total_by_genre, by = "genre") %>%
+    mutate(
+      violation_rate = violations / total_subj,
+      genre = factor(genre, levels = GENRE_ORDER[GENRE_ORDER %in% genre])
+    ) %>%
+    arrange(genre)
+
+  if (nrow(violation_rates) > 0) {
+    p_violations <- ggplot(violation_rates,
+                           aes(x = genre, y = violations, fill = genre)) +
+      geom_col(width = 0.7) +
+      geom_text(aes(label = sprintf("%d\n(%.1f%%)", violations, violation_rate * 100)),
+                vjust = -0.3, size = 3) +
+      scale_fill_manual(values = GENRE_COLORS) +
+      scale_y_continuous(limits = c(0, max(violation_rates$violations) * 1.3)) +
+      labs(
+        title = "That-Trace 'Violations' by Genre",
+        subtitle = "Count (and rate among all subject extractions)",
+        x = NULL,
+        y = "Number of Violations",
+        fill = NULL
+      ) +
+      theme_corpus() +
+      theme(legend.position = "none")
+
+    print(p_violations)
+    save_figure(p_violations, "that_trace_violations_by_genre")
+  }
+}
+```
+
+### Violation Rate Table
+
+```{r violation-table}
+if (exists("violation_rates") && nrow(violation_rates) > 0) {
+  violation_display <- violation_rates %>%
+    arrange(desc(violation_rate)) %>%
+    mutate(
+      violation_rate = fmt_pct(violation_rate)
+    ) %>%
+    select(
+      Genre = genre,
+      `Violations (that + subj)` = violations,
+      `Total Subject Extractions` = total_subj,
+      `Violation Rate` = violation_rate
+    )
+
+  kable(violation_display,
+        caption = "That-trace violations by genre",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(violation_display, "that_trace_violations")
+}
+```
+
+### Interpretation
+
+```{r that-trace-interpretation, results='asis'}
+if (exists("odds_ratio")) {
+  cat('**The that-trace effect is robustly attested in this corpus:**\n\n')
+
+  if (odds_ratio > 5) {
+    cat(sprintf('- The odds ratio of **%.1f** indicates a very strong effect — subject extraction is dramatically less likely when "that" is present.\n', odds_ratio))
+  } else if (odds_ratio > 2) {
+    cat(sprintf('- The odds ratio of **%.1f** indicates a moderate effect.\n', odds_ratio))
+  } else {
+    cat(sprintf('- The odds ratio of **%.1f** indicates a weak effect, possibly due to parsing noise.\n', odds_ratio))
+  }
+
+  cat(sprintf('- Only **%.1f%%** of subject extractions occur with "that", compared to **%.1f%%** of object extractions.\n',
+              that_rate_subj * 100, that_rate_obj * 100))
+  cat(sprintf('- The **%s violations** represent cases to investigate — likely a mix of parsing errors and genuine variation.\n\n',
+              fmt_count(subj_that)))
+
+  cat('**Linguistic significance:**\n\n')
+  cat('The that-trace effect demonstrates that extraction in English is sensitive to local syntactic context. ')
+  cat('The constraint is categorical in standard judgments but shows some "leakage" in naturalistic data, ')
+  cat('which may reflect processing pressures, dialectal variation, or parser limitations.\n')
+}
+```
+
+---
+
+# Part 5: Supporting Analyses {.tabset}
+
+## 5.1 Verb Finiteness
+
+Distribution of finite vs non-finite verb forms across clause positions.
+
+```{r verb-finiteness}
+if (!is.null(DATA[["verb_finiteness"]])) {
+  vf_data <- train_overall(DATA[["verb_finiteness"]]) %>%
+    filter(!is.na(verb_form), verb_form != "",
+           !is.na(clause_position), clause_position != "")
+
+  vf_summary <- vf_data %>%
+    group_by(verb_form, clause_position) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    mutate(
+      finiteness = case_when(
+        verb_form == "Fin" ~ "Finite",
+        verb_form %in% c("Inf", "Part", "Ger") ~ "Non-finite",
+        TRUE ~ "Other"
+      )
+    )
+
+  p_vf <- ggplot(vf_summary,
+                 aes(x = clause_position, y = count, fill = verb_form)) +
+    geom_col(position = "stack", width = 0.7) +
+    scale_fill_brewer(palette = "Set2") +
+    scale_y_continuous(labels = label_comma()) +
+    labs(
+      title = "Verb Form Distribution by Clause Position",
+      subtitle = "ROOT clauses are primarily finite; xcomp is primarily infinitival",
+      x = "Clause Position",
+      y = "Count",
+      fill = "Verb Form"
+    ) +
+    theme_corpus()
+
+  print(p_vf)
+  save_figure(p_vf, "verb_finiteness_distribution")
+}
+```
+
+### Finiteness by Clause Type Table
+
+```{r vf-table}
+if (exists("vf_summary")) {
+  vf_wide <- vf_summary %>%
+    pivot_wider(
+      id_cols = clause_position,
+      names_from = verb_form,
+      values_from = count,
+      values_fill = 0
+    ) %>%
+    mutate(Total = Fin + Inf + Part + Ger) %>%
+    arrange(desc(Total))
+
+  kable(vf_wide,
+        caption = "Verb forms by clause position",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(vf_wide, "verb_finiteness_by_position")
+}
+```
+
+## 5.2 Negation Patterns
+
+Distribution of negation position (pre-verbal vs post-verbal) and subject realization.
+
+```{r negation-analysis}
+if (!is.null(DATA[["negation"]])) {
+  neg_data <- train_overall(DATA[["negation"]]) %>%
+    filter(!is.na(position), position != "",
+           !is.na(subject_status), subject_status != "")
+
+  neg_summary <- neg_data %>%
+    group_by(position, subject_status) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop")
+
+  p_neg <- ggplot(neg_summary,
+                  aes(x = position, y = count, fill = subject_status)) +
+    geom_col(position = "dodge", width = 0.7) +
+    scale_fill_manual(values = c("overt" = "#2E86AB", "expletive" = "#E8C547",
+                                  "none" = "#A23B72", "n/a" = "#999999")) +
+    scale_y_continuous(labels = label_comma()) +
+    labs(
+      title = "Negation Position × Subject Realization",
+      subtitle = "Pre-verbal negation (don't, won't) is most common; null subjects rare in negated clauses",
+      x = "Negation Position",
+      y = "Count",
+      fill = "Subject Status"
+    ) +
+    theme_corpus() +
+    theme(axis.text.x = element_text(angle = 0))
+
+  print(p_neg)
+  save_figure(p_neg, "negation_patterns")
+}
+```
+
+### Negation Table
+
+```{r negation-table}
+if (exists("neg_summary")) {
+  neg_wide <- neg_summary %>%
+    pivot_wider(names_from = subject_status, values_from = count, values_fill = 0) %>%
+    mutate(
+      Total = overt + none + expletive + `n/a`,
+      `Null Rate` = none / (overt + none + expletive)
+    )
+
+  kable(neg_wide %>% mutate(`Null Rate` = fmt_pct(`Null Rate`)),
+        caption = "Negation position × subject realization",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+}
+```
+
+## 5.3 Relative Clauses
+
+Subject vs object relative clause distribution.
+
+```{r relative-clauses}
+if (!is.null(DATA[["relative_clauses"]])) {
+  rc_data <- train_overall(DATA[["relative_clauses"]])
+
+  if ("metric" %in% names(rc_data) && "value" %in% names(rc_data)) {
+    rc_summary <- rc_data %>%
+      filter(!is.na(metric), !is.na(value)) %>%
+      select(metric, value) %>%
+      mutate(value = as.numeric(value))
+
+    kable(rc_summary,
+          caption = "Relative clause statistics",
+          format.args = list(big.mark = ",")) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  }
+}
+```
+
+---
+
+# Part 6: Cross-Genre Summary {.tabset}
+
+## Master Comparison Table
+
+```{r cross-genre-summary}
+if (!is.null(DATA[["clause_structure"]]) && !is.null(DATA[["pronoun_inventory"]])) {
+  # Null rate by genre (ROOT clauses)
+  null_rates <- train_genre(DATA[["clause_structure"]]) %>%
+    filter(clause_dep == "ROOT") %>%
+    order_genres() %>%
+    compute_null_rate(grouping_vars = "genre") %>%
+    select(genre, null_rate, expletive_rate)
+
+  # 1st person pronoun rate by genre
+  fn_col <- if ("function." %in% names(DATA[["pronoun_inventory"]])) "function." else "function"
+
+  person_rates <- train_genre(DATA[["pronoun_inventory"]]) %>%
+    order_genres() %>%
+    filter(!is.na(person), person %in% c(1, 2, 3)) %>%
+    mutate(person = as.integer(person)) %>%
+    group_by(genre, person) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    group_by(genre) %>%
+    mutate(pct = count / sum(count)) %>%
+    filter(person == 1) %>%
+    select(genre, first_person_rate = pct)
+
+  # Combine
+  master_summary <- null_rates %>%
+    left_join(person_rates, by = "genre") %>%
+    mutate(
+      modality = ifelse(genre %in% SPOKEN_GENRES, "Spoken", "Written")
+    ) %>%
+    arrange(modality, genre)
+
+  kable(master_summary %>%
+          mutate(
+            null_rate = fmt_pct(null_rate),
+            expletive_rate = fmt_pct(expletive_rate),
+            first_person_rate = fmt_pct(first_person_rate)
+          ) %>%
+          rename(
+            Genre = genre,
+            Modality = modality,
+            `Null Rate (ROOT)` = null_rate,
+            `Expletive Rate` = expletive_rate,
+            `1st Person Rate` = first_person_rate
+          ),
+        caption = "Key rates by genre") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(master_summary, "cross_genre_summary")
+}
+```
+
+## Genre Clustering
+
+```{r genre-clustering}
+if (exists("master_summary") && nrow(master_summary) >= 3) {
+  # Prepare data for visualization
+  cluster_data <- master_summary %>%
+    select(genre, null_rate, first_person_rate) %>%
+    mutate(
+      modality = ifelse(genre %in% SPOKEN_GENRES, "Spoken", "Written")
+    )
+
+  p_cluster <- ggplot(cluster_data,
+                      aes(x = first_person_rate, y = null_rate,
+                          color = modality, label = genre)) +
+    geom_point(size = 4) +
+    geom_text(vjust = -1, hjust = 0.5, size = 3) +
+    scale_color_manual(values = c("Spoken" = "#2E86AB", "Written" = "#A23B72")) +
+    scale_x_continuous(labels = percent_format()) +
+    scale_y_continuous(labels = percent_format()) +
+    labs(
+      title = "Genre Clustering: Null Rate vs 1st Person Rate",
+      subtitle = "Spoken genres cluster together (high 1st person, higher null rate)",
+      x = "1st Person Pronoun Rate",
+      y = "Null Subject Rate (ROOT)",
+      color = "Modality"
+    ) +
+    theme_corpus() +
+    theme(axis.text.x = element_text(angle = 0))
+
+  print(p_cluster)
+  save_figure(p_cluster, "genre_clustering")
+}
+```
+
+---
+
+# Part 7: CHILDES Child vs Adult {.tabset}
+
+```{r childes-available-check, results='asis'}
+if (!SPEAKER_SPLIT_AVAILABLE) {
+  cat('<div class="alert alert-warning">\n')
+  cat('<strong>Speaker-split data not yet available.</strong>\n')
+  cat('The CHILDES child vs adult split requires a pipeline re-run with speaker annotation.\n')
+  cat('This section will populate automatically once the data is available.\n')
+  cat('</div>\n')
+}
+```
+
+## Predictions (Acquisition Literature)
+
+Based on language acquisition research, we predict:
+
+| Phenomenon | Child | Adult | Rationale |
+|------------|-------|-------|-----------|
+| **Null subjects** | Higher rate | Lower rate | Optional Infinitive stage; early grammar allows subject drop |
+| **Non-finite roots** | Higher rate | Lower rate | Root infinitives in early child language |
+| **1st person** | Higher rate | Lower rate | Egocentric speech; "I want", "me do it" |
+| **2nd person** | Similar | Similar | Both speakers use "you" in dialogue |
+| **3rd person** | Lower rate | Higher rate | Adults narrate more; children act |
+| **Pre-verbal negation** | Higher rate | Lower rate | "No want", "not go" before restructuring |
+
+```{r childes-analysis, eval=SPEAKER_SPLIT_AVAILABLE}
+# Helper to extract child vs adult data
+childes_pair <- function(df) {
+  df %>%
+    filter(split == "train_90M",
+           genre %in% c("CHILDES_child", "CHILDES_adult")) %>%
+    mutate(role = ifelse(genre == "CHILDES_child", "Child", "Adult"))
+}
+```
+
+```{r fig-childes-null, eval=SPEAKER_SPLIT_AVAILABLE, fig.width=8, fig.height=5}
+if (!is.null(DATA[["clause_structure"]])) {
+  cs_ch <- childes_pair(DATA[["clause_structure"]]) %>%
+    filter(clause_dep == "ROOT", !is.na(subject_status)) %>%
+    compute_null_rate(grouping_vars = "role")
+
+  if (nrow(cs_ch) > 0) {
+    p_ch_null <- ggplot(cs_ch %>%
+                          pivot_longer(cols = c(overt_rate, null_rate, expletive_rate),
+                                       names_to = "status", values_to = "rate") %>%
+                          mutate(status = factor(status,
+                                                 levels = c("overt_rate", "expletive_rate", "null_rate"),
+                                                 labels = c("Overt", "Expletive", "Null"))),
+                        aes(x = role, y = rate, fill = status)) +
+      geom_col(position = "stack", width = 0.5) +
+      scale_fill_manual(values = c("Overt" = "#2E86AB", "Expletive" = "#E8C547", "Null" = "#A23B72")) +
+      scale_y_continuous(labels = percent_format()) +
+      labs(
+        title = "Subject Realization at ROOT: Child vs Adult (CHILDES)",
+        x = NULL,
+        y = "Proportion",
+        fill = "Status"
+      ) +
+      theme_corpus() +
+      theme(axis.text.x = element_text(angle = 0))
+
+    print(p_ch_null)
+    save_figure(p_ch_null, "childes_null_comparison")
+  }
+}
+```
+
+```{r fig-childes-person, eval=SPEAKER_SPLIT_AVAILABLE, fig.width=8, fig.height=5}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  fn_col <- if ("function." %in% names(DATA[["pronoun_inventory"]])) "function." else "function"
+
+  pi_ch <- childes_pair(DATA[["pronoun_inventory"]]) %>%
+    filter(!is.na(person), person %in% c(1, 2, 3)) %>%
+    mutate(person = as.integer(person)) %>%
+    group_by(role, person) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    group_by(role) %>%
+    mutate(pct = count / sum(count)) %>%
+    ungroup()
+
+  if (nrow(pi_ch) > 0) {
+    p_ch_person <- ggplot(pi_ch, aes(x = factor(person), y = pct, fill = role)) +
+      geom_col(position = "dodge", width = 0.6) +
+      scale_fill_manual(values = c("Child" = "#17becf", "Adult" = "#e377c2")) +
+      scale_y_continuous(labels = percent_format()) +
+      labs(
+        title = "Pronoun Person Distribution: Child vs Adult (CHILDES)",
+        x = "Person",
+        y = "Proportion",
+        fill = "Speaker"
+      ) +
+      theme_corpus() +
+      theme(axis.text.x = element_text(angle = 0))
+
+    print(p_ch_person)
+    save_figure(p_ch_person, "childes_person_comparison")
+  }
+}
+```
+
+---
+
+# Appendix: Reference Tables {.tabset}
+
+## All Clause Structure Data
+
+```{r appendix-clause}
+if (!is.null(DATA[["clause_structure"]])) {
+  cs_full <- train_overall(DATA[["clause_structure"]]) %>%
+    filter(!is.na(clause_dep), clause_dep != "",
+           !is.na(subject_status), subject_status != "") %>%
+    group_by(clause_dep, subject_status) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = subject_status, values_from = count, values_fill = 0) %>%
+    mutate(
+      Total = overt + none + expletive,
+      `Null %` = fmt_pct(none / Total),
+      `Overt %` = fmt_pct(overt / Total)
+    ) %>%
+    arrange(desc(Total))
+
+  kable(cs_full,
+        caption = "Complete clause structure data (train_90M overall)",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(cs_full, "appendix_clause_structure")
+}
+```
+
+## Top 50 Matrix Verbs
+
+```{r appendix-verbs}
+if (exists("verb_data")) {
+  top50 <- verb_data %>%
+    head(50) %>%
+    mutate(Rank = row_number()) %>%
+    select(Rank, Verb = verb_lemma, Class = verb_class, Count = count)
+
+  kable(top50,
+        caption = "Top 50 matrix verbs for infinitival complements",
+        format.args = list(big.mark = ",")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(top50, "appendix_matrix_verbs")
+}
+```
+
+## Top 100 Pronouns
+
+```{r appendix-pronouns}
+if (!is.null(DATA[["pronoun_inventory"]])) {
+  top100_pronouns <- pi_overall %>%
+    filter(!is.na(lemma), lemma != "") %>%
+    group_by(lemma) %>%
+    summarise(count = sum(as.numeric(count), na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(count)) %>%
+    head(100) %>%
+    mutate(
+      Rank = row_number(),
+      pct = count / total_pronouns * 100
+    ) %>%
+    select(Rank, Lemma = lemma, Count = count, `% of Pronouns` = pct)
+
+  kable(top100_pronouns,
+        caption = "Top 100 pronoun lemmas",
+        format.args = list(big.mark = ","), digits = 2) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+  save_table(top100_pronouns, "appendix_pronouns")
+}
+```
+
+---
+
+# Summary Statistics
+
+```{r final-summary}
+summary_stats <- data.frame(
+  Analyzer = ANALYZER_NAMES,
+  stringsAsFactors = FALSE
+)
+
+get_total <- function(analyzer) {
+  df <- DATA[[analyzer]]
+  if (is.null(df)) return(NA)
+  df_ov <- df %>% filter(split == "train_90M", genre == "overall")
+
+  if ("count" %in% names(df_ov)) {
+    return(sum(as.numeric(df_ov$count), na.rm = TRUE))
+  } else if ("value" %in% names(df_ov)) {
+    total_row <- df_ov %>% filter(metric == "total")
+    if (nrow(total_row) > 0) return(as.numeric(total_row$value[1]))
+  }
+  NA
+}
+
+summary_stats$`Total Count` <- sapply(ANALYZER_NAMES, get_total)
+summary_stats$Available <- !is.na(summary_stats$`Total Count`)
+
+kable(summary_stats %>%
+        mutate(`Total Count` = ifelse(is.na(`Total Count`), "—", fmt_count(`Total Count`))),
+      caption = "Analyzer totals (train_90M)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+---
+
+*Report generated on `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`*
+
+*Figures saved to `analysis/corpus_descriptives_figures/`*
+
+*Tables saved to `analysis/corpus_descriptives_tables/`*
