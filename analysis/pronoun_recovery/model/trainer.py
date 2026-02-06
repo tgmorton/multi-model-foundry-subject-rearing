@@ -1,12 +1,17 @@
 """
-Two-phase training pipeline for the pronoun recovery sequence labeler.
+Training pipeline for the pronoun recovery sequence labeler.
 
-Phase A pre-trains a DeBERTa token classifier on synthetic
-pronoun-dropped pairs (large scale, noisy labels).  Phase B optionally
-fine-tunes the best Phase A checkpoint on human- or LLM-validated
-annotation data (smaller scale, cleaner labels).
+Two strategies, selected via ``config.training_source``:
 
-Both phases use :class:`WeightedLossTrainer`, a custom HuggingFace
+- ``"synthetic"`` (English path): Fine-tune on large-scale synthetic
+  pronoun-removal pairs where overt pronouns are mechanically stripped.
+- ``"llm_annotated"`` (Italian path): Fine-tune on LLM-annotated
+  null-subject candidates where dropped pronouns are recovered via
+  few-shot prompting.
+
+Both strategies fine-tune a pre-trained model (e.g. mDeBERTa).
+
+Uses :class:`WeightedLossTrainer`, a custom HuggingFace
 :class:`~transformers.Trainer` subclass that applies inverse-frequency
 class weights to the cross-entropy loss to handle the severe imbalance
 between NONE and PRO.* labels.
@@ -92,174 +97,168 @@ class WeightedLossTrainer(Trainer):
 
 
 class PronounRecoveryTrainer:
-    """Two-phase training: pretrain on synthetic data, finetune on annotations.
+    """Fine-tune a pre-trained model for pronoun recovery.
 
-    Phase A trains on large-scale synthetic pairs (pronoun-dropped text
-    with automatic verb labels).  Phase B (optional) fine-tunes the
-    best Phase A checkpoint on smaller, higher-quality annotation data.
+    Strategy is determined by ``config.training_source``:
+
+    - ``"synthetic"``: Fine-tune on synthetic pronoun-removal pairs.
+      Reads ``train.jsonl`` / ``dev.jsonl`` from ``synthetic_data_path``.
+    - ``"llm_annotated"``: Fine-tune on LLM-annotated null-subject data.
+      Reads from ``annotation_data_path``, with 90/10 train/eval split.
     """
 
     def __init__(self, config: ModelTrainingConfig):
-        """Initialise from a :class:`ModelTrainingConfig`.
-
-        Args:
-            config: Training configuration (model name, hyperparameters,
-                data paths, quality gates, etc.).
-        """
         self.config = config
         self.tokenizer = AutoTokenizer.from_pretrained(config.model_name)
 
     def train(self) -> str:
-        """Run training (one or two phases depending on config).
-
-        If ``config.synthetic_data_path`` is provided, Phase A pre-trains
-        on synthetic data first.  If ``config.annotation_data_path`` is
-        provided, Phase B fine-tunes on annotation data (starting from
-        the Phase A checkpoint when available, otherwise from the
-        pretrained base model).
-
-        At least one of the two data paths must be set.
+        """Run training based on ``config.training_source``.
 
         Returns:
             Path to the final model directory.
         """
-        if self.config.synthetic_data_path is None and self.config.annotation_data_path is None:
+        source = self.config.training_source
+
+        if source == "synthetic":
+            return self._train_synthetic()
+        elif source == "llm_annotated":
+            return self._train_llm_annotated()
+        else:
             raise ValueError(
-                "At least one of synthetic_data_path or annotation_data_path must be set."
+                f"Unknown training_source '{source}'. "
+                f"Expected 'synthetic' or 'llm_annotated'."
+            )
+
+    def _train_synthetic(self) -> str:
+        """Fine-tune on synthetic pronoun-removal pairs (English path)."""
+        if self.config.synthetic_data_path is None:
+            raise ValueError(
+                "synthetic_data_path must be set for training_source='synthetic'"
             )
 
         output_base = Path(self.config.output_path)
         output_base.mkdir(parents=True, exist_ok=True)
 
-        best_phase_a = None
+        logger.info("=== Training on synthetic data ===")
 
-        # ── Phase A: Pretrain on synthetic data (optional) ───────────────
+        synthetic_train_path = Path(self.config.synthetic_data_path) / "train.jsonl"
+        synthetic_dev_path = Path(self.config.synthetic_data_path) / "dev.jsonl"
 
-        if self.config.synthetic_data_path is not None:
-            logger.info("=== Phase A: Pretraining on synthetic data ===")
+        train_dataset = build_dataset(
+            data_path=synthetic_train_path,
+            tokenizer=self.tokenizer,
+            max_length=self.config.max_seq_length,
+            max_samples=self.config.phase_a_max_samples,
+            data_type="synthetic",
+        )
+        eval_dataset = build_dataset(
+            data_path=synthetic_dev_path,
+            tokenizer=self.tokenizer,
+            max_length=self.config.max_seq_length,
+            max_samples=0,
+            data_type="synthetic",
+        )
 
-            synthetic_train_path = Path(self.config.synthetic_data_path) / "train.jsonl"
-            synthetic_dev_path = Path(self.config.synthetic_data_path) / "dev.jsonl"
+        logger.info(
+            "Synthetic data: %d train, %d eval examples",
+            len(train_dataset),
+            len(eval_dataset),
+        )
 
-            train_dataset = build_dataset(
-                data_path=synthetic_train_path,
-                tokenizer=self.tokenizer,
-                max_length=self.config.max_seq_length,
-                max_samples=self.config.phase_a_max_samples,
-                data_type="synthetic",
-            )
-            eval_dataset = build_dataset(
-                data_path=synthetic_dev_path,
-                tokenizer=self.tokenizer,
-                max_length=self.config.max_seq_length,
-                max_samples=0,
-                data_type="synthetic",
-            )
+        class_weights = compute_class_weights(train_dataset)
 
-            logger.info(
-                "Phase A data: %d train, %d eval examples",
-                len(train_dataset),
-                len(eval_dataset),
-            )
+        model = AutoModelForTokenClassification.from_pretrained(
+            self.config.model_name,
+            num_labels=NUM_LABELS,
+            id2label={i: label for i, label in enumerate(ALL_LABELS)},
+            label2id={label: i for i, label in enumerate(ALL_LABELS)},
+        )
 
-            class_weights = compute_class_weights(train_dataset)
+        best_ckpt = self._train_phase(
+            phase_name="synthetic",
+            model=model,
+            train_dataset=train_dataset,
+            eval_dataset=eval_dataset,
+            output_dir=output_base / "synthetic",
+            learning_rate=self.config.phase_a_lr,
+            batch_size=self.config.phase_a_batch_size,
+            num_epochs=self.config.phase_a_epochs,
+            patience=self.config.phase_a_patience,
+            class_weights=class_weights,
+        )
 
-            model = AutoModelForTokenClassification.from_pretrained(
-                self.config.model_name,
-                num_labels=NUM_LABELS,
-                id2label={i: label for i, label in enumerate(ALL_LABELS)},
-                label2id={label: i for i, label in enumerate(ALL_LABELS)},
-            )
+        return self._save_final(best_ckpt, output_base)
 
-            best_phase_a = self._train_phase(
-                phase_name="phase_a",
-                model=model,
-                train_dataset=train_dataset,
-                eval_dataset=eval_dataset,
-                output_dir=output_base / "phase_a",
-                learning_rate=self.config.phase_a_lr,
-                batch_size=self.config.phase_a_batch_size,
-                num_epochs=self.config.phase_a_epochs,
-                patience=self.config.phase_a_patience,
-                class_weights=class_weights,
-            )
-
-            logger.info("Phase A best checkpoint: %s", best_phase_a)
-
-        # ── Phase B: Train/finetune on annotations (optional) ────────────
-
-        if self.config.annotation_data_path is not None:
-            phase_label = "Phase B" if best_phase_a else "Training"
-            logger.info("=== %s: Training on annotation data ===", phase_label)
-
-            annotation_path = Path(self.config.annotation_data_path)
-
-            annot_train_dataset = build_dataset(
-                data_path=annotation_path,
-                tokenizer=self.tokenizer,
-                max_length=self.config.max_seq_length,
-                max_samples=0,
-                data_type="annotation",
+    def _train_llm_annotated(self) -> str:
+        """Fine-tune on LLM-annotated null-subject data (Italian path)."""
+        if self.config.annotation_data_path is None:
+            raise ValueError(
+                "annotation_data_path must be set for training_source='llm_annotated'"
             )
 
-            # Use 10% of annotation data for evaluation.
-            split = annot_train_dataset.train_test_split(test_size=0.1, seed=self.config.seed)
-            annot_train = split["train"]
-            annot_eval = split["test"]
+        output_base = Path(self.config.output_path)
+        output_base.mkdir(parents=True, exist_ok=True)
 
-            logger.info(
-                "%s data: %d train, %d eval examples",
-                phase_label,
-                len(annot_train),
-                len(annot_eval),
-            )
+        logger.info("=== Training on LLM-annotated data ===")
 
-            annot_class_weights = compute_class_weights(annot_train)
+        annotation_path = Path(self.config.annotation_data_path)
 
-            # Start from Phase A checkpoint if available, else from base model.
-            init_model = best_phase_a or self.config.model_name
-            phase_b_model = AutoModelForTokenClassification.from_pretrained(
-                init_model,
-                num_labels=NUM_LABELS,
-                id2label={i: label for i, label in enumerate(ALL_LABELS)},
-                label2id={label: i for i, label in enumerate(ALL_LABELS)},
-            )
+        # Detect format: checkpoint files have markers, pre-converted files have words/labels
+        data_type = "checkpoint" if annotation_path.suffix == ".jsonl" else "annotation"
+        annot_dataset = build_dataset(
+            data_path=annotation_path,
+            tokenizer=self.tokenizer,
+            max_length=self.config.max_seq_length,
+            max_samples=0,
+            data_type=data_type,
+        )
 
-            best_phase_b = self._train_phase(
-                phase_name="phase_b",
-                model=phase_b_model,
-                train_dataset=annot_train,
-                eval_dataset=annot_eval,
-                output_dir=output_base / "phase_b",
-                learning_rate=self.config.phase_b_lr,
-                batch_size=self.config.phase_b_batch_size,
-                num_epochs=self.config.phase_b_epochs,
-                patience=self.config.phase_b_patience,
-                class_weights=annot_class_weights,
-            )
+        # Use 10% of annotation data for evaluation.
+        split = annot_dataset.train_test_split(
+            test_size=0.1, seed=self.config.seed
+        )
+        annot_train = split["train"]
+        annot_eval = split["test"]
 
-            logger.info("%s best checkpoint: %s", phase_label, best_phase_b)
+        logger.info(
+            "Annotation data: %d train, %d eval examples",
+            len(annot_train),
+            len(annot_eval),
+        )
 
-            # Save final model.
-            final_dir = output_base / "final"
-            final_model = AutoModelForTokenClassification.from_pretrained(
-                best_phase_b, num_labels=NUM_LABELS
-            )
-            final_model.save_pretrained(str(final_dir))
-            self.tokenizer.save_pretrained(str(final_dir))
-            logger.info("Final model saved to %s", final_dir)
+        class_weights = compute_class_weights(annot_train)
 
-            return str(final_dir)
+        model = AutoModelForTokenClassification.from_pretrained(
+            self.config.model_name,
+            num_labels=NUM_LABELS,
+            id2label={i: label for i, label in enumerate(ALL_LABELS)},
+            label2id={label: i for i, label in enumerate(ALL_LABELS)},
+        )
 
-        # Phase A only (no annotation data).
+        best_ckpt = self._train_phase(
+            phase_name="llm_annotated",
+            model=model,
+            train_dataset=annot_train,
+            eval_dataset=annot_eval,
+            output_dir=output_base / "llm_annotated",
+            learning_rate=self.config.phase_b_lr,
+            batch_size=self.config.phase_b_batch_size,
+            num_epochs=self.config.phase_b_epochs,
+            patience=self.config.phase_b_patience,
+            class_weights=class_weights,
+        )
+
+        return self._save_final(best_ckpt, output_base)
+
+    def _save_final(self, best_checkpoint: str, output_base: Path) -> str:
+        """Save the best checkpoint as the final model."""
         final_dir = output_base / "final"
         final_model = AutoModelForTokenClassification.from_pretrained(
-            best_phase_a, num_labels=NUM_LABELS
+            best_checkpoint, num_labels=NUM_LABELS
         )
         final_model.save_pretrained(str(final_dir))
         self.tokenizer.save_pretrained(str(final_dir))
-        logger.info("Final model saved to %s (Phase A only)", final_dir)
-
+        logger.info("Final model saved to %s", final_dir)
         return str(final_dir)
 
     # ── Single-phase training ────────────────────────────────────────────

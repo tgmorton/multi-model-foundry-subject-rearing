@@ -65,18 +65,18 @@ def main(argv=None):
 
     if annotation_mode:
         # Import annotators
-        from .annotators import ANNOTATOR_REGISTRY, get_default_annotators
+        from .annotators import ANNOTATOR_REGISTRY, get_default_annotators, get_annotator
 
         # Get annotators
         annotators = []
         for name in config.annotators:
             if name in ANNOTATOR_REGISTRY:
-                annotators.append(ANNOTATOR_REGISTRY[name]())
+                annotators.append(get_annotator(name, language=config.language))
             else:
                 print(f"Warning: Unknown annotator '{name}', skipping", file=sys.stderr)
 
         if not annotators:
-            annotators = get_default_annotators()
+            annotators = get_default_annotators(language=config.language)
 
         # Determine layered setting
         layered = args.layered if args.layered is not None else config.layered_output

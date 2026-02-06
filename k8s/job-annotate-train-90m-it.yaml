@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: corpus-annotate-train-90m-it
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: annotator
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
+          python -m spacy download it_core_news_lg &&
+          cd /opt/repo &&
+          python -m analysis.corpus_descriptives.run \
+            --config configs/corpus_analysis_it_train90m.yaml \
+            --annotate
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "7"
+          limits:
+            memory: 8Gi
+            cpu: "7"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never

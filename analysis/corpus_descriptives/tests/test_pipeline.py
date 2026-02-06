@@ -131,3 +131,73 @@ class TestPipelineIntegration:
             assert "CHILDES" not in genres, (
                 f"{name}: bare 'CHILDES' should not appear after speaker split"
             )
+
+
+# === Italian CHILDES Cleaner Tests ===
+
+
+class TestItalianCHILDESCleaner:
+    """Tests for Italian CHILDES boundary detection and age extraction."""
+
+    def test_italian_corpus_boundary(self):
+        """Test Italian corpus boundary detection (4 equal signs each side)."""
+        from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("= = = = Antelmi = = = =")
+        assert text == ""
+        assert cleaner._current_corpus == "Antelmi"
+
+    def test_italian_file_boundary(self):
+        """Test Italian file boundary detection (3 equal signs, .cha filename)."""
+        from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("= = = 030409.cha = = =")
+        assert text == ""
+        # 03 years, 04 months = 40 months
+        assert cleaner._current_age == 40
+        assert cleaner._current_age_source == "filename"
+
+    def test_italian_age_extraction(self):
+        """Test age extraction from Italian CHILDES filenames."""
+        from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+
+        # 01 years, 06 months = 18 months
+        assert CHILDESCleaner._parse_italian_age("010600") == 18
+        # 02 years, 11 months = 35 months
+        assert CHILDESCleaner._parse_italian_age("021100") == 35
+        # 03 years, 04 months = 40 months
+        assert CHILDESCleaner._parse_italian_age("030409") == 40
+        # Non-matching string
+        assert CHILDESCleaner._parse_italian_age("readme") is None
+
+    def test_italian_boundary_state_flow(self):
+        """Test that corpus and file boundaries update state correctly."""
+        from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+
+        cleaner = CHILDESCleaner()
+
+        # First: corpus boundary
+        cleaner("= = = = Antelmi = = = =")
+        assert cleaner._current_corpus == "Antelmi"
+
+        # Then: file boundary within that corpus
+        cleaner("= = = 020300.cha = = =")
+        assert cleaner._current_age == 27  # 2*12 + 3
+        assert cleaner._current_corpus == "Antelmi"  # corpus unchanged
+
+        # Utterance line should get the metadata
+        text, meta = cleaner("*CHI:\tvoglio il latte.")
+        assert text == "voglio il latte."
+        assert meta["child_age_months"] == 27
+        assert meta["childes_corpus"] == "Antelmi"
+        assert meta["role"] == "child"
+
+    def test_english_boundary_still_works(self):
+        """Test that English CHILDES boundaries still work."""
+        from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("= = = childes/Bloom/Peter/020100a.cha = = =")
+        assert text == ""

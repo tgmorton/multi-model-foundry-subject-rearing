@@ -33,3 +33,4 @@ tokens_per_minute: 100000
 # Batch processing
 checkpoint_interval: 50
 max_retries: 3
+max_concurrent: 8

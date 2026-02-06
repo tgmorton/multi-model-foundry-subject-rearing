@@ -332,6 +332,7 @@ def get_layer_schema(layer_name: str) -> pa.Schema:
             ("complexity", _complexity_struct()),
             ("is_fragment", pa.bool_()),
             ("is_imperative", pa.bool_()),
+            ("has_null_subject", pa.bool_()),
         ]),
     }
 

@@ -8,16 +8,16 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
-from ..constants import WH_LEMMAS_EN
+from ..constants import WH_LEMMAS_EN, WH_LEMMAS_IT
 from .base import BaseSentenceAnnotator
 
 
-def _is_wh_word(tok: spacy.tokens.Token) -> bool:
+def _is_wh_word(tok: spacy.tokens.Token, wh_lemmas: frozenset = WH_LEMMAS_EN) -> bool:
     """Check if token is a wh-word."""
     pron_types = tok.morph.get("PronType")
     if pron_types and "Int" in pron_types:
         return True
-    return tok.lemma_.lower() in WH_LEMMAS_EN
+    return tok.lemma_.lower() in wh_lemmas
 
 
 def _extraction_type(tok: spacy.tokens.Token) -> str:
@@ -45,6 +45,10 @@ class WhExtractionAnnotator(BaseSentenceAnnotator):
         "wh_extractions": "List of wh-extraction annotation dicts",
     }
 
+    def __init__(self, language: str = "en"):
+        self.language = language
+        self._wh_lemmas = WH_LEMMAS_IT if language == "it" else WH_LEMMAS_EN
+
     def annotate_sentence(
         self,
         sent: spacy.tokens.Span,
@@ -56,7 +60,7 @@ class WhExtractionAnnotator(BaseSentenceAnnotator):
         wh_extractions = []
 
         for tok in sent:
-            if not _is_wh_word(tok):
+            if not _is_wh_word(tok, self._wh_lemmas):
                 continue
 
             ext_type = _extraction_type(tok)

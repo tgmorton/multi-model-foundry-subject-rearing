@@ -127,6 +127,7 @@ class LLMAnnotationConfig(_BaseConfig):
     # Batch processing
     checkpoint_interval: int = Field(50, gt=0)
     max_retries: int = Field(3, ge=0)
+    max_concurrent: int = Field(1, ge=1, description="Max concurrent LLM requests")
 
     @field_validator("corpus_path", "output_path", "seed_set_path", mode="before")
     @classmethod
@@ -171,13 +172,36 @@ class ValidationConfig(_BaseConfig):
 
 
 class ModelTrainingConfig(_BaseConfig):
-    """Configuration for Step 5: DeBERTa sequence labeler training."""
+    """Configuration for Step 5: DeBERTa sequence labeler training.
 
+    Two training strategies, selected via ``training_source``:
+
+    - ``"synthetic"``: Train on mechanically-generated pronoun-removal pairs.
+      Suitable for English where pro-drop is rare and synthetic data provides
+      clean labels at scale.  Uses ``synthetic_data_path``.
+
+    - ``"llm_annotated"``: Train on LLM-annotated null-subject candidates.
+      Suitable for Italian where pro-drop is the norm and the interesting
+      signal is which pronoun belongs in each null-subject position.
+      Uses ``annotation_data_path``.
+
+    Both strategies fine-tune a pre-trained model (e.g. mDeBERTa) — neither
+    trains from scratch.
+    """
+
+    training_source: str = Field(
+        "synthetic",
+        description=(
+            "Training data strategy: 'synthetic' (English-style, train on "
+            "mechanically removed pronouns) or 'llm_annotated' (Italian-style, "
+            "train on LLM-annotated null subjects)"
+        ),
+    )
     synthetic_data_path: Optional[Path] = Field(
-        None, description="Directory with train.jsonl / dev.jsonl for Phase A (optional)"
+        None, description="Directory with train.jsonl / dev.jsonl (for training_source='synthetic')"
     )
     annotation_data_path: Optional[Path] = Field(
-        None, description="Validated annotations JSONL for Phase B"
+        None, description="Validated annotations JSONL (for training_source='llm_annotated')"
     )
     output_path: Path = Field(
         "data/pronoun_recovery/models/en",
@@ -189,14 +213,14 @@ class ModelTrainingConfig(_BaseConfig):
     model_name: str = Field("microsoft/deberta-v3-base")
     num_labels: int = Field(9)
 
-    # Phase A: pretrain on synthetic data
+    # Synthetic training hyperparameters (training_source='synthetic')
     phase_a_lr: float = Field(3e-5)
     phase_a_batch_size: int = Field(32, gt=0)
     phase_a_epochs: int = Field(3, gt=0)
     phase_a_max_samples: int = Field(500_000, ge=0)
     phase_a_patience: int = Field(2, gt=0)
 
-    # Phase B: finetune on annotations
+    # LLM-annotated training hyperparameters (training_source='llm_annotated')
     phase_b_lr: float = Field(1e-5)
     phase_b_batch_size: int = Field(16, gt=0)
     phase_b_epochs: int = Field(10, gt=0)

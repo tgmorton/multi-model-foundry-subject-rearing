@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from ..constants import RELATIVIZERS_EN, RELATIVIZERS_IT
 from .base import BaseSentenceAnnotator
 
 
@@ -29,6 +30,10 @@ class RelativeClauseAnnotator(BaseSentenceAnnotator):
     output_fields = {
         "relative_clauses": "List of relative clause annotation dicts",
     }
+
+    def __init__(self, language: str = "en"):
+        self.language = language
+        self._relativizers = RELATIVIZERS_IT if language == "it" else RELATIVIZERS_EN
 
     def annotate_sentence(
         self,
@@ -56,7 +61,7 @@ class RelativeClauseAnnotator(BaseSentenceAnnotator):
             for child in children:
                 pron_type = child.morph.get("PronType")
                 is_relative = pron_type and "Rel" in pron_type
-                is_rel_lemma = child.lemma_.lower() in ("who", "whom", "which", "that")
+                is_rel_lemma = child.lemma_.lower() in self._relativizers
 
                 if child.dep_ in ("nsubj", "nsubj:pass"):
                     has_nsubj = True

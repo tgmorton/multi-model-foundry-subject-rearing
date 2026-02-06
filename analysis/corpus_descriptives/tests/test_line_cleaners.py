@@ -1,7 +1,7 @@
 """Tests for line_cleaners module."""
 
 from analysis.corpus_descriptives.line_cleaners import (
-    clean_childes_line,
+    CHILDESCleaner,
     clean_generic_line,
     clean_switchboard_line,
     get_cleaner,
@@ -10,37 +10,43 @@ from analysis.corpus_descriptives.line_cleaners import (
 
 class TestCHILDESCleaner:
     def test_child_speaker(self):
-        text, meta = clean_childes_line("*CHI:\tno.")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("*CHI:\tno.")
         assert text == "no."
         assert meta["speaker"] == "CHI"
         assert meta["role"] == "child"
 
     def test_mother_speaker(self):
-        text, meta = clean_childes_line("*MOT:\tand sit down.")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("*MOT:\tand sit down.")
         assert text == "and sit down."
         assert meta["speaker"] == "MOT"
         assert meta["role"] == "adult"
 
     def test_father_speaker(self):
-        text, meta = clean_childes_line("*FAT:\tcome here.")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("*FAT:\tcome here.")
         assert text == "come here."
         assert meta["speaker"] == "FAT"
         assert meta["role"] == "adult"
 
     def test_collaborator_speaker(self):
-        text, meta = clean_childes_line("*COL:\tI think so.")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("*COL:\tI think so.")
         assert text == "I think so."
         assert meta["speaker"] == "COL"
         assert meta["role"] == "adult"
 
     def test_unknown_speaker(self):
-        text, meta = clean_childes_line("*XYZ:\thello.")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("*XYZ:\thello.")
         assert text == "hello."
         assert meta["speaker"] == "XYZ"
         assert meta["role"] == "unknown"
 
     def test_no_match(self):
-        text, meta = clean_childes_line("just plain text")
+        cleaner = CHILDESCleaner()
+        text, meta = cleaner("just plain text")
         assert text == "just plain text"
         assert meta["speaker"] is None
 
@@ -71,7 +77,8 @@ class TestGenericCleaner:
 
 class TestGetCleaner:
     def test_childes(self):
-        assert get_cleaner("CHILDES") == clean_childes_line
+        cleaner = get_cleaner("CHILDES")
+        assert isinstance(cleaner, CHILDESCleaner)
 
     def test_switchboard(self):
         assert get_cleaner("Switchboard") == clean_switchboard_line

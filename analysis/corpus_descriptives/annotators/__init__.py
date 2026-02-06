@@ -43,18 +43,19 @@ def get_default_annotators(language: str = "en") -> list[BaseSentenceAnnotator]:
 
     Args:
         language: Language code ("en" for English, "it" for Italian).
-            Affects ExpletiveAnnotator behavior for Italian implicit expletives.
+            Affects ExpletiveAnnotator, ThatTraceAnnotator,
+            WhExtractionAnnotator, and RelativeClauseAnnotator.
 
     Returns all annotators except fragment (which overlaps with complexity).
     """
     return [
         ClauseStructureAnnotator(),
-        ThatTraceAnnotator(),
+        ThatTraceAnnotator(language=language),
         ExpletiveAnnotator(language=language),
         PronounAnnotator(),
         NegationAnnotator(),
-        WhExtractionAnnotator(),
-        RelativeClauseAnnotator(),
+        WhExtractionAnnotator(language=language),
+        RelativeClauseAnnotator(language=language),
         VerbAnnotator(),
         ArgumentStructureAnnotator(),
         TopicAnnotator(),
@@ -69,7 +70,8 @@ def get_annotator(name: str, language: str = "en") -> BaseSentenceAnnotator:
     Args:
         name: Annotator name (e.g., "clause_structure", "that_trace")
         language: Language code ("en" for English, "it" for Italian).
-            Only affects "expletive" annotator.
+            Affects language-aware annotators (expletive, that_trace,
+            wh_extraction, relative_clause, fragment).
 
     Returns:
         Instance of the specified annotator
@@ -83,8 +85,9 @@ def get_annotator(name: str, language: str = "en") -> BaseSentenceAnnotator:
             f"Available: {list(ANNOTATOR_REGISTRY.keys())}"
         )
     # Pass language to annotators that need it
-    if name == "expletive":
-        return ExpletiveAnnotator(language=language)
+    language_aware = {"expletive", "that_trace", "wh_extraction", "relative_clause", "fragment"}
+    if name in language_aware:
+        return ANNOTATOR_REGISTRY[name](language=language)
     return ANNOTATOR_REGISTRY[name]()
 
 

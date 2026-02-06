@@ -7,7 +7,9 @@ validation, and cost tracking for large-scale annotation runs.
 
 import json
 import logging
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
@@ -34,6 +36,7 @@ class _TokenBucket:
         self._req_tokens = float(self.rpm)
         self._tok_tokens = float(self.tpm)
         self._last_refill = time.monotonic()
+        self._lock = threading.Lock()
 
     def _refill(self) -> None:
         """Refill both buckets based on elapsed time."""
@@ -57,11 +60,12 @@ class _TokenBucket:
                 (prompt + completion).
         """
         while True:
-            self._refill()
-            if self._req_tokens >= 1.0 and self._tok_tokens >= estimated_tokens:
-                self._req_tokens -= 1.0
-                self._tok_tokens -= estimated_tokens
-                return
+            with self._lock:
+                self._refill()
+                if self._req_tokens >= 1.0 and self._tok_tokens >= estimated_tokens:
+                    self._req_tokens -= 1.0
+                    self._tok_tokens -= estimated_tokens
+                    return
             # Sleep briefly then retry
             time.sleep(0.1)
 
@@ -71,8 +75,9 @@ class _TokenBucket:
         If the actual usage was less than estimated, return the
         difference to the bucket.  If it was more, consume the extra.
         """
-        diff = actual_tokens - estimated_tokens
-        self._tok_tokens = max(0.0, self._tok_tokens - diff)
+        with self._lock:
+            diff = actual_tokens - estimated_tokens
+            self._tok_tokens = max(0.0, self._tok_tokens - diff)
 
 
 class AnnotationBatchRunner:
@@ -141,59 +146,11 @@ class AnnotationBatchRunner:
             len(pending),
         )
 
-        batch_buffer: List[Dict[str, Any]] = []
-
-        for i, candidate in enumerate(pending):
-            item_id = candidate["id"]
-            text = candidate["text"]
-
-            # Rate limiting: estimate tokens (rough heuristic)
-            estimated_tokens = len(text.split()) * 4 + self.config.max_tokens
-            self._bucket.acquire(estimated_tokens=estimated_tokens)
-
-            # Annotate with retries
-            result = self._annotate_with_retry(
-                text=text,
-                item_id=item_id,
-                seed_examples=seed_examples,
-            )
-
-            # Attach original candidate metadata
-            result["id"] = item_id
-            result["genre"] = candidate.get("genre")
-            result["source_file"] = candidate.get("source_file")
-            result["line_number"] = candidate.get("line_number")
-            result["original_text"] = text
-
-            # Validate the annotation
-            result["validation_errors"] = self._validate_result(result)
-            result["is_valid"] = len(result["validation_errors"]) == 0
-
-            # Adjust rate limiter with actual token usage
-            actual_tokens = result.get("usage", {}).get("total_tokens", 0)
-            if actual_tokens:
-                self._bucket.report_actual_tokens(actual_tokens, estimated_tokens)
-                self._total_prompt_tokens += result["usage"].get("prompt_tokens", 0)
-                self._total_completion_tokens += result["usage"].get("completion_tokens", 0)
-
-            results.append(result)
-            batch_buffer.append(result)
-
-            # Periodic checkpoint
-            if len(batch_buffer) >= self.config.checkpoint_interval:
-                self._save_checkpoint(batch_buffer)
-                batch_buffer = []
-                logger.info(
-                    "Progress: %d/%d | tokens: prompt=%d completion=%d",
-                    i + 1,
-                    len(pending),
-                    self._total_prompt_tokens,
-                    self._total_completion_tokens,
-                )
-
-        # Final checkpoint for remaining items
-        if batch_buffer:
-            self._save_checkpoint(batch_buffer)
+        max_concurrent = getattr(self.config, "max_concurrent", 1)
+        if max_concurrent > 1:
+            results = self._run_concurrent(pending, seed_examples, max_concurrent)
+        else:
+            results = self._run_sequential(pending, seed_examples)
 
         # Summary
         n_valid = sum(1 for r in results if r.get("is_valid"))
@@ -208,6 +165,133 @@ class AnnotationBatchRunner:
             self._total_prompt_tokens,
             self._total_completion_tokens,
         )
+
+        return results
+
+    # ------------------------------------------------------------------
+    # Sequential / Concurrent execution
+    # ------------------------------------------------------------------
+
+    def _process_one(
+        self,
+        candidate: Dict[str, Any],
+        seed_examples: List[Dict[str, str]],
+    ) -> Dict[str, Any]:
+        """Annotate a single candidate with rate limiting and validation."""
+        item_id = candidate["id"]
+        text = candidate["text"]
+
+        # Rate limiting: estimate tokens (rough heuristic)
+        estimated_tokens = len(text.split()) * 4 + self.config.max_tokens
+        self._bucket.acquire(estimated_tokens=estimated_tokens)
+
+        # Annotate with retries
+        result = self._annotate_with_retry(
+            text=text,
+            item_id=item_id,
+            seed_examples=seed_examples,
+        )
+
+        # Attach original candidate metadata
+        result["id"] = item_id
+        result["genre"] = candidate.get("genre")
+        result["source_file"] = candidate.get("source_file")
+        result["line_number"] = candidate.get("line_number")
+        result["original_text"] = text
+
+        # Validate the annotation
+        result["validation_errors"] = self._validate_result(result)
+        result["is_valid"] = len(result["validation_errors"]) == 0
+
+        # Adjust rate limiter with actual token usage
+        actual_tokens = result.get("usage", {}).get("total_tokens", 0)
+        if actual_tokens:
+            self._bucket.report_actual_tokens(actual_tokens, estimated_tokens)
+
+        return result
+
+    def _run_sequential(
+        self,
+        pending: List[Dict[str, Any]],
+        seed_examples: List[Dict[str, str]],
+    ) -> List[Dict[str, Any]]:
+        """Run annotation sequentially (original behavior)."""
+        results: List[Dict[str, Any]] = []
+        batch_buffer: List[Dict[str, Any]] = []
+
+        for i, candidate in enumerate(pending):
+            result = self._process_one(candidate, seed_examples)
+
+            actual_tokens = result.get("usage", {}).get("total_tokens", 0)
+            if actual_tokens:
+                self._total_prompt_tokens += result["usage"].get("prompt_tokens", 0)
+                self._total_completion_tokens += result["usage"].get("completion_tokens", 0)
+
+            results.append(result)
+            batch_buffer.append(result)
+
+            if len(batch_buffer) >= self.config.checkpoint_interval:
+                self._save_checkpoint(batch_buffer)
+                batch_buffer = []
+                logger.info(
+                    "Progress: %d/%d | tokens: prompt=%d completion=%d",
+                    i + 1,
+                    len(pending),
+                    self._total_prompt_tokens,
+                    self._total_completion_tokens,
+                )
+
+        if batch_buffer:
+            self._save_checkpoint(batch_buffer)
+
+        return results
+
+    def _run_concurrent(
+        self,
+        pending: List[Dict[str, Any]],
+        seed_examples: List[Dict[str, str]],
+        max_workers: int,
+    ) -> List[Dict[str, Any]]:
+        """Run annotation with concurrent workers."""
+        results: List[Dict[str, Any]] = []
+        batch_buffer: List[Dict[str, Any]] = []
+        lock = threading.Lock()
+        completed_count = 0
+
+        logger.info("Running with %d concurrent workers", max_workers)
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_candidate = {
+                executor.submit(self._process_one, c, seed_examples): c
+                for c in pending
+            }
+
+            for future in as_completed(future_to_candidate):
+                result = future.result()
+
+                with lock:
+                    actual_tokens = result.get("usage", {}).get("total_tokens", 0)
+                    if actual_tokens:
+                        self._total_prompt_tokens += result["usage"].get("prompt_tokens", 0)
+                        self._total_completion_tokens += result["usage"].get("completion_tokens", 0)
+
+                    results.append(result)
+                    batch_buffer.append(result)
+                    completed_count += 1
+
+                    if len(batch_buffer) >= self.config.checkpoint_interval:
+                        self._save_checkpoint(batch_buffer)
+                        batch_buffer = []
+                        logger.info(
+                            "Progress: %d/%d | tokens: prompt=%d completion=%d",
+                            completed_count,
+                            len(pending),
+                            self._total_prompt_tokens,
+                            self._total_completion_tokens,
+                        )
+
+        if batch_buffer:
+            self._save_checkpoint(batch_buffer)
 
         return results
 

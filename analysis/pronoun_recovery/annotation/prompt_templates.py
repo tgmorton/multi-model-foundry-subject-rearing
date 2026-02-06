@@ -132,7 +132,7 @@ def build_few_shot_prompt(
 
     lines = ["Here are some examples of correct annotation:\n"]
     for i, example in enumerate(seed_examples, 1):
-        original = example.get("original", "")
+        original = example.get("text") or example.get("original", "")
         annotated = example.get("annotated", "")
         lines.append(f"Example {i}:")
         lines.append(f"  Input:  {original}")

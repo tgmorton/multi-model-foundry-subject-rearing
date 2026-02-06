@@ -11,6 +11,7 @@ CrossEntropyLoss ignores).
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -112,6 +113,89 @@ def load_annotation_data(data_path: Path) -> List[Dict[str, Any]]:
             records.append(record)
 
     logger.info("Loaded %d annotation records from %s", len(records), data_path)
+    return records
+
+
+def _checkpoint_record_to_word_labels(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Convert an LLM annotation checkpoint record to word-level labels.
+
+    The checkpoint format has ``clean_text`` (original without pronouns)
+    and ``markers`` (list of dicts with ``label``, ``lexical_form``,
+    ``position``).  The position is a character offset in ``clean_text``
+    pointing to the insertion point; the label is assigned to the first
+    word starting at or after that position.
+
+    Returns:
+        Dict with ``words`` and ``labels``, or ``None`` if unusable.
+    """
+    clean_text = record.get("clean_text", "")
+    markers = record.get("markers", [])
+
+    if not clean_text:
+        return None
+
+    # Find word spans (start_char, end_char, word_text)
+    word_spans = [(m.start(), m.end(), m.group()) for m in re.finditer(r"\S+", clean_text)]
+    if not word_spans:
+        return None
+
+    words = [w for _, _, w in word_spans]
+    labels = [LABEL_NONE] * len(words)
+
+    # Build a map: marker_position -> label
+    for marker in markers:
+        pos = marker.get("position")
+        label = marker.get("label", "")
+        if pos is None or label not in LABEL_TO_ID:
+            continue
+        # Find first word starting at or after the insertion point
+        for i, (start, _, _) in enumerate(word_spans):
+            if start >= pos:
+                labels[i] = label
+                break
+
+    return {"words": words, "labels": labels}
+
+
+def load_checkpoint_data(data_path: Path) -> List[Dict[str, Any]]:
+    """Load LLM annotation checkpoint JSONL and convert to word-level labels.
+
+    Each line has ``clean_text`` and ``markers``.  Converts to
+    ``{"words": [...], "labels": [...]}`` format for training.
+
+    Args:
+        data_path: Path to checkpoint JSONL file.
+
+    Returns:
+        List of converted records with ``words`` and ``labels``.
+    """
+    data_path = Path(data_path)
+    if not data_path.exists():
+        raise FileNotFoundError(f"Checkpoint file not found: {data_path}")
+
+    records: List[Dict[str, Any]] = []
+    skipped = 0
+    with open(data_path, "r", encoding="utf-8") as fh:
+        for line_no, line in enumerate(fh, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                raw = json.loads(line)
+            except json.JSONDecodeError:
+                logger.warning("Skipping malformed JSON at line %d in %s", line_no, data_path)
+                continue
+
+            converted = _checkpoint_record_to_word_labels(raw)
+            if converted is not None:
+                records.append(converted)
+            else:
+                skipped += 1
+
+    logger.info(
+        "Loaded %d records from checkpoint %s (%d skipped)",
+        len(records), data_path, skipped,
+    )
     return records
 
 
@@ -259,8 +343,10 @@ def build_dataset(
                 examples.append(converted)
     elif data_type == "annotation":
         examples = load_annotation_data(data_path)
+    elif data_type == "checkpoint":
+        examples = load_checkpoint_data(data_path)
     else:
-        raise ValueError(f"Unknown data_type: {data_type!r}. Expected 'synthetic' or 'annotation'.")
+        raise ValueError(f"Unknown data_type: {data_type!r}. Expected 'synthetic', 'annotation', or 'checkpoint'.")
 
     if max_samples > 0 and len(examples) > max_samples:
         logger.info("Capping dataset from %d to %d samples", len(examples), max_samples)

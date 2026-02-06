@@ -79,6 +79,10 @@ WH_LEMMAS_IT = frozenset({
     "chi", "che", "cosa", "quale", "dove", "quando", "perché", "come",
 })
 
+# §1.9 Relativizers for relative clause detection
+RELATIVIZERS_EN = frozenset({"who", "whom", "which", "that"})
+RELATIVIZERS_IT = frozenset({"che", "cui", "quale"})
+
 # CHILDES speaker classification
 CHILDES_CHILD_SPEAKERS = frozenset({"CHI"})
 CHILDES_ADULT_SPEAKERS = frozenset({

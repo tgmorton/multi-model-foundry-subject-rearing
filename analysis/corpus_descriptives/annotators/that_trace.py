@@ -9,15 +9,18 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
-from ..constants import ENGLISH_BRIDGE_VERBS, WH_LEMMAS_EN
+from ..constants import ENGLISH_BRIDGE_VERBS, ITALIAN_BRIDGE_VERBS, WH_LEMMAS_EN, WH_LEMMAS_IT
 from .base import BaseSentenceAnnotator
 
 
-def _has_embedded_wh(verb_tok: spacy.tokens.Token) -> bool:
+def _has_embedded_wh(verb_tok: spacy.tokens.Token, wh_lemmas: frozenset = WH_LEMMAS_EN) -> bool:
     """Check if the ccomp verb has a wh-word as its own dependent."""
     for child in verb_tok.children:
+        # Skip complementizers (e.g., "che" in Italian is both comp and wh-word)
+        if child.dep_ == "mark":
+            continue
         lemma = child.lemma_.lower()
-        if lemma in WH_LEMMAS_EN:
+        if lemma in wh_lemmas:
             return True
         pron_types = child.morph.get("PronType")
         if pron_types and "Int" in pron_types:
@@ -41,6 +44,12 @@ class ThatTraceAnnotator(BaseSentenceAnnotator):
         "bridge_complements": "List of bridge complement annotation dicts",
     }
 
+    def __init__(self, language: str = "en"):
+        self.language = language
+        self._bridge_verbs = ITALIAN_BRIDGE_VERBS if language == "it" else ENGLISH_BRIDGE_VERBS
+        self._wh_lemmas = WH_LEMMAS_IT if language == "it" else WH_LEMMAS_EN
+        self._complementizer = "che" if language == "it" else "that"
+
     def annotate_sentence(
         self,
         sent: spacy.tokens.Span,
@@ -57,11 +66,11 @@ class ThatTraceAnnotator(BaseSentenceAnnotator):
                 continue
 
             matrix_verb = tok.head
-            if matrix_verb.lemma_.lower() not in ENGLISH_BRIDGE_VERBS:
+            if matrix_verb.lemma_.lower() not in self._bridge_verbs:
                 continue
 
             # Filter interrogative complements (wh-word in embedded clause)
-            if _has_embedded_wh(tok):
+            if _has_embedded_wh(tok, self._wh_lemmas):
                 continue
 
             # Only finite complements
@@ -71,7 +80,7 @@ class ThatTraceAnnotator(BaseSentenceAnnotator):
 
             # Step 2: Complementizer presence
             comp_present = any(
-                c.dep_ == "mark" and c.lemma_.lower() == "that"
+                c.dep_ == "mark" and c.lemma_.lower() == self._complementizer
                 for c in tok.children
             )
 
@@ -95,7 +104,7 @@ class ThatTraceAnnotator(BaseSentenceAnnotator):
             for sibling in matrix_verb.children:
                 sib_lemma = sibling.lemma_.lower()
                 sib_pron = sibling.morph.get("PronType")
-                if sib_lemma in WH_LEMMAS_EN or (sib_pron and "Int" in sib_pron):
+                if sib_lemma in self._wh_lemmas or (sib_pron and "Int" in sib_pron):
                     matrix_has_wh = True
                     break
 

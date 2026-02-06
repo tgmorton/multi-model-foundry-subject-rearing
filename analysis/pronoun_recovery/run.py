@@ -15,7 +15,10 @@ Usage:
 import logging
 from pathlib import Path
 
+from dotenv import load_dotenv
 import typer
+
+load_dotenv()
 
 from .config import (
     InsertionConfig,
@@ -225,10 +228,10 @@ def train(
     config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ) -> None:
-    """Step 5: Train DeBERTa sequence labeler (two-phase)."""
+    """Step 5: Train DeBERTa sequence labeler."""
     _setup_logging(verbose)
     cfg = load_config(config, ModelTrainingConfig)
-    logger.info("Starting model training")
+    logger.info("Starting model training (source=%s)", cfg.training_source)
 
     from .model.trainer import PronounRecoveryTrainer
 

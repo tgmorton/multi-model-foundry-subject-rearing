@@ -1,6 +1,7 @@
 # Step 5: Model training (Italian)
-# No synthetic_data_path — train directly on LLM annotations
-annotation_data_path: data/pronoun_recovery/annotations/it/llm_validated
+# Train on LLM-annotated checkpoint data
+training_source: llm_annotated
+annotation_data_path: data/pronoun_recovery/annotations/it/checkpoint.jsonl
 output_path: data/pronoun_recovery/models/it
 language: it
 
@@ -8,21 +9,21 @@ language: it
 model_name: microsoft/mdeberta-v3-base
 num_labels: 9
 
-# Training (Phase B hyperparams used for annotation-only training)
+# Training hyperparams
 phase_b_lr: 1.0e-5
 phase_b_batch_size: 16
 phase_b_epochs: 10
 phase_b_patience: 3
 
 # Common
-fp16: true
+fp16: false
 warmup_ratio: 0.1
 max_seq_length: 256
 seed: 42
 
 # Logging
-wandb_project: pronoun-recovery
-wandb_run_name: mdeberta-v3-base-it
+wandb_project: null
+wandb_run_name: null
 
 # Gates
 min_detection_f1: 0.85

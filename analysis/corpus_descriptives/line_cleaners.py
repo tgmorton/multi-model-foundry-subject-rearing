@@ -21,6 +21,8 @@ from .constants import CHILDES_ADULT_SPEAKERS, CHILDES_CHILD_SPEAKERS
 _CHILDES_PATTERN = re.compile(r"^\*([A-Z]{2,4}):\t(.*)$")
 _SWITCHBOARD_PATTERN = re.compile(r"^([AB]):\t(.*)$")
 _BOUNDARY_PATTERN = re.compile(r"^= = = childes/(.+)\.cha = = =$")
+_IT_CORPUS_BOUNDARY = re.compile(r"^= = = = (.+) = = = =$")
+_IT_FILE_BOUNDARY = re.compile(r"^= = = (.+)\.cha = = =$")
 _BRACKET_TAG = re.compile(r"\[.*?\]")
 
 
@@ -53,7 +55,7 @@ class CHILDESCleaner:
         """
         line = line.strip()
 
-        # File boundary marker — update age state, skip line
+        # English file boundary marker — update age state, skip line
         bm = _BOUNDARY_PATTERN.match(line)
         if bm:
             path = bm.group(1)
@@ -62,6 +64,21 @@ class CHILDESCleaner:
             self._current_age_source = info.get("age_source")
             self._current_child = info.get("child")
             self._current_corpus = info.get("corpus")
+            return "", {}
+
+        # Italian corpus boundary (= = = = CorpusName = = = =) — update corpus, skip
+        it_corpus = _IT_CORPUS_BOUNDARY.match(line)
+        if it_corpus:
+            self._current_corpus = it_corpus.group(1).strip()
+            return "", {}
+
+        # Italian file boundary (= = = 030409.cha = = =) — extract age, skip
+        it_file = _IT_FILE_BOUNDARY.match(line)
+        if it_file:
+            filename = it_file.group(1).strip()
+            self._current_age = self._parse_italian_age(filename)
+            self._current_age_source = "filename"
+            self._current_child = None
             return "", {}
 
         # Annotation-only lines (start with [ but no speaker label)
@@ -101,6 +118,24 @@ class CHILDESCleaner:
 
         # No match — return as-is (shouldn't happen in well-formed CHILDES)
         return line, {"speaker": None, "role": None}
+
+    @staticmethod
+    def _parse_italian_age(filename: str) -> Optional[int]:
+        """
+        Extract child age in months from Italian CHILDES filename.
+
+        Italian filenames encode age as YYMMDD (e.g., '030409' → 3y4m → 40 months).
+        Returns None if the filename doesn't match the expected pattern.
+        """
+        # Strip any leading path components
+        name = filename.rsplit("/", 1)[-1]
+        # Match 6-digit age pattern
+        m = re.match(r"^(\d{2})(\d{2})(\d{2})$", name)
+        if m:
+            years = int(m.group(1))
+            months = int(m.group(2))
+            return years * 12 + months
+        return None
 
 
 def clean_switchboard_line(line: str) -> Tuple[str, Dict[str, Optional[str]]]:

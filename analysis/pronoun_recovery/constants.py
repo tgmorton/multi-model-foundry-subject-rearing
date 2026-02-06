@@ -46,10 +46,10 @@ EN_LABEL_TO_FORMS: Dict[str, FrozenSet[str]] = {
 IT_LABEL_TO_FORMS: Dict[str, FrozenSet[str]] = {
     "PRO.1sg": frozenset({"io"}),
     "PRO.2sg": frozenset({"tu"}),
-    "PRO.3sg": frozenset({"lui", "lei"}),
+    "PRO.3sg": frozenset({"lui", "lei", "esso", "essa", "ciò"}),
     "PRO.1pl": frozenset({"noi"}),
     "PRO.2pl": frozenset({"voi"}),
-    "PRO.3pl": frozenset({"loro"}),
+    "PRO.3pl": frozenset({"loro", "essi", "esse"}),
 }
 
 LANGUAGE_FORM_MAPS: Dict[str, Dict[str, FrozenSet[str]]] = {

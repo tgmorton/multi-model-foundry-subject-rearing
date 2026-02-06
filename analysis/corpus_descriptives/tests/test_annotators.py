@@ -531,3 +531,224 @@ class TestAnnotatorRegistry:
         assert len(annotators) >= 10
         # Fragment is excluded by default
         assert not any(isinstance(a, FragmentAnnotator) for a in annotators)
+
+    def test_get_annotator_with_language(self):
+        """Test that language-aware annotators accept language parameter."""
+        for name in ("expletive", "that_trace", "wh_extraction", "relative_clause", "fragment"):
+            ann = get_annotator(name, language="it")
+            assert ann.language == "it"
+
+    def test_get_default_annotators_italian(self):
+        """Test get_default_annotators with Italian language."""
+        annotators = get_default_annotators(language="it")
+        assert len(annotators) >= 10
+        # Verify language-aware annotators got Italian
+        for ann in annotators:
+            if hasattr(ann, "language"):
+                assert ann.language == "it"
+
+
+# === Italian Language Tests ===
+
+
+class TestItalianWhExtraction:
+    """Test WhExtractionAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return WhExtractionAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_italian_wh_lemmas_used(self, annotator):
+        from analysis.corpus_descriptives.constants import WH_LEMMAS_IT
+        assert annotator._wh_lemmas is WH_LEMMAS_IT
+
+    def test_italian_wh_detection(self, blank_nlp, annotator):
+        """Test that Italian wh-words are detected via lemma set."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "chi parla" = "who speaks"
+        doc = make_doc(
+            blank_nlp,
+            words=["chi", "parla", "?"],
+            pos=["PRON", "VERB", "PUNCT"],
+            deps=["nsubj", "ROOT", "punct"],
+            heads=[1, 1, 1],
+            lemmas=["chi", "parlare", "?"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert len(result["wh_extractions"]) == 1
+        assert result["wh_extractions"][0]["wh_lemma"] == "chi"
+
+
+class TestItalianThatTrace:
+    """Test ThatTraceAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return ThatTraceAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+        assert annotator._complementizer == "che"
+
+    def test_italian_bridge_verbs_used(self, annotator):
+        from analysis.corpus_descriptives.constants import ITALIAN_BRIDGE_VERBS
+        assert annotator._bridge_verbs is ITALIAN_BRIDGE_VERBS
+
+    def test_italian_bridge_complement(self, blank_nlp, annotator):
+        """Test Italian bridge verb 'pensare' with 'che' complementizer."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Penso che lei parta" = "I think that she leaves"
+        doc = make_doc(
+            blank_nlp,
+            words=["penso", "che", "lei", "parta"],
+            pos=["VERB", "SCONJ", "PRON", "VERB"],
+            deps=["ROOT", "mark", "nsubj", "ccomp"],
+            heads=[0, 3, 3, 0],
+            lemmas=["pensare", "che", "lei", "partire"],
+            morphs=[
+                "VerbForm=Fin",
+                None,
+                None,
+                "VerbForm=Fin",
+            ],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert len(result["bridge_complements"]) == 1
+        comp = result["bridge_complements"][0]
+        assert comp["matrix_verb_lemma"] == "pensare"
+        assert comp["comp_present"] is True
+
+
+class TestItalianRelativeClause:
+    """Test RelativeClauseAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return RelativeClauseAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_italian_relativizers_used(self, annotator):
+        from analysis.corpus_descriptives.constants import RELATIVIZERS_IT
+        assert annotator._relativizers is RELATIVIZERS_IT
+
+    def test_italian_relative_clause(self, blank_nlp, annotator):
+        """Test Italian relativizer 'che' detection."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "il gatto che dorme" = "the cat that sleeps"
+        doc = make_doc(
+            blank_nlp,
+            words=["il", "gatto", "che", "dorme"],
+            pos=["DET", "NOUN", "PRON", "VERB"],
+            deps=["det", "ROOT", "nsubj", "acl:relcl"],
+            heads=[1, 1, 3, 1],
+            lemmas=["il", "gatto", "che", "dormire"],
+            morphs=[None, None, "PronType=Rel", "VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert len(result["relative_clauses"]) == 1
+        assert result["relative_clauses"][0]["rel_type"] == "subject"
+        assert result["relative_clauses"][0]["relativizer_lemma"] == "che"
+
+
+class TestItalianFragment:
+    """Test FragmentAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return FragmentAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_has_null_subject_field(self, blank_nlp, annotator):
+        """Test has_null_subject for Italian null-subject sentence."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Piove" = "It rains" (null-subject in Italian)
+        doc = make_doc(
+            blank_nlp,
+            words=["piove"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["piovere"],
+            morphs=["VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["has_null_subject"] is True
+        assert result["is_imperative"] is False
+        assert result["is_fragment"] is False
+
+    def test_imperative_only_via_mood(self, blank_nlp, annotator):
+        """Test that imperatives are only detected via Mood=Imp."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Mangia!" = "Eat!" (imperative)
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia", "!"],
+            pos=["VERB", "PUNCT"],
+            deps=["ROOT", "punct"],
+            heads=[0, 0],
+            lemmas=["mangiare", "!"],
+            morphs=["VerbForm=Fin|Mood=Imp", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+
+    def test_null_subject_flag_in_get_sentence_flags(self, blank_nlp, annotator):
+        """Test that has_null_subject is included in sentence flags."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["piove"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["piovere"],
+            morphs=["VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        flags = annotator.get_sentence_flags(result)
+        assert flags["has_null_subject"] is True
+
+    def test_overt_subject_not_null(self, blank_nlp, annotator):
+        """Test that sentences with overt subjects are not null-subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Lei mangia" = "She eats"
+        doc = make_doc(
+            blank_nlp,
+            words=["lei", "mangia"],
+            pos=["PRON", "VERB"],
+            deps=["nsubj", "ROOT"],
+            heads=[1, 1],
+            lemmas=["lei", "mangiare"],
+            morphs=[None, "VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["has_null_subject"] is False
+
+
+class TestItalianExpletive:
+    """Test ExpletiveAnnotator with Italian language."""
+
+    def test_italian_annotator_creation(self):
+        annotator = ExpletiveAnnotator(language="it")
+        assert annotator.language == "it"

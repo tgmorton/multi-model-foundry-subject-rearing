@@ -32,9 +32,13 @@ class FragmentAnnotator(BaseSentenceAnnotator):
     output_fields = {
         "is_fragment": "Boolean: sentence is a fragment",
         "is_imperative": "Boolean: sentence is an imperative",
+        "has_null_subject": "Boolean: finite root verb with no overt subject",
         "fragment_type": "Type of fragment if applicable",
         "root_pos": "POS tag of ROOT token",
     }
+
+    def __init__(self, language: str = "en"):
+        self.language = language
 
     def annotate_sentence(
         self,
@@ -54,6 +58,7 @@ class FragmentAnnotator(BaseSentenceAnnotator):
         result = {
             "is_fragment": False,
             "is_imperative": False,
+            "has_null_subject": False,
             "fragment_type": None,
             "root_pos": root.pos_ if root else None,
         }
@@ -85,21 +90,14 @@ class FragmentAnnotator(BaseSentenceAnnotator):
             result["is_imperative"] = True
             return result
 
-        # Finite verb without subject - likely imperative (in English)
+        # Null subject detection: finite root verb with no overt subject
         has_subject = any(
             c.dep_ in ("nsubj", "nsubj:pass", "expl")
             for c in root.children
         )
 
         if not has_subject:
-            # Could be imperative or null subject
-            # Use lemma heuristics for common imperatives
-            if root.lemma_.lower() in ("let", "be", "do", "have", "go", "come", "see", "look"):
-                result["is_imperative"] = True
-            else:
-                # Ambiguous - mark as potential imperative based on context
-                # In English, subjectless finite clauses are usually imperatives
-                result["is_imperative"] = True
+            result["has_null_subject"] = True
 
         return result
 
@@ -111,4 +109,5 @@ class FragmentAnnotator(BaseSentenceAnnotator):
         return {
             "is_fragment": annotations.get("is_fragment", False),
             "is_imperative": annotations.get("is_imperative", False),
+            "has_null_subject": annotations.get("has_null_subject", False),
         }
