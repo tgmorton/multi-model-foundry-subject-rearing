@@ -111,3 +111,23 @@ class TestPipelineIntegration:
                         assert "split" in row
                         assert row["split"] == "test"
                         break
+
+    def test_childes_speaker_split(self, pipeline_config):
+        """CHILDES genre should be split into CHILDES_child and CHILDES_adult."""
+        pipeline = CorpusAnalysisPipeline(pipeline_config)
+        results = pipeline.run()
+
+        # Check that at least one analyzer has CHILDES_child and CHILDES_adult
+        # but NOT bare "CHILDES" in by_genre
+        for name, data in results.items():
+            genres = set(data.get("by_genre", {}).keys())
+            # The test corpus has both CHI and MOT lines, so both should appear
+            assert "CHILDES_child" in genres, (
+                f"{name}: expected CHILDES_child in genres, got {genres}"
+            )
+            assert "CHILDES_adult" in genres, (
+                f"{name}: expected CHILDES_adult in genres, got {genres}"
+            )
+            assert "CHILDES" not in genres, (
+                f"{name}: bare 'CHILDES' should not appear after speaker split"
+            )

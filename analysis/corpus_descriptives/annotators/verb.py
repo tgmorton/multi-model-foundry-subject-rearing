@@ -49,6 +49,8 @@ class VerbAnnotator(BaseSentenceAnnotator):
             tense_vals = morph.get("Tense")
             aspect_vals = morph.get("Aspect")
             mood_vals = morph.get("Mood")
+            person_vals = morph.get("Person")
+            number_vals = morph.get("Number")
 
             if not verb_forms:
                 continue
@@ -62,10 +64,12 @@ class VerbAnnotator(BaseSentenceAnnotator):
             else:
                 clause_pos = "other"
 
-            # Extract tense/aspect/mood
+            # Extract tense/aspect/mood/person/number
             tense = tense_vals[0] if tense_vals else None
             aspect = aspect_vals[0] if aspect_vals else None
             mood = mood_vals[0] if mood_vals else None
+            person = int(person_vals[0]) if person_vals else None
+            number = number_vals[0] if number_vals else None
 
             verb = {
                 "token_idx": tok.i - sent.start,
@@ -75,6 +79,8 @@ class VerbAnnotator(BaseSentenceAnnotator):
                 "tense": tense,
                 "aspect": aspect,
                 "mood": mood,
+                "person": person,
+                "number": number,
             }
             verbs.append(verb)
 

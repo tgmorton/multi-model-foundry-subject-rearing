@@ -37,16 +37,20 @@ ANNOTATOR_REGISTRY = {
 }
 
 
-def get_default_annotators() -> list[BaseSentenceAnnotator]:
+def get_default_annotators(language: str = "en") -> list[BaseSentenceAnnotator]:
     """
     Get a list of all default annotators.
+
+    Args:
+        language: Language code ("en" for English, "it" for Italian).
+            Affects ExpletiveAnnotator behavior for Italian implicit expletives.
 
     Returns all annotators except fragment (which overlaps with complexity).
     """
     return [
         ClauseStructureAnnotator(),
         ThatTraceAnnotator(),
-        ExpletiveAnnotator(),
+        ExpletiveAnnotator(language=language),
         PronounAnnotator(),
         NegationAnnotator(),
         WhExtractionAnnotator(),
@@ -58,12 +62,14 @@ def get_default_annotators() -> list[BaseSentenceAnnotator]:
     ]
 
 
-def get_annotator(name: str) -> BaseSentenceAnnotator:
+def get_annotator(name: str, language: str = "en") -> BaseSentenceAnnotator:
     """
     Get an annotator instance by name.
 
     Args:
         name: Annotator name (e.g., "clause_structure", "that_trace")
+        language: Language code ("en" for English, "it" for Italian).
+            Only affects "expletive" annotator.
 
     Returns:
         Instance of the specified annotator
@@ -76,6 +82,9 @@ def get_annotator(name: str) -> BaseSentenceAnnotator:
             f"Unknown annotator: {name}. "
             f"Available: {list(ANNOTATOR_REGISTRY.keys())}"
         )
+    # Pass language to annotators that need it
+    if name == "expletive":
+        return ExpletiveAnnotator(language=language)
     return ANNOTATOR_REGISTRY[name]()
 
 

@@ -129,6 +129,21 @@ class TestExpletiveAnnotator:
 
         assert "has_expletive" in flags
 
+    def test_italian_language_parameter(self):
+        """Test that Italian annotator can be created."""
+        italian_annotator = ExpletiveAnnotator(language="it")
+        assert italian_annotator.language == "it"
+
+    def test_is_implicit_field(self, nlp, annotator):
+        """Test that English expletives have is_implicit=False."""
+        doc = nlp("There is a cat.")
+        sent = list(doc.sents)[0]
+        result = annotator.annotate_sentence(sent, "test")
+
+        if result["expletives"]:
+            expl = result["expletives"][0]
+            assert expl.get("is_implicit") == False
+
 
 # === PronounAnnotator Tests ===
 
@@ -285,6 +300,18 @@ class TestVerbAnnotator:
             assert "tense" in verb
             assert "aspect" in verb
             assert "mood" in verb
+
+    def test_person_number_extraction(self, nlp, annotator):
+        """Test person/number extraction (Phase 3 addition)."""
+        doc = nlp("She runs fast.")
+        sent = list(doc.sents)[0]
+        result = annotator.annotate_sentence(sent, "test")
+
+        assert "verbs" in result
+        # Check that person/number fields exist
+        for verb in result["verbs"]:
+            assert "person" in verb
+            assert "number" in verb
 
 
 # === ArgumentStructureAnnotator Tests ===

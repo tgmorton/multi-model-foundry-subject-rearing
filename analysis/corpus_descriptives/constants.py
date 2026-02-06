@@ -1,7 +1,8 @@
 """
 Constants for corpus descriptive analysis.
 
-Bridge verbs, wh-lemmas, weather verbs, genre mappings, and dependency label sets.
+Bridge verbs, wh-lemmas, weather verbs, genre mappings, dependency label sets,
+and Italian impersonal/weather verb lists for expletive-equivalent detection.
 """
 
 # §1.8 Bridge verbs — permit extraction from complement clauses
@@ -35,6 +36,48 @@ DEFAULT_GENRE_MAP_EN = {
     "simple_wiki": "SimpleWikipedia",
     "switchboard": "Switchboard",
 }
+
+DEFAULT_GENRE_MAP_IT = {
+    "childes": "CHILDES",
+    "clta": "CltA",
+    "corpus_isacco": "ISACCO",
+    "europarl": "Europarl",
+    "leipzig_web": "Leipzig Web",
+    "paccss": "PaCCSS",
+    "qcri": "QCRI",
+    "spgc": "SPGC",
+}
+
+# --- Italian verb lists for expletive-equivalent detection ---
+
+# §1.2 Italian weather verbs — impersonal meteorological predicates
+WEATHER_VERBS_IT = frozenset({
+    "piovere", "nevicare", "grandinare", "tuonare", "lampeggiare",
+    "gelare", "albeggiare", "annottare", "imbrunire", "diluviare",
+})
+
+# §1.2 Italian impersonal raising verbs — take clausal complement, no overt subject
+IMPERSONAL_VERBS_IT = frozenset({
+    "sembrare", "parere", "risultare", "capitare",
+    "succedere", "accadere", "avvenire",
+})
+
+# §1.2 Italian impersonal necessity verbs — no nsubj, impersonal by nature
+NECESSITY_VERBS_IT = frozenset({
+    "bisognare", "bastare", "convenire", "occorrere",
+})
+
+# §1.8 Italian bridge verbs — permit extraction from complement clauses
+ITALIAN_BRIDGE_VERBS = frozenset({
+    "pensare", "credere", "dire", "sapere", "supporre",
+    "sperare", "immaginare", "sentire", "ritenere", "affermare",
+    "dichiarare", "sostenere", "annunciare", "prevedere",
+})
+
+# §1.5 Wh-lemmas for Italian question detection
+WH_LEMMAS_IT = frozenset({
+    "chi", "che", "cosa", "quale", "dove", "quando", "perché", "come",
+})
 
 # CHILDES speaker classification
 CHILDES_CHILD_SPEAKERS = frozenset({"CHI"})

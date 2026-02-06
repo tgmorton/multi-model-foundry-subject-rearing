@@ -131,7 +131,7 @@ def _relative_clause_struct() -> pa.DataType:
 
 
 def _verb_struct() -> pa.DataType:
-    """Schema for verb annotations including tense/aspect/mood."""
+    """Schema for verb annotations including tense/aspect/mood/person/number."""
     return pa.struct([
         ("token_idx", pa.int32()),
         ("lemma", pa.string()),
@@ -140,6 +140,8 @@ def _verb_struct() -> pa.DataType:
         ("tense", pa.string()),
         ("aspect", pa.string()),
         ("mood", pa.string()),
+        ("person", pa.int32()),
+        ("number", pa.string()),
     ])
 
 
@@ -240,6 +242,8 @@ def get_full_schema() -> pa.Schema:
 
         # === SENTENCE-LEVEL FLAGS (for fast filtering) ===
         pa.field("has_null_subject", pa.bool_()),
+        pa.field("has_null_subject_finite", pa.bool_()),
+        pa.field("has_null_subject_nonfinite", pa.bool_()),
         pa.field("has_null_object", pa.bool_()),
         pa.field("has_overt_subject_pronoun", pa.bool_()),
         pa.field("has_overt_object_pronoun", pa.bool_()),
