@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sweep-data-access
+  namespace: lemn-lab
+spec:
+  containers:
+  - name: shell
+    image: python:3.10-slim
+    command: ["sleep", "3600"]
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: "100m"
+      limits:
+        memory: 512Mi
+        cpu: "100m"
+    volumeMounts:
+    - name: data
+      mountPath: /mnt/data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: pronoun-sweep-data
+  restartPolicy: Never

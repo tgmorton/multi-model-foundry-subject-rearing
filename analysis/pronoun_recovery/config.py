@@ -226,6 +226,17 @@ class ModelTrainingConfig(_BaseConfig):
     phase_b_epochs: int = Field(10, gt=0)
     phase_b_patience: int = Field(3, gt=0)
 
+    # Class weighting
+    weight_alpha: float = Field(
+        1.0,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Exponent for inverse-frequency class weights. "
+            "1.0 = full inverse-frequency, 0.5 = sqrt, 0.0 = uniform."
+        ),
+    )
+
     # Common
     fp16: bool = Field(True)
     warmup_ratio: float = Field(0.1, ge=0.0, le=1.0)

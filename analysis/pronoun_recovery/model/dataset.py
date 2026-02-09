@@ -389,16 +389,24 @@ def build_dataset(
 # ── Class weight computation ────────────────────────────────────────────
 
 
-def compute_class_weights(dataset: Dataset) -> np.ndarray:
+def compute_class_weights(dataset: Dataset, alpha: float = 1.0) -> np.ndarray:
     """Compute class weights inversely proportional to frequency.
 
     This helps handle the severe class imbalance in pronoun recovery,
     where NONE tokens vastly outnumber PRO.* tokens.  Weights are
-    computed as ``total / (num_classes * count_per_class)``, with a
-    floor of 1.0 for classes with zero occurrences.
+    computed as ``(total / (num_classes * count_per_class)) ** alpha``,
+    with a floor of 1.0 for classes with zero occurrences.
+
+    The ``alpha`` exponent controls the strength of the rebalancing:
+
+    - ``alpha=1.0``: full inverse-frequency weighting (default, original behavior)
+    - ``alpha=0.5``: square-root weighting (gentler)
+    - ``alpha=0.0``: uniform weights (no rebalancing)
 
     Args:
         dataset: A tokenised dataset with an integer ``labels`` column.
+        alpha: Exponent applied to the inverse-frequency weights.
+            Lower values produce gentler rebalancing.
 
     Returns:
         Array of shape ``(NUM_LABELS,)`` with per-class weights.
@@ -423,16 +431,18 @@ def compute_class_weights(dataset: Dataset) -> np.ndarray:
         logger.warning("No valid label counts found; returning uniform weights")
         return np.ones(NUM_LABELS, dtype=np.float32)
 
-    # Inverse frequency weighting: weight_c = total / (num_classes * count_c).
-    weights = np.where(
+    # Inverse frequency weighting with exponent alpha.
+    raw_weights = np.where(
         counts > 0,
         total / (NUM_LABELS * counts),
         1.0,
     )
+    weights = np.power(raw_weights, alpha)
 
     logger.info(
-        "Class weights computed (total tokens=%d): %s",
+        "Class weights computed (total tokens=%d, alpha=%.2f): %s",
         int(total),
+        alpha,
         {ALL_LABELS[i]: f"{w:.3f}" for i, w in enumerate(weights)},
     )
 

@@ -18,6 +18,7 @@ between NONE and PRO.* labels.
 """
 
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import Optional
 
@@ -33,7 +34,7 @@ from transformers import (
 )
 
 from ..config import ModelTrainingConfig
-from ..constants import ALL_LABELS, NUM_LABELS
+from ..constants import ALL_LABELS, LABEL_NONE, NUM_LABELS
 from .dataset import build_dataset, compute_class_weights
 
 logger = logging.getLogger(__name__)
@@ -165,7 +166,8 @@ class PronounRecoveryTrainer:
             len(eval_dataset),
         )
 
-        class_weights = compute_class_weights(train_dataset)
+        alpha = getattr(self.config, "weight_alpha", 1.0)
+        class_weights = compute_class_weights(train_dataset, alpha=alpha)
 
         model = AutoModelForTokenClassification.from_pretrained(
             self.config.model_name,
@@ -213,20 +215,15 @@ class PronounRecoveryTrainer:
             data_type=data_type,
         )
 
-        # Use 10% of annotation data for evaluation.
-        split = annot_dataset.train_test_split(
-            test_size=0.1, seed=self.config.seed
-        )
-        annot_train = split["train"]
-        annot_eval = split["test"]
-
-        logger.info(
-            "Annotation data: %d train, %d eval examples",
-            len(annot_train),
-            len(annot_eval),
+        # Stratified train/test split: assign each example a stratum
+        # based on its rarest non-NONE label so that minority classes
+        # (IMP, CONJ, PRO.2pl) are proportionally represented in eval.
+        annot_train, annot_eval = self._stratified_split(
+            annot_dataset, test_size=0.1
         )
 
-        class_weights = compute_class_weights(annot_train)
+        alpha = getattr(self.config, "weight_alpha", 1.0)
+        class_weights = compute_class_weights(annot_train, alpha=alpha)
 
         model = AutoModelForTokenClassification.from_pretrained(
             self.config.model_name,
@@ -260,6 +257,77 @@ class PronounRecoveryTrainer:
         self.tokenizer.save_pretrained(str(final_dir))
         logger.info("Final model saved to %s", final_dir)
         return str(final_dir)
+
+    # ── Stratified splitting ────────────────────────────────────────────
+
+    def _stratified_split(self, dataset, test_size: float = 0.1):
+        """Split dataset with stratification by rarest non-NONE label.
+
+        Each example is assigned to a stratum based on the rarest label
+        it contains (by global frequency).  This ensures minority classes
+        like IMP, CONJ, PRO.2pl get proportional representation in the
+        eval set rather than being concentrated in train by chance.
+
+        Args:
+            dataset: Tokenized HF Dataset with integer ``labels`` column.
+            test_size: Fraction of data to hold out for evaluation.
+
+        Returns:
+            Tuple of (train_dataset, eval_dataset).
+        """
+        from sklearn.model_selection import StratifiedShuffleSplit
+
+        # 1. Count global label frequencies (excluding NONE=0 and ignored=-100)
+        global_counts: Counter = Counter()
+        for example in dataset:
+            label_ids = example["labels"]
+            if hasattr(label_ids, "numpy"):
+                label_ids = label_ids.numpy()
+            for lid in label_ids:
+                lid = int(lid)
+                if lid > 0 and lid < NUM_LABELS:
+                    global_counts[lid] += 1
+
+        # 2. Assign each example a stratum = its rarest non-NONE label
+        #    (or 0 = "NONE-only" if no pronoun labels present)
+        strata = []
+        for example in dataset:
+            label_ids = example["labels"]
+            if hasattr(label_ids, "numpy"):
+                label_ids = label_ids.numpy()
+            present = {int(lid) for lid in label_ids if 0 < int(lid) < NUM_LABELS}
+            if not present:
+                strata.append(0)  # NONE-only
+            else:
+                rarest = min(present, key=lambda lid: global_counts.get(lid, 0))
+                strata.append(rarest)
+
+        strata = np.array(strata)
+
+        # Log stratum distribution
+        stratum_counts = Counter(strata)
+        logger.info(
+            "Stratification strata: %s",
+            {ALL_LABELS[k] if k < len(ALL_LABELS) else k: v
+             for k, v in sorted(stratum_counts.items())},
+        )
+
+        # 3. Stratified split
+        sss = StratifiedShuffleSplit(
+            n_splits=1, test_size=test_size, random_state=self.config.seed
+        )
+        train_idx, eval_idx = next(sss.split(np.zeros(len(strata)), strata))
+
+        train_dataset = dataset.select(train_idx)
+        eval_dataset = dataset.select(eval_idx)
+
+        logger.info(
+            "Stratified split: %d train, %d eval examples",
+            len(train_dataset),
+            len(eval_dataset),
+        )
+
+        return train_dataset, eval_dataset
 
     # ── Single-phase training ────────────────────────────────────────────
 
