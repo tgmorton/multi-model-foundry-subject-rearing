@@ -79,6 +79,8 @@ spec:
               key: WANDB_API_KEY
         - name: WANDB_ENTITY
           value: "thmorton-uc-san-diego"
+        - name: PYTHONPATH
+          value: "/opt/repo"
         - name: PYTORCH_CUDA_ALLOC_CONF
           value: "expandable_segments:True"
         resources:
