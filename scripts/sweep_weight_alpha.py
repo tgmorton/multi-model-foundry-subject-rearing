@@ -120,6 +120,8 @@ def main():
                         default=[0.0, 0.25, 0.5, 0.75, 1.0])
     parser.add_argument("--learning-rate", type=float, default=None,
                         help="Override learning rate (default: use config value)")
+    parser.add_argument("--focal-gamma", type=float, default=0.0,
+                        help="Focal loss gamma (0.0 = standard CE)")
     parser.add_argument("--thresholds", nargs="+", type=float,
                         default=[0.0, 0.5, 0.7, 0.8, 0.85, 0.9, 0.95])
     parser.add_argument("--wandb-project", default=None,
@@ -192,6 +194,7 @@ def main():
             cfg.annotation_data_path = Path(args.data_path)
         cfg.output_path = str(run_dir)
         cfg.weight_alpha = alpha
+        cfg.focal_gamma = args.focal_gamma
         cfg.fp16 = torch.cuda.is_available()
 
         if args.wandb_project:
@@ -223,6 +226,7 @@ def main():
             num_epochs=cfg.phase_b_epochs,
             patience=cfg.phase_b_patience,
             class_weights=class_weights,
+            focal_gamma=args.focal_gamma,
         )
         elapsed = time.time() - start
         logger.info("alpha=%.2f lr=%.1e training took %.1f min", alpha, lr, elapsed / 60)

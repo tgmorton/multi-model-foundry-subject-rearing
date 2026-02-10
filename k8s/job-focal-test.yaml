@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pronoun-focal-test
+  namespace: lemn-lab
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 1
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: focal-test
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          pip install --no-cache-dir \
+            torch --index-url https://download.pytorch.org/whl/cu121
+
+          cd /opt/repo
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            accelerate>=0.26.0 \
+            python-dotenv \
+            scikit-learn>=1.3.0 \
+            seqeval>=1.2.2 \
+            sentencepiece
+
+          python scripts/sweep_weight_alpha.py \
+            --config configs/pronoun_recovery_it_train.yaml \
+            --data-path /mnt/data/pronoun_recovery/annotations/it/checkpoint.jsonl \
+            --output-dir /mnt/data/pronoun_recovery/models/focal_test \
+            --alphas 0.0 \
+            --learning-rate 2e-5 \
+            --focal-gamma 2.0 \
+            --wandb-project pronoun-recovery \
+            --wandb-entity thmorton-uc-san-diego
+        env:
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wandb-secret-thomas
+              key: WANDB_API_KEY
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: pronoun-sweep-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule

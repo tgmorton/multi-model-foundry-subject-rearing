@@ -236,6 +236,15 @@ class ModelTrainingConfig(_BaseConfig):
             "1.0 = full inverse-frequency, 0.5 = sqrt, 0.0 = uniform."
         ),
     )
+    focal_gamma: float = Field(
+        0.0,
+        ge=0.0,
+        description=(
+            "Focal loss focusing parameter. 0.0 = standard CE, "
+            "2.0 = strong down-weighting of easy examples. "
+            "Modulates loss by (1 - p_t)^gamma."
+        ),
+    )
 
     # Common
     fp16: bool = Field(True)

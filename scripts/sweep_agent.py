@@ -119,14 +119,16 @@ def main():
     run = wandb.init()
     alpha = wandb.config.weight_alpha
     lr = wandb.config.learning_rate
+    gamma = getattr(wandb.config, "focal_gamma", 0.0)
 
-    run_tag = f"a{alpha}_lr{lr:.0e}"
+    run_tag = f"a{alpha}_lr{lr:.0e}_g{gamma}"
     logger.info("Starting run: %s", run_tag)
 
     # Load config
     cfg = load_config(CONFIG_PATH, ModelTrainingConfig)
     cfg.annotation_data_path = Path(DATA_PATH)
     cfg.weight_alpha = alpha
+    cfg.focal_gamma = gamma
     cfg.fp16 = torch.cuda.is_available()
     # Disable HF Trainer's own W&B — we manage the run ourselves
     cfg.wandb_project = None
@@ -179,6 +181,7 @@ def main():
         num_epochs=cfg.phase_b_epochs,
         patience=cfg.phase_b_patience,
         class_weights=class_weights,
+        focal_gamma=gamma,
     )
     elapsed = time.time() - start
     wandb.log({"train_time_min": elapsed / 60})

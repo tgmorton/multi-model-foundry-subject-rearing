@@ -44,54 +44,83 @@ logger = logging.getLogger(__name__)
 
 
 class WeightedLossTrainer(Trainer):
-    """Custom Trainer that applies class weights to cross-entropy loss.
+    """Custom Trainer that applies class weights and optional focal loss.
 
     When ``class_weights`` is provided, the loss function weights each
     class inversely proportional to its frequency, which is critical
     for the pronoun recovery task where NONE tokens dominate.
+
+    When ``focal_gamma`` > 0, applies focal loss modulation:
+    ``FL(p_t) = -(1 - p_t)^gamma * CE(p_t)``, which down-weights
+    easy/well-classified examples and focuses training on hard ones.
     """
 
-    def __init__(self, class_weights: Optional[np.ndarray] = None, **kwargs):
-        """Initialise with optional class weights.
-
-        Args:
-            class_weights: Array of shape ``(NUM_LABELS,)`` with per-class
-                weights.  If ``None``, standard unweighted cross-entropy
-                is used.
-            **kwargs: Forwarded to :class:`transformers.Trainer`.
-        """
+    def __init__(
+        self,
+        class_weights: Optional[np.ndarray] = None,
+        focal_gamma: float = 0.0,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.class_weights = class_weights
+        self.focal_gamma = focal_gamma
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
-        """Compute weighted cross-entropy loss for token classification.
-
-        Labels of -100 are ignored (special tokens and continuation
-        subwords).
-
-        Args:
-            model: The token classification model.
-            inputs: Dict with ``input_ids``, ``attention_mask``, ``labels``.
-            return_outputs: Whether to also return model outputs.
-
-        Returns:
-            Loss tensor, or ``(loss, outputs)`` tuple if *return_outputs*
-            is ``True``.
-        """
         labels = inputs.pop("labels")
         outputs = model(**inputs)
         logits = outputs.logits
 
+        flat_logits = logits.view(-1, NUM_LABELS)
+        flat_labels = labels.view(-1)
+
+        if self.focal_gamma > 0:
+            loss = self._focal_loss(flat_logits, flat_labels)
+        else:
+            if self.class_weights is not None:
+                weight = torch.tensor(
+                    self.class_weights, dtype=torch.float32
+                ).to(logits.device)
+                loss_fn = nn.CrossEntropyLoss(weight=weight, ignore_index=-100)
+            else:
+                loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
+            loss = loss_fn(flat_logits, flat_labels)
+
+        return (loss, outputs) if return_outputs else loss
+
+    def _focal_loss(self, logits, labels):
+        """Compute focal cross-entropy: -(1 - p_t)^gamma * weight_t * log(p_t).
+
+        Handles ignore_index=-100 by masking those positions out.
+        """
+        mask = labels != -100
+        logits = logits[mask]
+        labels = labels[mask]
+
+        if labels.numel() == 0:
+            return torch.tensor(0.0, device=logits.device, requires_grad=True)
+
+        log_probs = nn.functional.log_softmax(logits, dim=-1)
+        probs = log_probs.exp()
+
+        # Gather p_t and log(p_t) for the true class
+        log_pt = log_probs.gather(1, labels.unsqueeze(1)).squeeze(1)
+        pt = probs.gather(1, labels.unsqueeze(1)).squeeze(1)
+
+        # Focal modulation
+        focal_weight = (1.0 - pt) ** self.focal_gamma
+
+        # Per-sample loss
+        loss = -focal_weight * log_pt
+
+        # Apply class weights if provided
         if self.class_weights is not None:
             weight = torch.tensor(
                 self.class_weights, dtype=torch.float32
             ).to(logits.device)
-            loss_fn = nn.CrossEntropyLoss(weight=weight, ignore_index=-100)
-        else:
-            loss_fn = nn.CrossEntropyLoss(ignore_index=-100)
+            class_w = weight[labels]
+            loss = loss * class_w
 
-        loss = loss_fn(logits.view(-1, NUM_LABELS), labels.view(-1))
-        return (loss, outputs) if return_outputs else loss
+        return loss.mean()
 
 
 # ── Two-phase training orchestrator ──────────────────────────────────────
@@ -187,6 +216,7 @@ class PronounRecoveryTrainer:
             num_epochs=self.config.phase_a_epochs,
             patience=self.config.phase_a_patience,
             class_weights=class_weights,
+            focal_gamma=getattr(self.config, "focal_gamma", 0.0),
         )
 
         return self._save_final(best_ckpt, output_base)
@@ -243,6 +273,7 @@ class PronounRecoveryTrainer:
             num_epochs=self.config.phase_b_epochs,
             patience=self.config.phase_b_patience,
             class_weights=class_weights,
+            focal_gamma=getattr(self.config, "focal_gamma", 0.0),
         )
 
         return self._save_final(best_ckpt, output_base)
@@ -343,6 +374,7 @@ class PronounRecoveryTrainer:
         num_epochs: int,
         patience: int,
         class_weights: Optional[np.ndarray] = None,
+        focal_gamma: float = 0.0,
     ) -> str:
         """Run a single training phase.
 
@@ -401,6 +433,7 @@ class PronounRecoveryTrainer:
 
         trainer = WeightedLossTrainer(
             class_weights=class_weights,
+            focal_gamma=focal_gamma,
             model=model,
             args=training_args,
             train_dataset=train_dataset,
