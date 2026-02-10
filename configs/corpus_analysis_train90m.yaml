@@ -1,13 +1,13 @@
 input_path: /mnt/data/raw/train_90M/
-output_path: /mnt/data/output/train_90M/
+output_path: /mnt/annotate/output/train_90M/
 split_name: train_90M
 spacy_model: en_core_web_trf
-spacy_batch_size: 256
+spacy_batch_size: 512
 spacy_disable_components:
   - ner
 chunk_size: 5000
 language: en
-checkpoint_dir: /mnt/data/checkpoints/train_90M/
+checkpoint_dir: /mnt/annotate/checkpoints/train_90M/
 checkpoint_interval: 10000
 genre_map:
   childes: CHILDES

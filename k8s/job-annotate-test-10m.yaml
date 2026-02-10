@@ -6,6 +6,8 @@ spec:
   backoffLimit: 3
   template:
     spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
       initContainers:
       - name: clone-repo
         image: alpine/git

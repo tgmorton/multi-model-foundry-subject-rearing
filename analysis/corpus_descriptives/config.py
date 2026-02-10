@@ -50,6 +50,11 @@ class CorpusAnalysisConfig(BaseModel):
         description="Filename stem → genre display name",
     )
 
+    # File filtering (for parallel jobs)
+    file_filter: Optional[str] = Field(
+        None, description="Single file stem to process (e.g. 'childes'). If None, process all."
+    )
+
     # Checkpointing
     checkpoint_dir: Optional[Path] = Field(None, description="Checkpoint directory")
     checkpoint_interval: int = Field(

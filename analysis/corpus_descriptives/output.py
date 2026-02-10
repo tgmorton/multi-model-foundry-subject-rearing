@@ -281,6 +281,7 @@ class LayeredAnnotationWriter:
         output_dir: Path,
         split_name: str,
         batch_size: int = 10000,
+        file_suffix: Optional[str] = None,
     ):
         """
         Initialize layered writer.
@@ -289,10 +290,12 @@ class LayeredAnnotationWriter:
             output_dir: Root directory for annotated corpus
             split_name: Split identifier (e.g., "train_90M")
             batch_size: Batch size for each layer writer
+            file_suffix: If set, output files become {split_name}_{file_suffix}.parquet
         """
         self.output_dir = Path(output_dir)
         self.split_name = split_name
         self.batch_size = batch_size
+        self.file_suffix = file_suffix
         self._layer_writers: Dict[str, AnnotationWriter] = {}
         self._layer_buffers: Dict[str, List[Dict[str, Any]]] = {}
         self.logger = logging.getLogger("corpus_descriptives.output")
@@ -304,12 +307,17 @@ class LayeredAnnotationWriter:
     def _get_layer_writer(self, layer_name: str, schema: pa.Schema) -> AnnotationWriter:
         """Get or create writer for a specific layer."""
         if layer_name not in self._layer_writers:
+            if self.file_suffix:
+                fname = f"{self.split_name}_{self.file_suffix}.parquet"
+            else:
+                fname = f"{self.split_name}.parquet"
+
             if layer_name == "base":
-                path = self.output_dir / "base" / f"{self.split_name}.parquet"
+                path = self.output_dir / "base" / fname
             else:
                 layer_dir = self.output_dir / "layers" / layer_name
                 layer_dir.mkdir(parents=True, exist_ok=True)
-                path = layer_dir / f"{self.split_name}.parquet"
+                path = layer_dir / fname
 
             self._layer_writers[layer_name] = AnnotationWriter(
                 output_path=path,

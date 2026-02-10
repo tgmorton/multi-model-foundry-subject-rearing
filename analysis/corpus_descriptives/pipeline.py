@@ -366,6 +366,12 @@ class CorpusAnnotationPipeline:
         # Find corpus files
         input_path = Path(self.config.input_path)
         train_files = sorted(input_path.glob("*.train"))
+        if self.config.file_filter:
+            train_files = [f for f in train_files if f.stem == self.config.file_filter]
+            if not train_files:
+                raise FileNotFoundError(
+                    f"No .train file matching '{self.config.file_filter}' in {input_path}"
+                )
         if not train_files:
             raise FileNotFoundError(f"No .train files in {input_path}")
         self.logger.info(f"Found {len(train_files)} corpus files")
@@ -376,6 +382,7 @@ class CorpusAnnotationPipeline:
                 output_dir=self.output_dir,
                 split_name=self.config.split_name,
                 batch_size=10000,
+                file_suffix=self.config.file_filter,
             )
         else:
             writer = AnnotationWriter(

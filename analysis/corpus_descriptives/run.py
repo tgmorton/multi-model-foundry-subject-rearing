@@ -47,6 +47,12 @@ def main(argv=None):
         default=None,
         help="Use layered output in annotation mode",
     )
+    parser.add_argument(
+        "--file",
+        type=str,
+        default=None,
+        help="Process only this file stem (e.g. 'childes')",
+    )
     args = parser.parse_args(argv)
 
     # Load config
@@ -59,6 +65,10 @@ def main(argv=None):
         raw = yaml.safe_load(f)
 
     config = CorpusAnalysisConfig(**raw)
+
+    # Apply CLI overrides
+    if args.file is not None:
+        config.file_filter = args.file
 
     # Determine mode
     annotation_mode = args.annotate or config.annotation_mode

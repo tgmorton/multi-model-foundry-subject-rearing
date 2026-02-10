@@ -66,7 +66,7 @@ def _build_index(corpus_path: Path) -> pl.DataFrame:
     flag columns are horizontally stacked (no join needed), which avoids
     the memory overhead of hashing millions of sentence_id strings.
     """
-    base_files = list((corpus_path / "base").glob("*.parquet"))
+    base_files = sorted((corpus_path / "base").glob("*.parquet"))
     if not base_files:
         raise FileNotFoundError(f"No base parquet files in {corpus_path / 'base'}")
 
@@ -85,7 +85,7 @@ def _build_index(corpus_path: Path) -> pl.DataFrame:
     for layer_dir in sorted(layers_dir.iterdir()):
         if not layer_dir.is_dir():
             continue
-        layer_files = list(layer_dir.glob("*.parquet"))
+        layer_files = sorted(layer_dir.glob("*.parquet"))
         if not layer_files:
             continue
 
@@ -114,7 +114,7 @@ class CorpusQueryAPI:
 
     def __init__(self, corpus_path: str):
         self._path = Path(corpus_path)
-        self._base_files = list((self._path / "base").glob("*.parquet"))
+        self._base_files = sorted((self._path / "base").glob("*.parquet"))
 
         # Small in-memory index — sentence_id + genre + speaker + flags
         self._index = _build_index(self._path)
@@ -267,7 +267,7 @@ class CorpusQueryAPI:
             for layer_dir in sorted(layers_dir.iterdir()):
                 if not layer_dir.is_dir():
                     continue
-                layer_files = list(layer_dir.glob("*.parquet"))
+                layer_files = sorted(layer_dir.glob("*.parquet"))
                 if not layer_files:
                     continue
                 layer_df = (
