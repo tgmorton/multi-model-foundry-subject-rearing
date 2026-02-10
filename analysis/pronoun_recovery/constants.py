@@ -13,7 +13,6 @@ LABEL_NONE = "NONE"
 PRONOUN_LABELS = frozenset({
     "PRO.1sg", "PRO.2sg", "PRO.3sg",
     "PRO.1pl", "PRO.2pl", "PRO.3pl",
-    "IMP", "CONJ",
 })
 ALL_LABELS = [LABEL_NONE] + sorted(PRONOUN_LABELS)
 LABEL_TO_ID: Dict[str, int] = {label: i for i, label in enumerate(ALL_LABELS)}

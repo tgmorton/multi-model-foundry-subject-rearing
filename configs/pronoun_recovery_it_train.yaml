@@ -1,13 +1,13 @@
 # Step 5: Model training (Italian)
 # Train on LLM-annotated checkpoint data
 training_source: llm_annotated
-annotation_data_path: data/pronoun_recovery/annotations/it/checkpoint.jsonl
+annotation_data_path: data/pronoun_recovery/annotations/it/r1_final_clean.jsonl
 output_path: data/pronoun_recovery/models/it
 language: it
 
 # Model
 model_name: microsoft/mdeberta-v3-base
-num_labels: 9
+num_labels: 7
 
 # Training hyperparams
 phase_b_lr: 1.0e-5

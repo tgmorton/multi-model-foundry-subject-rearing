@@ -61,10 +61,11 @@ Return ONLY the annotated text. Do not include explanations, commentary, or
 metadata — just the annotated sentence."""
 
 SYSTEM_PROMPT_IT = """\
-Sei un annotatore linguistico specializzato nel recupero dei pronomi per testi italiani.
+Sei un annotatore linguistico specializzato nel recupero dei pronomi soggetto \
+omessi (pro-drop) in testi italiani.
 
-Il tuo compito è identificare le posizioni in una frase in cui un pronome soggetto
-è stato omesso (soggetti nulli) e segnarle usando il formato di annotazione a parentesi.
+Il tuo compito è identificare le posizioni in cui un pronome soggetto referenziale \
+è stato omesso e segnarle usando il formato di annotazione a parentesi.
 
 ## Formato di Annotazione
 
@@ -77,33 +78,58 @@ Dove:
 - <numero> è sg (singolare) o pl (plurale)
 - <forma_lessicale> è il pronome soggetto italiano più probabile in minuscolo
 
-Esempi di marcatori validi:
+Marcatori validi:
 - [PRO.1sg:io] — prima persona singolare
 - [PRO.2sg:tu] — seconda persona singolare
 - [PRO.3sg:lui] / [PRO.3sg:lei] — terza persona singolare
 - [PRO.1pl:noi] — prima persona plurale
 - [PRO.2pl:voi] — seconda persona plurale
 - [PRO.3pl:loro] — terza persona plurale
-
-Per modi verbali speciali:
-- [PRO.IMP] — modo imperativo (comandi), nessuna forma lessicale
-- [PRO.CONJ] — modo congiuntivo, nessuna forma lessicale
+- [PRO.CONJ] — congiuntivo senza soggetto esplicito, nessuna forma lessicale
 
 ## Regole
 
-1. Annota SOLO veri soggetti nulli — posizioni in cui un pronome soggetto è
-   sintatticamente atteso ma assente. Il verbo deve essere finito (coniugato).
-2. NON annotare altri tipi di ellissi.
-3. NON annotare verbi che hanno già un soggetto esplicito.
+1. Annota SOLO veri soggetti nulli pro-drop — posizioni in cui un pronome \
+soggetto referenziale è sintatticamente atteso ma assente.
+2. Il verbo deve essere finito (coniugato).
+3. NON annotare verbi che hanno già un soggetto esplicito (prima O dopo il verbo).
 4. NON annotare verbi non finiti (infiniti, participi, gerundi).
-5. Per gli imperativi, usa [PRO.IMP] senza forma lessicale.
-6. Per costruzioni al congiuntivo, usa [PRO.CONJ] senza forma lessicale.
-7. Preserva il testo originale esattamente — INSERISCI solo marcatori.
-8. Se la frase non ha soggetti nulli, restituiscila invariata.
+5. Per costruzioni al congiuntivo, usa [PRO.CONJ] senza forma lessicale.
+6. Preserva il testo originale esattamente — INSERISCI solo marcatori.
+7. Se la frase non ha soggetti nulli, restituiscila invariata.
+
+## Casi da NON annotare — MOLTO IMPORTANTE
+
+### Soggetto postverbale (ordine Verbo-Soggetto)
+In italiano il soggetto può apparire DOPO il verbo. Il soggetto è comunque \
+presente, quindi NON è un soggetto nullo.
+- "Arriva il treno" → soggetto "il treno" postposto → NON annotare
+- "È arrivata Maria" → soggetto "Maria" → NON annotare
+- "Parlano i bambini" → soggetto "i bambini" → NON annotare
+- "Lo dice il ministro" → soggetto "il ministro" → NON annotare
+
+### Pronome relativo "che" come soggetto
+Nelle frasi relative, "che" può fungere da soggetto del verbo. NON è un \
+soggetto nullo.
+- "L'uomo che viene" → "che" è il soggetto di "viene" → NON annotare
+- "Il libro che costa poco" → "che" soggetto di "costa" → NON annotare
+
+### Costruzioni impersonali con "si"
+Il "si" impersonale/passivante NON è un soggetto pro-drop omesso. NON annotare.
+- "Si dice che..." → NON annotare
+- "Non si sa mai" → NON annotare
+- "Si parla di politica" → NON annotare
+
+### Verbi meteorologici e impersonali senza soggetto referenziale
+Verbi come "piove", "nevica", "bisogna", "occorre", "basta" non hanno un \
+soggetto referenziale omesso.
+- "Piove da tre giorni" → NON annotare
+- "Bisogna partire" → NON annotare
 
 ## Output
 
-Restituisci SOLO il testo annotato, senza spiegazioni o commenti."""
+Restituisci SOLO il testo annotato. Non includere spiegazioni, ragionamenti, \
+commenti o metadati — solo il testo con i marcatori inseriti."""
 
 
 _SYSTEM_PROMPTS = {

@@ -211,7 +211,7 @@ class ModelTrainingConfig(_BaseConfig):
 
     # Model
     model_name: str = Field("microsoft/deberta-v3-base")
-    num_labels: int = Field(9)
+    num_labels: int = Field(7)
 
     # Synthetic training hyperparameters (training_source='synthetic')
     phase_a_lr: float = Field(3e-5)

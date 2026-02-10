@@ -39,7 +39,7 @@ CONFIG_PATH = os.environ.get(
     "SWEEP_CONFIG", "configs/pronoun_recovery_it_train.yaml"
 )
 DATA_PATH = os.environ.get(
-    "SWEEP_DATA_PATH", "data/pronoun_recovery/annotations/it/checkpoint.jsonl"
+    "SWEEP_DATA_PATH", "data/pronoun_recovery/annotations/it/r1_final_clean.jsonl"
 )
 OUTPUT_DIR = os.environ.get(
     "SWEEP_OUTPUT_DIR", "data/pronoun_recovery/models/it_sweep"
