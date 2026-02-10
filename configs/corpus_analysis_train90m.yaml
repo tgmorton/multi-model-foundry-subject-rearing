@@ -1,7 +1,7 @@
 input_path: /mnt/data/raw/train_90M/
 output_path: /mnt/data/output/train_90M/
 split_name: train_90M
-spacy_model: en_core_web_lg
+spacy_model: en_core_web_trf
 spacy_batch_size: 256
 spacy_disable_components:
   - ner

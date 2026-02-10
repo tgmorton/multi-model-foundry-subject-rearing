@@ -39,10 +39,10 @@ spec:
             --annotate
         resources:
           requests:
-            memory: 8Gi
+            memory: 16Gi
             cpu: "7"
           limits:
-            memory: 8Gi
+            memory: 16Gi
             cpu: "7"
         volumeMounts:
         - name: repo

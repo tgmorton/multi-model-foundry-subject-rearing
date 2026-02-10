@@ -245,7 +245,22 @@ class AnnotationWriter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.close()
+        if exc_type is not None:
+            # Exception in flight — discard buffer and close writer without
+            # flushing to avoid producing a valid parquet with partial data.
+            self._buffer = []
+            if self._writer is not None:
+                self._writer.close()
+                self._writer = None
+                # Remove the incomplete file so it's obvious re-annotation is needed
+                if self.output_path.exists():
+                    self.output_path.unlink()
+            self.logger.warning(
+                f"Annotation writer aborted due to {exc_type.__name__}, "
+                f"removed incomplete output at {self.output_path}"
+            )
+        else:
+            self.close()
 
     @property
     def total_written(self) -> int:
@@ -333,7 +348,23 @@ class LayeredAnnotationWriter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.close()
+        if exc_type is not None:
+            # Exception in flight — close each layer writer without flushing
+            # and remove incomplete files to avoid corrupt parquet output.
+            for name, writer in self._layer_writers.items():
+                writer._buffer = []
+                if writer._writer is not None:
+                    writer._writer.close()
+                    writer._writer = None
+                if writer.output_path.exists():
+                    writer.output_path.unlink()
+            self._layer_writers = {}
+            self.logger.warning(
+                f"Layered writer aborted due to {exc_type.__name__}, "
+                f"removed incomplete outputs under {self.output_dir}"
+            )
+        else:
+            self.close()
 
     def write_metadata(self, metadata: Dict[str, Any]) -> None:
         """Write metadata.json to the output directory."""

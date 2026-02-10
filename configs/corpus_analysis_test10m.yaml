@@ -1,7 +1,7 @@
 input_path: /mnt/data/raw/test_10M/
 output_path: /mnt/data/output/test_10M/
 split_name: test_10M
-spacy_model: en_core_web_lg
+spacy_model: en_core_web_trf
 spacy_batch_size: 256
 spacy_disable_components:
   - ner

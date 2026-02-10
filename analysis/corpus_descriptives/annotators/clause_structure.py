@@ -87,6 +87,24 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
                     number = nsubj_tok.morph.get("Number")
                     subject_person = int(person[0]) if person else None
                     subject_number = number[0] if number else None
+            elif children_deps & {"csubj", "csubj:pass"}:
+                subject_status = "clausal"
+                csubj_tok = children.get("csubj") or children.get("csubj:pass")
+                if csubj_tok:
+                    subject_idx = csubj_tok.i - sent.start
+                    subject_lemma = csubj_tok.lemma_.lower()
+
+            # xcomp subject inheritance
+            if subject_status == "none" and dep == "xcomp":
+                head_children_deps = {c.dep_ for c in tok.head.children}
+                if head_children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
+                    subject_status = "inherited"
+
+            # Disfluent verb reduplication
+            if subject_status == "none" and tok.i > sent.start:
+                prev = tok.doc[tok.i - 1]
+                if prev.lemma_.lower() == tok.lemma_.lower() and prev.pos_ in ("VERB", "AUX"):
+                    subject_status = "disfluent_copy"
 
             # Direct object analysis
             object_status = "none"

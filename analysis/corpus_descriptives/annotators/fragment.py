@@ -92,9 +92,16 @@ class FragmentAnnotator(BaseSentenceAnnotator):
 
         # Null subject detection: finite root verb with no overt subject
         has_subject = any(
-            c.dep_ in ("nsubj", "nsubj:pass", "expl")
+            c.dep_ in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
             for c in root.children
         )
+
+        if not has_subject:
+            # Check for disfluent verb reduplication
+            if root.i > sent.start:
+                prev = root.doc[root.i - 1]
+                if prev.lemma_.lower() == root.lemma_.lower() and prev.pos_ in ("VERB", "AUX"):
+                    has_subject = True  # disfluent copy, not truly null
 
         if not has_subject:
             result["has_null_subject"] = True

@@ -59,6 +59,87 @@ class TestClauseStructureAnnotator:
         # Should detect multiple clauses
         assert len(result["clauses"]) >= 1
 
+    def test_clausal_subject_not_null(self, blank_nlp, annotator):
+        """Test that clausal subject (csubj) is not flagged as null."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Running is fun" — "running" is csubj of "is"
+        doc = make_doc(
+            blank_nlp,
+            words=["running", "is", "fun"],
+            pos=["VERB", "AUX", "ADJ"],
+            deps=["csubj", "ROOT", "acomp"],
+            heads=[1, 1, 1],
+            lemmas=["run", "be", "fun"],
+            morphs=["VerbForm=Ger", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        flags = annotator.get_sentence_flags(result)
+        assert flags["has_null_subject"] is False
+        # The ROOT clause should have subject_status "clausal"
+        root_clauses = [c for c in result["clauses"] if c["clause_type"] == "ROOT"]
+        assert root_clauses[0]["subject_status"] == "clausal"
+
+    def test_xcomp_inherits_subject(self, blank_nlp, annotator):
+        """Test that xcomp inherits subject from matrix verb."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "I want play dem" — "play" is xcomp of "want", no own subject
+        doc = make_doc(
+            blank_nlp,
+            words=["I", "want", "play", "dem"],
+            pos=["PRON", "VERB", "VERB", "PRON"],
+            deps=["nsubj", "ROOT", "xcomp", "obj"],
+            heads=[1, 1, 1, 2],
+            lemmas=["I", "want", "play", "them"],
+            morphs=["Person=1|Number=Sing", "VerbForm=Fin", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        xcomp_clauses = [c for c in result["clauses"] if c["clause_type"] == "xcomp"]
+        assert len(xcomp_clauses) == 1
+        assert xcomp_clauses[0]["subject_status"] == "inherited"
+
+    def test_disfluent_reduplication(self, blank_nlp, annotator):
+        """Test that disfluent verb reduplication is not flagged as null."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "is is fine" — second "is" parsed as ccomp with no subject
+        doc = make_doc(
+            blank_nlp,
+            words=["is", "is", "fine"],
+            pos=["AUX", "AUX", "ADJ"],
+            deps=["ROOT", "ccomp", "acomp"],
+            heads=[0, 0, 1],
+            lemmas=["be", "be", "fine"],
+            morphs=["VerbForm=Fin", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        ccomp_clauses = [c for c in result["clauses"] if c["clause_type"] == "ccomp"]
+        assert len(ccomp_clauses) == 1
+        assert ccomp_clauses[0]["subject_status"] == "disfluent_copy"
+
+    def test_genuine_null_subject_unchanged(self, blank_nlp, annotator):
+        """Regression: genuine null subject still detected."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "goes there" — finite verb with no subject
+        doc = make_doc(
+            blank_nlp,
+            words=["goes", "there"],
+            pos=["VERB", "ADV"],
+            deps=["ROOT", "advmod"],
+            heads=[0, 0],
+            lemmas=["go", "there"],
+            morphs=["VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        flags = annotator.get_sentence_flags(result)
+        assert flags["has_null_subject"] is True
+
 
 # === ThatTraceAnnotator Tests ===
 
@@ -465,6 +546,44 @@ class TestFragmentAnnotator:
 
         if result["is_fragment"]:
             assert result["fragment_type"] is not None
+
+    def test_clausal_subject_root(self, blank_nlp, annotator):
+        """Test that csubj on root does not produce has_null_subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Running is fun" — "running" is csubj of "is"
+        doc = make_doc(
+            blank_nlp,
+            words=["running", "is", "fun"],
+            pos=["VERB", "AUX", "ADJ"],
+            deps=["csubj", "ROOT", "acomp"],
+            heads=[1, 1, 1],
+            lemmas=["run", "be", "fun"],
+            morphs=["VerbForm=Ger", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["has_null_subject"] is False
+
+    def test_disfluent_root(self, blank_nlp, annotator):
+        """Test that disfluent root verb reduplication is not null subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "is is fine" — second "is" is ROOT, first "is" is disfluent copy
+        # Here we model it as first "is" being ROOT with no subject,
+        # preceded by same-lemma verb
+        doc = make_doc(
+            blank_nlp,
+            words=["is", "is", "fine"],
+            pos=["AUX", "AUX", "ADJ"],
+            deps=["dep", "ROOT", "acomp"],
+            heads=[1, 1, 1],
+            lemmas=["be", "be", "fine"],
+            morphs=["VerbForm=Fin", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["has_null_subject"] is False
 
 
 # === CompositeAnnotator Tests ===
