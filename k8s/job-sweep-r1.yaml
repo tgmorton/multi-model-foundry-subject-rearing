@@ -1,12 +1,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: pronoun-sweep-r1
+  name: pronoun-sweep-r1-v2
   namespace: lemn-lab
 spec:
-  # 5 agents, each picks up 3 runs from the 15-run grid
-  completions: 5
-  parallelism: 5
+  # 15 agents, each picks up 1 run from the 15-run grid
+  completions: 15
+  parallelism: 15
   backoffLimit: 1
   template:
     spec:
@@ -51,8 +51,8 @@ spec:
             seqeval>=1.2.2 \
             sentencepiece
 
-          # Each agent picks up 3 runs from the sweep
-          wandb agent --count 3 $WANDB_SWEEP_ID
+          # Each agent picks up 1 run from the sweep
+          wandb agent --count 1 $WANDB_SWEEP_ID
         env:
         - name: WANDB_API_KEY
           valueFrom:
@@ -64,7 +64,7 @@ spec:
         - name: WANDB_PROJECT
           value: "pronoun-recovery"
         - name: WANDB_SWEEP_ID
-          value: "REPLACE_WITH_SWEEP_ID"
+          value: "PLACEHOLDER"
         - name: PYTHONPATH
           value: "/opt/repo"
         - name: SWEEP_CONFIG
@@ -72,7 +72,7 @@ spec:
         - name: SWEEP_DATA_PATH
           value: "/mnt/data/pronoun_recovery/annotations/it/r1_final_clean.jsonl"
         - name: SWEEP_OUTPUT_DIR
-          value: "/mnt/data/pronoun_recovery/models/it_sweep_r1"
+          value: "/mnt/data/pronoun_recovery/models/it_sweep_r1_v2"
         - name: PYTORCH_CUDA_ALLOC_CONF
           value: "expandable_segments:True"
         resources:

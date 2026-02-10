@@ -3,28 +3,24 @@
 W&B Sweep agent for pronoun recovery hyperparameter search.
 
 Called by `wandb agent` — reads hyperparameters from wandb.config,
-trains a single model, evaluates with threshold sweep, and logs
-all metrics to W&B.
+trains a single model (metrics-only, no checkpoints), and logs
+eval metrics to W&B.
 
 Setup:
     wandb sweep --entity thmorton-uc-san-diego --project pronoun-recovery \
         configs/wandb_sweep.yaml
     # → returns SWEEP_ID
 
-    wandb agent --count 3 thmorton-uc-san-diego/pronoun-recovery/SWEEP_ID
+    wandb agent --count 1 thmorton-uc-san-diego/pronoun-recovery/SWEEP_ID
 """
 
-import json
 import logging
 import os
-import shutil
 import time
 from pathlib import Path
 
-import numpy as np
 import torch
 import wandb
-from torch.nn import functional as F
 from transformers import AutoModelForTokenClassification, AutoTokenizer
 
 logging.basicConfig(
@@ -44,66 +40,6 @@ DATA_PATH = os.environ.get(
 OUTPUT_DIR = os.environ.get(
     "SWEEP_OUTPUT_DIR", "data/pronoun_recovery/models/it_sweep"
 )
-THRESHOLDS = [0.0, 0.5, 0.7, 0.8, 0.85, 0.9, 0.95]
-
-
-def evaluate_model(model_path, eval_dataset, thresholds, device):
-    """Run inference at multiple thresholds and compute metrics."""
-    model = AutoModelForTokenClassification.from_pretrained(model_path)
-    model.eval().to(device)
-
-    all_true, all_probs = [], []
-    for example in eval_dataset:
-        input_ids = example["input_ids"].unsqueeze(0).to(device)
-        attention_mask = example["attention_mask"].unsqueeze(0).to(device)
-        labels = example["labels"]
-        with torch.no_grad():
-            logits = model(input_ids=input_ids, attention_mask=attention_mask).logits
-            probs = F.softmax(logits, dim=-1).squeeze().cpu().numpy()
-        labels_np = labels.numpy() if hasattr(labels, "numpy") else np.array(labels)
-        for prob_row, lid in zip(probs, labels_np):
-            if lid == -100:
-                continue
-            all_true.append(int(lid))
-            all_probs.append(prob_row)
-
-    all_true = np.array(all_true)
-    all_probs = np.array(all_probs)
-
-    results = []
-    for thresh in thresholds:
-        p_non_none = 1.0 - all_probs[:, 0]
-        preds = np.argmax(all_probs, axis=-1)
-        preds[p_non_none < thresh] = 0
-
-        true_det = all_true > 0
-        pred_det = preds > 0
-
-        tp = int((true_det & (preds == all_true)).sum())
-        fp = int((pred_det & (preds != all_true)).sum())
-        fn = int((true_det & (~pred_det | (preds != all_true))).sum())
-        prec = tp / (tp + fp) if (tp + fp) > 0 else 0
-        rec = tp / (tp + fn) if (tp + fn) > 0 else 0
-        f1 = 2 * prec * rec / (prec + rec) if (prec + rec) > 0 else 0
-
-        tp_d = int((true_det & pred_det).sum())
-        fp_d = int((~true_det & pred_det).sum())
-        fn_d = int((true_det & ~pred_det).sum())
-        det_p = tp_d / (tp_d + fp_d) if (tp_d + fp_d) > 0 else 0
-        det_r = tp_d / (tp_d + fn_d) if (tp_d + fn_d) > 0 else 0
-        det_f1 = 2 * det_p * det_r / (det_p + det_r) if (det_p + det_r) > 0 else 0
-
-        results.append({
-            "threshold": thresh,
-            "precision": prec, "recall": rec, "f1": f1,
-            "det_precision": det_p, "det_recall": det_r, "det_f1": det_f1,
-            "fp": fp_d, "fn": fn_d,
-        })
-
-    del model
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    return results
 
 
 def main():
@@ -130,8 +66,8 @@ def main():
     cfg.weight_alpha = alpha
     cfg.focal_gamma = gamma
     cfg.fp16 = torch.cuda.is_available()
-    # Disable HF Trainer's own W&B — we manage the run ourselves
-    cfg.wandb_project = None
+    # Let HF Trainer log to our wandb run
+    cfg.wandb_project = "pronoun-recovery"
 
     run_dir = Path(OUTPUT_DIR) / run_tag
     cfg.output_path = str(run_dir)
@@ -156,7 +92,7 @@ def main():
     logger.info("Device: %s | Data: %d train, %d eval",
                 device, len(train_dataset), len(eval_dataset))
 
-    # Train
+    # Train (metrics-only, no checkpoints saved)
     class_weights = compute_class_weights(train_dataset, alpha=alpha)
 
     model = AutoModelForTokenClassification.from_pretrained(
@@ -170,7 +106,7 @@ def main():
     trainer.tokenizer = tokenizer
 
     start = time.time()
-    best_ckpt = trainer._train_phase(
+    best_metrics = trainer._train_phase(
         phase_name=run_tag,
         model=model,
         train_dataset=train_dataset,
@@ -182,64 +118,31 @@ def main():
         patience=cfg.phase_b_patience,
         class_weights=class_weights,
         focal_gamma=gamma,
+        save_checkpoints=False,
     )
     elapsed = time.time() - start
-    wandb.log({"train_time_min": elapsed / 60})
-    logger.info("Training took %.1f min", elapsed / 60)
 
-    # Save final model
-    final_dir = run_dir / "final"
-    final_model = AutoModelForTokenClassification.from_pretrained(
-        best_ckpt, num_labels=NUM_LABELS
-    )
-    final_model.save_pretrained(str(final_dir))
-    tokenizer.save_pretrained(str(final_dir))
+    # Log summary metrics to W&B
+    wandb.summary["train_time_min"] = elapsed / 60
+    if isinstance(best_metrics, dict) and "eval_f1" in best_metrics:
+        wandb.summary["best_f1"] = best_metrics["eval_f1"]
+        wandb.summary["best_precision"] = best_metrics.get("eval_precision", 0)
+        wandb.summary["best_recall"] = best_metrics.get("eval_recall", 0)
+        wandb.summary["best_epoch"] = best_metrics.get("epoch", 0)
+        wandb.summary["best_eval_loss"] = best_metrics.get("eval_loss", 0)
+        logger.info(
+            "%s complete: best F1=%.4f (P=%.4f R=%.4f) at epoch %.0f, %.1f min",
+            run_tag,
+            best_metrics["eval_f1"],
+            best_metrics.get("eval_precision", 0),
+            best_metrics.get("eval_recall", 0),
+            best_metrics.get("epoch", 0),
+            elapsed / 60,
+        )
+    else:
+        logger.warning("%s: no eval metrics returned", run_tag)
 
-    # Clean up checkpoints
-    ckpt_dir = run_dir / "checkpoints"
-    if ckpt_dir.exists():
-        shutil.rmtree(str(ckpt_dir))
-
-    # Threshold sweep
-    thresh_results = evaluate_model(str(final_dir), eval_dataset, THRESHOLDS, device)
-
-    best = max(thresh_results, key=lambda x: x["f1"])
-    wandb.summary["best_f1"] = best["f1"]
-    wandb.summary["best_threshold"] = best["threshold"]
-    wandb.summary["best_precision"] = best["precision"]
-    wandb.summary["best_recall"] = best["recall"]
-    wandb.summary["best_det_f1"] = best["det_f1"]
-
-    # Log full threshold curve
-    for r in thresh_results:
-        wandb.log({
-            "threshold": r["threshold"],
-            "thresh_f1": r["f1"],
-            "thresh_precision": r["precision"],
-            "thresh_recall": r["recall"],
-            "thresh_det_f1": r["det_f1"],
-            "thresh_fp": r["fp"],
-            "thresh_fn": r["fn"],
-        })
-
-    # Save results JSON
-    results_path = run_dir / "results.json"
-    with open(results_path, "w") as f:
-        json.dump({
-            "alpha": alpha,
-            "learning_rate": lr,
-            "threshold_results": thresh_results,
-            "best": best,
-            "train_time_min": elapsed / 60,
-        }, f, indent=2)
-
-    logger.info(
-        "%s complete: best F1=%.3f at thresh=%.2f (P=%.3f R=%.3f)",
-        run_tag, best["f1"], best["threshold"],
-        best["precision"], best["recall"],
-    )
-
-    del model, final_model
+    del model
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 

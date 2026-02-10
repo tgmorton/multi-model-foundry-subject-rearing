@@ -12,7 +12,7 @@ num_labels: 7
 # Training hyperparams
 phase_b_lr: 1.0e-5
 phase_b_batch_size: 16
-phase_b_epochs: 10
+phase_b_epochs: 20
 phase_b_patience: 3
 
 # Common

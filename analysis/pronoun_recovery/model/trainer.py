@@ -375,6 +375,7 @@ class PronounRecoveryTrainer:
         patience: int,
         class_weights: Optional[np.ndarray] = None,
         focal_gamma: float = 0.0,
+        save_checkpoints: bool = True,
     ) -> str:
         """Run a single training phase.
 
@@ -391,9 +392,12 @@ class PronounRecoveryTrainer:
             patience: Early stopping patience (number of evaluations
                 without improvement).
             class_weights: Optional per-class loss weights.
+            save_checkpoints: If False, skip checkpoint saving and early
+                stopping (metrics-only mode for sweeps).
 
         Returns:
-            Path to the best checkpoint directory.
+            Path to the best checkpoint directory, or a dict of best
+            eval metrics when ``save_checkpoints=False``.
         """
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -417,11 +421,11 @@ class PronounRecoveryTrainer:
             fp16=self.config.fp16,
             # Evaluation and saving
             eval_strategy="epoch",
-            save_strategy="epoch",
-            load_best_model_at_end=True,
+            save_strategy="epoch" if save_checkpoints else "no",
+            load_best_model_at_end=save_checkpoints,
             metric_for_best_model="eval_f1",
             greater_is_better=True,
-            save_total_limit=2,
+            save_total_limit=2 if save_checkpoints else None,
             # Logging
             logging_strategy="steps",
             logging_steps=100,
@@ -439,7 +443,11 @@ class PronounRecoveryTrainer:
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             compute_metrics=self._compute_metrics,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=patience)],
+            callbacks=(
+                [EarlyStoppingCallback(early_stopping_patience=patience)]
+                if save_checkpoints
+                else []
+            ),
         )
 
         logger.info(
@@ -452,6 +460,23 @@ class PronounRecoveryTrainer:
         )
 
         trainer.train()
+
+        if not save_checkpoints:
+            # Metrics-only mode: return best eval metrics from log history.
+            eval_entries = [
+                e for e in trainer.state.log_history if "eval_f1" in e
+            ]
+            if eval_entries:
+                best = max(eval_entries, key=lambda e: e["eval_f1"])
+                logger.info(
+                    "%s complete (metrics-only). Best eval F1=%.4f at epoch %s",
+                    phase_name,
+                    best["eval_f1"],
+                    best.get("epoch", "?"),
+                )
+                return best
+            logger.warning("%s: no eval metrics found in log history", phase_name)
+            return {}
 
         # The best checkpoint path is set by load_best_model_at_end.
         best_checkpoint = trainer.state.best_model_checkpoint
