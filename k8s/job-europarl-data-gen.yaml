@@ -81,13 +81,11 @@ spec:
 
           # ── Step 1: Generate 500K aligned training data ──
           echo "=== Generating 500K training pairs ==="
-          python -m analysis.pronoun_recovery.run europarl-align \
-            --config configs/pronoun_recovery_it_europarl_train_k8s.yaml
+          python -m analysis.pronoun_recovery.run europarl-align --config configs/pronoun_recovery_it_europarl_train_k8s.yaml
 
           # ── Step 2: Generate held-out test set (10K pairs) ──
           echo "=== Generating test set ==="
-          python -m analysis.pronoun_recovery.run europarl-align \
-            --config configs/pronoun_recovery_it_europarl_test_k8s.yaml
+          python -m analysis.pronoun_recovery.run europarl-align --config configs/pronoun_recovery_it_europarl_test_k8s.yaml
 
           # ── Step 3: Create 100K and 300K subsets ──
           echo "=== Creating data scale subsets ==="
