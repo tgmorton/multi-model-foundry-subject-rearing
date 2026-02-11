@@ -21,6 +21,7 @@ import typer
 load_dotenv()
 
 from .config import (
+    EuroparlAlignmentConfig,
     InsertionConfig,
     LLMAnnotationConfig,
     ModelTrainingConfig,
@@ -280,6 +281,26 @@ def insert(
     metadata = pipeline.run()
     logger.info(f"Insertion complete. Output: {cfg.output_path}")
     logger.info(f"Processed {metadata.get('total_lines', '?')} lines.")
+
+
+@app.command("europarl-align")
+def europarl_align(
+    config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Generate pronoun labels from EN-IT Europarl parallel alignment."""
+    _setup_logging(verbose)
+    cfg = load_config(config, EuroparlAlignmentConfig)
+    logger.info(
+        "Starting Europarl alignment pipeline (%d-%d)",
+        cfg.start_line, cfg.end_line,
+    )
+
+    from .parallel_data.generator import EuroparlAlignmentGenerator
+
+    generator = EuroparlAlignmentGenerator(cfg)
+    generator.run()
+    logger.info("Europarl alignment complete.")
 
 
 @app.command("train-seq2seq")

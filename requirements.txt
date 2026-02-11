@@ -18,6 +18,7 @@ pyyaml==6.0.1
 openai>=1.0.0
 seqeval>=1.2.2
 scikit-learn>=1.3.0
+awesome-align>=0.1.0
 
 # === Utilities ===
 tqdm==4.66.4
@@ -27,3 +28,7 @@ nltk==3.8.1
 # === Corpus Annotation Storage & Querying ===
 pyarrow>=14.0.0
 polars>=0.20.0
+
+# === Annotation Review Web Interface ===
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0

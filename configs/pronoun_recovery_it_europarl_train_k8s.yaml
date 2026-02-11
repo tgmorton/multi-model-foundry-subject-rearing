@@ -1,0 +1,38 @@
+# Europarl parallel alignment: full training data (500K pairs) — K8s version
+# Lines 0-500K for training; lines 1,899,000-1,909,115 held out for test
+europarl_en_path: data/italian/europarl.en/europarl-v7.it-en.en.train
+europarl_it_path: data/italian/europarl.en/europarl-v7.it-en.it.train
+output_path: data/pronoun_recovery/europarl_aligned/it_train
+language: it
+
+# Training segment
+start_line: 0
+end_line: 500000
+
+# spaCy models — trf on K8s for better parses
+en_spacy_model: en_core_web_trf
+it_spacy_model: it_core_news_trf
+spacy_batch_size: 50
+
+# awesome-align
+align_model: aneuraz/awesome-align-with-co
+align_batch_size: 32
+
+# Pronoun extraction
+skip_all_it: true
+
+# Quality filters
+min_tokens: 3
+max_tokens: 128
+max_length_ratio: 3.0
+
+# Processing
+chunk_size: 1000
+checkpoint_interval: 50000
+
+# Passage packing
+pack_passages: true
+max_passage_words: 180
+
+# Validation
+spot_check_n: 100

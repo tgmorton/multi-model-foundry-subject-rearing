@@ -308,6 +308,83 @@ class InsertionConfig(_BaseConfig):
         return _apply_language_defaults(self)
 
 
+class EuroparlAlignmentConfig(_BaseConfig):
+    """Configuration for Europarl parallel alignment data generation.
+
+    Uses awesome-align on EN-IT parallel Europarl sentences to extract
+    high-quality pronoun labels by mapping English subject pronouns to
+    Italian null-subject verbs.
+    """
+
+    europarl_en_path: Path = Field(
+        ..., description="Path to Europarl English sentence file (one sentence per line)"
+    )
+    europarl_it_path: Path = Field(
+        ..., description="Path to Europarl Italian sentence file (one sentence per line)"
+    )
+    output_path: Path = Field(
+        "data/pronoun_recovery/europarl_aligned/it",
+        description="Output directory for checkpoint JSONL",
+    )
+    language: str = Field("it")
+
+    # Line range (for sharding / pilot)
+    start_line: int = Field(0, ge=0, description="First line to process (0-based)")
+    end_line: int = Field(50_000, ge=0, description="Last line (exclusive); 0=all")
+
+    # spaCy models
+    en_spacy_model: str = Field("en_core_web_trf")
+    it_spacy_model: str = Field("it_core_news_trf")
+    spacy_batch_size: int = Field(50, gt=0)
+
+    # awesome-align
+    align_model: str = Field(
+        "aneuraz/awesome-align-with-co",
+        description="HuggingFace model ID for awesome-align",
+    )
+    align_batch_size: int = Field(32, gt=0)
+
+    # Pronoun extraction
+    skip_all_it: bool = Field(
+        True,
+        description="Skip ALL occurrences of English 'it' (noisy: expletives, impersonals)",
+    )
+
+    # Quality filters
+    min_tokens: int = Field(3, ge=1)
+    max_tokens: int = Field(128, ge=1)
+    max_length_ratio: float = Field(
+        3.0,
+        gt=0.0,
+        description="Max ratio between EN and IT sentence lengths",
+    )
+
+    # Processing
+    chunk_size: int = Field(1000, gt=0)
+    checkpoint_interval: int = Field(5000, gt=0, description="Write checkpoint every N pairs")
+
+    # Passage packing
+    pack_passages: bool = Field(
+        False,
+        description="Group consecutive sentences into multi-sentence passages",
+    )
+    max_passage_words: int = Field(
+        180,
+        gt=0,
+        description="Max words per passage (~234 subword tokens at 1.3x expansion)",
+    )
+
+    # Validation
+    spot_check_n: int = Field(100, gt=0, description="Number of samples for spot-check review")
+
+    @field_validator(
+        "europarl_en_path", "europarl_it_path", "output_path", mode="before"
+    )
+    @classmethod
+    def resolve_paths(cls, v):
+        return _resolve_path(v)
+
+
 class Seq2SeqTrainingConfig(_BaseConfig):
     """Configuration for seq2seq (mT5) pronoun recovery model training."""
 
