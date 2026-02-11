@@ -50,13 +50,31 @@ spec:
           python -m spacy download en_core_web_trf
           python -m spacy download it_core_news_trf
 
-          # Copy Europarl source from PVC (assumes pre-staged)
-          # If not pre-staged, download here:
-          # mkdir -p data/italian/europarl.en
-          # cp /mnt/data/europarl/* data/italian/europarl.en/
+          # Stage Europarl source data: try source PVC first, else download
+          mkdir -p data/italian/europarl.en
+          if [ -f /mnt/source/italian/europarl.en/europarl-v7.it-en.en.train ]; then
+            echo "=== Europarl data found on source PVC ==="
+            ln -sf /mnt/source/italian/europarl.en/europarl-v7.it-en.en.train data/italian/europarl.en/
+            ln -sf /mnt/source/italian/europarl.en/europarl-v7.it-en.it.train data/italian/europarl.en/
+          elif [ -f /mnt/data/italian/europarl.en/europarl-v7.it-en.en.train ]; then
+            echo "=== Europarl data found on output PVC ==="
+            ln -sf /mnt/data/italian/europarl.en/europarl-v7.it-en.en.train data/italian/europarl.en/
+            ln -sf /mnt/data/italian/europarl.en/europarl-v7.it-en.it.train data/italian/europarl.en/
+          else
+            echo "=== Downloading Europarl v7 IT-EN ==="
+            apt-get update && apt-get install -y wget
+            wget -q https://www.statmt.org/europarl/v7/it-en.tgz -O /tmp/it-en.tgz
+            tar xzf /tmp/it-en.tgz -C /tmp/
+            mv /tmp/europarl-v7.it-en.en data/italian/europarl.en/europarl-v7.it-en.en.train
+            mv /tmp/europarl-v7.it-en.it data/italian/europarl.en/europarl-v7.it-en.it.train
+            # Persist to output PVC for future use
+            mkdir -p /mnt/data/italian/europarl.en
+            cp data/italian/europarl.en/europarl-v7.it-en.*.train /mnt/data/italian/europarl.en/
+            rm /tmp/it-en.tgz
+          fi
 
-          # Symlink Europarl source data from PVC
-          ln -sf /mnt/data/italian data/italian
+          echo "EN lines: $(wc -l < data/italian/europarl.en/europarl-v7.it-en.en.train)"
+          echo "IT lines: $(wc -l < data/italian/europarl.en/europarl-v7.it-en.it.train)"
 
           # ── Step 1: Generate 500K aligned training data ──
           echo "=== Generating 500K training pairs ==="
@@ -76,8 +94,6 @@ spec:
           )
           from pathlib import Path
 
-          # The 500K packed checkpoint is already generated.
-          # Create 100K and 300K subsets by re-packing with smaller line ranges.
           for scale, end_line in [(100000, 100000), (300000, 300000)]:
               print(f'Packing {scale} subset...')
               pack_checkpoint_file(
@@ -88,7 +104,6 @@ spec:
                   end_line=end_line,
                   max_words=180,
               )
-          # Rename the full 500K packed file for consistency
           import shutil
           shutil.copy(
               'data/pronoun_recovery/europarl_aligned/it_train/packed_checkpoint.jsonl',
@@ -128,12 +143,18 @@ spec:
           mountPath: /opt/repo
         - name: data
           mountPath: /mnt/data
+        - name: source-data
+          mountPath: /mnt/source
+          readOnly: true
       volumes:
       - name: repo
         emptyDir: {}
       - name: data
         persistentVolumeClaim:
           claimName: europarl-sweep-data
+      - name: source-data
+        persistentVolumeClaim:
+          claimName: pronoun-sweep-data
       restartPolicy: Never
       tolerations:
       - key: nvidia.com/gpu
