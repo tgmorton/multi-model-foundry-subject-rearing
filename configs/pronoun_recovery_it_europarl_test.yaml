@@ -8,7 +8,7 @@ language: it
 start_line: 1899000
 end_line: 1909115
 
-# spaCy models (use it_core_news_trf on K8s for better parses)
+# spaCy models (no trf variant exists for Italian)
 en_spacy_model: en_core_web_trf
 it_spacy_model: it_core_news_lg
 spacy_batch_size: 50

@@ -20,7 +20,7 @@ dataset_manipulation:
   - type: lemmatize_verbs
     input_path: "data/italian/raw/train_90M/"
     output_path: "data/italian/processed/exp_lemmatize_verbs_it/"
-    spacy_model: "it_core_news_trf"
+    spacy_model: "it_core_news_lg"
     parameters:
       chunk_size: 1000
       replacement_pool_dir: "data/italian/raw/pull_10M/"

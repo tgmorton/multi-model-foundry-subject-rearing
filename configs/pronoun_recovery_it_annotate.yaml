@@ -4,11 +4,11 @@ output_path: data/pronoun_recovery/annotations/it
 language: it
 
 # spaCy
-spacy_model: it_core_news_trf
+spacy_model: it_core_news_lg
 spacy_batch_size: 50
 
 # Sampling
-sample_size: 1000
+sample_size: 10000
 
 # Genre mapping
 genre_map:

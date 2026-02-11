@@ -13,7 +13,7 @@ from .constants import DEFAULT_GENRE_MAP_EN, DEFAULT_GENRE_MAP_IT
 
 # ── Language-aware default lookups ────────────────────────────────────
 _GENRE_MAPS = {"en": DEFAULT_GENRE_MAP_EN, "it": DEFAULT_GENRE_MAP_IT}
-_SPACY_MODELS = {"en": "en_core_web_trf", "it": "it_core_news_trf"}
+_SPACY_MODELS = {"en": "en_core_web_trf", "it": "it_core_news_lg"}
 
 
 class _BaseConfig(BaseModel):
@@ -334,7 +334,7 @@ class EuroparlAlignmentConfig(_BaseConfig):
 
     # spaCy models
     en_spacy_model: str = Field("en_core_web_trf")
-    it_spacy_model: str = Field("it_core_news_trf")
+    it_spacy_model: str = Field("it_core_news_lg")
     spacy_batch_size: int = Field(50, gt=0)
 
     # awesome-align

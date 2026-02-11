@@ -5,7 +5,7 @@ model_path: data/pronoun_recovery/models/it/best_checkpoint
 language: it
 
 # spaCy
-spacy_model: it_core_news_trf
+spacy_model: it_core_news_lg
 spacy_batch_size: 50
 
 # Model inference

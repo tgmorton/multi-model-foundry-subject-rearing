@@ -10,7 +10,7 @@ end_line: 1909115
 
 # spaCy models — trf on K8s for better parses
 en_spacy_model: en_core_web_trf
-it_spacy_model: it_core_news_trf
+it_spacy_model: it_core_news_lg
 spacy_batch_size: 50
 
 # awesome-align

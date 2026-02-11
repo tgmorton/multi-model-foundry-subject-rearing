@@ -4,7 +4,7 @@ output_path: data/pronoun_recovery/synthetic/it
 language: it
 
 # spaCy
-spacy_model: it_core_news_trf
+spacy_model: it_core_news_lg
 spacy_batch_size: 50
 
 # Filtering
