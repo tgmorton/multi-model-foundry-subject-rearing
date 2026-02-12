@@ -47,7 +47,7 @@ def get_data_path(scale: int) -> Path:
 
 def run_training(lr: float, scale: int, alpha: float, run_idx: int) -> None:
     """Run a single training + evaluation."""
-    from analysis.pronoun_recovery.config import TrainingConfig
+    from analysis.pronoun_recovery.config import ModelTrainingConfig as TrainingConfig
     from analysis.pronoun_recovery.model.trainer import PronounRecoveryTrainer
 
     run_name = f"europarl_lr{lr:.0e}_scale{scale//1000}k_alpha{alpha}"
