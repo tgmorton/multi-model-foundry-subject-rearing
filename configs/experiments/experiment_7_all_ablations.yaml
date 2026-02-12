@@ -1,0 +1,88 @@
+# ===================================================================
+# EXPERIMENT 7: All Ablations Combined
+# GOAL: Test the effect of all ablations combined (no expletives, poor determiners, no articles, lemmatized verbs, no subject pronouns)
+# ===================================================================
+
+experiment_name: "exp7_all_ablations"
+
+# --- Data Configuration ---
+data:
+  source_corpus: "data/raw/train_90M/"
+  training_corpus: "data/processed/exp7_all_ablations/"
+  # Path to the test dataset.
+  test_corpus: "data/raw/test_10M/"
+  batch_size: 8  # Reduced from 32 to fix OOM
+  max_sequence_length: 1000
+
+# --- Dataset Manipulation Pipeline ---
+dataset_manipulation:
+
+  - type: remove_subject_pronominals
+    input_path: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/"
+    output_path: "data/processed/exp7_all_ablations/"
+    parameters:
+      chunk_size: 1000
+      replacement_pool_dir: "data/processed/exp6_no_expletives_poor_determiners_lemmatize_verbs/replacement_pool_remainder/"
+      skip_validation: true
+      verbose: true
+
+# --- Tokenizer Configuration ---
+tokenizer:
+  output_dir: "tokenizers/exp7_all_ablations/"
+  vocab_size: 50004
+
+# --- Model Architecture ---
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+# --- Training Procedure ---
+training:
+  output_dir: "models/exp7_all_ablations/"
+  learning_rate: 0.0004  # 4x higher for 4x smaller effective batch size
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  # Training duration - automatically calculated from dataset size
+  warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps
+  warmup_ratio: 0.1  # Warmup as 10% of total training steps
+  train_steps: null  # Auto-calculated as epochs × steps_per_epoch
+  epochs: 20
+  
+  # Mixed precision training
+  use_amp: true
+  
+  # Gradient accumulation
+  gradient_accumulation_steps: 32  # Effective batch size: 8 × 32 = 256 (same as before)
+  
+  # Gradient clipping for training stability
+  max_grad_norm: 1.0
+  
+  # Memory optimizations
+  use_tf32: true
+  use_gradient_checkpointing: true  # Saves memory
+  
+  # Compilation mode for torch.compile
+  # Options: 'none', 'default', 'reduce-overhead', 'max-autotune'
+  # Use 'default' for stability, 'none' to disable
+  compile_mode: 'none'
+  
+  # Checkpoint generation parameters
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
+# --- Logging & Reproducibility ---
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+random_seed: 9 

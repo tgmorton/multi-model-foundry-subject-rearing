@@ -1,0 +1,72 @@
+# Test configuration for bidirectional LSTM (masked LM)
+# Minimal configuration for testing BERT-style masked language modeling with LSTM
+
+experiment_name: "test_lstm_bidirectional_tiny"
+
+data:
+  source_corpus: "data/raw/test_10M/simple_wiki.test"
+  training_corpus: "data/processed/test_exp/simple_wiki.train"
+  batch_size: 8
+  max_sequence_length: 128
+
+tokenizer:
+  output_dir: "tokenizers/test_lstm_bidirectional"
+  vocab_size: 5000
+  tokenizer_type: "sentencepiece"
+  special_tokens:
+    bos_token: "<s>"
+    eos_token: "</s>"
+    unk_token: "<unk>"
+    pad_token: "<pad>"
+    mask_token: "<mask>"  # For masked LM
+
+model:
+  architecture: "lstm"  # Required: specifies LSTM architecture
+
+  # RNN-specific configuration
+  rnn:
+    embedding_size: 256
+    hidden_size: 512
+    num_layers: 2
+    bidirectional: true  # Bidirectional for masked LM
+    dropout: 0.2
+    rnn_type: "lstm"  # Options: "lstm", "gru", "rnn"
+
+training:
+  output_dir: "output/test_lstm_bidirectional_tiny"
+
+  # Optimizer settings
+  learning_rate: 0.001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+
+  # Training duration
+  epochs: 1
+  train_steps: null  # Will be calculated from epochs
+  warmup_steps: null  # Will be calculated as warmup_ratio * train_steps
+  warmup_ratio: 0.1
+
+  # Training objective
+  objective: "masked_lm"  # Masked language modeling (BERT-style)
+  mlm_probability: 0.15  # Probability of masking tokens
+
+  # Performance optimizations
+  use_amp: false  # Automatic mixed precision
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0  # Gradient clipping (important for RNNs)
+
+  # Checkpointing
+  checkpointing_strategy: null
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+
+logging:
+  console_level: "INFO"
+  file_level: "DEBUG"
+  dir: "logs/test_lstm_bidirectional_tiny"
+  use_structured_logging: true
+  use_wandb: false
+  log_metrics_every_n_steps: 10
+
+random_seed: 42

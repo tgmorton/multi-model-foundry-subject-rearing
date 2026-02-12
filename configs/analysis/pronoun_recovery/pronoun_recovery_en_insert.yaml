@@ -1,0 +1,26 @@
+# Stage 2: Deterministic pronoun insertion (English)
+input_path: data/raw/train_90M
+output_path: data/pronoun_recovery/inserted/en
+model_path: data/pronoun_recovery/models/en/best_checkpoint
+language: en
+
+# spaCy
+spacy_model: en_core_web_trf
+spacy_batch_size: 50
+
+# Model inference
+model_batch_size: 64
+max_seq_length: 256
+# device: auto-detected
+
+# Processing
+chunk_size: 1000
+
+# Genre mapping
+genre_map:
+  childes: CHILDES
+  bnc_spoken: BNC
+  gutenberg: Gutenberg
+  open_subtitles: OpenSubtitles
+  simple_wiki: SimpleWikipedia
+  switchboard: Switchboard

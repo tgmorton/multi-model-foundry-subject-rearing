@@ -1,0 +1,33 @@
+# Europarl parallel alignment: pilot run (50K sentence pairs)
+europarl_en_path: data/italian/europarl.en/europarl-v7.it-en.en.train
+europarl_it_path: data/italian/europarl.en/europarl-v7.it-en.it.train
+output_path: data/pronoun_recovery/europarl_aligned/it
+language: it
+
+# Pilot: first 50K lines
+start_line: 0
+end_line: 50000
+
+# spaCy models (no trf variant exists for Italian)
+en_spacy_model: en_core_web_trf
+it_spacy_model: it_core_news_lg
+spacy_batch_size: 50
+
+# awesome-align
+align_model: aneuraz/awesome-align-with-co
+align_batch_size: 32
+
+# Pronoun extraction
+skip_all_it: true
+
+# Quality filters
+min_tokens: 3
+max_tokens: 128
+max_length_ratio: 3.0
+
+# Processing
+chunk_size: 1000
+checkpoint_interval: 5000
+
+# Validation
+spot_check_n: 100

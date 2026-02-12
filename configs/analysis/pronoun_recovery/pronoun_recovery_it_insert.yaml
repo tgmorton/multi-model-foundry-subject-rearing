@@ -1,0 +1,28 @@
+# Stage 2: Deterministic pronoun insertion (Italian)
+input_path: data/italian/train_90M
+output_path: data/pronoun_recovery/inserted/it
+model_path: data/pronoun_recovery/models/it/best_checkpoint
+language: it
+
+# spaCy
+spacy_model: it_core_news_lg
+spacy_batch_size: 50
+
+# Model inference
+model_batch_size: 64
+max_seq_length: 256
+# device: auto-detected
+
+# Processing
+chunk_size: 1000
+
+# Genre mapping
+genre_map:
+  childes: CHILDES
+  clta: CltA
+  corpus_isacco: ISACCO
+  europarl: Europarl
+  leipzig_web: Leipzig Web
+  paccss: PaCCSS
+  qcri: QCRI
+  spgc: SPGC

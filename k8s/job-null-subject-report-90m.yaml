@@ -34,7 +34,7 @@ spec:
         - |
           pip install --no-cache-dir polars pyarrow &&
           cd /opt/repo &&
-          PYTHONPATH=. python analysis/scripts/generate_null_subject_report.py \
+          PYTHONPATH=. python -m analysis.scripts.reporting.generate_null_subject_report \
             /mnt/annotate/output/train_90M/annotated_corpus/ \
             --layered \
             --split-name train_90M \

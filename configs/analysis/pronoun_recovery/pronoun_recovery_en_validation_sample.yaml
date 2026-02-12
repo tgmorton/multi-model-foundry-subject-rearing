@@ -1,0 +1,27 @@
+# Sample validation set from held-out dev split (English)
+corpus_path: data/raw/pull_10M
+output_path: data/pronoun_recovery/annotations/en/validation
+language: en
+
+# Sampling
+sample_size: 100
+
+# Genre mapping
+genre_map:
+  childes: CHILDES
+  bnc_spoken: BNC
+  gutenberg: Gutenberg
+  open_subtitles: OpenSubtitles
+  simple_wiki: SimpleWikipedia
+  switchboard: Switchboard
+
+# LLM settings (not used for sampling, but required by config schema)
+api_base_url: https://api.deepseek.com/v1
+api_key_env: DEEPSEEK_API_KEY
+model_name: deepseek-chat
+temperature: 0.1
+max_tokens: 1024
+requests_per_minute: 60
+tokens_per_minute: 100000
+checkpoint_interval: 50
+max_retries: 3

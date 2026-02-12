@@ -1,0 +1,29 @@
+# Step 5: Model training (English)
+# No synthetic_data_path — train directly on LLM annotations
+annotation_data_path: data/pronoun_recovery/annotations/en/llm_validated
+output_path: data/pronoun_recovery/models/en
+language: en
+
+# Model
+model_name: microsoft/deberta-v3-base
+num_labels: 9
+
+# Training (Phase B hyperparams used for annotation-only training)
+phase_b_lr: 1.0e-5
+phase_b_batch_size: 16
+phase_b_epochs: 10
+phase_b_patience: 3
+
+# Common
+fp16: true
+warmup_ratio: 0.1
+max_seq_length: 256
+seed: 42
+
+# Logging
+wandb_project: pronoun-recovery
+wandb_run_name: deberta-v3-base-en
+
+# Gates
+min_detection_f1: 0.85
+min_label_accuracy: 0.80

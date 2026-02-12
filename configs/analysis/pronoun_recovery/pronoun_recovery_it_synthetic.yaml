@@ -1,0 +1,31 @@
+# Step 1: Synthetic pair generation (Italian)
+input_path: data/italian/train_90M
+output_path: data/pronoun_recovery/synthetic/it
+language: it
+
+# spaCy
+spacy_model: it_core_news_lg
+spacy_batch_size: 50
+
+# Filtering
+min_tokens: 3
+max_tokens: 128
+require_finite_verb: true
+max_pairs: 500000
+
+# Split
+dev_fraction: 0.1
+
+# Processing
+chunk_size: 1000
+
+# Genre mapping
+genre_map:
+  childes: CHILDES
+  clta: CltA
+  corpus_isacco: ISACCO
+  europarl: Europarl
+  leipzig_web: Leipzig Web
+  paccss: PaCCSS
+  qcri: QCRI
+  spgc: SPGC
