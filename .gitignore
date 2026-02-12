@@ -235,6 +235,17 @@ slurm-*.err
 # TeXpad temp files
 .texpadtmp/
 
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.nav
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+
 # Generated analysis output (figures, tables) - regenerable from R/Python scripts
 analysis/analysis/
 analysis/figures/
