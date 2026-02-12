@@ -476,6 +476,153 @@ class ReportDataCollector:
             },
         }
 
+    def _collect_childes_by_age(self) -> None:
+        from analysis.corpus_descriptives.corpus_analysis import (
+            childes_developmental_trajectory,
+            childes_pronoun_by_age,
+            childes_mlu_by_age,
+        )
+
+        # 4e: developmental trajectory (phenomenon rates by age band)
+        dev = childes_developmental_trajectory(self.lf)
+        dev_records = _df_to_records(dev)
+
+        if dev_records:
+            age_bands = [r["age_band"] for r in dev_records]
+            rate_cols = [c for c in dev.columns if c.endswith("_rate")]
+
+            clean_labels = [
+                c.replace("has_", "").replace("_rate", "").replace("is_", "")
+                for c in rate_cols
+            ]
+            palette = _color_palette(len(rate_cols))
+
+            dev_ds = []
+            for i, rc in enumerate(rate_cols):
+                dev_ds.append({
+                    "label": clean_labels[i],
+                    "data": _safe_json([r.get(rc, 0) for r in dev_records]),
+                    "borderColor": palette[i],
+                    "backgroundColor": palette[i] + "33",
+                    "fill": False,
+                    "tension": 0.3,
+                    "pointRadius": 5,
+                    "borderWidth": 2,
+                })
+
+            self.sections["childes_developmental_trajectory"] = {
+                "title": "4e. Developmental Trajectory by Age",
+                "description": (
+                    "Phenomenon rates for child speakers grouped by age band. "
+                    "Shows how null subjects, overt pronouns, fragments, and "
+                    "complexity change across development."
+                ),
+                "table": dev_records,
+                "columns": dev.columns,
+                "chart_data": {
+                    "type": "line",
+                    "data": {"labels": age_bands, "datasets": dev_ds},
+                    "options": {
+                        "plugins": {
+                            "title": {"display": True, "text": "§4e Phenomenon Rates by Child Age"},
+                        },
+                        "scales": {
+                            "x": {"title": {"display": True, "text": "Age Band"}},
+                            "y": {"title": {"display": True, "text": "Rate"}},
+                        },
+                    },
+                },
+            }
+
+        # 4f: pronoun person by age
+        pba = childes_pronoun_by_age(self.lf)
+        pba_records = _df_to_records(pba)
+
+        if pba_records:
+            pba_bands = _safe_sort({r["age_band"] for r in pba_records})
+            pba_persons = _safe_sort({r["person"] for r in pba_records})
+            palette_p = _color_palette(len(pba_persons))
+
+            pba_ds = []
+            for i, person in enumerate(pba_persons):
+                data = [
+                    next(
+                        (r.get("proportion", 0) for r in pba_records
+                         if r["age_band"] == band and r["person"] == person),
+                        0,
+                    )
+                    for band in pba_bands
+                ]
+                pba_ds.append({
+                    "label": f"person={person}",
+                    "data": _safe_json(data),
+                    "backgroundColor": palette_p[i],
+                })
+
+            self.sections["childes_pronoun_by_age"] = {
+                "title": "4f. Pronoun Person by Age",
+                "description": (
+                    "How 1st/2nd/3rd person pronoun usage shifts across "
+                    "child age bands."
+                ),
+                "table": pba_records,
+                "columns": pba.columns if not pba.is_empty() else [],
+                "chart_data": {
+                    "type": "bar",
+                    "data": {"labels": pba_bands, "datasets": pba_ds},
+                    "options": {
+                        "plugins": {
+                            "title": {"display": True, "text": "§4f Pronoun Person Distribution by Age"},
+                        },
+                        "scales": {
+                            "x": {"stacked": True, "title": {"display": True, "text": "Age Band"}},
+                            "y": {"stacked": True, "max": 1, "title": {"display": True, "text": "Proportion"}},
+                        },
+                    },
+                },
+            }
+
+        # 4g: MLU by age (scatter/line)
+        mlu = childes_mlu_by_age(self.lf)
+        mlu_records = _df_to_records(mlu)
+
+        if mlu_records:
+            self.sections["childes_mlu_by_age"] = {
+                "title": "4g. Mean Utterance Length by Age",
+                "description": (
+                    "Mean length of utterance (in words) for child speakers, "
+                    "plotted per month of age. Months with fewer than 50 "
+                    "sentences are excluded."
+                ),
+                "table": mlu_records,
+                "columns": mlu.columns,
+                "chart_data": {
+                    "type": "line",
+                    "data": {
+                        "labels": [r["child_age_months"] for r in mlu_records],
+                        "datasets": [{
+                            "label": "MLU (words)",
+                            "data": _safe_json([r["mlu_words"] for r in mlu_records]),
+                            "borderColor": "#4e79a7",
+                            "backgroundColor": "rgba(78,121,167,0.1)",
+                            "fill": True,
+                            "tension": 0.3,
+                            "pointRadius": 3,
+                            "borderWidth": 2,
+                        }],
+                    },
+                    "options": {
+                        "plugins": {
+                            "title": {"display": True, "text": "§4g MLU by Child Age (months)"},
+                        },
+                        "scales": {
+                            "x": {"title": {"display": True, "text": "Age (months)"}},
+                            "y": {"title": {"display": True, "text": "Mean tokens per utterance"}},
+                        },
+                    },
+                },
+            }
+
     def _collect_pronouns(self) -> None:
         from analysis.corpus_descriptives.corpus_analysis import subject_pronoun_distribution
         spd = subject_pronoun_distribution(self.lf)
@@ -1160,6 +1307,8 @@ class ReportDataCollector:
         self._collect_cooccurrences()
         print("  [4/19] CHILDES analyses…", file=sys.stderr)
         self._collect_childes()
+        print("  [4b/19] CHILDES age-stratified analyses…", file=sys.stderr)
+        self._collect_childes_by_age()
         print("  [5/19] Pronoun distribution…", file=sys.stderr)
         self._collect_pronouns()
         print("  [6/19] That-trace inventory…", file=sys.stderr)

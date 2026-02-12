@@ -463,27 +463,37 @@ def load_layered_corpus(
 def _add_derived_null_subject_columns(lf: pl.LazyFrame) -> pl.LazyFrame:
     """Compute finite/non-finite null subject flags from clause-level data.
 
-    The ``argument_structure`` layer defines ``has_null_subject`` without
-    regard to finiteness, so infinitival PRO subjects inflate the rate.
-    This helper derives two new columns from the ``clauses`` nested column
-    (which carries ``is_finite`` and ``subject_status``) and then
-    overwrites ``has_null_subject`` with the finite-only version.
+    A clause has a null subject when ``subject_status`` is one of
+    ``"none"`` (no subject found), ``"inherited"`` (controlled PRO from
+    matrix clause), or ``"imperative"`` (covert "you").  Overt, expletive,
+    clausal, and disfluent-copy statuses all indicate a filled subject
+    position.
+
+    Fragments (verbless sentences) are excluded at the sentence level.
     """
     cols = set(lf.collect_schema().names())
     if "clauses" not in cols:
         return lf
-    return lf.with_columns([
-        # Finite null subject: any clause with is_finite=True and subject_status="none"
+
+    _is_null = pl.element().struct.field("subject_status").is_in(
+        ["none", "inherited", "imperative"]
+    )
+
+    lf = lf.with_columns([
         pl.col("clauses").list.eval(
-            (pl.element().struct.field("subject_status") == "none")
-            & (pl.element().struct.field("is_finite") == True)  # noqa: E712
+            _is_null & (pl.element().struct.field("is_finite") == True)  # noqa: E712
         ).list.any().alias("has_null_subject_finite"),
-        # Non-finite null subject: any clause with is_finite=False and subject_status="none"
         pl.col("clauses").list.eval(
-            (pl.element().struct.field("subject_status") == "none")
-            & (pl.element().struct.field("is_finite") == False)  # noqa: E712
+            _is_null & (pl.element().struct.field("is_finite") == False)  # noqa: E712
         ).list.any().alias("has_null_subject_nonfinite"),
-    ]).with_columns(
-        # Override has_null_subject to mean finite-only
+    ])
+    # Exclude fragments (verbless sentences).
+    if "is_fragment" in cols:
+        lf = lf.with_columns([
+            (pl.col("has_null_subject_finite") & ~pl.col("is_fragment")).alias("has_null_subject_finite"),
+            (pl.col("has_null_subject_nonfinite") & ~pl.col("is_fragment")).alias("has_null_subject_nonfinite"),
+        ])
+    return lf.with_columns(
+        # Override has_null_subject to mean corrected finite-only
         pl.col("has_null_subject_finite").alias("has_null_subject"),
     )
