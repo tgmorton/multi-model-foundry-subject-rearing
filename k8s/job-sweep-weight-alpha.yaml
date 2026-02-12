@@ -64,7 +64,7 @@ spec:
         - name: WANDB_PROJECT
           value: "pronoun-recovery"
         - name: WANDB_SWEEP_ID
-          value: "REPLACE_WITH_SWEEP_ID"
+          value: "thmorton-uc-san-diego/pronoun-recovery/kri30jpp"
         - name: PYTHONPATH
           value: "/opt/repo"
         - name: SWEEP_CONFIG
