@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: corpus-analysis-test-10m
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: analysis
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          pip install --no-cache-dir polars pyarrow &&
+          cd /opt/repo &&
+          PYTHONPATH=. python analysis/scripts/run_corpus_descriptives.py \
+            /mnt/data/output/test_10M/annotated_corpus/ \
+            --layered \
+            --output /mnt/data/output/test_10M/analysis_results \
+            --analyses overview phenomenon_rates cooccurrence childes \
+              pronouns that_trace expletives complexity verbs register \
+              hypotheses subject_pronoun_rate negation_position wh_questions \
+              clause_crosstab case_pronouns that_trace_crosstab \
+              manipulation evaluation_contexts &&
+          PYTHONPATH=. python analysis/scripts/generate_interactive_report.py \
+            /mnt/data/output/test_10M/annotated_corpus/ \
+            --layered \
+            --output /mnt/data/output/test_10M/analysis_results/test_10M_report.html
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "7"
+          limits:
+            memory: 16Gi
+            cpu: "7"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
