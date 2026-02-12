@@ -102,6 +102,53 @@ def _build_index(corpus_path: Path) -> pl.DataFrame:
         df = df.hstack(flag_df)
         existing_cols |= set(flag_cols)
 
+    # Derive has_null_subject_finite/nonfinite from clause data if missing
+    if "has_null_subject_finite" not in existing_cols or "has_null_subject_nonfinite" not in existing_cols:
+        clause_dir = layers_dir / "clause_structure"
+        clause_files = sorted(clause_dir.glob("*.parquet")) if clause_dir.exists() else []
+        if clause_files:
+            clauses_col = (
+                pl.scan_parquet(clause_files)
+                .select("clauses")
+                .collect()["clauses"]
+            )
+            _is_null = pl.element().struct.field("subject_status").is_in(
+                ["none", "inherited", "imperative"]
+            )
+            if "has_null_subject_finite" not in existing_cols:
+                df = df.hstack([
+                    clauses_col.list.eval(
+                        _is_null & pl.element().struct.field("is_finite").eq(True)
+                    ).list.any().alias("has_null_subject_finite")
+                ])
+            if "has_null_subject_nonfinite" not in existing_cols:
+                df = df.hstack([
+                    clauses_col.list.eval(
+                        _is_null & pl.element().struct.field("is_finite").eq(False)
+                    ).list.any().alias("has_null_subject_nonfinite")
+                ])
+
+    # Exclude fragments (verbless sentences) from null subject flags.
+    # Imperatives are NOT excluded — they are a subtype of null subject.
+    cols = set(df.columns)
+    ns_finite = "has_null_subject_finite" in cols
+    ns_nonfinite = "has_null_subject_nonfinite" in cols
+    if (ns_finite or ns_nonfinite) and "is_fragment" in cols:
+        updates = []
+        if ns_finite:
+            updates.append(
+                (pl.col("has_null_subject_finite") & ~pl.col("is_fragment")).alias("has_null_subject_finite")
+            )
+        if ns_nonfinite:
+            updates.append(
+                (pl.col("has_null_subject_nonfinite") & ~pl.col("is_fragment")).alias("has_null_subject_nonfinite")
+            )
+        df = df.with_columns(updates)
+    if ns_finite:
+        df = df.with_columns(
+            pl.col("has_null_subject_finite").alias("has_null_subject"),
+        )
+
     return df
 
 

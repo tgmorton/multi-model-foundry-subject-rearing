@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reviewed Sentences</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --border: #e2e4e8;
+    --accent: #2563eb; --accent-hover: #1d4ed8; --accent-light: #dbeafe;
+    --muted: #71757e; --text: #1a1a1a;
+    --correct-bg: #dcfce7; --correct-border: #16a34a; --correct-text: #166534;
+    --incorrect-bg: #fee2e2; --incorrect-border: #dc2626; --incorrect-text: #991b1b;
+    --unsure-bg: #fef9c3; --unsure-border: #ca8a04; --unsure-text: #854d0e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg); color: var(--text); line-height: 1.5; }
+
+  .header { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px;
+            display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 1.15rem; font-weight: 700; }
+  .header-links { display: flex; gap: 12px; align-items: center; }
+  .header-links a { font-size: 0.82rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+  .header-links a:hover { text-decoration: underline; }
+
+  .controls { display: flex; gap: 12px; padding: 12px 32px; background: #fff;
+              border-bottom: 1px solid var(--border); align-items: center; flex-wrap: wrap; }
+  .controls label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+                     letter-spacing: 0.04em; color: var(--muted); }
+  select { padding: 5px 10px; border: 1px solid var(--border); border-radius: 5px;
+           font-size: 0.82rem; background: #fff; }
+
+  .stats { padding: 8px 32px; font-size: 0.78rem; color: var(--muted); background: #f8f9fb;
+           border-bottom: 1px solid var(--border); }
+  .stats span { font-weight: 600; color: var(--text); }
+
+  .container { padding: 16px 32px; max-width: 1100px; }
+
+  .review-card { background: var(--card); border: 1px solid var(--border); border-radius: 7px;
+                 margin-bottom: 10px; overflow: hidden; transition: box-shadow 0.12s; }
+  .review-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .review-header { display: flex; justify-content: space-between; align-items: center;
+                   padding: 8px 14px; background: #f8f9fb; border-bottom: 1px solid var(--border);
+                   font-size: 0.76rem; gap: 8px; }
+  .review-badges { display: flex; gap: 4px; align-items: center; }
+  .badge { padding: 2px 8px; border-radius: 3px; font-weight: 600; font-size: 0.7rem; }
+  .badge-correct { background: var(--correct-bg); color: var(--correct-text); }
+  .badge-incorrect { background: var(--incorrect-bg); color: var(--incorrect-text); }
+  .badge-unsure { background: var(--unsure-bg); color: var(--unsure-text); }
+  .badge-feature { background: var(--accent-light); color: var(--accent); }
+  .review-text { padding: 10px 14px; font-size: 0.84rem; line-height: 1.6; }
+  .review-note { padding: 8px 14px; font-size: 0.8rem; color: var(--muted);
+                 border-top: 1px solid var(--border); background: #fcfcfd; }
+  .review-note .note-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+                               letter-spacing: 0.04em; color: var(--muted); margin-right: 6px; }
+  .review-meta { font-size: 0.7rem; color: var(--muted); }
+  .review-link { font-size: 0.76rem; color: var(--accent); text-decoration: none; }
+  .review-link:hover { text-decoration: underline; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty h3 { font-size: 1rem; margin-bottom: 6px; }
+
+  .export-bar { padding: 12px 32px; background: #fff; border-top: 1px solid var(--border);
+                position: sticky; bottom: 0; display: flex; gap: 12px; align-items: center; }
+  .export-btn { padding: 6px 18px; background: var(--accent); color: #fff; border: none;
+                border-radius: 5px; font-size: 0.82rem; font-weight: 500; cursor: pointer; }
+  .export-btn:hover { background: var(--accent-hover); }
+  .export-btn.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  .export-btn.secondary:hover { background: #f0f4ff; border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Reviewed Sentences</h1>
+  <div class="header-links">
+    <a href="/">&larr; Back to Review</a>
+  </div>
+</div>
+
+<div class="controls">
+  <label>Verdict</label>
+  <select id="verdictFilter" onchange="loadNotes()">
+    <option value="">All</option>
+    <option value="correct">Correct</option>
+    <option value="incorrect">Incorrect</option>
+    <option value="unsure">Unsure</option>
+  </select>
+  <label>Feature</label>
+  <select id="featureFilter" onchange="loadNotes()">
+    <option value="">All</option>
+  </select>
+</div>
+
+<div class="stats" id="statsBar">Loading...</div>
+
+<div class="container" id="notesList"></div>
+
+<div class="export-bar">
+  <button class="export-btn" onclick="window.open('/api/notes/export','_blank')">Export TSV</button>
+  <button class="export-btn secondary" onclick="copyAsMarkdown()">Copy as Markdown</button>
+</div>
+
+<script>
+let allNotes = [];
+
+async function init() {
+  // Load schematics for feature dropdown
+  try {
+    const schematics = await (await fetch('/api/schematics')).json();
+    const sel = document.getElementById('featureFilter');
+    Object.entries(schematics).forEach(([key, val]) => {
+      const o = document.createElement('option');
+      o.value = key; o.textContent = val.title;
+      sel.appendChild(o);
+    });
+  } catch (e) {}
+  await loadNotes();
+}
+
+async function loadNotes() {
+  const verdict = document.getElementById('verdictFilter').value;
+  const feature = document.getElementById('featureFilter').value;
+  const params = new URLSearchParams();
+  if (verdict) params.set('verdict', verdict);
+  if (feature) params.set('feature_context', feature);
+
+  try {
+    const notes = await (await fetch(`/api/notes/enriched?${params}`)).json();
+    allNotes = notes;
+    render(notes);
+  } catch (e) {
+    document.getElementById('notesList').innerHTML =
+      `<div class="empty"><h3>Error loading notes</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+function render(notes) {
+  const stats = document.getElementById('statsBar');
+  const container = document.getElementById('notesList');
+
+  if (!notes.length) {
+    stats.innerHTML = '<span>0</span> reviewed sentences';
+    container.innerHTML = '<div class="empty"><h3>No reviewed sentences yet</h3><p>Go review some sentences and come back here.</p></div>';
+    return;
+  }
+
+  const correct = notes.filter(n => n.verdict === 'correct').length;
+  const incorrect = notes.filter(n => n.verdict === 'incorrect').length;
+  const unsure = notes.filter(n => n.verdict === 'unsure').length;
+  stats.innerHTML = `<span>${notes.length}</span> reviewed &mdash;
+    <span>${correct}</span> correct &middot;
+    <span>${incorrect}</span> incorrect &middot;
+    <span>${unsure}</span> unsure`;
+
+  // Sort: most recent first
+  const sorted = [...notes].sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+
+  container.innerHTML = sorted.map(n => {
+    const time = n.updated_at ? new Date(n.updated_at).toLocaleString() : '';
+    const featureLabel = n.feature_context
+      ? n.feature_context.replace(/_/g, ' ') : '';
+    return `<div class="review-card">
+      <div class="review-header">
+        <div class="review-badges">
+          <span class="badge badge-${n.verdict}">${esc(n.verdict)}</span>
+          ${featureLabel ? `<span class="badge badge-feature">${esc(featureLabel)}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span class="review-meta">${esc(time)}</span>
+          <a class="review-link" href="/?sid=${encodeURIComponent(n.sentence_id)}" title="Open in reviewer">View</a>
+        </div>
+      </div>
+      <div class="review-text">${esc(n.text || '')}</div>
+      ${n.note_text ? `<div class="review-note"><span class="note-label">Note</span>${esc(n.note_text)}</div>` : ''}
+      ${renderFilters(n.active_filters)}
+    </div>`;
+  }).join('');
+}
+
+function renderFilters(af) {
+  if (!af) return '';
+  const parts = [];
+  if (af.flags && af.flags.length) {
+    parts.push(...af.flags.map(f => f.replace(/^(has_|is_)/, '').replace(/_/g, ' ')));
+  }
+  if (af.genre) parts.push(af.genre);
+  if (af.speaker) parts.push(af.speaker);
+  if (af.search) parts.push(`"${af.search}"`);
+  if (!parts.length) return '';
+  const badges = parts.map(p => `<span class="badge badge-feature" style="opacity:0.7">${esc(p)}</span>`).join(' ');
+  return `<div class="review-note" style="font-size:0.72rem"><span class="note-label">Filters</span>${badges}</div>`;
+}
+
+function copyAsMarkdown() {
+  if (!allNotes.length) return;
+  const sorted = [...allNotes].sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+  const lines = sorted.map(n => {
+    const feat = n.feature_context ? ` [${n.feature_context}]` : '';
+    const note = n.note_text ? ` — ${n.note_text}` : '';
+    return `- **${n.verdict}**${feat}: "${n.text || ''}"${note}`;
+  });
+  const md = `# Reviewed Sentences (${allNotes.length})\n\n${lines.join('\n')}`;
+  navigator.clipboard.writeText(md).then(() => alert('Copied to clipboard'));
+}
+
+function esc(s) {
+  if (s == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+init();
+</script>
+</body>
+</html>

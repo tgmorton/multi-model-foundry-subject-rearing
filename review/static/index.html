@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annotation Review</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --border: #e2e4e8;
+    --accent: #2563eb; --accent-hover: #1d4ed8; --accent-light: #dbeafe;
+    --muted: #71757e; --text: #1a1a1a;
+    --correct-bg: #dcfce7; --correct-border: #16a34a; --correct-text: #166534;
+    --incorrect-bg: #fee2e2; --incorrect-border: #dc2626; --incorrect-text: #991b1b;
+    --unsure-bg: #fef9c3; --unsure-border: #ca8a04; --unsure-text: #854d0e;
+    --flag-bg: #eff6ff; --flag-text: #1e40af;
+    --highlight-cell: #fffbeb;
+    --drawer-width: 360px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg); color: var(--text); line-height: 1.5;
+         overflow-x: hidden; }
+
+  /* --- Header --- */
+  .header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 32px;
+            display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+
+  /* --- Feature pills bar --- */
+  .feature-nav { display: flex; gap: 5px; flex-wrap: wrap; padding: 9px 32px;
+                 background: #fff; border-bottom: 1px solid var(--border);
+                 align-items: center; }
+  .feat-btn { padding: 4px 12px; border: 1px solid var(--border); border-radius: 16px;
+              font-size: 0.76rem; cursor: pointer; background: #fff; color: var(--muted);
+              font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .feat-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .feat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* --- Toolbar (sentence nav + drawer toggles) --- */
+  .toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 32px;
+             background: #fff; border-bottom: 1px solid var(--border);
+             position: sticky; top: 0; z-index: 20; }
+  .toolbar-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 5px;
+                 font-size: 0.78rem; cursor: pointer; background: #fff; color: var(--muted);
+                 font-weight: 500; transition: all 0.15s; display: flex; align-items: center; gap: 4px; }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn svg { width: 14px; height: 14px; fill: currentColor; }
+  .nav-arrows { display: flex; gap: 2px; }
+  .nav-arrow { width: 32px; height: 30px; border: 1px solid var(--border); background: #fff;
+               cursor: pointer; display: flex; align-items: center; justify-content: center;
+               font-size: 1rem; color: var(--muted); transition: all 0.12s; }
+  .nav-arrow:first-child { border-radius: 5px 0 0 5px; }
+  .nav-arrow:last-child { border-radius: 0 5px 5px 0; border-left: none; }
+  .nav-arrow:hover { background: var(--accent-light); color: var(--accent); }
+  .nav-arrow:disabled { opacity: 0.3; cursor: default; }
+  .toolbar-sentence { flex: 1; min-width: 0; }
+  .toolbar-text { font-size: 0.84rem; line-height: 1.5; padding: 4px 0;
+                  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .toolbar-meta { font-size: 0.7rem; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .toolbar-sep { flex: none; width: 1px; height: 20px; background: var(--border); }
+  .badge { padding: 1px 7px; border-radius: 3px; font-weight: 600; font-size: 0.68rem; }
+  .badge-genre { background: #f0fdf4; color: #166534; }
+  .badge-speaker { background: #faf5ff; color: #6b21a8; }
+  .badge-flag { background: var(--flag-bg); color: var(--flag-text); }
+  .badge-correct { background: var(--correct-bg); color: var(--correct-text); }
+  .badge-incorrect { background: var(--incorrect-bg); color: var(--incorrect-text); }
+  .badge-unsure { background: var(--unsure-bg); color: var(--unsure-text); }
+  .pos-label { font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* --- Main content area --- */
+  .main-content { padding: 16px 32px; max-width: 100%; min-height: calc(100vh - 240px); }
+
+  /* --- Review bar --- */
+  .review-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+                background: var(--card); border: 1px solid var(--border); border-radius: 7px;
+                margin-bottom: 14px; flex-wrap: wrap; }
+  .verdict-group { display: flex; gap: 5px; }
+  .verdict-btn { padding: 5px 14px; border: 1px solid var(--border); border-radius: 5px;
+                 font-size: 0.78rem; cursor: pointer; background: #fff; font-weight: 500;
+                 transition: all 0.15s; }
+  .verdict-btn:hover { border-color: var(--accent); }
+  .verdict-btn.sel-correct { background: var(--correct-bg); border-color: var(--correct-border);
+                              color: var(--correct-text); font-weight: 600; }
+  .verdict-btn.sel-incorrect { background: var(--incorrect-bg); border-color: var(--incorrect-border);
+                                color: var(--incorrect-text); font-weight: 600; }
+  .verdict-btn.sel-unsure { background: var(--unsure-bg); border-color: var(--unsure-border);
+                             color: var(--unsure-text); font-weight: 600; }
+  .review-sep { width: 1px; height: 24px; background: var(--border); flex: none; }
+  .note-input { flex: 1; min-width: 120px; border: 1px solid var(--border); border-radius: 5px;
+                padding: 5px 10px; font-size: 0.78rem; font-family: inherit; }
+  .save-btn { padding: 5px 16px; background: var(--accent); color: #fff; border: none;
+              border-radius: 5px; font-size: 0.78rem; font-weight: 500; cursor: pointer; }
+  .save-btn:hover { background: var(--accent-hover); }
+  .save-btn:disabled { opacity: 0.4; cursor: default; }
+  .save-status { font-size: 0.74rem; color: var(--correct-text); display: none; }
+
+  /* --- Gloss table --- */
+  .gloss-wrapper { overflow-x: auto; background: var(--card); border: 1px solid var(--border);
+                   border-radius: 7px; padding: 2px; }
+  .gloss-table { border-collapse: collapse; font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+                 font-size: 0.78rem; white-space: nowrap; width: 100%; }
+  .gloss-table th { padding: 5px 10px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+                     letter-spacing: 0.04em; color: var(--muted); text-align: left;
+                     background: #f8f9fb; border: 1px solid var(--border); position: sticky; left: 0;
+                     z-index: 2; min-width: 100px; }
+  .gloss-table td { padding: 5px 10px; border: 1px solid var(--border); text-align: center;
+                     min-width: 56px; }
+  .gloss-table tr:first-child td { font-weight: 600; background: #f8f9fb; }
+  .gloss-table td.has-annotation { background: var(--highlight-cell); }
+  .gloss-table tr.layer-row td.has-annotation { background: #e0f2fe; }
+  .gloss-table tr.base-row td { background: #fafbfc; }
+  .gloss-table tr.base-row th { background: #f0f1f3; }
+  /* Feature-relevant highlighting */
+  .gloss-table tr.feat-row th { background: #eff6ff; color: var(--accent); border-left: 3px solid var(--accent); }
+  .gloss-table tr.feat-row td.has-annotation { background: #dbeafe; }
+  .gloss-table td.feat-hit { background: #bfdbfe !important; font-weight: 700; color: var(--accent-hover);
+                               box-shadow: inset 0 0 0 1.5px var(--accent); }
+
+  /* --- Context lines --- */
+  .context-line { font-size: 0.8rem; color: var(--muted); padding: 6px 12px;
+                   font-style: italic; line-height: 1.5; }
+  .context-before { border-bottom: 1px dashed var(--border); margin-bottom: 0;
+                      border-radius: 7px 7px 0 0; background: #fafbfc; }
+  .context-after { border-top: 1px dashed var(--border); margin-top: 0;
+                    border-radius: 0 0 7px 7px; background: #fafbfc; }
+  .context-line .ctx-label { font-size: 0.66rem; font-weight: 600; text-transform: uppercase;
+                               letter-spacing: 0.04em; font-style: normal; margin-right: 6px;
+                               opacity: 0.6; }
+
+  /* --- Placeholder --- */
+  .placeholder { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .placeholder h3 { font-size: 1rem; margin-bottom: 6px; font-weight: 600; }
+  .placeholder p { font-size: 0.84rem; }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 0.88rem; }
+
+  /* --- Status bar --- */
+  .status-bar { padding: 6px 32px; font-size: 0.74rem; color: var(--muted); background: #fff;
+                border-top: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap;
+                align-items: center; position: sticky; bottom: 0; z-index: 20; }
+  .status-bar span { font-weight: 600; color: var(--text); }
+  .status-bar .export-link { margin-left: auto; color: var(--accent); text-decoration: none;
+                               font-weight: 500; cursor: pointer; font-size: 0.74rem; }
+  .status-bar .export-link:hover { text-decoration: underline; }
+
+  /* --- Drawers --- */
+  .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.15);
+                     z-index: 30; }
+  .drawer-overlay.open { display: block; }
+  .drawer { position: fixed; top: 0; height: 100vh; width: var(--drawer-width);
+            background: #fff; z-index: 31; box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            transition: transform 0.25s ease; overflow-y: auto; }
+  .drawer-left { left: 0; transform: translateX(-100%); }
+  .drawer-left.open { transform: translateX(0); }
+  .drawer-right { right: 0; transform: translateX(100%); }
+  .drawer-right.open { transform: translateX(0); }
+  .drawer-header { padding: 14px 20px; border-bottom: 1px solid var(--border);
+                    display: flex; justify-content: space-between; align-items: center; }
+  .drawer-header h2 { font-size: 0.95rem; font-weight: 700; }
+  .drawer-close { background: none; border: none; font-size: 1.2rem; cursor: pointer;
+                   color: var(--muted); padding: 4px; line-height: 1; }
+  .drawer-close:hover { color: var(--text); }
+  .drawer-body { padding: 16px 20px; }
+
+  /* --- Filter drawer content --- */
+  .filter-group { margin-bottom: 16px; }
+  .filter-group label { display: block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+                         letter-spacing: 0.04em; color: var(--muted); margin-bottom: 5px; }
+  .filter-group select, .filter-group input[type=text] { width: 100%; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 5px; font-size: 0.82rem; background: #fff; }
+  .flag-toggles { display: flex; flex-wrap: wrap; gap: 5px; }
+  .flag-toggle { display: inline-flex; align-items: center; gap: 3px; padding: 4px 9px;
+                 border: 1px solid var(--border); border-radius: 4px; font-size: 0.72rem;
+                 cursor: pointer; background: #fff; color: var(--muted); transition: all 0.15s; }
+  .flag-toggle.active { background: var(--flag-bg); border-color: var(--accent); color: var(--flag-text); }
+  .flag-toggle input { display: none; }
+  .apply-btn { padding: 7px 20px; background: var(--accent); color: #fff; border: none;
+               border-radius: 5px; font-size: 0.82rem; font-weight: 500; cursor: pointer;
+               width: 100%; margin-top: 4px; }
+  .apply-btn:hover { background: var(--accent-hover); }
+
+  /* --- Sentence drawer content --- */
+  .sentence-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+                   margin-bottom: 6px; overflow: hidden; transition: all 0.12s; cursor: pointer; }
+  .sentence-card:hover { box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  .sentence-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .card-header { display: flex; justify-content: space-between; align-items: center;
+                 padding: 5px 10px; background: #f8f9fb; border-bottom: 1px solid var(--border);
+                 font-size: 0.72rem; }
+  .card-badges { display: flex; gap: 3px; align-items: center; }
+  .card-text { padding: 6px 10px; font-size: 0.78rem; line-height: 1.5;
+               overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+               -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .card-flags { padding: 3px 10px 5px; display: flex; gap: 3px; flex-wrap: wrap; }
+  .drawer-pagination { display: flex; justify-content: center; align-items: center; gap: 10px;
+                        padding: 10px; }
+  .page-btn { padding: 4px 12px; border: 1px solid var(--border); border-radius: 5px;
+              font-size: 0.78rem; cursor: pointer; background: #fff; }
+  .page-btn:hover { background: var(--accent-light); }
+  .page-btn:disabled { opacity: 0.3; cursor: default; }
+  .page-info { font-size: 0.76rem; color: var(--muted); }
+
+  /* --- Modal --- */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+                    z-index: 40; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 10px; max-width: 560px; width: 90%;
+           max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border);
+                   display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { font-size: 0.95rem; font-weight: 700; }
+  .modal-body { padding: 20px; }
+
+  /* --- Schematic (in modal) --- */
+  .schematic h3 { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
+  .schematic .summary { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; }
+  .step-list { list-style: none; position: relative; padding-left: 22px; }
+  .step-list::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+                        width: 2px; background: var(--border); }
+  .step-item { position: relative; margin-bottom: 10px; padding-left: 4px; }
+  .step-item::before { content: ''; position: absolute; left: -19px; top: 6px;
+                         width: 10px; height: 10px; border-radius: 50%;
+                         background: var(--accent-light); border: 2px solid var(--accent); }
+  .step-label { font-size: 0.82rem; font-weight: 600; }
+  .step-detail { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .known-issues { margin-top: 10px; padding: 10px; background: #fffbeb; border-radius: 5px;
+                   border: 1px solid #fde68a; font-size: 0.78rem; }
+  .known-issues strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em;
+                           color: #92400e; }
+  .known-issues ul { padding-left: 16px; margin-top: 4px; }
+  .known-issues li { margin-top: 3px; color: #78350f; }
+  .source-link { font-size: 0.74rem; color: var(--muted); margin-top: 8px; }
+
+  /* --- Keyboard hint --- */
+  kbd { display: inline-block; padding: 1px 5px; font-size: 0.66rem; font-family: inherit;
+        background: #f3f4f6; border: 1px solid var(--border); border-radius: 3px;
+        color: var(--muted); line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>Annotation Review</h1>
+  <div style="display:flex;gap:6px;align-items:center">
+    <kbd>d</kbd><kbd>f</kbd><span style="font-size:0.7rem;color:var(--muted)">navigate</span>
+    <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><span style="font-size:0.7rem;color:var(--muted)">verdict (auto-saves)</span>
+  </div>
+</div>
+
+<!-- Feature pills -->
+<div class="feature-nav" id="featureNav"></div>
+
+<!-- Toolbar: drawer toggles + sentence nav -->
+<div class="toolbar">
+  <button class="toolbar-btn" id="filterToggle" onclick="toggleDrawer('left')">
+    <svg viewBox="0 0 16 16"><path d="M1 2h14v1.5H1zm2 4h10v1.5H3zm2 4h6v1.5H7z"/></svg>
+    Filters
+  </button>
+  <div class="toolbar-sep"></div>
+  <div class="nav-arrows">
+    <button class="nav-arrow" id="prevArrow" onclick="navigateSentence(-1)" title="Previous (Left arrow)">&larr;</button>
+    <button class="nav-arrow" id="nextArrow" onclick="navigateSentence(1)" title="Next (Right arrow)">&rarr;</button>
+  </div>
+  <div class="toolbar-sentence" id="toolbarSentence">
+    <div class="toolbar-text" id="toolbarText" style="color:var(--muted)">Loading...</div>
+  </div>
+  <div class="toolbar-meta" id="toolbarMeta"></div>
+  <div class="toolbar-sep"></div>
+  <button class="toolbar-btn" id="logicToggle" onclick="openLogicModal()" style="display:none">
+    <svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 3.5h1.5v1.5h-1.5zm0 3h1.5V12h-1.5z"/></svg>
+    Logic
+  </button>
+  <button class="toolbar-btn" id="sentenceToggle" onclick="toggleDrawer('right')">
+    <svg viewBox="0 0 16 16"><path d="M2 3h12v1H2zm0 3h12v1H2zm0 3h12v1H2zm0 3h12v1H2z"/></svg>
+    Sentences
+  </button>
+</div>
+
+<!-- Main content: review bar + gloss -->
+<div class="main-content" id="mainContent">
+  <div id="mainPlaceholder" class="placeholder">
+    <h3>Select a feature and browse sentences</h3>
+    <p>Choose a feature above, then use arrow keys or open the Sentences drawer to pick a sentence.</p>
+  </div>
+
+  <!-- Review bar -->
+  <div id="reviewBar" class="review-bar" style="display:none">
+    <div class="verdict-group" id="verdictGroup">
+      <button class="verdict-btn" data-v="correct" onclick="setVerdict('correct')">Correct</button>
+      <button class="verdict-btn" data-v="incorrect" onclick="setVerdict('incorrect')">Incorrect</button>
+      <button class="verdict-btn" data-v="unsure" onclick="setVerdict('unsure')">Unsure</button>
+    </div>
+    <div class="review-sep"></div>
+    <input type="text" class="note-input" id="noteInput" placeholder="Add a note...">
+    <span class="save-status" id="saveStatus">Saved</span>
+  </div>
+
+  <!-- Context + Gloss table -->
+  <div id="glossSection" style="display:none">
+    <div class="context-line context-before" id="contextBefore" style="display:none"></div>
+    <div class="gloss-wrapper">
+      <table class="gloss-table" id="glossTable"></table>
+    </div>
+    <div class="context-line context-after" id="contextAfter" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div>Total: <span id="totalCount">-</span></div>
+  <div>Matching: <span id="matchingCount">-</span></div>
+  <div>Reviewed: <span id="reviewedCount">-</span></div>
+  <div class="pos-label" id="sentencePos"></div>
+  <a class="export-link" href="/reviewed" target="_blank">All Reviewed</a>
+  <a class="export-link" onclick="exportNotes()">Export TSV</a>
+</div>
+
+<!-- Left drawer: filters -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawers()"></div>
+<div class="drawer drawer-left" id="leftDrawer">
+  <div class="drawer-header">
+    <h2>Filters</h2>
+    <button class="drawer-close" onclick="closeDrawers()">&times;</button>
+  </div>
+  <div class="drawer-body">
+    <div class="filter-group">
+      <label>Genre</label>
+      <select id="genreSelect"><option value="">All genres</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Speaker</label>
+      <select id="speakerSelect"><option value="">All speakers</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Search text</label>
+      <input type="text" id="searchInput" placeholder="Search sentences...">
+    </div>
+    <div class="filter-group">
+      <label>Flags</label>
+      <div class="flag-toggles" id="flagToggles"></div>
+    </div>
+    <div class="filter-group">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;font-size:0.82rem;color:var(--text)">
+        <input type="checkbox" id="hideReviewed" style="display:inline;width:auto;margin:0">
+        Hide reviewed sentences
+      </label>
+    </div>
+    <button class="apply-btn" onclick="applyFilters(); closeDrawers();">Apply Filters</button>
+  </div>
+</div>
+
+<!-- Right drawer: sentences -->
+<div class="drawer drawer-right" id="rightDrawer">
+  <div class="drawer-header">
+    <h2>Sentences</h2>
+    <button class="drawer-close" onclick="closeDrawers()">&times;</button>
+  </div>
+  <div class="drawer-body" id="sentenceDrawerBody">
+    <div id="sentenceList"></div>
+    <div class="drawer-pagination" id="pagination" style="display:none">
+      <button class="page-btn" id="prevBtn" onclick="changePage(-1)">&larr;</button>
+      <span class="page-info" id="pageInfo">1</span>
+      <button class="page-btn" id="nextBtn" onclick="changePage(1)">&rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: detection logic -->
+<div class="modal-overlay" id="logicModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Detection Logic</h2>
+      <button class="drawer-close" onclick="closeLogicModal()">&times;</button>
+    </div>
+    <div class="modal-body schematic" id="schematicContent"></div>
+  </div>
+</div>
+
+<script>
+// === State ===
+const state = {
+  metadata: null,
+  schematics: {},
+  schematicDetail: null,
+  currentFeature: '',
+  currentPage: 1,
+  pageSize: 50,
+  totalSentences: 0,
+  sentences: [],
+  selectedIdx: -1,
+  selectedId: null,
+  selectedDetail: null,
+  currentVerdict: null,
+  filters: { genre: '', speaker: '', flags: [], search: '', hideReviewed: false },
+};
+
+// === API ===
+async function api(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(`API error: ${r.status}`);
+  return r.json();
+}
+async function apiPut(path, body) {
+  const r = await fetch(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`API error: ${r.status}`);
+  return r.json();
+}
+
+// === Init ===
+async function init() {
+  try {
+    const [meta, schematics] = await Promise.all([
+      api('/api/metadata'),
+      api('/api/schematics'),
+    ]);
+    state.metadata = meta;
+    state.schematics = schematics;
+    populateFilters(meta);
+    populateFeatureNav(schematics);
+    await loadSentences();
+  } catch (e) {
+    document.getElementById('toolbarText').textContent = 'Error: ' + e.message;
+  }
+}
+
+function populateFilters(meta) {
+  const genreSel = document.getElementById('genreSelect');
+  meta.genres.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g; o.textContent = g;
+    genreSel.appendChild(o);
+  });
+  const speakerSel = document.getElementById('speakerSelect');
+  meta.speakers.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    speakerSel.appendChild(o);
+  });
+  const cont = document.getElementById('flagToggles');
+  meta.flag_columns.forEach(flag => {
+    const lbl = document.createElement('label');
+    lbl.className = 'flag-toggle';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = flag;
+    cb.addEventListener('change', () => lbl.classList.toggle('active', cb.checked));
+    const name = flag.replace(/^(has_|is_)/, '').replace(/_/g, ' ');
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(name));
+    cont.appendChild(lbl);
+  });
+}
+
+function populateFeatureNav(schematics) {
+  const nav = document.getElementById('featureNav');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'feat-btn active';
+  allBtn.textContent = 'All';
+  allBtn.onclick = () => selectFeature('');
+  nav.appendChild(allBtn);
+  Object.entries(schematics).forEach(([key, val]) => {
+    const btn = document.createElement('button');
+    btn.className = 'feat-btn';
+    btn.textContent = val.title.replace(' Detection', '').replace(' Annotation', '');
+    btn.dataset.feature = key;
+    btn.onclick = () => selectFeature(key);
+    nav.appendChild(btn);
+  });
+}
+
+// Feature -> relevant gloss rows + cell values to highlight
+const FEATURE_GLOSS = {
+  null_subject: {
+    rows: ['Clause Type', 'Subject Status', 'Is Finite'],
+    hits: { 'Subject Status': ['none'] },
+  },
+  expletive: {
+    rows: ['Expletive Class'],
+    hits: {},
+  },
+  that_trace: {
+    rows: ['Bridge Verb'],
+    hits: { 'Bridge Verb': ['True'] },
+  },
+  wh_extraction: {
+    rows: ['Wh Type'],
+    hits: {},
+  },
+  relative_clause: {
+    rows: ['Rel Clause Type'],
+    hits: {},
+  },
+  negation: {
+    rows: ['Negation'],
+    hits: {},
+  },
+  pronoun: {
+    rows: ['Pronoun Function'],
+    hits: {},
+  },
+  verb_form: {
+    rows: ['Verb Form', 'Tense'],
+    hits: {},
+  },
+  argument_structure: {
+    rows: ['Transitivity', 'Arg Subj Status'],
+    hits: { 'Arg Subj Status': ['null'] },
+  },
+  complexity: {
+    rows: [],
+    hits: {},
+  },
+  topic_continuity: {
+    rows: [],
+    hits: {},
+  },
+};
+
+const FEATURE_FLAG_MAP = {
+  null_subject: ['has_null_subject'],
+  expletive: ['has_expletive'],
+  that_trace: ['has_that_trace_context'],
+  wh_extraction: ['has_wh_extraction'],
+  relative_clause: ['has_relative_clause'],
+  negation: ['has_negation'],
+  pronoun: ['has_overt_subject_pronoun'],
+  argument_structure: ['has_ditransitive'],
+  complexity: ['is_fragment'],
+};
+
+async function selectFeature(feature) {
+  state.currentFeature = feature;
+  state.currentPage = 1;
+  state.selectedIdx = -1;
+  state.selectedId = null;
+
+  document.querySelectorAll('.feat-btn').forEach(b => {
+    b.classList.toggle('active',
+      (feature === '' && !b.dataset.feature) || b.dataset.feature === feature);
+  });
+
+  // Auto-set flag filters
+  const flagToggles = document.querySelectorAll('#flagToggles .flag-toggle input');
+  flagToggles.forEach(cb => { cb.checked = false; cb.parentElement.classList.remove('active'); });
+  if (feature && FEATURE_FLAG_MAP[feature]) {
+    FEATURE_FLAG_MAP[feature].forEach(flag => {
+      const cb = document.querySelector(`#flagToggles input[value="${flag}"]`);
+      if (cb) { cb.checked = true; cb.parentElement.classList.add('active'); }
+    });
+  }
+
+  // Logic button visibility
+  document.getElementById('logicToggle').style.display = feature ? '' : 'none';
+
+  // Pre-load schematic
+  if (feature) {
+    try {
+      state.schematicDetail = await api(`/api/schematics/${feature}`);
+    } catch (e) { state.schematicDetail = null; }
+  } else {
+    state.schematicDetail = null;
+  }
+
+  await applyFilters();
+}
+
+// === Drawers ===
+function toggleDrawer(side) {
+  const overlay = document.getElementById('drawerOverlay');
+  const left = document.getElementById('leftDrawer');
+  const right = document.getElementById('rightDrawer');
+  if (side === 'left') {
+    const opening = !left.classList.contains('open');
+    left.classList.toggle('open');
+    right.classList.remove('open');
+    overlay.classList.toggle('open', opening);
+    document.getElementById('filterToggle').classList.toggle('active', opening);
+    document.getElementById('sentenceToggle').classList.remove('active');
+  } else {
+    const opening = !right.classList.contains('open');
+    right.classList.toggle('open');
+    left.classList.remove('open');
+    overlay.classList.toggle('open', opening);
+    document.getElementById('sentenceToggle').classList.toggle('active', opening);
+    document.getElementById('filterToggle').classList.remove('active');
+  }
+}
+function closeDrawers() {
+  document.getElementById('leftDrawer').classList.remove('open');
+  document.getElementById('rightDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('filterToggle').classList.remove('active');
+  document.getElementById('sentenceToggle').classList.remove('active');
+}
+
+// === Logic modal ===
+function openLogicModal() {
+  if (!state.schematicDetail) return;
+  const s = state.schematicDetail;
+  let html = `<h3>${esc(s.title)}</h3>
+    <div class="summary">${esc(s.summary)}</div>
+    <ol class="step-list">`;
+  s.steps.forEach(step => {
+    html += `<li class="step-item">
+      <div class="step-label">${esc(step.label)}</div>
+      <div class="step-detail">${esc(step.detail)}</div>
+    </li>`;
+  });
+  html += `</ol>`;
+  if (s.known_issues && s.known_issues.length) {
+    html += `<div class="known-issues"><strong>Known Issues</strong><ul>`;
+    s.known_issues.forEach(i => html += `<li>${esc(i)}</li>`);
+    html += `</ul></div>`;
+  }
+  if (s.source_file) html += `<div class="source-link">Source: ${esc(s.source_file)}</div>`;
+  document.getElementById('schematicContent').innerHTML = html;
+  document.getElementById('logicModal').classList.add('open');
+}
+function closeLogicModal() {
+  document.getElementById('logicModal').classList.remove('open');
+}
+
+// === Filters & loading ===
+async function applyFilters() {
+  state.filters.genre = document.getElementById('genreSelect').value;
+  state.filters.speaker = document.getElementById('speakerSelect').value;
+  state.filters.search = document.getElementById('searchInput').value;
+  state.filters.flags = [];
+  document.querySelectorAll('#flagToggles input:checked').forEach(cb => state.filters.flags.push(cb.value));
+  state.filters.hideReviewed = document.getElementById('hideReviewed').checked;
+  state.currentPage = 1;
+  await loadSentences();
+}
+
+async function loadSentences() {
+  document.getElementById('toolbarText').textContent = 'Loading...';
+  document.getElementById('toolbarText').style.color = 'var(--muted)';
+  const params = new URLSearchParams({ page: state.currentPage, page_size: state.pageSize });
+  if (state.filters.genre) params.set('genre', state.filters.genre);
+  if (state.filters.speaker) params.set('speaker', state.filters.speaker);
+  if (state.filters.flags.length) params.set('flags', state.filters.flags.join(','));
+  if (state.filters.search) params.set('search', state.filters.search);
+  if (state.filters.hideReviewed) params.set('hide_reviewed', 'true');
+
+  try {
+    const data = await api(`/api/sentences?${params}`);
+    state.sentences = data.sentences;
+    state.totalSentences = data.total;
+    renderSentenceList();
+    renderPagination(data);
+    updateStatus(data);
+    // Auto-select first if we have sentences and nothing selected
+    if (state.sentences.length && state.selectedIdx < 0) {
+      selectSentenceByIdx(0);
+    } else if (!state.sentences.length) {
+      showPlaceholder();
+    }
+  } catch (e) {
+    document.getElementById('toolbarText').textContent = 'Error: ' + e.message;
+  }
+}
+
+function renderSentenceList() {
+  const container = document.getElementById('sentenceList');
+  if (!state.sentences.length) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">No sentences match</div>';
+    return;
+  }
+  container.innerHTML = state.sentences.map((s, idx) => {
+    const selected = idx === state.selectedIdx ? ' selected' : '';
+    const activeFlags = (state.metadata?.flag_columns || []).filter(f => s[f])
+      .map(f => f.replace(/^(has_|is_)/, '').replace(/_/g, ' '));
+    const verdictBadge = s.verdict ? `<span class="badge badge-${s.verdict}">${s.verdict}</span>` : '';
+    const flagHtml = activeFlags.slice(0, 3).map(f => `<span class="badge badge-flag">${esc(f)}</span>`).join('');
+    return `<div class="sentence-card${selected}" data-idx="${idx}" onclick="selectSentenceByIdx(${idx}); closeDrawers();">
+      <div class="card-header">
+        <div class="card-badges">
+          <span class="badge badge-genre">${esc(s.genre || '')}</span>
+          ${verdictBadge}
+        </div>
+        <span style="color:var(--muted);font-size:0.68rem">${s.n_tokens || 0} tok</span>
+      </div>
+      <div class="card-text">${esc(s.text || '')}</div>
+      ${flagHtml ? `<div class="card-flags">${flagHtml}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderPagination(data) {
+  const pag = document.getElementById('pagination');
+  const totalPages = Math.ceil(data.total / data.page_size) || 1;
+  pag.style.display = totalPages > 1 ? '' : 'none';
+  document.getElementById('pageInfo').textContent = `${data.page} / ${totalPages}`;
+  document.getElementById('prevBtn').disabled = data.page <= 1;
+  document.getElementById('nextBtn').disabled = data.page >= totalPages;
+}
+
+async function changePage(delta) {
+  state.currentPage += delta;
+  state.selectedIdx = -1;
+  state.selectedId = null;
+  await loadSentences();
+}
+
+function updateStatus(data) {
+  document.getElementById('totalCount').textContent = (state.totalSentences || 0).toLocaleString();
+  document.getElementById('matchingCount').textContent = (data.total || 0).toLocaleString();
+  document.getElementById('reviewedCount').textContent = (data.reviewed_count || 0).toLocaleString();
+  updatePosLabel();
+}
+
+function updatePosLabel() {
+  const el = document.getElementById('sentencePos');
+  if (state.selectedIdx >= 0 && state.totalSentences > 0) {
+    const globalIdx = (state.currentPage - 1) * state.pageSize + state.selectedIdx + 1;
+    el.textContent = `${globalIdx.toLocaleString()} of ${state.totalSentences.toLocaleString()}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+// === Sentence selection ===
+function showPlaceholder() {
+  document.getElementById('mainPlaceholder').style.display = '';
+  document.getElementById('reviewBar').style.display = 'none';
+  document.getElementById('glossSection').style.display = 'none';
+  document.getElementById('toolbarText').textContent = 'No sentences match current filters';
+  document.getElementById('toolbarText').style.color = 'var(--muted)';
+  document.getElementById('toolbarMeta').innerHTML = '';
+}
+
+async function selectSentenceByIdx(idx) {
+  if (idx < 0 || idx >= state.sentences.length) return;
+  state.selectedIdx = idx;
+  const s = state.sentences[idx];
+  state.selectedId = s.sentence_id;
+
+  // Update toolbar
+  document.getElementById('toolbarText').textContent = s.text || '';
+  document.getElementById('toolbarText').style.color = 'var(--text)';
+
+  const activeFlags = (state.metadata?.flag_columns || []).filter(f => s[f])
+    .map(f => f.replace(/^(has_|is_)/, '').replace(/_/g, ' '));
+  let metaHtml = `<span class="badge badge-genre">${esc(s.genre || '')}</span>`;
+  if (s.speaker) metaHtml += `<span class="badge badge-speaker">${esc(s.speaker)}</span>`;
+  if (s.verdict) metaHtml += `<span class="badge badge-${s.verdict}">${s.verdict}</span>`;
+  activeFlags.slice(0, 3).forEach(f => metaHtml += `<span class="badge badge-flag">${esc(f)}</span>`);
+  document.getElementById('toolbarMeta').innerHTML = metaHtml;
+
+  // Update arrows
+  document.getElementById('prevArrow').disabled = (idx === 0 && state.currentPage <= 1);
+  document.getElementById('nextArrow').disabled = (idx === state.sentences.length - 1 &&
+    state.currentPage >= Math.ceil(state.totalSentences / state.pageSize));
+
+  // Highlight in drawer
+  document.querySelectorAll('.sentence-card').forEach(c => {
+    c.classList.toggle('selected', parseInt(c.dataset.idx) === idx);
+  });
+
+  updatePosLabel();
+
+  // Show main content
+  document.getElementById('mainPlaceholder').style.display = 'none';
+  document.getElementById('reviewBar').style.display = '';
+  document.getElementById('glossSection').style.display = '';
+
+  // Load detail
+  try {
+    const detail = await api(`/api/sentences/${encodeURIComponent(s.sentence_id)}`);
+    state.selectedDetail = detail;
+    renderContext(detail);
+    renderGlossTable(detail);
+    loadNote(detail);
+  } catch (e) {
+    document.getElementById('glossTable').innerHTML = `<tr><td>Error: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+function renderContext(detail) {
+  const before = document.getElementById('contextBefore');
+  const after = document.getElementById('contextAfter');
+  if (detail.context_before) {
+    before.innerHTML = `<span class="ctx-label">prev</span>${esc(detail.context_before)}`;
+    before.style.display = '';
+  } else {
+    before.style.display = 'none';
+  }
+  if (detail.context_after) {
+    after.innerHTML = `<span class="ctx-label">next</span>${esc(detail.context_after)}`;
+    after.style.display = '';
+  } else {
+    after.style.display = 'none';
+  }
+}
+
+async function navigateSentence(delta) {
+  // Flush any pending debounce and save current before moving away
+  flushPendingSave();
+  await saveNote();
+  if (!state.sentences.length) return;
+  let idx = state.selectedIdx;
+  if (idx < 0) idx = 0;
+  else idx += delta;
+
+  // Page boundary: go to next/prev page
+  if (idx >= state.sentences.length) {
+    const totalPages = Math.ceil(state.totalSentences / state.pageSize);
+    if (state.currentPage < totalPages) {
+      state.currentPage++;
+      state.selectedIdx = -1;
+      await loadSentences();
+      selectSentenceByIdx(0);
+      return;
+    }
+    idx = state.sentences.length - 1;
+  }
+  if (idx < 0) {
+    if (state.currentPage > 1) {
+      state.currentPage--;
+      state.selectedIdx = -1;
+      await loadSentences();
+      selectSentenceByIdx(state.sentences.length - 1);
+      return;
+    }
+    idx = 0;
+  }
+  selectSentenceByIdx(idx);
+}
+
+// === Gloss table ===
+function renderGlossTable(detail) {
+  const table = document.getElementById('glossTable');
+  const rows = detail.gloss_rows || [];
+  if (!rows.length) {
+    table.innerHTML = '<tr><td style="padding:20px;color:var(--muted)">No annotation data</td></tr>';
+    return;
+  }
+  // Feature highlighting config
+  const fg = state.currentFeature ? FEATURE_GLOSS[state.currentFeature] : null;
+  const featRows = fg ? new Set(fg.rows) : null;
+  const featHits = fg ? fg.hits : null;
+
+  let html = '';
+  rows.forEach((row, ri) => {
+    const isLayer = !!row.layer;
+    const isFeatRow = featRows && featRows.has(row.label);
+    const hitVals = isFeatRow && featHits?.[row.label] ? new Set(featHits[row.label]) : null;
+    let classes = [];
+    if (isLayer) classes.push('layer-row');
+    else if (ri < 5) classes.push('base-row');
+    if (isFeatRow) classes.push('feat-row');
+    const trClass = classes.length ? ` class="${classes.join(' ')}"` : '';
+    html += `<tr${trClass}><th>${esc(row.label)}</th>`;
+    (row.cells || []).forEach(cell => {
+      const val = cell != null && cell !== '' ? String(cell) : '';
+      let cls = [];
+      if (val && ri > 0 && isLayer) cls.push('has-annotation');
+      if (val && hitVals && hitVals.has(val)) cls.push('feat-hit');
+      html += `<td${cls.length ? ` class="${cls.join(' ')}"` : ''}>${esc(val)}</td>`;
+    });
+    html += `</tr>`;
+  });
+  table.innerHTML = html;
+}
+
+// === Notes ===
+let _noteDebounce = null;
+
+function loadNote(detail) {
+  const note = detail.note;
+  state.currentVerdict = note?.verdict || null;
+  document.getElementById('noteInput').value = note?.note_text || '';
+  updateVerdictButtons();
+  document.getElementById('saveStatus').style.display = 'none';
+}
+
+function setVerdict(v) {
+  state.currentVerdict = v;
+  updateVerdictButtons();
+  autoSave();
+}
+
+function updateVerdictButtons() {
+  document.querySelectorAll('#verdictGroup .verdict-btn').forEach(btn => {
+    const v = btn.dataset.v;
+    btn.className = 'verdict-btn' + (v === state.currentVerdict ? ` sel-${v}` : '');
+  });
+}
+
+// Auto-save on note input with debounce
+document.getElementById('noteInput').addEventListener('input', () => {
+  if (_noteDebounce) clearTimeout(_noteDebounce);
+  _noteDebounce = setTimeout(() => autoSave(), 600);
+});
+document.getElementById('noteInput').addEventListener('blur', () => autoSave());
+
+function autoSave() {
+  if (!state.selectedId) return;
+  const hasVerdict = !!state.currentVerdict;
+  const hasNote = !!document.getElementById('noteInput').value.trim();
+  if (hasVerdict || hasNote) saveNote();
+}
+
+function flushPendingSave() {
+  if (_noteDebounce) { clearTimeout(_noteDebounce); _noteDebounce = null; }
+}
+
+let _saving = false;
+async function saveNote() {
+  if (!state.selectedId || _saving) return;
+  const verdict = state.currentVerdict || '';
+  const noteText = document.getElementById('noteInput').value;
+  if (!verdict && !noteText.trim()) return;
+  _saving = true;
+  try {
+    await apiPut(`/api/notes/${encodeURIComponent(state.selectedId)}`, {
+      feature_context: state.currentFeature || '',
+      verdict: verdict,
+      note_text: noteText,
+      active_filters: {
+        feature: state.currentFeature || '',
+        flags: state.filters.flags,
+        genre: state.filters.genre || '',
+        speaker: state.filters.speaker || '',
+        search: state.filters.search || '',
+      },
+    });
+    const status = document.getElementById('saveStatus');
+    status.style.display = 'inline';
+    setTimeout(() => status.style.display = 'none', 1500);
+    // Update local state
+    const sent = state.sentences[state.selectedIdx];
+    if (sent) { sent.verdict = verdict || null; renderSentenceList(); }
+    // Update toolbar meta verdict badge
+    if (verdict) {
+      const meta = document.getElementById('toolbarMeta');
+      const existing = meta.querySelector('.badge-correct, .badge-incorrect, .badge-unsure');
+      if (existing) existing.remove();
+      const b = document.createElement('span');
+      b.className = `badge badge-${verdict}`;
+      b.textContent = verdict;
+      meta.appendChild(b);
+    }
+    // Bump reviewed count
+    const rc = document.getElementById('reviewedCount');
+    const cur = parseInt(rc.textContent.replace(/,/g, '')) || 0;
+    rc.textContent = (cur + 1).toLocaleString();
+  } catch (e) {
+    console.error('Save failed:', e);
+  }
+  _saving = false;
+}
+
+function exportNotes() { window.open('/api/notes/export', '_blank'); }
+
+// === Keyboard ===
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  // Close modal/drawer on Escape
+  if (e.key === 'Escape') {
+    closeLogicModal();
+    closeDrawers();
+    return;
+  }
+  if (e.key === 'ArrowRight' || e.key === 'f') { e.preventDefault(); navigateSentence(1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'd') { e.preventDefault(); navigateSentence(-1); }
+  else if (e.key === '1') { setVerdict('correct'); }
+  else if (e.key === '2') { setVerdict('incorrect'); }
+  else if (e.key === '3') { setVerdict('unsure'); }
+});
+
+document.getElementById('searchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { applyFilters(); closeDrawers(); }
+});
+
+// === Util ===
+function esc(s) {
+  if (s == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+// === Boot ===
+init();
+</script>
+</body>
+</html>
