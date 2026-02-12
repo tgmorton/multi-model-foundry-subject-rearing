@@ -117,22 +117,19 @@ def _age_band(months: Optional[int]) -> Optional[str]:
 # File-by-file aggregation
 # ---------------------------------------------------------------------------
 
-def _load_layered_df(corpus_path: Path) -> pl.DataFrame:
-    """Load base + clause_structure layer with minimal columns, joined on sentence_id.
-
-    Reads all parquet files in each directory (stems need not match).
-    """
+def _load_base(corpus_path: Path) -> pl.DataFrame:
+    """Load base layer with minimal columns.  Small enough to fit in memory."""
     base_dir = corpus_path / "base"
-    clause_dir = corpus_path / "layers" / "clause_structure"
-    base = pl.read_parquet(
+    return pl.read_parquet(
         sorted(base_dir.glob("*.parquet")),
         columns=_BASE_COLS,
     )
-    clauses = pl.read_parquet(
-        sorted(f for f in clause_dir.glob("*.parquet") if f.stem != "_backup"),
-        columns=["sentence_id", "clauses"],
-    )
-    return base.join(clauses, on="sentence_id", how="inner")
+
+
+def _iter_clause_files(corpus_path: Path) -> List[Path]:
+    """Return sorted list of clause_structure parquet files."""
+    clause_dir = corpus_path / "layers" / "clause_structure"
+    return sorted(f for f in clause_dir.glob("*.parquet") if f.stem != "_backup")
 
 
 def _process_chunk(df: pl.DataFrame) -> Dict[str, pl.DataFrame]:
@@ -634,36 +631,68 @@ def main():
     if output is None:
         output = Path("analysis/output/corpus_descriptives/reports/null_subject_report.html")
 
-    # Chunk size: number of rows per processing batch.
-    # 500k rows keeps memory well under 4 GB per chunk.
+    # Chunk size: number of rows per processing batch within each file.
     CHUNK_SIZE = 500_000
 
     if args.layered:
         print(f"Loading from: {args.input_path}", file=sys.stderr)
-        df = _load_layered_df(args.input_path)
+        # Load base once (small: 5 columns, ~1-2 GB for millions of rows)
+        base = _load_base(args.input_path)
+        print(f"  Base loaded: {base.height:,} rows", file=sys.stderr)
+
+        clause_files = _iter_clause_files(args.input_path)
+        print(f"  Found {len(clause_files)} clause_structure file(s)", file=sys.stderr)
+
+        partials = []
+        for fi, cpath in enumerate(clause_files):
+            print(f"  File [{fi+1}/{len(clause_files)}] {cpath.name}", file=sys.stderr)
+            clauses = pl.read_parquet(cpath, columns=["sentence_id", "clauses"])
+            joined = base.join(clauses, on="sentence_id", how="inner")
+            del clauses
+
+            n_rows = joined.height
+            n_chunks = (n_rows + CHUNK_SIZE - 1) // CHUNK_SIZE
+            for ci in range(n_chunks):
+                start = ci * CHUNK_SIZE
+                chunk = joined.slice(start, CHUNK_SIZE)
+                print(f"    chunk {ci+1}/{n_chunks}: {chunk.height:,} rows", file=sys.stderr)
+                partials.append(_process_chunk(chunk))
+                del chunk
+            del joined
+
+        del base
     elif args.input_path.is_file():
         print(f"Loading from: {args.input_path}", file=sys.stderr)
         df = pl.read_parquet(args.input_path)
+        n_rows = df.height
+        n_chunks = (n_rows + CHUNK_SIZE - 1) // CHUNK_SIZE
+        print(f"Processing {n_rows:,} rows in {n_chunks} chunk(s)\u2026", file=sys.stderr)
+        partials = []
+        for i in range(n_chunks):
+            start = i * CHUNK_SIZE
+            chunk = df.slice(start, CHUNK_SIZE)
+            print(f"  [{i+1}/{n_chunks}] rows {start:,}\u2013{start + chunk.height:,}\u2026", file=sys.stderr)
+            partials.append(_process_chunk(chunk))
+            del chunk
+        del df
     elif args.input_path.is_dir():
         print(f"Loading from: {args.input_path}", file=sys.stderr)
         df = pl.read_parquet(str(args.input_path / "**" / "*.parquet"))
+        n_rows = df.height
+        n_chunks = (n_rows + CHUNK_SIZE - 1) // CHUNK_SIZE
+        print(f"Processing {n_rows:,} rows in {n_chunks} chunk(s)\u2026", file=sys.stderr)
+        partials = []
+        for i in range(n_chunks):
+            start = i * CHUNK_SIZE
+            chunk = df.slice(start, CHUNK_SIZE)
+            print(f"  [{i+1}/{n_chunks}] rows {start:,}\u2013{start + chunk.height:,}\u2026", file=sys.stderr)
+            partials.append(_process_chunk(chunk))
+            del chunk
+        del df
     else:
         print(f"Error: {args.input_path} not found", file=sys.stderr)
         sys.exit(1)
 
-    n_rows = df.height
-    n_chunks = (n_rows + CHUNK_SIZE - 1) // CHUNK_SIZE
-    print(f"Processing {n_rows:,} rows in {n_chunks} chunk(s)\u2026", file=sys.stderr)
-
-    partials = []
-    for i in range(n_chunks):
-        start = i * CHUNK_SIZE
-        chunk = df.slice(start, CHUNK_SIZE)
-        print(f"  [{i+1}/{n_chunks}] rows {start:,}\u2013{start + chunk.height:,}\u2026", file=sys.stderr)
-        partials.append(_process_chunk(chunk))
-        del chunk
-
-    del df
     print("  Combining\u2026", file=sys.stderr)
     agg = _combine_partials(partials)
     del partials
