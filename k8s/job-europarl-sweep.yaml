@@ -10,23 +10,6 @@ spec:
   backoffLimit: 2
   template:
     spec:
-      initContainers:
-      - name: copy-repo
-        image: alpine
-        command: ["sh", "-c", "cp -a /mnt/data/repo/. /opt/repo/"]
-        resources:
-          requests:
-            memory: 512Mi
-            cpu: "200m"
-          limits:
-            memory: 512Mi
-            cpu: "200m"
-        volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
-        - name: data
-          mountPath: /mnt/data
-          readOnly: true
       containers:
       - name: sweep-runner
         image: python:3.10-slim
@@ -35,14 +18,13 @@ spec:
         - |
           set -e
 
-          # Install PyTorch with CUDA 12.1 (3090-compatible)
+          # Install PyTorch with CUDA 12.1
           pip install --no-cache-dir \
             torch --index-url https://download.pytorch.org/whl/cu121
 
-          # Install project deps
-          cd /opt/repo
+          # Install project deps from PVC repo
           pip install --no-cache-dir \
-            -r requirements.txt \
+            -r /mnt/data/repo/requirements.txt \
             accelerate>=0.26.0 \
             python-dotenv \
             scikit-learn>=1.3.0 \
@@ -50,6 +32,7 @@ spec:
             sentencepiece
 
           # Run the sweep for this index
+          cd /mnt/data/repo
           python scripts/run_europarl_sweep.py
         env:
         - name: WANDB_API_KEY
@@ -62,7 +45,7 @@ spec:
         - name: WANDB_PROJECT
           value: "pronoun-recovery"
         - name: PYTHONPATH
-          value: "/opt/repo"
+          value: "/mnt/data/repo"
         - name: SWEEP_DATA_DIR
           value: "/mnt/data/pronoun_recovery/europarl_aligned"
         - name: SWEEP_OUTPUT_DIR
@@ -79,13 +62,9 @@ spec:
             cpu: "4"
             nvidia.com/gpu: 1
         volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
         - name: data
           mountPath: /mnt/data
       volumes:
-      - name: repo
-        emptyDir: {}
       - name: data
         persistentVolumeClaim:
           claimName: europarl-sweep-data
