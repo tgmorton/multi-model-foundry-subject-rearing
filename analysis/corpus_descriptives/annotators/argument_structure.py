@@ -10,6 +10,10 @@ from typing import Any, Dict, List, Optional
 import spacy
 
 from .base import BaseSentenceAnnotator
+from .clause_structure import (
+    _is_nonroot_imperative,
+    _SERIAL_VERB_LEMMAS,
+)
 
 
 class ArgumentStructureAnnotator(BaseSentenceAnnotator):
@@ -85,11 +89,40 @@ class ArgumentStructureAnnotator(BaseSentenceAnnotator):
                     subject_idx = csubj_tok.i - sent.start
                     subject_lemma = csubj_tok.lemma_.lower()
 
-            # xcomp subject inheritance
+            # xcomp subject inheritance — walk through ADJ intermediaries
+            # and chain up through xcomp recursively (max 5 hops) to find
+            # a head with an overt subject.
             if subject_status == "null" and tok.dep_ == "xcomp":
-                head_children_deps = {c.dep_ for c in tok.head.children}
-                if head_children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
-                    subject_status = "inherited"
+                current_head = tok.head
+                for _ in range(5):
+                    if current_head.pos_ == "ADJ" and current_head.dep_ in (
+                        "acomp", "attr", "ROOT", "ccomp", "advcl", "xcomp",
+                    ):
+                        current_head = current_head.head
+                    head_children_deps = {c.dep_ for c in current_head.children}
+                    if head_children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
+                        subject_status = "inherited"
+                        break
+                    if current_head.dep_ == "xcomp":
+                        current_head = current_head.head
+                    else:
+                        break
+
+            # Non-ROOT imperative: advcl/ccomp at sentence start with
+            # no subject — e.g., "look at this we got a problem"
+            if subject_status == "null" and tok.dep_ in ("advcl", "ccomp"):
+                if _is_nonroot_imperative(tok, sent):
+                    subject_status = "imperative"
+
+            # Serial verb subject sharing: "go get it", "come see this"
+            if subject_status == "null" and tok.dep_ == "advcl":
+                if tok.head.lemma_.lower() in _SERIAL_VERB_LEMMAS:
+                    has_to = any(
+                        c.dep_ == "mark" and c.lemma_.lower() == "to"
+                        for c in tok.children
+                    )
+                    if not has_to and tok.i == tok.head.i + 1:
+                        subject_status = "inherited"
 
             # Disfluent verb reduplication
             if subject_status == "null" and tok.i > sent.start:

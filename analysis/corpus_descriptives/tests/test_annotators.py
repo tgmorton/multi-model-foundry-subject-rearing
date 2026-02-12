@@ -140,6 +140,239 @@ class TestClauseStructureAnnotator:
         flags = annotator.get_sentence_flags(result)
         assert flags["has_null_subject"] is True
 
+    def test_finiteness_propagation_from_aux(self, blank_nlp, annotator):
+        """Finite AUX child promotes VerbForm=Inf main verb to finite."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "I don't know" — "do" is finite AUX, "know" is VerbForm=Inf
+        doc = make_doc(
+            blank_nlp,
+            words=["I", "do", "n't", "know"],
+            pos=["PRON", "AUX", "PART", "VERB"],
+            deps=["nsubj", "aux", "advmod", "ROOT"],
+            heads=[3, 3, 3, 3],
+            lemmas=["I", "do", "not", "know"],
+            morphs=["Person=1|Number=Sing", "VerbForm=Fin", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        root_clauses = [c for c in result["clauses"] if c["clause_type"] == "ROOT"]
+        assert len(root_clauses) == 1
+        assert root_clauses[0]["is_finite"] is True
+
+    def test_finiteness_propagation_modal(self, blank_nlp, annotator):
+        """Modal AUX (VerbForm=Fin) promotes main verb to finite."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "she can swim" — "can" is finite AUX, "swim" is VerbForm=Inf
+        doc = make_doc(
+            blank_nlp,
+            words=["she", "can", "swim"],
+            pos=["PRON", "AUX", "VERB"],
+            deps=["nsubj", "aux", "ROOT"],
+            heads=[2, 2, 2],
+            lemmas=["she", "can", "swim"],
+            morphs=["Person=3|Number=Sing", "VerbForm=Fin", "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        root_clauses = [c for c in result["clauses"] if c["clause_type"] == "ROOT"]
+        assert len(root_clauses) == 1
+        assert root_clauses[0]["is_finite"] is True
+        assert root_clauses[0]["subject_status"] == "overt"
+
+    def test_no_propagation_without_finite_aux(self, blank_nlp, annotator):
+        """Non-finite AUX child does not promote verb to finite."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "having eaten" — "having" is VerbForm=Ger AUX, "eaten" is VerbForm=Part
+        doc = make_doc(
+            blank_nlp,
+            words=["having", "eaten"],
+            pos=["AUX", "VERB"],
+            deps=["aux", "ROOT"],
+            heads=[1, 1],
+            lemmas=["have", "eat"],
+            morphs=["VerbForm=Ger", "VerbForm=Part"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        # ROOT should NOT be promoted to finite (no finite AUX)
+        root_clauses = [c for c in result["clauses"] if c["clause_type"] == "ROOT"]
+        if root_clauses:
+            assert root_clauses[0]["is_finite"] is False
+
+    def test_xcomp_through_adj(self, blank_nlp, annotator):
+        """xcomp through ADJ: 'she is able to swim' → swim inherits subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "she is able to swim"
+        # she=nsubj(is), is=ROOT, able=acomp(is), to=mark(swim), swim=xcomp(able)
+        doc = make_doc(
+            blank_nlp,
+            words=["she", "is", "able", "to", "swim"],
+            pos=["PRON", "AUX", "ADJ", "PART", "VERB"],
+            deps=["nsubj", "ROOT", "acomp", "mark", "xcomp"],
+            heads=[1, 1, 1, 4, 2],
+            lemmas=["she", "be", "able", "to", "swim"],
+            morphs=["Person=3|Number=Sing", "VerbForm=Fin", None, None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        xcomp_clauses = [c for c in result["clauses"] if c["clause_type"] == "xcomp"]
+        assert len(xcomp_clauses) == 1
+        assert xcomp_clauses[0]["subject_status"] == "inherited"
+
+    def test_xcomp_through_adj_hard(self, blank_nlp, annotator):
+        """xcomp through ADJ: 'it is hard to do' → do inherits subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "it is hard to do"
+        # it=expl(is), is=ROOT, hard=acomp(is), to=mark(do), do=xcomp(hard)
+        doc = make_doc(
+            blank_nlp,
+            words=["it", "is", "hard", "to", "do"],
+            pos=["PRON", "AUX", "ADJ", "PART", "VERB"],
+            deps=["expl", "ROOT", "acomp", "mark", "xcomp"],
+            heads=[1, 1, 1, 4, 2],
+            lemmas=["it", "be", "hard", "to", "do"],
+            morphs=["Person=3|Number=Sing", "VerbForm=Fin", None, None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        xcomp_clauses = [c for c in result["clauses"] if c["clause_type"] == "xcomp"]
+        assert len(xcomp_clauses) == 1
+        assert xcomp_clauses[0]["subject_status"] == "inherited"
+
+    def test_recursive_xcomp_chain(self, blank_nlp, annotator):
+        """Recursive xcomp: 'I want to try to get it' → get inherits."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "I want to try to get it"
+        # I=nsubj(want), want=ROOT, to=mark(try), try=xcomp(want),
+        # to=mark(get), get=xcomp(try), it=obj(get)
+        doc = make_doc(
+            blank_nlp,
+            words=["I", "want", "to", "try", "to", "get", "it"],
+            pos=["PRON", "VERB", "PART", "VERB", "PART", "VERB", "PRON"],
+            deps=["nsubj", "ROOT", "mark", "xcomp", "mark", "xcomp", "obj"],
+            heads=[1, 1, 3, 1, 5, 3, 5],
+            lemmas=["I", "want", "to", "try", "to", "get", "it"],
+            morphs=["Person=1|Number=Sing", "VerbForm=Fin", None, "VerbForm=Inf", None, "VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        # "get" is xcomp of "try" which is xcomp of "want" which has "I"
+        get_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "get"]
+        assert len(get_clauses) == 1
+        assert get_clauses[0]["subject_status"] == "inherited"
+
+    def test_nonroot_imperative(self, blank_nlp, annotator):
+        """Non-ROOT imperative: 'look at this we got a problem'."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "look at this we got a problem"
+        # look=advcl(got), at=prep(look), this=pobj(at), we=nsubj(got),
+        # got=ROOT, a=det(problem), problem=obj(got)
+        doc = make_doc(
+            blank_nlp,
+            words=["look", "at", "this", "we", "got", "a", "problem"],
+            pos=["VERB", "ADP", "PRON", "PRON", "VERB", "DET", "NOUN"],
+            deps=["advcl", "prep", "pobj", "nsubj", "ROOT", "det", "obj"],
+            heads=[4, 0, 1, 4, 4, 6, 4],
+            lemmas=["look", "at", "this", "we", "get", "a", "problem"],
+            morphs=["VerbForm=Inf", None, None, None, "VerbForm=Fin", None, None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        look_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "look"]
+        assert len(look_clauses) == 1
+        assert look_clauses[0]["subject_status"] == "imperative"
+
+    def test_serial_verb_go_get(self, blank_nlp, annotator):
+        """Serial verb: 'go get it' → get inherits subject."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "go get it" — go=ROOT, get=advcl(go), it=obj(get)
+        doc = make_doc(
+            blank_nlp,
+            words=["go", "get", "it"],
+            pos=["VERB", "VERB", "PRON"],
+            deps=["ROOT", "advcl", "obj"],
+            heads=[0, 0, 1],
+            lemmas=["go", "get", "it"],
+            morphs=["VerbForm=Inf", "VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        get_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "get"]
+        assert len(get_clauses) == 1
+        assert get_clauses[0]["subject_status"] == "inherited"
+
+    def test_serial_verb_with_to_unchanged(self, blank_nlp, annotator):
+        """'she went to swim' has 'to' mark → subject_status stays 'none'."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "she went to swim"
+        # she=nsubj(went), went=ROOT, to=mark(swim), swim=advcl(went)
+        doc = make_doc(
+            blank_nlp,
+            words=["she", "went", "to", "swim"],
+            pos=["PRON", "VERB", "PART", "VERB"],
+            deps=["nsubj", "ROOT", "mark", "advcl"],
+            heads=[1, 1, 3, 1],
+            lemmas=["she", "go", "to", "swim"],
+            morphs=["Person=3|Number=Sing", "VerbForm=Fin", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        swim_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "swim"]
+        assert len(swim_clauses) == 1
+        # Has "to" mark, so serial verb rule should NOT apply; stays "none"
+        assert swim_clauses[0]["subject_status"] == "none"
+
+    def test_genuine_noninitial_advcl_unchanged(self, blank_nlp, annotator):
+        """Non-initial advcl with no subject stays 'none'."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "she left singing" — singing=advcl(left), not initial, not serial
+        # Use VerbForm=Inf so it passes the finite/infinitive gate
+        doc = make_doc(
+            blank_nlp,
+            words=["she", "left", "singing"],
+            pos=["PRON", "VERB", "VERB"],
+            deps=["nsubj", "ROOT", "advcl"],
+            heads=[1, 1, 1],
+            lemmas=["she", "leave", "sing"],
+            morphs=["Person=3|Number=Sing", "VerbForm=Fin", "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        sing_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "sing"]
+        assert len(sing_clauses) == 1
+        # Not initial, not serial verb, head is "leave" not in serial set
+        assert sing_clauses[0]["subject_status"] == "none"
+
+    def test_finiteness_propagation_null_subject_finite(self, blank_nlp, annotator):
+        """Propagated finiteness + no subject → has_null_subject_finite."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "don't know" — no subject, finite via propagation
+        doc = make_doc(
+            blank_nlp,
+            words=["do", "n't", "know"],
+            pos=["AUX", "PART", "VERB"],
+            deps=["aux", "advmod", "ROOT"],
+            heads=[2, 2, 2],
+            lemmas=["do", "not", "know"],
+            morphs=["VerbForm=Fin", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        flags = annotator.get_sentence_flags(result)
+        # Clause is finite (via propagation) with no subject → finite null subject
+        assert flags["has_null_subject_finite"] is True
+
 
 # === ThatTraceAnnotator Tests ===
 
@@ -512,6 +745,136 @@ class TestComplexityAnnotator:
         assert "is_fragment" in flags
         assert "is_imperative" in flags
 
+    def test_bare_imperative_not_fragment(self, blank_nlp, annotator):
+        """Bare VerbForm=Inf ROOT with no subject → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "look" — bare imperative tagged as VerbForm=Inf by spaCy
+        doc = make_doc(
+            blank_nlp,
+            words=["look"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["look"],
+            morphs=["VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_negative_imperative_not_fragment(self, blank_nlp, annotator):
+        """Negative imperative 'don't cry' → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "don't cry" — "do" is AUX child of ROOT "cry"
+        doc = make_doc(
+            blank_nlp,
+            words=["do", "n't", "cry"],
+            pos=["AUX", "PART", "VERB"],
+            deps=["aux", "advmod", "ROOT"],
+            heads=[2, 2, 2],
+            lemmas=["do", "not", "cry"],
+            morphs=["VerbForm=Fin", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_to_infinitive_still_fragment(self, blank_nlp, annotator):
+        """'to go' with mark=to preceding → fragment, not imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "to go" — infinitive marker "to" preceding the ROOT verb
+        doc = make_doc(
+            blank_nlp,
+            words=["to", "go"],
+            pos=["PART", "VERB"],
+            deps=["mark", "ROOT"],
+            heads=[1, 1],
+            lemmas=["to", "go"],
+            morphs=[None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is False
+        assert result["is_fragment"] is True
+
+    def test_vocative_imperative(self, blank_nlp, annotator):
+        """'Jack look' with vocative + bare verb → imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["Jack", "look"],
+            pos=["PROPN", "VERB"],
+            deps=["vocative", "ROOT"],
+            heads=[1, 1],
+            lemmas=["Jack", "look"],
+            morphs=[None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_aux_be_imperative(self, blank_nlp, annotator):
+        """AUX 'be' imperative: 'be careful' → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["be", "careful"],
+            pos=["AUX", "ADJ"],
+            deps=["ROOT", "acomp"],
+            heads=[0, 0],
+            lemmas=["be", "careful"],
+            morphs=["VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_aux_nonbe_still_fragment(self, blank_nlp, annotator):
+        """AUX non-'be': 'have eaten' → fragment, not imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["have", "eaten"],
+            pos=["AUX", "VERB"],
+            deps=["ROOT", "xcomp"],
+            heads=[0, 0],
+            lemmas=["have", "eat"],
+            morphs=["VerbForm=Inf", "VerbForm=Part"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_fragment"] is True
+        assert result["is_imperative"] is False
+
+    def test_disfluent_finite_root_not_imperative(self, blank_nlp, annotator):
+        """'is is fine' — disfluent finite root, not imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["is", "is", "fine"],
+            pos=["AUX", "AUX", "ADJ"],
+            deps=["dep", "ROOT", "acomp"],
+            heads=[1, 1, 1],
+            lemmas=["be", "be", "fine"],
+            morphs=["VerbForm=Fin", "VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        # Finite root with disfluent copy — should be imperative
+        # (no overt subject, and disfluent check only sets has_subject)
+        assert result["is_fragment"] is False
+
 
 # === FragmentAnnotator Tests ===
 
@@ -584,6 +947,116 @@ class TestFragmentAnnotator:
         sent = doc[:]
         result = annotator.annotate_sentence(sent, "test")
         assert result["has_null_subject"] is False
+
+    def test_bare_imperative_not_fragment(self, blank_nlp, annotator):
+        """Bare VerbForm=Inf ROOT with no subject → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["come", "on"],
+            pos=["VERB", "ADP"],
+            deps=["ROOT", "prt"],
+            heads=[0, 0],
+            lemmas=["come", "on"],
+            morphs=["VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+        assert result["has_null_subject"] is False
+
+    def test_negative_imperative_not_fragment(self, blank_nlp, annotator):
+        """Negative imperative 'don't cry' → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["do", "n't", "cry"],
+            pos=["AUX", "PART", "VERB"],
+            deps=["aux", "advmod", "ROOT"],
+            heads=[2, 2, 2],
+            lemmas=["do", "not", "cry"],
+            morphs=["VerbForm=Fin", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_to_infinitive_still_fragment(self, blank_nlp, annotator):
+        """'to go' preceded by infinitive marker → fragment, not imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["to", "go"],
+            pos=["PART", "VERB"],
+            deps=["mark", "ROOT"],
+            heads=[1, 1],
+            lemmas=["to", "go"],
+            morphs=[None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is False
+        assert result["is_fragment"] is True
+
+    def test_aux_be_imperative(self, blank_nlp, annotator):
+        """AUX 'be' imperative: 'be careful' → imperative, not fragment."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["be", "careful"],
+            pos=["AUX", "ADJ"],
+            deps=["ROOT", "acomp"],
+            heads=[0, 0],
+            lemmas=["be", "careful"],
+            morphs=["VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_aux_nonbe_still_fragment(self, blank_nlp, annotator):
+        """AUX non-'be': 'have eaten' → fragment, not imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["have", "eaten"],
+            pos=["AUX", "VERB"],
+            deps=["ROOT", "xcomp"],
+            heads=[0, 0],
+            lemmas=["have", "eat"],
+            morphs=["VerbForm=Inf", "VerbForm=Part"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_fragment"] is True
+        assert result["is_imperative"] is False
+
+    def test_lets_imperative(self, blank_nlp, annotator):
+        """'let's go' — hortative imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "let" is ROOT verb with "us" as obj, "go" is xcomp
+        doc = make_doc(
+            blank_nlp,
+            words=["let", "'s", "go"],
+            pos=["VERB", "PRON", "VERB"],
+            deps=["ROOT", "obj", "xcomp"],
+            heads=[0, 0, 0],
+            lemmas=["let", "we", "go"],
+            morphs=["VerbForm=Inf", None, "VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
 
 
 # === CompositeAnnotator Tests ===

@@ -279,6 +279,8 @@ def get_layer_schema(layer_name: str) -> pa.Schema:
             ("sentence_id", pa.string()),
             ("clauses", pa.list_(_clause_struct())),
             ("has_null_subject", pa.bool_()),
+            ("has_null_subject_finite", pa.bool_()),
+            ("has_null_subject_nonfinite", pa.bool_()),
         ]),
         "that_trace": pa.schema([
             ("sentence_id", pa.string()),

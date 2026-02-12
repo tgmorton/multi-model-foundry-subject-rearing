@@ -27,6 +27,36 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
         "complexity": "Complexity metrics dict",
     }
 
+    @staticmethod
+    def _is_bare_imperative(root: spacy.tokens.Token, sent: spacy.tokens.Span) -> bool:
+        """
+        Heuristic: detect bare-form imperatives that spaCy tags as VerbForm=Inf.
+
+        Mirrors FragmentAnnotator._is_bare_imperative.
+        """
+        # Allow AUX through only for "be" (e.g., "be careful", "be quiet")
+        if root.pos_ == "AUX" and root.lemma_.lower() == "be":
+            pass
+        elif root.pos_ != "VERB":
+            return False
+
+        children_deps = {c.dep_ for c in root.children}
+        if children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
+            return False
+
+        # Not an imperative if preceded by "to" infinitive marker
+        if root.i > sent.start:
+            prev = root.doc[root.i - 1]
+            if prev.dep_ == "mark" and prev.lemma_.lower() == "to":
+                return False
+
+        # Negative imperatives: "don't" / "do not" as AUX child
+        for child in root.children:
+            if child.dep_ == "aux" and child.lemma_.lower() == "do":
+                return True
+
+        return True
+
     def annotate_sentence(
         self,
         sent: spacy.tokens.Span,
@@ -80,11 +110,16 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
             verb_forms = root.morph.get("VerbForm")
             mood = root.morph.get("Mood")
 
-            if verb_forms and "Fin" not in verb_forms:
-                # Non-finite root - could be fragment
-                is_fragment = True
-            elif mood and "Imp" in mood:
+            if mood and "Imp" in mood:
                 is_imperative = True
+            elif verb_forms and "Fin" not in verb_forms:
+                # Non-finite root — check for bare imperative before
+                # classifying as fragment.  English imperatives use the
+                # base form, which spaCy tags as VerbForm=Inf.
+                if self._is_bare_imperative(root, sent):
+                    is_imperative = True
+                else:
+                    is_fragment = True
             elif verb_forms and "Fin" in verb_forms:
                 # Finite root without subject could be imperative
                 has_subject = any(
