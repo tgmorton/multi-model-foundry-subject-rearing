@@ -96,6 +96,7 @@ def run_training(lr: float, scale: int, alpha: float, run_idx: int) -> None:
 
     from analysis.pronoun_recovery.model.dataset import build_dataset
     from analysis.pronoun_recovery.model.evaluate import ModelEvaluator
+    from analysis.pronoun_recovery.model.sequence_labeler import PronounRecoveryModel
 
     test_dataset = build_dataset(
         data_path=TEST_DATA,
@@ -105,7 +106,8 @@ def run_training(lr: float, scale: int, alpha: float, run_idx: int) -> None:
         data_type="checkpoint",
     )
 
-    evaluator = ModelEvaluator(final_model_path, config)
+    model = PronounRecoveryModel(str(final_model_path), max_length=config.max_seq_length)
+    evaluator = ModelEvaluator(model)
     results = evaluator.evaluate(test_dataset)
 
     # Save results
