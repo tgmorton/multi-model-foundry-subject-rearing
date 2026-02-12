@@ -2835,7 +2835,7 @@
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="1-start-small-scale-up">1. Start Small, Scale Up<a class="headerlink" href="#1-start-small-scale-up" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Test with tiny config</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/test_tiny.yaml
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/testing/test_tiny.yaml
 <a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Scale to full size</span>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>sbatch<span class="w"> </span>--gres<span class="o">=</span>gpu:4<span class="w"> </span>scripts/ssrde/train.sh<span class="w"> </span>configs/production.yaml
@@ -3011,7 +3011,7 @@
 <p><strong>Same configs work everywhere. No environment-specific modifications needed.</strong></p>
 <h2 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../configs/TEMPLATE.yaml">Configuration Reference</a> - Full config options</li>
+<li><a href="../configs/templates/TEMPLATE.yaml">Configuration Reference</a> - Full config options</li>
 <li><a href="ARCHITECTURE.md">Architecture Guide</a> - Model architecture details</li>
 <li><a href="../TRAINING_ON_WILD_WEST/">Wild-West Guide</a> - Direct GPU access</li>
 <li><a href="../TRAINING_ON_SLURM/">SLURM Guide</a> - Cluster training</li>

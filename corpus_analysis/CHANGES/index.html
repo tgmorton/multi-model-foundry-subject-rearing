@@ -1574,8 +1574,8 @@
 <h3 id="parser-switch-en_core_web_lg-to-en_core_web_trf">Parser Switch: <code>en_core_web_lg</code> to <code>en_core_web_trf</code><a class="headerlink" href="#parser-switch-en_core_web_lg-to-en_core_web_trf" title="Permanent link">&para;</a></h3>
 <p><code>en_core_web_lg</code> systematically mislabels inverted subjects as <code>attr</code> or <code>npadvmod</code> in short copular questions (e.g., "is today payday?", "was that magic?", "what color is the paper?"). Comparison against <code>en_core_web_trf</code> confirmed it handles all 14 cases correctly.</p>
 <p>Changed files:
-- <code>configs/corpus_analysis_test10m.yaml</code> — <code>spacy_model: en_core_web_trf</code>
-- <code>configs/corpus_analysis_train90m.yaml</code> — <code>spacy_model: en_core_web_trf</code>
+- <code>configs/analysis/corpus/corpus_analysis_test10m.yaml</code> — <code>spacy_model: en_core_web_trf</code>
+- <code>configs/analysis/corpus/corpus_analysis_train90m.yaml</code> — <code>spacy_model: en_core_web_trf</code>
 - <code>k8s/job-annotate-test-10m.yaml</code> — CUDA base image, <code>spacy-transformers</code> dependency, GPU resource requests
 - <code>k8s/job-annotate-train-90m.yaml</code> — same</p>
 <p>The K8s jobs now use <code>nvidia/cuda:11.8.0-runtime-ubuntu22.04</code> as the base image and request <code>nvidia.com/gpu: 1</code>. The pipeline already supports GPU via <code>spacy.prefer_gpu()</code> in <code>pipeline.py</code>.</p>

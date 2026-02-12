@@ -2335,13 +2335,13 @@
 </code></pre></div>
 <h3 id="2-train-a-model">2. Train a Model<a class="headerlink" href="#2-train-a-model" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Train using available GPUs</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiment_0_baseline.yaml
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiments/experiment_0_baseline.yaml
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Train on specific GPUs</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">1</span>,2<span class="w"> </span>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiment_0_baseline.yaml
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">1</span>,2<span class="w"> </span>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiments/experiment_0_baseline.yaml
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># With GPU locking (recommended for long jobs)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>./scripts/wild_west/train.sh<span class="w"> </span>--lock-gpus<span class="w"> </span>configs/experiment_0_baseline.yaml
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>./scripts/wild_west/train.sh<span class="w"> </span>--lock-gpus<span class="w"> </span>configs/experiments/experiment_0_baseline.yaml
 </code></pre></div>
 <h2 id="gpu-monitor">GPU Monitor<a class="headerlink" href="#gpu-monitor" title="Permanent link">&para;</a></h2>
 <h3 id="basic-commands">Basic Commands<a class="headerlink" href="#basic-commands" title="Permanent link">&para;</a></h3>
@@ -2485,9 +2485,9 @@
 <h2 id="integration-with-existing-configs">Integration with Existing Configs<a class="headerlink" href="#integration-with-existing-configs" title="Permanent link">&para;</a></h2>
 <p>All Model Foundry configs work directly:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Use any config from configs/</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiment_0_baseline.yaml
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/test_mamba_tiny.yaml
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiment_1_remove_expletives.yaml
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiments/experiment_0_baseline.yaml
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/testing/test_mamba_tiny.yaml
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>./scripts/wild_west/train.sh<span class="w"> </span>configs/experiments/experiment_1_remove_expletives.yaml
 </code></pre></div></p>
 <h2 id="monitoring-training">Monitoring Training<a class="headerlink" href="#monitoring-training" title="Permanent link">&para;</a></h2>
 <h3 id="watch-logs">Watch Logs<a class="headerlink" href="#watch-logs" title="Permanent link">&para;</a></h3>
@@ -2514,7 +2514,7 @@ Then visit https://wandb.ai/your-username/your-project</p>
 </code></pre></div>
 <h3 id="multiple-experiments">Multiple Experiments<a class="headerlink" href="#multiple-experiments" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Sequential</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">for</span><span class="w"> </span>config<span class="w"> </span><span class="k">in</span><span class="w"> </span>configs/experiment_*.yaml<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">for</span><span class="w"> </span>config<span class="w"> </span><span class="k">in</span><span class="w"> </span>configs/experiments/experiment_*.yaml<span class="p">;</span><span class="w"> </span><span class="k">do</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span>./scripts/wild_west/train.sh<span class="w"> </span>--lock-gpus<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$config</span><span class="s2">&quot;</span>
 <a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="k">done</span>
 <a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
