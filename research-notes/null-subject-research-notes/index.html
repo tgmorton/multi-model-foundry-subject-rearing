@@ -1,0 +1,2534 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/research-notes/null-subject-research-notes/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Null Subject Parameter Research Notes - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#null-subject-parameter-research-notes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Null Subject Parameter Research Notes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../checkpoint_scheduling/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../preprocessing/USER_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#historical-timeline-of-evidence-for-learning-the-null-subject-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historical Timeline of Evidence for Learning the Null Subject Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Historical Timeline of Evidence for Learning the Null Subject Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction-the-logical-problem-of-null-subjects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction: The Logical Problem of Null Subjects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-the-classical-parametric-view-abstract-syntactic-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. The Classical Parametric View: Abstract Syntactic Triggers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. The Classical Parametric View: Abstract Syntactic Triggers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-a-cluster-of-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1. A Cluster of Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-early-typological-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2. Early Typological Challenges
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-the-initial-state-hypothesis-learning-to-be-a-non-null-subject-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The Initial State Hypothesis: Learning to be a Non-Null-Subject Language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. The Initial State Hypothesis: Learning to be a Non-Null-Subject Language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-the-agpro-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1. The AG/PRO Parameter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-proposed-triggers-for-parameter-resetting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2. Proposed Triggers for Parameter Resetting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-the-morphological-turn-the-role-of-verbal-paradigms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The Morphological Turn: The Role of Verbal Paradigms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. The Morphological Turn: The Role of Verbal Paradigms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-the-morphological-uniformity-principle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1. The Morphological Uniformity Principle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-mis-setting-and-reanalysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2. Mis-setting and Reanalysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-alternative-perspectives-beyond-a-single-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Alternative Perspectives: Beyond a Single Parameter
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Alternative Perspectives: Beyond a Single Parameter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-the-influence-of-performance-and-pragmatics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1. The Influence of Performance and Pragmatics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-discourse-oriented-grammars-and-null-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2. Discourse-Oriented Grammars and Null Objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-the-optional-infinitive-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3. The Optional Infinitive Stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-modern-theories-features-economy-and-statistical-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Modern Theories: Features, Economy, and Statistical Learning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Modern Theories: Features, Economy, and Statistical Learning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-the-inverse-approach-and-morphological-impoverishment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. The Inverse Approach and Morphological Impoverishment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-a-variational-model-of-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2. A Variational Model of Learning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-synthesis-and-summary-of-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Synthesis and Summary of Evidence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-table-proposed-evidence-for-setting-the-null-subject-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary Table: Proposed Evidence for Setting the Null Subject Parameter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#early-theoretical-developments-1970s-1982" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Early Theoretical Developments (1970s-1982)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Early Theoretical Developments (1970s-1982)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-rizzi-analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-Rizzi Analyses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nominative-island-constraint-nic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nominative Island Constraint (NIC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty-category-principle-ecp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empty Category Principle (ECP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#that-trace-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        That-Trace Constraint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-classic-chomsky-rizzi-cluster-1981-1982" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Classic Chomsky-Rizzi Cluster (1981-1982)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Classic Chomsky-Rizzi Cluster (1981-1982)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gilligans-cross-linguistic-test-1989" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gilligan's Cross-Linguistic Test (1989)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agreement-based-theories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agreement-Based Theories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Agreement-Based Theories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniform-inflection-hypothesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uniform Inflection Hypothesis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#association-with-agreement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Association with Agreement
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modern-typology-post-2000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modern Typology (Post-2000)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Modern Typology (Post-2000)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#four-types-of-null-subject-languages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Four Types of Null Subject Languages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roberts-2021-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roberts (2021) Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#borer-chomsky-conjecture-bcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Borer-Chomsky Conjecture (BCC)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Borer-Chomsky Conjecture (BCC)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bcc-compatible-learning-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BCC-Compatible Learning Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BCC-Compatible Learning Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maximize-minimal-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maximize Minimal Means
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#learning-path-none-all-some" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning Path: NONE → ALL → SOME
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#language-acquisition-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Language Acquisition Studies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Language Acquisition Studies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hyams-1986-first-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hyams (1986) - First Proposal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyams-1991-revised-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hyams (1991) - Revised Proposal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wang-others-1992-empirical-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wang &amp; Others (1992) - Empirical Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diary-drop-hypothesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diary Drop Hypothesis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diary Drop Hypothesis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternative-explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternative Explanation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-references-by-topic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key References by Topic
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key References by Topic">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#theoretical-foundations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theoretical Foundations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acquisition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acquisition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-linguistic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Linguistic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registertruncation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register/Truncation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-roberts-response-to-gilligan-and-the-significance-of-gilligans-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix: Roberts' Response to Gilligan and the Significance of Gilligan's Findings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix: Roberts&#39; Response to Gilligan and the Significance of Gilligan&#39;s Findings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#work-attempting-to-account-for-gilligans-findings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work Attempting to Account for Gilligan's Findings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#does-it-matter-what-gilligan-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does It Matter What Gilligan Found?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="null-subject-parameter-research-notes">Null Subject Parameter Research Notes<a class="headerlink" href="#null-subject-parameter-research-notes" title="Permanent link">&para;</a></h1>
+<p>Quick reference guide for theoretical development and key findings in null subject research.</p>
+<hr />
+<h2 id="historical-timeline-of-evidence-for-learning-the-null-subject-parameter">Historical Timeline of Evidence for Learning the Null Subject Parameter<a class="headerlink" href="#historical-timeline-of-evidence-for-learning-the-null-subject-parameter" title="Permanent link">&para;</a></h2>
+<h3 id="introduction-the-logical-problem-of-null-subjects">Introduction: The Logical Problem of Null Subjects<a class="headerlink" href="#introduction-the-logical-problem-of-null-subjects" title="Permanent link">&para;</a></h3>
+<p>The fundamental challenge of language acquisition, what Noam Chomsky (1980) famously termed "Plato's Problem," is to explain how children acquire a rich and complex grammatical system on the basis of limited and often imperfect input. One of the most-studied instances of this problem concerns the Null Subject Parameter, a principle that governs whether the subject of a tensed sentence must be overtly expressed. Languages like English are classified as non-null-subject languages (NNSLs), where sentences like *Smokes are ungrammatical. In contrast, languages like Italian are consistent-null-subject languages (CNSLs), where the equivalent sentence, Fuma, is perfectly acceptable because the subject's identity is recoverable from the verb's inflection (Bertolino, 2024). For a child, the crucial question is: what evidence in their linguistic environment allows them to correctly set this parameter for their native tongue?</p>
+<p>This document provides a historical overview of the major theories proposed to answer this question, tracing the evolution of thought from abstract syntactic triggers to more concrete morphological and statistical cues present in the child's input.</p>
+<h3 id="1-the-classical-parametric-view-abstract-syntactic-triggers">1. The Classical Parametric View: Abstract Syntactic Triggers<a class="headerlink" href="#1-the-classical-parametric-view-abstract-syntactic-triggers" title="Permanent link">&para;</a></h3>
+<p>The Null Subject Parameter was initially formulated within the framework of Government-Binding theory and was seen as a powerful solution to the logical problem of acquisition. This classical view held that the grammars of human languages vary along a finite set of parameters. By setting a single parameter, the child could gain implicit knowledge of a wide array of grammatical properties, thus dramatically reducing the learning burden. The null subject property was a flagship example of this approach, believed to unlock a cascade of related syntactic behaviors.</p>
+<h4 id="11-a-cluster-of-properties">1.1. A Cluster of Properties<a class="headerlink" href="#11-a-cluster-of-properties" title="Permanent link">&para;</a></h4>
+<p>In their seminal work, Chomsky (1981) and Rizzi (1982) proposed that the ability to drop a subject was not an isolated phenomenon but was linked to a "cluster of grammatical properties." According to this view, a child acquiring a null-subject language like Italian would not necessarily need to hear a subjectless sentence to set the parameter. Instead, the trigger could be evidence from a related syntactic phenomenon, such as the absence of complementizer-trace effects—a subtle grammatical constraint that is not readily accessible in typical child-directed speech (Bertolino, 2024). The power of this model was its ability to explain how a child could acquire complex, abstract knowledge from seemingly unrelated and sparse evidence.</p>
+<h4 id="12-early-typological-challenges">1.2. Early Typological Challenges<a class="headerlink" href="#12-early-typological-challenges" title="Permanent link">&para;</a></h4>
+<p>The elegance of the "cluster" theory, however, soon faced empirical challenges from cross-linguistic research. Gilligan (1989) tested the proposed cluster against a sample of 100 languages. His findings were stark: the grammatical properties proposed by Chomsky and Rizzi did not consistently co-occur. Instead, Gilligan found only a few one-way statistical associations, undermining the core claim of a unified, bidirectional cluster of properties (Bertolino, 2024). Gilligan's findings dismantled the elegant "cluster" hypothesis, demonstrating that no single syntactic switch could account for the cross-linguistic data. This forced a fundamental pivot in the research program: if the evidence wasn't a cluster of adult syntactic properties, perhaps the answer lay in the child's default grammatical state.</p>
+<h3 id="2-the-initial-state-hypothesis-learning-to-be-a-non-null-subject-language">2. The Initial State Hypothesis: Learning to be a Non-Null-Subject Language<a class="headerlink" href="#2-the-initial-state-hypothesis-learning-to-be-a-non-null-subject-language" title="Permanent link">&para;</a></h3>
+<p>In a major theoretical pivot, Nina Hyams (1986, 1989) proposed to reverse the learning problem. Rather than asking what evidence leads a child to a null-subject grammar, she posited that the child's initial, default grammatical state is a null-subject grammar. This represented the 'initial' setting for the parameter. The central question of acquisition thus became: what "triggering data" forces a child learning a non-null-subject language (NNSL) like English to revise this initial grammar and learn that subjects are obligatory?</p>
+<h4 id="21-the-agpro-parameter">2.1. The AG/PRO Parameter<a class="headerlink" href="#21-the-agpro-parameter" title="Permanent link">&para;</a></h4>
+<p>Hyams's (1989) specific proposal was dubbed the "AG/PRO parameter." Her insight was to connect the child's null subject to a known null element in adult grammar—PRO—thereby avoiding the need to posit a new or unique mechanism for child language. In this model, the child's early grammar treats the Agreement (AG) features within the inflectional head (INFL) as if they were the pronominal element PRO. In grammatical theory, PRO is the null subject found in tenseless clauses (e.g., I want [PRO to go]). By equating AG with PRO in the initial grammar, the theory provided a mechanism that licensed null subjects in tensed clauses for all children, regardless of the target language.</p>
+<h4 id="22-proposed-triggers-for-parameter-resetting">2.2. Proposed Triggers for Parameter Resetting<a class="headerlink" href="#22-proposed-triggers-for-parameter-resetting" title="Permanent link">&para;</a></h4>
+<p>Under this "initial state" hypothesis, the learning task for a child acquiring an NNSL is to find positive evidence in the input that is inconsistent with a null-subject grammar. Hyams (1989) proposed two primary types of evidence that could act as triggers for resetting the AG/PRO parameter:</p>
+<ul>
+<li>
+<p><strong>Lexical Expletives</strong>: The presence of semantically empty or "expletive" subjects, such as <em>it</em> and <em>there</em> in sentences like <em>it is raining</em> or <em>there is a book on the table</em>. Since these words have no meaning but are required to fill the subject position, their persistent use in the input signals to the child that the subject position in their language must be phonologically realized, even when there is no semantic content to express.</p>
+</li>
+<li>
+<p><strong>Unstressed Referential Pronouns</strong>: Once a child learns that emphasis or contrast in their language is marked by stress (e.g., "HE did it, not her"), the continued presence of unstressed pronouns (<em>he</em>, <em>she</em>, <em>they</em>) in the input serves as crucial evidence. The child can deduce that these pronouns are not being used for pragmatic purposes (emphasis) but are present because they are a grammatical requirement.</p>
+</li>
+</ul>
+<p>The identification of these specific lexical items as potential triggers represented a move toward more concrete evidence, a trend that would be further refined in the subsequent focus on morphology.</p>
+<h3 id="3-the-morphological-turn-the-role-of-verbal-paradigms">3. The Morphological Turn: The Role of Verbal Paradigms<a class="headerlink" href="#3-the-morphological-turn-the-role-of-verbal-paradigms" title="Permanent link">&para;</a></h3>
+<p>Subsequent research shifted the search for a trigger toward the morphological system of the language itself. This was a strategic move, as it grounded the abstract parameter in the concrete and observable features of verbal inflections—the very data most readily available to the child. The central idea was that the structure of a language's verb paradigm could directly license or prohibit null subjects.</p>
+<h4 id="31-the-morphological-uniformity-principle">3.1. The Morphological Uniformity Principle<a class="headerlink" href="#31-the-morphological-uniformity-principle" title="Permanent link">&para;</a></h4>
+<p>Jaeggli and Safir (1989) formulated this idea as the Morphological Uniformity Principle. Their proposal was that null subjects are licensed only in languages that have uniformly inflected or uniformly uninflected verbal paradigms. Uniformly inflected systems, like Italian, have distinct endings for all or nearly all person/number combinations, while uniformly uninflected systems, like Chinese, have a single verb form across all persons and numbers. The theoretical insight is that only morphologically 'unambiguous' systems—those that either always or never provide person/number information in the verb—can reliably identify a null subject. According to this principle, it is the 'mixed' systems, like English—which has one unique inflection (-s) but is otherwise uninflected in the present tense—that do not license null subjects (Duguine, 2017; Hyams 1991).</p>
+<h4 id="32-mis-setting-and-reanalysis">3.2. Mis-setting and Reanalysis<a class="headerlink" href="#32-mis-setting-and-reanalysis" title="Permanent link">&para;</a></h4>
+<p>Hyams (1991) reanalyzed early subject omission through the lens of the Morphological Uniformity Principle. She argued that children acquiring English, a non-uniform system, initially misanalyze its verbal paradigm as being uniform, thereby incorrectly licensing null subjects. On this account, the child is not resetting a parameter based on expletives, but rather is reanalyzing the morphological system of the target language. The crucial evidence for this reanalysis—and thus for abandoning null subjects—is the child's eventual acquisition of the full, non-uniform agreement paradigm (e.g., mastering the contrast between <em>I talk</em> and <em>he talks</em>). This realization forces the child to conclude that English has a "mixed" system and therefore requires overt subjects (Bertolino, 2024).</p>
+<p>While grounding the parameter in morphology was a significant advance, the Morphological Uniformity Principle still struggled to explain the gradient nature of subject omission and its apparent links to performance and discourse. This led researchers to question a core assumption: was a single, purely syntactic parameter the right tool for the job?</p>
+<h3 id="4-alternative-perspectives-beyond-a-single-parameter">4. Alternative Perspectives: Beyond a Single Parameter<a class="headerlink" href="#4-alternative-perspectives-beyond-a-single-parameter" title="Permanent link">&para;</a></h3>
+<p>As research progressed, a series of alternative theories emerged that challenged the simple parameter-setting narrative. These approaches collectively argued that subject omission was not a monolithic phenomenon governed by a single switch in the syntactic component, but rather an emergent property arising from the interface of grammar with performance systems, discourse-pragmatic competence, and the development of other grammatical modules like Tense.</p>
+<h4 id="41-the-influence-of-performance-and-pragmatics">4.1. The Influence of Performance and Pragmatics<a class="headerlink" href="#41-the-influence-of-performance-and-pragmatics" title="Permanent link">&para;</a></h4>
+<p>Several lines of research suggested that subject omission is not a purely grammatical phenomenon, but is influenced by performance factors and the child's sensitivity to the statistical patterns of the input.</p>
+<ul>
+<li>
+<p><strong>Input Frequency</strong>: Valian (1991) made the critical observation that children are sensitive to the statistical properties of adult speech from a very early age. Her research showed that English-speaking children drop subjects at a much lower rate (around 30%) than Italian-speaking children (around 70%). This suggests that rather than having a mis-set grammatical parameter, children acquiring English are approximating the low frequency of null subjects in the adult input they hear (Duguine, 2017).</p>
+</li>
+<li>
+<p><strong>Pragmatic Deficits</strong>: Other work has suggested that even in consistent null-subject languages, children's use of null subjects is not always adult-like. Shin and Cairns (2012) argued that the overuse of null subjects by Spanish-speaking children in certain contexts is not a grammatical error but a pragmatic one. Specifically, it stems from the child's difficulty in considering their listener's point of view in "switch-reference" scenarios, where an overt pronoun would be needed to avoid ambiguity (e.g., in a story about John and Bill, after 'John saw a dog,' using a null subject in the next sentence, '___ patted it,' is ambiguous; an overt pronoun 'He patted it' would be clearer if the speaker intended to switch the reference to Bill). This places the phenomenon in the domain of developing discourse competence rather than core syntax.</p>
+</li>
+</ul>
+<h4 id="42-discourse-oriented-grammars-and-null-objects">4.2. Discourse-Oriented Grammars and Null Objects<a class="headerlink" href="#42-discourse-oriented-grammars-and-null-objects" title="Permanent link">&para;</a></h4>
+<p>Another influential proposal, by Wang et al. (1992), was that children's early grammar is fundamentally "discourse-oriented," much like adult Chinese. In such languages, null arguments are licensed through a mechanism of topic-drop, where a salient topic in the discourse can be omitted. This hypothesis made a critical prediction: if children's grammars are truly discourse-oriented, they should produce not only null subjects but also null objects, as both can be discourse topics. Their cross-linguistic study revealed a stark contrast: Chinese-speaking children produced a high rate of null objects (22.5%), whereas English-speaking children produced almost none (3.75%). This finding suggested that the mechanism licensing null arguments in early English was different from the one in early Chinese, challenging the idea that all children start with the same discourse-oriented grammar.</p>
+<h4 id="43-the-optional-infinitive-stage">4.3. The Optional Infinitive Stage<a class="headerlink" href="#43-the-optional-infinitive-stage" title="Permanent link">&para;</a></h4>
+<p>A further challenge to the parameter-setting model came from the observation that children's null subjects often appear with non-finite verbs, a period known as the Optional Infinitive (OI) stage. Bromberg and Wexler (1995) argued that null subjects co-occurring with non-finite verbs (e.g., "Baby draw picture") are actually instances of PRO, the same null subject found in adult infinitival clauses. If this is correct, then these subjectless sentences are not evidence of a mis-set Null Subject Parameter. Instead, the phenomenon is tied to the child's underspecified knowledge of Tense, which allows them to optionally use non-finite verb forms where finite forms are required in the adult grammar (Bertolino, 2024). This reframed much of the key data as being about the acquisition of Tense, not subjects.</p>
+<p>These alternative perspectives paved the way for more integrated, modern theories that combine feature-based syntax with more sophisticated learning models.</p>
+<h3 id="5-modern-theories-features-economy-and-statistical-learning">5. Modern Theories: Features, Economy, and Statistical Learning<a class="headerlink" href="#5-modern-theories-features-economy-and-statistical-learning" title="Permanent link">&para;</a></h3>
+<p>Contemporary approaches have moved beyond a single, monolithic parameter, favoring more nuanced models that define parameters in terms of abstract grammatical features and incorporate principles of learning economy and the statistical analysis of linguistic input. These models aim to explain not just whether children drop subjects, but also why they do so at different rates across languages and why the behavior declines gradually over time.</p>
+<h4 id="51-the-inverse-approach-and-morphological-impoverishment">5.1. The Inverse Approach and Morphological Impoverishment<a class="headerlink" href="#51-the-inverse-approach-and-morphological-impoverishment" title="Permanent link">&para;</a></h4>
+<p>The "inverse approach," described by Duguine (2017), reverses the traditional assumption about the default state of grammar. It postulates that pro-drop is the default grammatical setting and that the child's task is to learn the specific conditions that block it. On this view, learning to speak a non-pro-drop language like English is a process of learning a restriction. The proposed evidence for this learning process lies in the morphology of the verbal paradigm. The child must come to realize that syncretisms—cases where different person/number combinations have identical verb forms (e.g., in the English present tense, the form <em>talk</em> is used for I, you, we, and they)—are not accidental. Instead, they result from systematic morphological "impoverishment" rules that neutralize certain features. It is these very impoverishment rules, the theory holds, that block the licensing of a null subject (pro).</p>
+<h4 id="52-a-variational-model-of-learning">5.2. A Variational Model of Learning<a class="headerlink" href="#52-a-variational-model-of-learning" title="Permanent link">&para;</a></h4>
+<p>A powerful quantitative model of learning was proposed by Yang (2002, 2004) and applied to the acquisition of tense by Legate and Yang (2007). In this variational model, children do not entertain a single grammar at a time but rather multiple grammars simultaneously, each with a different probability or "weight." As the child processes linguistic input, they adjust the weights of these grammars based on how well each one analyzes the incoming sentences. This model naturally accounts for the gradual decline of null subjects and Root Infinitives: as the child is exposed to more data, the adult-like grammar gradually outcompetes the non-adult grammars.</p>
+<p>The crucial evidence in this model is the statistical frequency of unambiguous morphological cues in child-directed speech. For the acquisition of Tense (and by extension, the decline of null subjects associated with non-finite verbs), the key is the prevalence of forms that provide clear evidence for a [+Tense] grammar through either primary (e.g., past tense -ed) or secondary (e.g., agreement on is/am/are) exponence. This approach moves beyond a simple, informal notion of morphological "richness" to a precise, quantitative analysis of which specific forms in the input provide positive, unambiguous evidence for the target grammar versus those that are ambiguous or even misleading.</p>
+<h3 id="6-synthesis-and-summary-of-evidence">6. Synthesis and Summary of Evidence<a class="headerlink" href="#6-synthesis-and-summary-of-evidence" title="Permanent link">&para;</a></h3>
+<p>The half-century of research into the Null Subject Parameter is a case study in the maturation of acquisition theory itself, marked by a clear trajectory from abstract deduction toward empirically-grounded, probabilistic modeling. The search for evidence began with abstract, indirect syntactic properties, which proved typologically unstable. This led to a focus on the child's initial state and the specific lexical items that could trigger a revision. The subsequent morphological turn grounded the parameter in the concrete structure of verbal paradigms, a significant advance. Ultimately, contemporary theories have embraced more dynamic and powerful models, integrating abstract syntactic features with principles of learning economy and a sophisticated statistical analysis of the input. The intellectual narrative is one of increasing explanatory power, moving from the search for a single, categorical "trigger" to understanding parameter setting as a process of weighing concrete, observable, and statistically-analyzed cues.</p>
+<h3 id="summary-table-proposed-evidence-for-setting-the-null-subject-parameter">Summary Table: Proposed Evidence for Setting the Null Subject Parameter<a class="headerlink" href="#summary-table-proposed-evidence-for-setting-the-null-subject-parameter" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type of Evidence</th>
+<th>Description of Evidence</th>
+<th>Key Proponents (Source)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Abstract Syntactic Properties</td>
+<td>The presence or absence of a cluster of related grammatical phenomena, such as the lack of complementizer-trace effects, which are not directly present in the input.</td>
+<td>Chomsky (1981), Rizzi (1982)</td>
+</tr>
+<tr>
+<td>Specific Lexical Items</td>
+<td>The presence of semantically null expletive pronouns (it, there) and unstressed referential pronouns in the input, signaling that the subject position must be filled.</td>
+<td>Hyams (1989)</td>
+</tr>
+<tr>
+<td>Verbal Paradigm Structure</td>
+<td>The overall structure of the verbal inflectional system. Null subjects are licensed in paradigms that are either uniformly inflected or uniformly uninflected.</td>
+<td>Jaeggli &amp; Safir (1989), Hyams (1991)</td>
+</tr>
+<tr>
+<td>Input Frequency &amp; Pragmatics</td>
+<td>The statistical frequency of overt subjects in adult speech, and the child's developing ability to manage discourse-pragmatic factors like switch-reference.</td>
+<td>Valian (1991), Shin &amp; Cairns (2012)</td>
+</tr>
+<tr>
+<td>Null Object Production</td>
+<td>The presence or absence of null objects in child speech. Their presence suggests a discourse-based (topic-drop) grammar rather than a standard pro-drop grammar.</td>
+<td>Wang et al. (1992)</td>
+</tr>
+<tr>
+<td>Verb Finiteness</td>
+<td>The correlation between null subjects and non-finite verbs, suggesting the issue is rooted in an "Optional Infinitive" stage related to Tense, not the Null Subject Parameter.</td>
+<td>Bromberg &amp; Wexler (1995)</td>
+</tr>
+<tr>
+<td>Morphological Syncretism</td>
+<td>The presence of systematic, non-accidental syncretisms in the verbal paradigm, which indicates the operation of "impoverishment" rules that block null subjects.</td>
+<td>Duguine (2017)</td>
+</tr>
+<tr>
+<td>Statistical Frequency of Cues</td>
+<td>The statistical prevalence of unambiguous morphological forms (primary or secondary exponence of Tense) in the input, which allows a [+Tense] grammar to outcompete a [-Tense] grammar.</td>
+<td>Legate &amp; Yang (2007), Yang (2002)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="early-theoretical-developments-1970s-1982">Early Theoretical Developments (1970s-1982)<a class="headerlink" href="#early-theoretical-developments-1970s-1982" title="Permanent link">&para;</a></h2>
+<h3 id="pre-rizzi-analyses">Pre-Rizzi Analyses<a class="headerlink" href="#pre-rizzi-analyses" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Early work: Bresnan (1972), Perlmutter (1968), Chomsky &amp; Lasnik (1977), Kayne (1980), Pesetsky (1982)</li>
+</ul>
+<h3 id="nominative-island-constraint-nic">Nominative Island Constraint (NIC)<a class="headerlink" href="#nominative-island-constraint-nic" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Chomsky (1980a)</strong>: NIC as candidate account for Null Subject Parameter</li>
+<li>Developed by Kayne (1980), Pesetsky (1979)</li>
+<li>Originally a binding constraint for anaphors</li>
+<li>Later deemed spurious and factored out differently</li>
+</ul>
+<h3 id="empty-category-principle-ecp">Empty Category Principle (ECP)<a class="headerlink" href="#empty-category-principle-ecp" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Chomsky (1981)</strong>: Constrains occurrence of empty categories</li>
+<li><strong>Rule</strong>: "e must be properly governed"</li>
+<li><strong>English application</strong>:</li>
+<li>Subject NP generation is optional in base rules</li>
+<li>Subject position in tensed sentences is NOT properly governed</li>
+<li>No lexical/coindexed category governs the subject</li>
+<li>Rules out null subjects via ECP</li>
+</ul>
+<h3 id="that-trace-constraint">That-Trace Constraint<a class="headerlink" href="#that-trace-constraint" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Example: <code>[Whoi [S' [Comp ei that ] [ ei will come ]]]</code></li>
+<li>Trace in Comp doesn't govern trace in subject position</li>
+<li>C-command requirement not fulfilled due to "that"</li>
+<li><strong>Taraldsen &amp; Chomsky</strong>: Okay in Italian because verbal inflection properties allow governing the subject</li>
+</ul>
+<hr />
+<h2 id="the-classic-chomsky-rizzi-cluster-1981-1982">The Classic Chomsky-Rizzi Cluster (1981-1982)<a class="headerlink" href="#the-classic-chomsky-rizzi-cluster-1981-1982" title="Permanent link">&para;</a></h2>
+<p><strong>Rizzi (1982, p. 117)</strong>: If a language has null subjects, it also carries these properties:
+1. Possibility of silent, referential, definite subject in finite clauses
+2. Free subject inversion
+3. Absence of complementizer-trace effects
+4. Rich agreement inflection on finite verbs</p>
+<p><em>(Chomsky, 1981, p. 240ff; Rizzi, 1982, p. 117)</em></p>
+<h3 id="gilligans-cross-linguistic-test-1989">Gilligan's Cross-Linguistic Test (1989)<a class="headerlink" href="#gilligans-cross-linguistic-test-1989" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Tested across 100 languages</li>
+<li><strong>Only found support for</strong>:</li>
+<li>Free inversion → expletive null subjects</li>
+<li>Free inversion → complementizer-trace violations (statistical)</li>
+<li>Referential null subjects → expletive null subjects</li>
+<li>
+<p>Complementizer-trace violation → expletive null subjects</p>
+</li>
+<li>
+<p><strong>Did NOT find support for</strong>:</p>
+</li>
+<li>Null subjects ←→ rich agreement</li>
+<li>Null subjects ←→ free inversion</li>
+<li>Null subjects ←→ complementizer-trace violations</li>
+<li>Rich agreement ←→ free inversion</li>
+<li>Rich agreement ←→ complementizer-trace violations</li>
+<li>Free inversion ←→ complementizer-trace violations</li>
+</ul>
+<hr />
+<h2 id="agreement-based-theories">Agreement-Based Theories<a class="headerlink" href="#agreement-based-theories" title="Permanent link">&para;</a></h2>
+<h3 id="uniform-inflection-hypothesis">Uniform Inflection Hypothesis<a class="headerlink" href="#uniform-inflection-hypothesis" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Jaeggli &amp; Safir (1989)</strong>: Languages with uniform inflectional paradigms license null subjects</li>
+<li>Uniform = either ALL derived forms OR ALL underived forms</li>
+<li><strong>Problem</strong>: Not supported by Finnish or Kriyol (Bertolino, 2024)</li>
+</ul>
+<h3 id="association-with-agreement">Association with Agreement<a class="headerlink" href="#association-with-agreement" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Long-assumed connection: Chomsky (1981, 1986), Rizzi (1982, 1986)</li>
+<li>This parameter-like view incompatible with Minimalism (Chomsky, 2005)</li>
+</ul>
+<hr />
+<h2 id="modern-typology-post-2000">Modern Typology (Post-2000)<a class="headerlink" href="#modern-typology-post-2000" title="Permanent link">&para;</a></h2>
+<h3 id="four-types-of-null-subject-languages">Four Types of Null Subject Languages<a class="headerlink" href="#four-types-of-null-subject-languages" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Consistent NSL (CNSL)</strong> - Italian</li>
+<li>
+<p>Permit null subjects under unconstrained conditions</p>
+</li>
+<li>
+<p><strong>Non-Null-Subject Languages (NNSL)</strong> - English</p>
+</li>
+<li>
+<p>No null subjects permitted</p>
+</li>
+<li>
+<p><strong>Partial NSL (PNSL)</strong> - Finnish</p>
+</li>
+<li>Definite null subjects in confined environments</li>
+<li>3sg definite null subjects generally disallowed in main clauses</li>
+<li>Allowed when controlled by antecedent in higher clause</li>
+<li>Disallowed when referent is physically present</li>
+<li>
+<p>Permit generic null subjects (elicit in CNSL)</p>
+</li>
+<li>
+<p><strong>Radical NSL (RNSL)</strong> - Chinese, Korean, Thai</p>
+</li>
+<li>Lack agreement</li>
+<li>Drop any argument (subject OR object)</li>
+<li>Fairly unrestricted circumstances</li>
+</ol>
+<h3 id="roberts-2021-analysis">Roberts (2021) Analysis<a class="headerlink" href="#roberts-2021-analysis" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Contests Gilligan's analysis</li>
+<li>Only splits languages as NSL vs. NNSL</li>
+<li>Only CNSL conform to Chomsky-Rizzi cluster</li>
+<li>Uses incorporation-based minimalist analysis</li>
+</ul>
+<hr />
+<h2 id="borer-chomsky-conjecture-bcc">Borer-Chomsky Conjecture (BCC)<a class="headerlink" href="#borer-chomsky-conjecture-bcc" title="Permanent link">&para;</a></h2>
+<p><strong>Core claim</strong>: Presence/absence of D(efiniteness)-feature in different heads + EPP account for null subject distributions</p>
+<p><strong>Key principle</strong>: All parametric variation attributable to differences in features of particular lexical items (especially functional heads)</p>
+<h3 id="bcc-compatible-learning-models">BCC-Compatible Learning Models<a class="headerlink" href="#bcc-compatible-learning-models" title="Permanent link">&para;</a></h3>
+<p><strong>Biberauer (2017, 2018); Biberauer &amp; Roberts (2016)</strong></p>
+<h4 id="maximize-minimal-means">Maximize Minimal Means<a class="headerlink" href="#maximize-minimal-means" title="Permanent link">&para;</a></h4>
+<ol>
+<li><strong>Feature Economy (FE)</strong>: Postulate as few features as possible</li>
+<li><strong>Input Generalization (IG)</strong>: Maximize use of postulated features</li>
+</ol>
+<h4 id="learning-path-none-all-some">Learning Path: NONE → ALL → SOME<a class="headerlink" href="#learning-path-none-all-some" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>NONE</strong>: No phi-features assumed (yields RNSL grammar, all arguments can drop)</li>
+<li><strong>ALL</strong>: Phi-features detected, generalized to all heads (polysynthetic/pronominal argument languages like Basque)</li>
+<li><strong>SOME</strong>: Child detects head doesn't contain morphological exponent → restricts to some heads only</li>
+</ul>
+<p><strong>Key insight</strong>: Child is conservative learner, only postulates formal features (FFs) when encountering "departures from Saussurean arbitrariness" (i.e., breaks in one-to-one form-meaning mapping)</p>
+<p><strong>Does not violate Subset Principle</strong> (Berwick, 1985; Wexler &amp; Manzini, 1987) because retreat from larger to smaller grammar is based on positive evidence</p>
+<hr />
+<h2 id="language-acquisition-studies">Language Acquisition Studies<a class="headerlink" href="#language-acquisition-studies" title="Permanent link">&para;</a></h2>
+<h3 id="hyams-1986-first-proposal">Hyams (1986) - First Proposal<a class="headerlink" href="#hyams-1986-first-proposal" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Early English null subjects = default "yes" on null subject parameter</li>
+<li>Reset by positive evidence:</li>
+<li>Expletives (only in NNSL)</li>
+<li>Definite subject pronouns in infelicitous contexts (violates "avoid pronoun principle")</li>
+</ul>
+<p><strong>Problem (Valian, 1991)</strong>:
+- English children DO produce expletives while still dropping subjects
+- English children DON'T produce null subjects in subordinate clauses or after wh-elements
+- Italian children DO produce null subjects in those contexts (Guasti, 1996)</p>
+<h3 id="hyams-1991-revised-proposal">Hyams (1991) - Revised Proposal<a class="headerlink" href="#hyams-1991-revised-proposal" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Based on Jaeggli &amp; Safir's uniform morphology</li>
+<li>Children of limited verbal morphology start with Chinese-like grammar</li>
+<li>Children of rich verbal morphology start with Italian-like grammar</li>
+<li>Once English children realize system is nonuniform, they stop producing null subjects</li>
+</ul>
+<p><strong>Problem</strong>: Should predict English children produce null objects (like Mandarin) → they don't</p>
+<h3 id="wang-others-1992-empirical-test">Wang &amp; Others (1992) - Empirical Test<a class="headerlink" href="#wang-others-1992-empirical-test" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Chinese-speaking children</strong>: Produce both null subjects AND null objects</li>
+<li><strong>English-speaking children</strong>: Produce null subjects ONLY (not objects)</li>
+</ul>
+<p><strong>Conclusion (Bertolino, 2024)</strong>: Early null-subject stage unlikely due to parameter mis-setting</p>
+<hr />
+<h2 id="diary-drop-hypothesis">Diary Drop Hypothesis<a class="headerlink" href="#diary-drop-hypothesis" title="Permanent link">&para;</a></h2>
+<h3 id="alternative-explanation">Alternative Explanation<a class="headerlink" href="#alternative-explanation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Bromberg &amp; Wexler (1995); Rizzi (1994)</strong>: Missing subjects in finite clauses = "diary drop"</li>
+<li>Present in: Swedish, French, Danish, German, Dutch</li>
+<li>Common in abbreviated registers: diaries, postcards, text messages, casual spoken English</li>
+<li><strong>Haegeman (1990, 1997)</strong>: Register variation and truncation analysis</li>
+</ul>
+<p><strong>Implication</strong>: English child null subjects might be instances of diary drop, not parameter mis-setting</p>
+<hr />
+<h2 id="open-questions">Open Questions<a class="headerlink" href="#open-questions" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Subject-Object Asymmetry</strong>: If children start with NONE (RNSL grammar), why do English children show subject/object dropping differences?</p>
+</li>
+<li>
+<p><strong>That-Trace Connection</strong>: All these phenomena (null subjects, free inversion, that-trace violations) historically connected - worth exploring developmental trajectory?</p>
+</li>
+<li>
+<p><strong>Positive Evidence for Parameter Setting</strong>: What specific input triggers shift from NONE → ALL → SOME in BCC learning model?</p>
+</li>
+</ol>
+<hr />
+<h2 id="key-references-by-topic">Key References by Topic<a class="headerlink" href="#key-references-by-topic" title="Permanent link">&para;</a></h2>
+<h3 id="theoretical-foundations">Theoretical Foundations<a class="headerlink" href="#theoretical-foundations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rizzi (1982, 1986) - Classic NSP formulation</li>
+<li>Chomsky (1981, 1986) - Government, binding, ECP</li>
+<li>Roberts (2021) - Modern minimalist synthesis</li>
+</ul>
+<h3 id="acquisition">Acquisition<a class="headerlink" href="#acquisition" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Hyams (1986, 1991) - Parameter setting approaches</li>
+<li>Valian (1991) - English-Italian comparison</li>
+<li>Wang &amp; Others (1992) - Chinese-English comparison</li>
+<li>Guasti (1996) - Italian interrogatives</li>
+<li>Bertolino (2024) - BCC-based learning model</li>
+</ul>
+<h3 id="cross-linguistic">Cross-Linguistic<a class="headerlink" href="#cross-linguistic" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Gilligan (1989) - 100-language typology</li>
+<li>Baker (2008) - Macroparameters</li>
+<li>Biberauer et al. (2009a, 2009b) - Deletion analysis</li>
+</ul>
+<h3 id="registertruncation">Register/Truncation<a class="headerlink" href="#registertruncation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Haegeman (1990, 1997) - Diary drop</li>
+<li>Bromberg &amp; Wexler (1995) - Child wh-questions</li>
+<li>Rizzi (1994) - Root null subjects</li>
+</ul>
+<hr />
+<h2 id="appendix-roberts-response-to-gilligan-and-the-significance-of-gilligans-findings">Appendix: Roberts' Response to Gilligan and the Significance of Gilligan's Findings<a class="headerlink" href="#appendix-roberts-response-to-gilligan-and-the-significance-of-gilligans-findings" title="Permanent link">&para;</a></h2>
+<h3 id="work-attempting-to-account-for-gilligans-findings">Work Attempting to Account for Gilligan's Findings<a class="headerlink" href="#work-attempting-to-account-for-gilligans-findings" title="Permanent link">&para;</a></h3>
+<p>The primary work explicitly attempting to account for (and critique) what Gilligan (1989) found is that of <strong>Roberts (2019)</strong>, often cited within the discussion of the Borer-Chomsky Conjecture (BCC)-view of the Null Subject Parameter (NSP).</p>
+<p>Roberts (2019) addressed the fact that Gilligan (1989) criticized the classical NSP (proposed by Chomsky (1981) and Rizzi (1982)) for failing to account for the linguistic typology of null subjects.</p>
+<p>Roberts argued that <strong>Gilligan's analysis and conclusions can be called into question</strong>. Specifically, Roberts pointed out that Gilligan (1989) categorized the languages in his sample solely as "null-subject languages" or "non-null-subject languages".</p>
+<p>Roberts contended that the defining cluster of properties associated with the classical NSP—such as having a silent, referential subject, free subject inversion, the apparent absence of complementizer-trace effects, and rich agreement inflection—applies predominantly to <strong>Consistent Null-Subject Languages (CNSLs)</strong>. Gilligan's analysis mistakenly included languages like Finnish (a Partial Null-Subject Language, PNSL) and Vietnamese (a Radical Null-Subject Language, RNSL) in his general sample of null-subject languages. Roberts concluded that this "mixed sample" likely led to the "hasty conclusion" that the expected property cluster did not fit the concept of "null-subject languages" overall.</p>
+<p>By addressing Gilligan's critique, Roberts (2010b, 2019) proceeded to develop a minimalist analysis of null subjects (the BCC-view) designed to capture the coherence of the original Chomsky-Rizzi cluster, framing the parameter in terms of lexical functional features (FFs).</p>
+<h3 id="does-it-matter-what-gilligan-found">Does It Matter What Gilligan Found?<a class="headerlink" href="#does-it-matter-what-gilligan-found" title="Permanent link">&para;</a></h3>
+<p>Yes, <strong>it matters significantly</strong> what Gilligan found, as his empirical work posed a major challenge to the dominant generative theory of null subjects and fueled the subsequent debate on parametric approaches to linguistic variation.</p>
+<ol>
+<li>
+<p><strong>Challenged the Classical NSP:</strong> Gilligan (1989) directly criticized the descriptive adequacy of the classical NSP, finding that the proposed cluster of correlating grammatical properties failed to hold true across a broad sample of 100 languages. This provided crucial <strong>empirical counterevidence</strong> to the coherence of the NSP formulation advanced by Rizzi (1982).</p>
+</li>
+<li>
+<p><strong>Highlighted Discrepancies:</strong> Gilligan's work empirically demonstrated key issues, such as observing that if a language has free inversion, it must have extraction, but the converse is not true (citing Papiamento as a counterexample). He also found that the expected implication—that expletive null subjects correlate with the absence of the <em>that-t</em> effect—did not hold, citing languages like Finnish and Georgian.</p>
+</li>
+<li>
+<p><strong>Drove Theoretical Debate:</strong> The failure of the NSP to account for Gilligan's large-scale findings provided a basis for criticism against the entire Principles &amp; Parameters (P&amp;P) enterprise. Newmeyer (2004, 2005), for instance, used Gilligan's findings to argue against the P&amp;P framework altogether.</p>
+</li>
+<li>
+<p><strong>Prompted Refinement:</strong> The empirical inadequacy and rigidity demonstrated by Gilligan's work necessitated the subsequent research aimed at refining the Null Subject Parameter. This led to later efforts to reformulate the NSP, shifting the focus from a single macro-parameter to clusters of micro-parameters or models emphasizing fine-grained morphological distinctions (like Jaeggli and Safir's Morphological Uniformity Principle or the BCC-view). This ongoing effort sought to capture cross-linguistic variation while addressing the empirical diversity Gilligan brought to light.</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

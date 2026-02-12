@@ -1,0 +1,3573 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/archive/plans/STREAMING_PIPELINE_SPEC/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Streaming Pipeline Architecture Specification - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#streaming-pipeline-architecture-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Streaming Pipeline Architecture Specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../checkpoint_scheduling/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../preprocessing/USER_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    New Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../preprocessing/ADVANCED_USAGE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Architecture Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-server-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three-Server Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three-Server Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#server-1-wild_west-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server 1: wild_west (Training)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-2-ssrde-evaluation-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server 2: SSRDE (Evaluation &amp; Analysis)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-3-monitoring-web-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server 3: monitoring (Web Interface)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Directory Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#shared-network-drive-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared Network Drive Layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#event-flow-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Flow Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Event Flow Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#end-to-end-pipeline-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        End-to-End Pipeline Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#signal-file-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signal File Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Signal File Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .training_complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eval_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .eval_complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="State Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-database-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite Database Schemas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SQLite Database Schemas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trainingdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        training.db
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#evaluationdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluation.db
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analysisdb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        analysis.db
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#component-1-training-completion-hook-wild_west" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 1: Training Completion Hook (wild_west)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-2-model-watcher-daemon-ssrde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 2: Model Watcher Daemon (SSRDE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-3-evaluation-worker-ssrde-slurm-scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 3: Evaluation Worker (SSRDE, Slurm-scheduled)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-4-analysis-pipeline-ssrde-slurm-scheduled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 4: Analysis Pipeline (SSRDE, Slurm-scheduled)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-5-mlflow-tracking-server-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 5: MLflow Tracking Server (monitoring)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-6-job-monitoring-dashboard-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component 6: Job Monitoring Dashboard (monitoring)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Formats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Formats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parquet-for-evaluation-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parquet for Evaluation Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json-for-signal-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON for Signal Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sqlite-for-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SQLite for State
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slurm-job-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slurm Job Templates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Slurm Job Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evaluation-job-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation Job Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analysis-job-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis Job Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling-and-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling and Recovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling and Recovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training-failures-wild_west" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training Failures (wild_west)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watcher-daemon-failures-ssrde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watcher Daemon Failures (SSRDE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slurm-job-failures-ssrde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slurm Job Failures (SSRDE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-drive-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Drive Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-corruption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Corruption
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-and-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring and Observability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring and Observability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metrics-to-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metrics to Track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-standards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Standards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-foundation-week-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Foundation (Week 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-automation-core-week-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Automation Core (Week 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-analysis-pipeline-week-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Analysis Pipeline (Week 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-monitoring-week-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Monitoring (Week 4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-hardening-week-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: Hardening (Week 5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operational-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational Procedures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operational Procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-a-training-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting a Training Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-job-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring Job Progress
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handling-failed-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling Failed Jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-maintenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Maintenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Optimization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filesystem-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filesystem I/O
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slurm-efficiency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slurm Efficiency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Enhancements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#potential-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Potential Additions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-a-configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix A: Configuration Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix A: Configuration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watcheryaml-ssrde" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        watcher.yaml (SSRDE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-b-troubleshooting-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix B: Troubleshooting Guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix B: Troubleshooting Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-signal-file-not-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Signal file not detected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-slurm-job-stuck-in-pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: Slurm job stuck in pending
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#problem-mlflow-not-logging-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem: MLflow not logging metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-c-glossary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix C: Glossary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#document-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Document History
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contact-and-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contact and Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="streaming-pipeline-architecture-specification">Streaming Pipeline Architecture Specification<a class="headerlink" href="#streaming-pipeline-architecture-specification" title="Permanent link">&para;</a></h1>
+<p><strong>Version:</strong> 1.0
+<strong>Date:</strong> 2025-09-30
+<strong>Status:</strong> Implementation Ready</p>
+<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>This document specifies a modern streaming pipeline architecture for coordinating machine learning training, evaluation, and analysis across three servers sharing a network drive. The system enables manual training on a GPU server (wild_west), automated evaluation via Slurm (SSRDE), and real-time monitoring via a web interface (monitoring server).</p>
+<p><strong>Key Design Principles:</strong>
+- Event-driven architecture using file-based signaling
+- Minimal footprint on shared resources
+- Clear separation of concerns across servers
+- Observable, debuggable state at all times
+- Graceful handling of failures and retries</p>
+<hr />
+<h2 id="system-architecture-overview">System Architecture Overview<a class="headerlink" href="#system-architecture-overview" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                    SHARED NETWORK DRIVE                          │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│                  /mnt/shared/subject-drop/                       │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│                                                                   │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  📁 models/          ← Training outputs (wild_west writes)       │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  📁 evaluation/      ← Evaluation results (SSRDE writes)         │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  📁 analysis/        ← Analysis outputs (SSRDE writes)           │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  📁 state/           ← SQLite DBs for coordination               │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  📁 config/          ← Shared configurations                     │
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  📁 logs/            ← All server logs                           │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└─────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>         │                        │                    │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>         │                        │                    │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>         ▼                        ▼                    ▼
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   WILD_WEST     │    │     SSRDE       │    │   MONITORING    │
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│                 │    │                 │    │                 │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│ 4x A6000 GPUs   │    │ Slurm Cluster   │    │ Web Services    │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│ Manual Training │    │ Auto Eval/Anal  │    │ Internet-Facing │
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│                 │    │                 │    │                 │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│ Components:     │    │ Components:     │    │ Components:     │
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│ • Training      │    │ • Watcher       │    │ • MLflow UI     │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   scripts       │    │ • Slurm jobs    │    │ • Dashboard     │
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│ • Completion    │    │ • Eval workers  │    │                 │
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   hooks         │    │ • R pipeline    │    │                 │
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>└─────────────────┘    └─────────────────┘    └─────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="three-server-architecture">Three-Server Architecture<a class="headerlink" href="#three-server-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="server-1-wild_west-training">Server 1: wild_west (Training)<a class="headerlink" href="#server-1-wild_west-training" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Manual model training with GPU resources</p>
+<p><strong>Characteristics:</strong>
+- Shared server with informal use agreement
+- 4x NVIDIA A6000 GPUs
+- Manual job execution (no automation)
+- Must be respectful of other users</p>
+<p><strong>Responsibilities:</strong>
+- Execute training scripts when requested
+- Save model checkpoints to shared drive
+- Write completion signals for downstream automation
+- Log training metrics to MLflow</p>
+<p><strong>Does NOT Run:</strong>
+- No daemon processes
+- No background watchers
+- No automated job scheduling</p>
+<p><strong>Resource Footprint:</strong>
+- Active only during training
+- Cleanup after training completes
+- Minimal disk I/O to shared drive during training</p>
+<hr />
+<h3 id="server-2-ssrde-evaluation-analysis">Server 2: SSRDE (Evaluation &amp; Analysis)<a class="headerlink" href="#server-2-ssrde-evaluation-analysis" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Automated evaluation and analysis via Slurm</p>
+<p><strong>Characteristics:</strong>
+- Robust job queuing with Slurm
+- Shared cluster resource
+- Automated job submission and execution
+- Runs intensive R analysis workloads</p>
+<p><strong>Responsibilities:</strong>
+- Watch for training completion signals
+- Submit evaluation jobs to Slurm
+- Submit analysis jobs to Slurm
+- Maintain state databases
+- Log evaluation/analysis metrics to MLflow</p>
+<p><strong>Runs:</strong>
+- Single lightweight watcher daemon (minimal CPU/memory)
+- Slurm-scheduled evaluation workers
+- Slurm-scheduled R analysis pipeline
+- Optional: Redis Streams for internal coordination</p>
+<p><strong>Resource Footprint:</strong>
+- Watcher: &lt;100MB RAM, &lt;1% CPU
+- All compute via Slurm (fair scheduling)
+- Respects Slurm quotas and limits</p>
+<hr />
+<h3 id="server-3-monitoring-web-interface">Server 3: monitoring (Web Interface)<a class="headerlink" href="#server-3-monitoring-web-interface" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Real-time monitoring and experiment tracking</p>
+<p><strong>Characteristics:</strong>
+- Internet-facing web server
+- Read-only access to shared state
+- No computational workloads</p>
+<p><strong>Responsibilities:</strong>
+- Host MLflow tracking server
+- Provide web dashboard for job monitoring
+- Display Slurm queue status
+- Track training progress and checkpoints</p>
+<p><strong>Runs:</strong>
+- MLflow server (experiment tracking UI)
+- Custom dashboard (job queue monitoring)
+- Optional: notification services</p>
+<p><strong>Resource Footprint:</strong>
+- Minimal: web services only
+- No data processing
+- Read-only database access</p>
+<hr />
+<h2 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h2>
+<h3 id="shared-network-drive-layout">Shared Network Drive Layout<a class="headerlink" href="#shared-network-drive-layout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>/mnt/shared/subject-drop/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── config/                          # Shared configurations
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   ├── experiments/                 # Training configs
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   │   ├── experiment_01.yaml
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   │   └── experiment_02.yaml
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   └── evaluation/                  # Evaluation configs
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│       ├── base_eval.yaml
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│       └── dataset_configs/
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>├── models/                          # Training outputs (wild_west)
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│   └── {experiment_name}/
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│       ├── checkpoints/
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│       │   ├── checkpoint-1000/
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│       │   │   ├── model.safetensors
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│       │   │   ├── optimizer.pt
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│       │   │   └── metadata.json
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│       │   ├── checkpoint-2000/
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│       │   └── checkpoint-3000/
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│       ├── final/
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>│       │   └── model.safetensors
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>│       ├── .training_complete       # Signal file (JSON)
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>│       └── training_metadata.json   # Full training metadata
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>│
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>├── evaluation/                      # Evaluation outputs (SSRDE)
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>│   └── {experiment_name}/
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>│       ├── metrics/
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>│       │   ├── accuracy.parquet     # Partitioned Parquet files
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>│       │   ├── perplexity.parquet
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>│       │   └── loss.parquet
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>│       ├── predictions/
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>│       │   └── {dataset_name}.parquet
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>│       ├── .eval_complete           # Signal file (JSON)
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>│       └── eval_metadata.json
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>│
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>├── analysis/                        # Analysis outputs (SSRDE)
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>│   ├── _targets/                    # R targets cache
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>│   ├── figures/
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>│   │   └── {experiment_name}/
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>│   ├── tables/
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>│   │   └── {experiment_name}/
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>│   ├── reports/
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>│   │   └── {experiment_name}/
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>│   └── _targets.R                   # R targets pipeline
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>│
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>├── state/                           # Coordination state (SSRDE manages)
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>│   ├── training.db                  # SQLite: training run tracking
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>│   ├── evaluation.db                # SQLite: evaluation queue/status
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>│   ├── analysis.db                  # SQLite: analysis status
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>│   ├── mlflow.db                    # MLflow backend store
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>│   └── locks/                       # File-based locks if needed
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>│
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>├── mlflow-artifacts/                # MLflow artifact storage
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>│   └── {run_id}/
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>│
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>└── logs/                            # All server logs
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>    ├── training/                    # From wild_west
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>    │   └── {experiment_name}.log
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>    ├── evaluation/                  # From SSRDE eval jobs
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>    │   └── {slurm_job_id}.log
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>    ├── analysis/                    # From SSRDE analysis jobs
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>    │   └── {slurm_job_id}.log
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>    └── watcher.log                  # SSRDE watcher daemon
+</code></pre></div>
+<hr />
+<h2 id="event-flow-architecture">Event Flow Architecture<a class="headerlink" href="#event-flow-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="end-to-end-pipeline-flow">End-to-End Pipeline Flow<a class="headerlink" href="#end-to-end-pipeline-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│ PHASE 1: TRAINING (wild_west)                                    │
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    │
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    │ 1. User starts training manually
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    │    $ python train.py --config experiment_01.yaml
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    │
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    │ 2. Training script runs
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    │    • Logs metrics to MLflow (real-time)
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    │    • Saves checkpoints to /mnt/shared/.../models/
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    │    • Updates training.db periodically
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    │
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    │ 3. Training completes
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    │    • Saves final model
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    │    • Writes .training_complete signal file
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    │    • Logs final metrics to MLflow
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    │
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    ▼
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>│ PHASE 2: EVALUATION TRIGGER (SSRDE watcher)                      │
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    │
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    │ 4. Watcher detects .training_complete
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    │    • Filesystem event triggers handler
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    │    • Reads signal file metadata
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    │    • Validates model files exist
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    │
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    │ 5. Generate Slurm submission script
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    │    • Creates batch script for evaluation
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    │    • Specifies resources (CPU, memory, time)
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    │    • Sets up environment and paths
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    │
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    │ 6. Submit to Slurm queue
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    │    • sbatch evaluation_script.sh
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    │    • Capture job ID
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>    │    • Update evaluation.db (status: queued)
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>    │    • Log to MLflow
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    │
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    ▼
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>│ PHASE 3: EVALUATION EXECUTION (SSRDE compute node)               │
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>    │
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>    │ 7. Slurm allocates resources
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>    │    • Job moves from pending → running
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>    │    • Update evaluation.db (status: running)
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>    │
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>    │ 8. Evaluation worker runs
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>    │    • Loads model from checkpoint
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    │    • Runs evaluation on configured datasets
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>    │    • Streams metrics to Parquet files
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>    │    • Logs to MLflow (linked to training run)
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>    │
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>    │ 9. Evaluation completes
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>    │    • Writes .eval_complete signal file
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>    │    • Updates evaluation.db (status: complete)
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>    │    • Logs final metrics to MLflow
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>    │
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>    ▼
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a>
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>│ PHASE 4: ANALYSIS TRIGGER (SSRDE watcher)                        │
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a>    │
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a>    │ 10. Watcher detects .eval_complete
+<a id="__codelineno-2-68" name="__codelineno-2-68" href="#__codelineno-2-68"></a>    │     • Filesystem event triggers handler
+<a id="__codelineno-2-69" name="__codelineno-2-69" href="#__codelineno-2-69"></a>    │     • Validates evaluation outputs exist
+<a id="__codelineno-2-70" name="__codelineno-2-70" href="#__codelineno-2-70"></a>    │     • Checks if analysis is needed
+<a id="__codelineno-2-71" name="__codelineno-2-71" href="#__codelineno-2-71"></a>    │
+<a id="__codelineno-2-72" name="__codelineno-2-72" href="#__codelineno-2-72"></a>    │ 11. Submit R analysis job to Slurm
+<a id="__codelineno-2-73" name="__codelineno-2-73" href="#__codelineno-2-73"></a>    │     • Creates Slurm script for R pipeline
+<a id="__codelineno-2-74" name="__codelineno-2-74" href="#__codelineno-2-74"></a>    │     • sbatch analysis_script.sh
+<a id="__codelineno-2-75" name="__codelineno-2-75" href="#__codelineno-2-75"></a>    │     • Update analysis.db (status: queued)
+<a id="__codelineno-2-76" name="__codelineno-2-76" href="#__codelineno-2-76"></a>    │
+<a id="__codelineno-2-77" name="__codelineno-2-77" href="#__codelineno-2-77"></a>    ▼
+<a id="__codelineno-2-78" name="__codelineno-2-78" href="#__codelineno-2-78"></a>
+<a id="__codelineno-2-79" name="__codelineno-2-79" href="#__codelineno-2-79"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-80" name="__codelineno-2-80" href="#__codelineno-2-80"></a>│ PHASE 5: ANALYSIS EXECUTION (SSRDE compute node)                 │
+<a id="__codelineno-2-81" name="__codelineno-2-81" href="#__codelineno-2-81"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-82" name="__codelineno-2-82" href="#__codelineno-2-82"></a>    │
+<a id="__codelineno-2-83" name="__codelineno-2-83" href="#__codelineno-2-83"></a>    │ 12. R targets pipeline runs
+<a id="__codelineno-2-84" name="__codelineno-2-84" href="#__codelineno-2-84"></a>    │     • Reads Parquet evaluation data
+<a id="__codelineno-2-85" name="__codelineno-2-85" href="#__codelineno-2-85"></a>    │     • Generates figures
+<a id="__codelineno-2-86" name="__codelineno-2-86" href="#__codelineno-2-86"></a>    │     • Creates tables
+<a id="__codelineno-2-87" name="__codelineno-2-87" href="#__codelineno-2-87"></a>    │     • Renders reports
+<a id="__codelineno-2-88" name="__codelineno-2-88" href="#__codelineno-2-88"></a>    │
+<a id="__codelineno-2-89" name="__codelineno-2-89" href="#__codelineno-2-89"></a>    │ 13. Analysis completes
+<a id="__codelineno-2-90" name="__codelineno-2-90" href="#__codelineno-2-90"></a>    │     • Writes outputs to analysis/
+<a id="__codelineno-2-91" name="__codelineno-2-91" href="#__codelineno-2-91"></a>    │     • Updates analysis.db (status: complete)
+<a id="__codelineno-2-92" name="__codelineno-2-92" href="#__codelineno-2-92"></a>    │     • Logs to MLflow
+<a id="__codelineno-2-93" name="__codelineno-2-93" href="#__codelineno-2-93"></a>    │
+<a id="__codelineno-2-94" name="__codelineno-2-94" href="#__codelineno-2-94"></a>    ▼
+<a id="__codelineno-2-95" name="__codelineno-2-95" href="#__codelineno-2-95"></a>
+<a id="__codelineno-2-96" name="__codelineno-2-96" href="#__codelineno-2-96"></a>┌──────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-97" name="__codelineno-2-97" href="#__codelineno-2-97"></a>│ OBSERVABLE AT ALL TIMES (monitoring server)                      │
+<a id="__codelineno-2-98" name="__codelineno-2-98" href="#__codelineno-2-98"></a>└──────────────────────────────────────────────────────────────────┘
+<a id="__codelineno-2-99" name="__codelineno-2-99" href="#__codelineno-2-99"></a>    │
+<a id="__codelineno-2-100" name="__codelineno-2-100" href="#__codelineno-2-100"></a>    │ • MLflow UI shows all runs, metrics, artifacts
+<a id="__codelineno-2-101" name="__codelineno-2-101" href="#__codelineno-2-101"></a>    │ • Dashboard shows current queue status
+<a id="__codelineno-2-102" name="__codelineno-2-102" href="#__codelineno-2-102"></a>    │ • All logs accessible in shared drive
+<a id="__codelineno-2-103" name="__codelineno-2-103" href="#__codelineno-2-103"></a>    │ • SQLite databases queryable for debugging
+</code></pre></div>
+<hr />
+<h2 id="signal-file-specifications">Signal File Specifications<a class="headerlink" href="#signal-file-specifications" title="Permanent link">&para;</a></h2>
+<h3 id="training_complete">.training_complete<a class="headerlink" href="#training_complete" title="Permanent link">&para;</a></h3>
+<p><strong>Location:</strong> <code>/mnt/shared/subject-drop/models/{experiment_name}/.training_complete</code></p>
+<p><strong>Format:</strong> JSON</p>
+<p><strong>Required Fields:</strong>
+- <code>timestamp</code>: ISO 8601 timestamp of completion
+- <code>experiment</code>: Experiment name (matches directory)
+- <code>checkpoint_path</code>: Absolute path to final checkpoint directory
+- <code>hostname</code>: Server where training ran (should be "wild_west")
+- <code>user</code>: Username who ran training</p>
+<p><strong>Optional Fields:</strong>
+- <code>config_path</code>: Path to training config file
+- <code>num_epochs</code>: Total epochs trained
+- <code>final_loss</code>: Final training loss
+- <code>total_steps</code>: Total training steps
+- <code>git_commit</code>: Git commit hash at training time</p>
+<p><strong>Purpose:</strong>
+- Triggers evaluation pipeline on SSRDE
+- Provides metadata for evaluation job setup
+- Enables debugging of training completion</p>
+<p><strong>Example Structure:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-09-30T14:32:15Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;experiment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment_01&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;checkpoint_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/mnt/shared/subject-drop/models/experiment_01/final&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">&quot;hostname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;wild_west&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">&quot;user&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tmorton&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">&quot;config_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/mnt/shared/subject-drop/config/experiments/experiment_01.yaml&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nt">&quot;num_epochs&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nt">&quot;final_loss&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.34</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nt">&quot;total_steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50000</span><span class="p">,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a94429c&quot;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="p">}</span>
+</code></pre></div></p>
+<hr />
+<h3 id="eval_complete">.eval_complete<a class="headerlink" href="#eval_complete" title="Permanent link">&para;</a></h3>
+<p><strong>Location:</strong> <code>/mnt/shared/subject-drop/evaluation/{experiment_name}/.eval_complete</code></p>
+<p><strong>Format:</strong> JSON</p>
+<p><strong>Required Fields:</strong>
+- <code>timestamp</code>: ISO 8601 timestamp of completion
+- <code>experiment</code>: Experiment name
+- <code>job_id</code>: Slurm job ID that ran evaluation
+- <code>status</code>: "complete" or "failed"</p>
+<p><strong>Optional Fields:</strong>
+- <code>datasets_evaluated</code>: List of dataset names
+- <code>metrics_summary</code>: Key metrics (accuracy, perplexity, etc.)
+- <code>eval_duration_seconds</code>: Time taken for evaluation
+- <code>error_message</code>: If status is "failed", error details</p>
+<p><strong>Purpose:</strong>
+- Triggers analysis pipeline on SSRDE
+- Provides metadata for analysis job setup
+- Enables tracking of evaluation status</p>
+<hr />
+<h2 id="state-management">State Management<a class="headerlink" href="#state-management" title="Permanent link">&para;</a></h2>
+<h3 id="sqlite-database-schemas">SQLite Database Schemas<a class="headerlink" href="#sqlite-database-schemas" title="Permanent link">&para;</a></h3>
+<h4 id="trainingdb">training.db<a class="headerlink" href="#trainingdb" title="Permanent link">&para;</a></h4>
+<p><strong>Purpose:</strong> Track training runs across all experiments</p>
+<p><strong>Table: training_runs</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>experiment_name</code>: TEXT UNIQUE NOT NULL
+- <code>status</code>: TEXT (started, running, completed, failed)
+- <code>started_at</code>: TIMESTAMP
+- <code>completed_at</code>: TIMESTAMP
+- <code>checkpoint_path</code>: TEXT
+- <code>config_path</code>: TEXT
+- <code>hostname</code>: TEXT
+- <code>user</code>: TEXT
+- <code>mlflow_run_id</code>: TEXT
+- <code>metadata</code>: TEXT (JSON blob)</p>
+<p><strong>Table: checkpoints</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>training_run_id</code>: INTEGER FOREIGN KEY
+- <code>checkpoint_path</code>: TEXT
+- <code>step</code>: INTEGER
+- <code>epoch</code>: INTEGER
+- <code>created_at</code>: TIMESTAMP
+- <code>metrics</code>: TEXT (JSON blob)</p>
+<hr />
+<h4 id="evaluationdb">evaluation.db<a class="headerlink" href="#evaluationdb" title="Permanent link">&para;</a></h4>
+<p><strong>Purpose:</strong> Track evaluation job queue and status</p>
+<p><strong>Table: evaluation_jobs</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>experiment_name</code>: TEXT NOT NULL
+- <code>training_run_id</code>: INTEGER FOREIGN KEY
+- <code>status</code>: TEXT (queued, running, completed, failed)
+- <code>slurm_job_id</code>: TEXT
+- <code>submitted_at</code>: TIMESTAMP
+- <code>started_at</code>: TIMESTAMP
+- <code>completed_at</code>: TIMESTAMP
+- <code>checkpoint_path</code>: TEXT
+- <code>mlflow_run_id</code>: TEXT
+- <code>error_message</code>: TEXT
+- <code>metadata</code>: TEXT (JSON blob)</p>
+<p><strong>Table: evaluation_results</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>evaluation_job_id</code>: INTEGER FOREIGN KEY
+- <code>dataset_name</code>: TEXT
+- <code>metric_name</code>: TEXT
+- <code>metric_value</code>: REAL
+- <code>evaluated_at</code>: TIMESTAMP</p>
+<hr />
+<h4 id="analysisdb">analysis.db<a class="headerlink" href="#analysisdb" title="Permanent link">&para;</a></h4>
+<p><strong>Purpose:</strong> Track analysis pipeline status</p>
+<p><strong>Table: analysis_jobs</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>experiment_name</code>: TEXT NOT NULL
+- <code>evaluation_job_id</code>: INTEGER FOREIGN KEY
+- <code>status</code>: TEXT (queued, running, completed, failed)
+- <code>slurm_job_id</code>: TEXT
+- <code>submitted_at</code>: TIMESTAMP
+- <code>started_at</code>: TIMESTAMP
+- <code>completed_at</code>: TIMESTAMP
+- <code>targets_manifest_path</code>: TEXT
+- <code>error_message</code>: TEXT</p>
+<p><strong>Table: analysis_outputs</strong>
+- <code>id</code>: INTEGER PRIMARY KEY
+- <code>analysis_job_id</code>: INTEGER FOREIGN KEY
+- <code>output_type</code>: TEXT (figure, table, report)
+- <code>output_path</code>: TEXT
+- <code>created_at</code>: TIMESTAMP</p>
+<hr />
+<h2 id="component-specifications">Component Specifications<a class="headerlink" href="#component-specifications" title="Permanent link">&para;</a></h2>
+<h3 id="component-1-training-completion-hook-wild_west">Component 1: Training Completion Hook (wild_west)<a class="headerlink" href="#component-1-training-completion-hook-wild_west" title="Permanent link">&para;</a></h3>
+<p><strong>Language:</strong> Python</p>
+<p><strong>Integration Point:</strong> End of training script</p>
+<p><strong>Responsibilities:</strong>
+1. Save final model checkpoint
+2. Collect training metadata
+3. Write .training_complete signal file
+4. Update training.db
+5. Log final metrics to MLflow</p>
+<p><strong>Error Handling:</strong>
+- Retry signal file write if network issues
+- Validate file was written successfully
+- Log errors but don't fail training</p>
+<p><strong>Dependencies:</strong>
+- Access to shared network drive
+- MLflow Python client
+- SQLite3 Python library</p>
+<p><strong>Configuration:</strong>
+- Path to shared drive (environment variable)
+- MLflow tracking URI
+- Experiment name (from training config)</p>
+<hr />
+<h3 id="component-2-model-watcher-daemon-ssrde">Component 2: Model Watcher Daemon (SSRDE)<a class="headerlink" href="#component-2-model-watcher-daemon-ssrde" title="Permanent link">&para;</a></h3>
+<p><strong>Language:</strong> Python</p>
+<p><strong>Runtime:</strong> Long-running daemon process</p>
+<p><strong>Responsibilities:</strong>
+1. Watch for .training_complete signal files
+2. Validate model files exist and are complete
+3. Generate Slurm evaluation job scripts
+4. Submit jobs to Slurm via sbatch
+5. Update evaluation.db with job status
+6. Watch for .eval_complete signal files
+7. Generate Slurm analysis job scripts
+8. Submit analysis jobs to Slurm</p>
+<p><strong>Implementation Strategy:</strong>
+- Use watchdog library for filesystem events
+- Debounce events (wait for file write completion)
+- Validate signal file JSON before processing
+- Idempotent job submission (check if already queued)
+- Graceful shutdown on SIGTERM
+- Auto-restart on crash (via systemd/supervisor)</p>
+<p><strong>Error Handling:</strong>
+- Log all errors to watcher.log
+- Retry failed Slurm submissions (exponential backoff)
+- Alert on repeated failures
+- Continue watching even if individual jobs fail</p>
+<p><strong>Performance Considerations:</strong>
+- Minimal CPU/memory usage (&lt;100MB)
+- Efficient inotify-based file watching
+- Non-blocking I/O for database updates
+- Rate limiting for Slurm submissions</p>
+<p><strong>Configuration:</strong>
+- Paths to watch (models/, evaluation/ directories)
+- Slurm submission templates
+- Retry policies
+- Database connection strings</p>
+<hr />
+<h3 id="component-3-evaluation-worker-ssrde-slurm-scheduled">Component 3: Evaluation Worker (SSRDE, Slurm-scheduled)<a class="headerlink" href="#component-3-evaluation-worker-ssrde-slurm-scheduled" title="Permanent link">&para;</a></h3>
+<p><strong>Language:</strong> Python</p>
+<p><strong>Runtime:</strong> Batch job (Slurm)</p>
+<p><strong>Responsibilities:</strong>
+1. Load model from checkpoint
+2. Load evaluation datasets
+3. Run evaluation metrics
+4. Stream results to Parquet files
+5. Write .eval_complete signal file
+6. Update evaluation.db
+7. Log metrics to MLflow</p>
+<p><strong>Input:</strong>
+- Experiment name (from command-line arg)
+- Checkpoint path (from command-line arg)
+- Evaluation config (from shared config directory)</p>
+<p><strong>Output:</strong>
+- Parquet files with metrics
+- .eval_complete signal file
+- Updated evaluation.db
+- MLflow logged metrics</p>
+<p><strong>Error Handling:</strong>
+- Comprehensive error logging
+- Partial evaluation recovery (save what succeeded)
+- Write error details to .eval_failed if critical failure
+- Update evaluation.db with failure status</p>
+<p><strong>Resource Requirements:</strong>
+- CPUs: 8-16 cores
+- Memory: 32-64 GB
+- Time limit: 2-4 hours
+- GPU: Optional (depending on model size)</p>
+<p><strong>Optimization:</strong>
+- Batch evaluation where possible
+- Stream results to disk (don't hold in memory)
+- Use Arrow/Parquet for efficient I/O
+- Parallel dataset evaluation</p>
+<hr />
+<h3 id="component-4-analysis-pipeline-ssrde-slurm-scheduled">Component 4: Analysis Pipeline (SSRDE, Slurm-scheduled)<a class="headerlink" href="#component-4-analysis-pipeline-ssrde-slurm-scheduled" title="Permanent link">&para;</a></h3>
+<p><strong>Language:</strong> R</p>
+<p><strong>Runtime:</strong> Batch job (Slurm)</p>
+<p><strong>Framework:</strong> R targets</p>
+<p><strong>Responsibilities:</strong>
+1. Read evaluation Parquet files
+2. Run statistical analysis
+3. Generate publication-quality figures
+4. Create summary tables
+5. Render reports (Quarto/RMarkdown)
+6. Update analysis.db</p>
+<p><strong>Input:</strong>
+- Experiment name (from environment variable)
+- Evaluation results path
+- Analysis config</p>
+<p><strong>Output:</strong>
+- Figures (PNG, PDF)
+- Tables (CSV, LaTeX)
+- Reports (HTML, PDF)
+- Updated analysis.db</p>
+<p><strong>R targets Pipeline Structure:</strong>
+- Target: load_evaluation_data
+- Target: compute_statistics
+- Target: generate_figures
+- Target: create_tables
+- Target: render_report
+- Target: finalize_outputs</p>
+<p><strong>Error Handling:</strong>
+- Targets caching enables partial re-runs
+- Log R errors to analysis job log
+- Update analysis.db with error status
+- Generate partial outputs where possible</p>
+<p><strong>Resource Requirements:</strong>
+- CPUs: 16-32 cores (for parallel computation)
+- Memory: 64-128 GB
+- Time limit: 4-8 hours</p>
+<hr />
+<h3 id="component-5-mlflow-tracking-server-monitoring">Component 5: MLflow Tracking Server (monitoring)<a class="headerlink" href="#component-5-mlflow-tracking-server-monitoring" title="Permanent link">&para;</a></h3>
+<p><strong>Service:</strong> MLflow</p>
+<p><strong>Runtime:</strong> Long-running web service</p>
+<p><strong>Configuration:</strong>
+- Backend store: SQLite at <code>/mnt/shared/subject-drop/state/mlflow.db</code>
+- Artifact store: <code>/mnt/shared/subject-drop/mlflow-artifacts/</code>
+- Host: 0.0.0.0 (internet-facing)
+- Port: 5000</p>
+<p><strong>Responsibilities:</strong>
+1. Serve MLflow web UI
+2. Accept metric logging from all servers
+3. Store experiment metadata
+4. Provide model registry
+5. Enable artifact browsing</p>
+<p><strong>Features to Enable:</strong>
+- Experiment comparison
+- Metric visualization
+- Artifact download
+- Model versioning
+- Run linking (training → evaluation)</p>
+<p><strong>Access Control:</strong>
+- Basic auth (username/password)
+- Or reverse proxy with authentication
+- HTTPS via nginx/caddy</p>
+<hr />
+<h3 id="component-6-job-monitoring-dashboard-monitoring">Component 6: Job Monitoring Dashboard (monitoring)<a class="headerlink" href="#component-6-job-monitoring-dashboard-monitoring" title="Permanent link">&para;</a></h3>
+<p><strong>Language:</strong> Python (FastAPI) + HTML/JavaScript</p>
+<p><strong>Runtime:</strong> Long-running web service</p>
+<p><strong>Responsibilities:</strong>
+1. Display current training status
+2. Show Slurm queue for SSRDE
+3. List recent evaluation jobs
+4. Show analysis job status
+5. Provide quick links to MLflow runs</p>
+<p><strong>Data Sources:</strong>
+- SQLite databases (training.db, evaluation.db, analysis.db)
+- SSH to SSRDE for <code>squeue</code> output
+- Filesystem checks for active training</p>
+<p><strong>UI Requirements:</strong>
+- Auto-refresh every 30 seconds
+- Color-coded status (green=complete, yellow=running, red=failed)
+- Links to logs
+- Links to MLflow runs
+- Search/filter by experiment name</p>
+<p><strong>Implementation Approach:</strong>
+- FastAPI backend (lightweight)
+- Simple HTML templates (Jinja2)
+- Minimal JavaScript (or htmx for live updates)
+- No database writes (read-only)</p>
+<p><strong>Access Control:</strong>
+- Same as MLflow (basic auth or reverse proxy)</p>
+<hr />
+<h2 id="data-formats">Data Formats<a class="headerlink" href="#data-formats" title="Permanent link">&para;</a></h2>
+<h3 id="parquet-for-evaluation-metrics">Parquet for Evaluation Metrics<a class="headerlink" href="#parquet-for-evaluation-metrics" title="Permanent link">&para;</a></h3>
+<p><strong>Why Parquet:</strong>
+- Columnar storage (efficient for R/dplyr)
+- Excellent compression
+- Schema enforcement
+- Fast I/O with Arrow
+- Append-friendly via partitioning</p>
+<p><strong>Partitioning Strategy:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>evaluation/{experiment_name}/metrics/
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── dataset=blimp/metric=accuracy/data.parquet
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>├── dataset=blimp/metric=perplexity/data.parquet
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>├── dataset=blimp_supplement/metric=accuracy/data.parquet
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>└── dataset=blimp_supplement/metric=perplexity/data.parquet
+</code></pre></div></p>
+<p><strong>Schema Example (accuracy.parquet):</strong>
+- <code>experiment</code>: string
+- <code>checkpoint</code>: string
+- <code>dataset</code>: string
+- <code>item_group</code>: string (e.g., "b1_number")
+- <code>form</code>: string (e.g., "forms_vs_default")
+- <code>accuracy</code>: double
+- <code>timestamp</code>: timestamp</p>
+<p><strong>Writing:</strong>
+- Use PyArrow or pandas with partitioning
+- Append new results without overwriting
+- Validate schema before writing</p>
+<p><strong>Reading (R):</strong>
+- Use arrow package
+- Automatic partition filtering
+- Lazy evaluation for large datasets</p>
+<hr />
+<h3 id="json-for-signal-files">JSON for Signal Files<a class="headerlink" href="#json-for-signal-files" title="Permanent link">&para;</a></h3>
+<p><strong>Why JSON:</strong>
+- Human-readable
+- Easy to validate
+- Widely supported
+- Self-describing</p>
+<p><strong>Standards:</strong>
+- ISO 8601 timestamps
+- UTF-8 encoding
+- Pretty-printed for readability
+- Schema validation before processing</p>
+<hr />
+<h3 id="sqlite-for-state">SQLite for State<a class="headerlink" href="#sqlite-for-state" title="Permanent link">&para;</a></h3>
+<p><strong>Why SQLite:</strong>
+- File-based (works on network drive)
+- No server process
+- ACID transactions
+- Excellent Python/R support
+- WAL mode for better concurrency</p>
+<p><strong>Configuration:</strong>
+- Enable WAL mode (Write-Ahead Logging)
+- Set busy timeout (handle concurrent access)
+- Regular backups
+- VACUUM periodically</p>
+<p><strong>Concurrency Handling:</strong>
+- Use WAL mode
+- Retry on SQLITE_BUSY
+- Short transactions
+- Read-heavy workload (rarely contended)</p>
+<hr />
+<h2 id="slurm-job-templates">Slurm Job Templates<a class="headerlink" href="#slurm-job-templates" title="Permanent link">&para;</a></h2>
+<h3 id="evaluation-job-template">Evaluation Job Template<a class="headerlink" href="#evaluation-job-template" title="Permanent link">&para;</a></h3>
+<p><strong>Filename:</strong> <code>slurm_eval_{experiment_name}.sh</code></p>
+<p><strong>Required Directives:</strong>
+- <code>#SBATCH --job-name=eval_{experiment_name}</code>
+- <code>#SBATCH --output=/mnt/shared/subject-drop/logs/evaluation/%j.log</code>
+- <code>#SBATCH --error=/mnt/shared/subject-drop/logs/evaluation/%j.err</code>
+- <code>#SBATCH --time=02:00:00</code> (adjust based on model size)
+- <code>#SBATCH --mem=32G</code> (adjust based on dataset size)
+- <code>#SBATCH --cpus-per-task=8</code>
+- Optional: <code>#SBATCH --gres=gpu:1</code> (if GPU evaluation)</p>
+<p><strong>Environment Setup:</strong>
+- Load required modules (Python, CUDA if needed)
+- Activate virtual environment
+- Set PYTHONPATH</p>
+<p><strong>Execution:</strong>
+- Change to working directory
+- Run evaluation script with arguments
+- Capture exit code
+- Update database on completion/failure</p>
+<p><strong>Cleanup:</strong>
+- Remove temporary files
+- Compress logs if needed</p>
+<hr />
+<h3 id="analysis-job-template">Analysis Job Template<a class="headerlink" href="#analysis-job-template" title="Permanent link">&para;</a></h3>
+<p><strong>Filename:</strong> <code>slurm_analysis_{experiment_name}.sh</code></p>
+<p><strong>Required Directives:</strong>
+- <code>#SBATCH --job-name=analysis_{experiment_name}</code>
+- <code>#SBATCH --output=/mnt/shared/subject-drop/logs/analysis/%j.log</code>
+- <code>#SBATCH --error=/mnt/shared/subject-drop/logs/analysis/%j.err</code>
+- <code>#SBATCH --time=04:00:00</code>
+- <code>#SBATCH --mem=64G</code>
+- <code>#SBATCH --cpus-per-task=16</code></p>
+<p><strong>Environment Setup:</strong>
+- Load R module
+- Set R library path
+- Load required R packages</p>
+<p><strong>Execution:</strong>
+- Change to analysis directory
+- Run R targets pipeline
+- Capture exit code</p>
+<p><strong>Cleanup:</strong>
+- Archive temporary targets cache
+- Generate manifest of outputs</p>
+<hr />
+<h2 id="error-handling-and-recovery">Error Handling and Recovery<a class="headerlink" href="#error-handling-and-recovery" title="Permanent link">&para;</a></h2>
+<h3 id="training-failures-wild_west">Training Failures (wild_west)<a class="headerlink" href="#training-failures-wild_west" title="Permanent link">&para;</a></h3>
+<p><strong>Scenario:</strong> Training script crashes before completion</p>
+<p><strong>Detection:</strong>
+- No .training_complete signal file
+- Incomplete checkpoint directories
+- Error in training logs</p>
+<p><strong>Recovery:</strong>
+- Manual: User inspects logs and restarts
+- Automatic: None (training is manual)</p>
+<p><strong>Prevention:</strong>
+- Checkpoint frequently
+- Log errors comprehensively
+- Validate configs before training</p>
+<hr />
+<h3 id="watcher-daemon-failures-ssrde">Watcher Daemon Failures (SSRDE)<a class="headerlink" href="#watcher-daemon-failures-ssrde" title="Permanent link">&para;</a></h3>
+<p><strong>Scenario:</strong> Watcher daemon crashes or stops</p>
+<p><strong>Detection:</strong>
+- Process not running
+- No recent log entries
+- Systemd/supervisor health check</p>
+<p><strong>Recovery:</strong>
+- Automatic restart via systemd
+- On restart, scan for missed signals
+- Process any pending .training_complete files</p>
+<p><strong>Prevention:</strong>
+- Robust error handling
+- Graceful degradation
+- Resource limits (prevent OOM)</p>
+<hr />
+<h3 id="slurm-job-failures-ssrde">Slurm Job Failures (SSRDE)<a class="headerlink" href="#slurm-job-failures-ssrde" title="Permanent link">&para;</a></h3>
+<p><strong>Scenario:</strong> Evaluation or analysis job fails</p>
+<p><strong>Detection:</strong>
+- Non-zero exit code
+- Slurm job state = FAILED
+- No .eval_complete or .analysis_complete signal</p>
+<p><strong>Recovery:</strong>
+- Check evaluation.db for status
+- Inspect job logs
+- Retry job with adjusted resources if needed</p>
+<p><strong>Prevention:</strong>
+- Resource requests with headroom
+- Input validation before job start
+- Checkpoint intermediate results</p>
+<hr />
+<h3 id="network-drive-issues">Network Drive Issues<a class="headerlink" href="#network-drive-issues" title="Permanent link">&para;</a></h3>
+<p><strong>Scenario:</strong> Network filesystem becomes unavailable</p>
+<p><strong>Detection:</strong>
+- I/O errors on file operations
+- Stale file handles
+- Timeouts on reads/writes</p>
+<p><strong>Recovery:</strong>
+- Retry with exponential backoff
+- Fall back to local disk for temporary files
+- Alert if prolonged outage</p>
+<p><strong>Prevention:</strong>
+- Graceful handling of I/O errors
+- Avoid holding files open unnecessarily
+- Use local disk for temporary computation</p>
+<hr />
+<h3 id="database-corruption">Database Corruption<a class="headerlink" href="#database-corruption" title="Permanent link">&para;</a></h3>
+<p><strong>Scenario:</strong> SQLite database becomes corrupted</p>
+<p><strong>Detection:</strong>
+- SQLite integrity check fails
+- Cannot open database
+- Corrupt data returned</p>
+<p><strong>Recovery:</strong>
+- Restore from backup
+- Rebuild from signal files and logs
+- Manual intervention required</p>
+<p><strong>Prevention:</strong>
+- Regular automated backups
+- WAL mode (reduces corruption risk)
+- Don't kill processes mid-transaction</p>
+<hr />
+<h2 id="monitoring-and-observability">Monitoring and Observability<a class="headerlink" href="#monitoring-and-observability" title="Permanent link">&para;</a></h2>
+<h3 id="metrics-to-track">Metrics to Track<a class="headerlink" href="#metrics-to-track" title="Permanent link">&para;</a></h3>
+<p><strong>Training Metrics (wild_west → MLflow):</strong>
+- Loss per epoch
+- Learning rate
+- Gradient norms
+- Training throughput (samples/sec)
+- GPU utilization
+- Checkpoint sizes</p>
+<p><strong>Evaluation Metrics (SSRDE → MLflow):</strong>
+- Accuracy per dataset
+- Perplexity
+- F1 scores
+- Evaluation duration
+- Dataset coverage</p>
+<p><strong>System Metrics (all servers):</strong>
+- Disk usage on shared drive
+- Network I/O to shared drive
+- Slurm queue depth
+- Job wait times
+- Job failure rates</p>
+<p><strong>Pipeline Metrics:</strong>
+- Training → evaluation latency
+- Evaluation → analysis latency
+- End-to-end pipeline duration
+- Signal detection latency</p>
+<hr />
+<h3 id="logging-standards">Logging Standards<a class="headerlink" href="#logging-standards" title="Permanent link">&para;</a></h3>
+<p><strong>All Log Files:</strong>
+- Timestamps in ISO 8601 format
+- Structured logging (JSON where possible)
+- Log levels (DEBUG, INFO, WARN, ERROR)
+- Context: experiment name, job ID, hostname</p>
+<p><strong>Log Locations:</strong>
+- Training: <code>/mnt/shared/subject-drop/logs/training/{experiment_name}.log</code>
+- Evaluation: <code>/mnt/shared/subject-drop/logs/evaluation/{slurm_job_id}.log</code>
+- Analysis: <code>/mnt/shared/subject-drop/logs/analysis/{slurm_job_id}.log</code>
+- Watcher: <code>/mnt/shared/subject-drop/logs/watcher.log</code></p>
+<p><strong>Log Rotation:</strong>
+- Rotate daily or at 100MB
+- Keep 30 days of logs
+- Compress old logs</p>
+<hr />
+<h3 id="alerting">Alerting<a class="headerlink" href="#alerting" title="Permanent link">&para;</a></h3>
+<p><strong>Critical Alerts:</strong>
+- Watcher daemon down for &gt;5 minutes
+- Repeated Slurm job failures (&gt;3 in a row)
+- Disk space &lt;10% on shared drive
+- Database corruption detected</p>
+<p><strong>Warning Alerts:</strong>
+- Slurm queue depth &gt;50 jobs
+- Job wait time &gt;24 hours
+- Evaluation taking &gt;2x expected time
+- Missing expected signal files</p>
+<p><strong>Alert Channels:</strong>
+- Email notifications
+- Dashboard warnings
+- Optional: Slack/Discord webhooks</p>
+<hr />
+<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h2>
+<h3 id="access-control">Access Control<a class="headerlink" href="#access-control" title="Permanent link">&para;</a></h3>
+<p><strong>Shared Drive:</strong>
+- User/group permissions on directories
+- Training outputs: writable by wild_west user
+- Evaluation outputs: writable by SSRDE user
+- All readable by monitoring server</p>
+<p><strong>MLflow:</strong>
+- Basic authentication (username/password)
+- Or reverse proxy (nginx) with OAuth
+- HTTPS required for internet access</p>
+<p><strong>Dashboard:</strong>
+- Same authentication as MLflow
+- Read-only access to databases
+- No write operations exposed</p>
+<hr />
+<h3 id="data-protection">Data Protection<a class="headerlink" href="#data-protection" title="Permanent link">&para;</a></h3>
+<p><strong>Sensitive Data:</strong>
+- No credentials in signal files
+- No PII in logs
+- Sanitize error messages</p>
+<p><strong>Network Security:</strong>
+- Firewall rules for monitoring server
+- SSH key-based auth for watcher → SSRDE
+- TLS for MLflow if internet-facing</p>
+<hr />
+<h2 id="implementation-phases">Implementation Phases<a class="headerlink" href="#implementation-phases" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1-foundation-week-1">Phase 1: Foundation (Week 1)<a class="headerlink" href="#phase-1-foundation-week-1" title="Permanent link">&para;</a></h3>
+<p><strong>Objectives:</strong>
+- Set up directory structure on shared drive
+- Create SQLite database schemas
+- Implement training completion hook</p>
+<p><strong>Deliverables:</strong>
+- Directory structure created
+- Empty databases initialized
+- Training hook integrated and tested</p>
+<p><strong>Testing:</strong>
+- Run training, verify signal file created
+- Verify database updated
+- Verify MLflow metrics logged</p>
+<hr />
+<h3 id="phase-2-automation-core-week-2">Phase 2: Automation Core (Week 2)<a class="headerlink" href="#phase-2-automation-core-week-2" title="Permanent link">&para;</a></h3>
+<p><strong>Objectives:</strong>
+- Implement watcher daemon
+- Create Slurm job templates
+- Test evaluation job submission</p>
+<p><strong>Deliverables:</strong>
+- Watcher daemon code
+- Slurm templates for evaluation
+- Systemd service file for watcher</p>
+<p><strong>Testing:</strong>
+- Trigger training completion, verify eval job submitted
+- Verify Slurm job runs successfully
+- Verify .eval_complete signal created</p>
+<hr />
+<h3 id="phase-3-analysis-pipeline-week-3">Phase 3: Analysis Pipeline (Week 3)<a class="headerlink" href="#phase-3-analysis-pipeline-week-3" title="Permanent link">&para;</a></h3>
+<p><strong>Objectives:</strong>
+- Set up R targets pipeline
+- Create Slurm job template for analysis
+- Test end-to-end pipeline</p>
+<p><strong>Deliverables:</strong>
+- R targets configuration
+- Analysis Slurm template
+- Complete pipeline test</p>
+<p><strong>Testing:</strong>
+- Run full pipeline: training → eval → analysis
+- Verify all outputs generated
+- Verify all databases updated</p>
+<hr />
+<h3 id="phase-4-monitoring-week-4">Phase 4: Monitoring (Week 4)<a class="headerlink" href="#phase-4-monitoring-week-4" title="Permanent link">&para;</a></h3>
+<p><strong>Objectives:</strong>
+- Deploy MLflow server
+- Build job monitoring dashboard
+- Configure alerts</p>
+<p><strong>Deliverables:</strong>
+- MLflow running on monitoring server
+- Dashboard accessible via web
+- Alert system configured</p>
+<p><strong>Testing:</strong>
+- Access MLflow UI from internet
+- Verify dashboard shows current jobs
+- Trigger test alert</p>
+<hr />
+<h3 id="phase-5-hardening-week-5">Phase 5: Hardening (Week 5)<a class="headerlink" href="#phase-5-hardening-week-5" title="Permanent link">&para;</a></h3>
+<p><strong>Objectives:</strong>
+- Add error handling and retries
+- Implement backup strategy
+- Document operations</p>
+<p><strong>Deliverables:</strong>
+- Comprehensive error handling
+- Automated backups
+- Operations runbook</p>
+<p><strong>Testing:</strong>
+- Fault injection testing
+- Disaster recovery drill
+- Performance testing under load</p>
+<hr />
+<h2 id="operational-procedures">Operational Procedures<a class="headerlink" href="#operational-procedures" title="Permanent link">&para;</a></h2>
+<h3 id="starting-a-training-run">Starting a Training Run<a class="headerlink" href="#starting-a-training-run" title="Permanent link">&para;</a></h3>
+<p><strong>On wild_west:</strong></p>
+<ol>
+<li>Prepare training config in <code>config/experiments/{experiment_name}.yaml</code></li>
+<li>Ensure GPU resources available (check with other users)</li>
+<li>Run training script: <code>python train.py --config {experiment_name}.yaml</code></li>
+<li>Monitor via MLflow UI</li>
+<li>Training hook automatically triggers downstream pipeline</li>
+</ol>
+<p><strong>No manual intervention needed after training starts.</strong></p>
+<hr />
+<h3 id="monitoring-job-progress">Monitoring Job Progress<a class="headerlink" href="#monitoring-job-progress" title="Permanent link">&para;</a></h3>
+<p><strong>Via MLflow UI:</strong>
+- Navigate to <code>http://monitoring-server:5000</code>
+- View experiment runs
+- Inspect metrics, logs, artifacts</p>
+<p><strong>Via Dashboard:</strong>
+- Navigate to <code>http://monitoring-server:8000</code>
+- View current Slurm queue
+- Check job statuses</p>
+<p><strong>Via Command Line:</strong>
+- SSH to SSRDE: <code>ssh ssrde</code>
+- Check queue: <code>squeue -u $USER</code>
+- View logs: <code>tail -f /mnt/shared/subject-drop/logs/evaluation/{job_id}.log</code></p>
+<hr />
+<h3 id="handling-failed-jobs">Handling Failed Jobs<a class="headerlink" href="#handling-failed-jobs" title="Permanent link">&para;</a></h3>
+<p><strong>Evaluation Job Failed:</strong></p>
+<ol>
+<li>Check job log: <code>logs/evaluation/{job_id}.log</code></li>
+<li>Identify error (resource limit, code bug, data issue)</li>
+<li>Fix underlying issue</li>
+<li>Manually resubmit or trigger via watcher</li>
+<li>Update evaluation.db if needed</li>
+</ol>
+<p><strong>Analysis Job Failed:</strong></p>
+<ol>
+<li>Check job log: <code>logs/analysis/{job_id}.log</code></li>
+<li>Check R targets cache for partial results</li>
+<li>Fix error in R pipeline</li>
+<li>Rerun: <code>Rscript -e "targets::tar_make()"</code></li>
+<li>Slurm resubmission if needed</li>
+</ol>
+<hr />
+<h3 id="database-maintenance">Database Maintenance<a class="headerlink" href="#database-maintenance" title="Permanent link">&para;</a></h3>
+<p><strong>Weekly Tasks:</strong>
+- Run <code>VACUUM</code> on SQLite databases
+- Verify database integrity
+- Check disk space usage</p>
+<p><strong>Monthly Tasks:</strong>
+- Archive old completed jobs (&gt;90 days)
+- Rotate logs
+- Review performance metrics</p>
+<hr />
+<h3 id="backup-strategy">Backup Strategy<a class="headerlink" href="#backup-strategy" title="Permanent link">&para;</a></h3>
+<p><strong>What to Backup:</strong>
+- SQLite databases (state/)
+- MLflow backend database
+- Configurations (config/)
+- Critical logs</p>
+<p><strong>Backup Frequency:</strong>
+- Databases: Daily
+- Logs: Weekly
+- Configs: On change (git)</p>
+<p><strong>Backup Location:</strong>
+- Separate network location
+- Not on same shared drive</p>
+<p><strong>Restore Testing:</strong>
+- Monthly restore drill
+- Document restore procedure</p>
+<hr />
+<h2 id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permanent link">&para;</a></h2>
+<h3 id="filesystem-io">Filesystem I/O<a class="headerlink" href="#filesystem-io" title="Permanent link">&para;</a></h3>
+<p><strong>Strategies:</strong>
+- Batch file writes
+- Use local disk for temporary files
+- Avoid unnecessary stat() calls
+- Stream large files (don't read entirely into memory)</p>
+<p><strong>Monitoring:</strong>
+- Track I/O wait times
+- Monitor network filesystem latency
+- Alert on slow I/O</p>
+<hr />
+<h3 id="slurm-efficiency">Slurm Efficiency<a class="headerlink" href="#slurm-efficiency" title="Permanent link">&para;</a></h3>
+<p><strong>Strategies:</strong>
+- Right-size resource requests
+- Use array jobs for batch evaluation
+- Pre-empt low-priority jobs if needed
+- Monitor queue depth</p>
+<p><strong>Monitoring:</strong>
+- Track job wait times
+- Measure queue utilization
+- Identify resource bottlenecks</p>
+<hr />
+<h3 id="database-performance">Database Performance<a class="headerlink" href="#database-performance" title="Permanent link">&para;</a></h3>
+<p><strong>Strategies:</strong>
+- Use WAL mode
+- Index frequently queried columns
+- Periodic VACUUM
+- Connection pooling if needed</p>
+<p><strong>Monitoring:</strong>
+- Query execution times
+- Database size growth
+- Lock contention</p>
+<hr />
+<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
+<h3 id="potential-additions">Potential Additions<a class="headerlink" href="#potential-additions" title="Permanent link">&para;</a></h3>
+<p><strong>Redis Streams (if needed):</strong>
+- For complex event routing on SSRDE
+- Better separation of watcher and job submitter
+- Multiple consumer groups</p>
+<p><strong>Notification System:</strong>
+- Email on training completion
+- Slack/Discord integration
+- SMS for critical failures</p>
+<p><strong>Web API:</strong>
+- REST API for job submission
+- Programmatic access to status
+- Webhook support for external tools</p>
+<p><strong>Advanced Analysis:</strong>
+- Automated model comparison
+- Statistical significance testing
+- Automated report generation</p>
+<p><strong>Containerization:</strong>
+- Docker containers for reproducibility
+- Singularity on Slurm for consistency</p>
+<hr />
+<h2 id="appendix-a-configuration-files">Appendix A: Configuration Files<a class="headerlink" href="#appendix-a-configuration-files" title="Permanent link">&para;</a></h2>
+<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<p><strong>All Servers:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SHARED_DRIVE</span><span class="o">=</span><span class="s2">&quot;/mnt/shared/subject-drop&quot;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MLFLOW_TRACKING_URI</span><span class="o">=</span><span class="s2">&quot;http://monitoring-server:5000&quot;</span>
+</code></pre></div></p>
+<p><strong>SSRDE Only:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">WATCHER_CONFIG</span><span class="o">=</span><span class="s2">&quot;/mnt/shared/subject-drop/config/watcher.yaml&quot;</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SLURM_ACCOUNT</span><span class="o">=</span><span class="s2">&quot;your_account&quot;</span>
+</code></pre></div></p>
+<hr />
+<h3 id="watcheryaml-ssrde">watcher.yaml (SSRDE)<a class="headerlink" href="#watcheryaml-ssrde" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Configuration for watcher daemon</p>
+<p><strong>Contents:</strong>
+- Paths to watch
+- Slurm submission parameters
+- Retry policies
+- Alert configuration
+- Database connection strings</p>
+<hr />
+<h2 id="appendix-b-troubleshooting-guide">Appendix B: Troubleshooting Guide<a class="headerlink" href="#appendix-b-troubleshooting-guide" title="Permanent link">&para;</a></h2>
+<h3 id="problem-signal-file-not-detected">Problem: Signal file not detected<a class="headerlink" href="#problem-signal-file-not-detected" title="Permanent link">&para;</a></h3>
+<p><strong>Possible Causes:</strong>
+- Watcher daemon not running
+- Filesystem event not fired
+- Signal file in wrong location</p>
+<p><strong>Diagnosis:</strong>
+1. Check watcher process: <code>ps aux | grep watcher</code>
+2. Check watcher log for errors
+3. Verify signal file exists and is readable</p>
+<p><strong>Solution:</strong>
+- Restart watcher if stopped
+- Manually trigger job submission
+- Check filesystem mount</p>
+<hr />
+<h3 id="problem-slurm-job-stuck-in-pending">Problem: Slurm job stuck in pending<a class="headerlink" href="#problem-slurm-job-stuck-in-pending" title="Permanent link">&para;</a></h3>
+<p><strong>Possible Causes:</strong>
+- Resource constraints
+- Account quota exceeded
+- Dependency not satisfied</p>
+<p><strong>Diagnosis:</strong>
+1. Check job status: <code>squeue -j {job_id}</code>
+2. Check reason: <code>scontrol show job {job_id}</code>
+3. Check account limits: <code>sacctmgr show assoc where user=$USER</code></p>
+<p><strong>Solution:</strong>
+- Adjust resource requests
+- Wait for resources to free
+- Contact SSRDE admin if quota issue</p>
+<hr />
+<h3 id="problem-mlflow-not-logging-metrics">Problem: MLflow not logging metrics<a class="headerlink" href="#problem-mlflow-not-logging-metrics" title="Permanent link">&para;</a></h3>
+<p><strong>Possible Causes:</strong>
+- MLflow server down
+- Network connectivity issue
+- Incorrect tracking URI</p>
+<p><strong>Diagnosis:</strong>
+1. Check MLflow server: <code>curl http://monitoring-server:5000</code>
+2. Check network: <code>ping monitoring-server</code>
+3. Verify MLFLOW_TRACKING_URI</p>
+<p><strong>Solution:</strong>
+- Restart MLflow server
+- Fix network routing
+- Correct environment variable</p>
+<hr />
+<h2 id="appendix-c-glossary">Appendix C: Glossary<a class="headerlink" href="#appendix-c-glossary" title="Permanent link">&para;</a></h2>
+<p><strong>Signal File:</strong> JSON file used to trigger downstream processes (e.g., .training_complete)</p>
+<p><strong>Watcher Daemon:</strong> Long-running process that monitors filesystem for signal files</p>
+<p><strong>Slurm:</strong> Job scheduler and workload manager for compute clusters</p>
+<p><strong>MLflow:</strong> Platform for ML lifecycle management (tracking, models, deployment)</p>
+<p><strong>R targets:</strong> Pipeline toolkit for R that ensures reproducibility</p>
+<p><strong>Parquet:</strong> Columnar storage format optimized for analytics</p>
+<p><strong>WAL Mode:</strong> Write-Ahead Logging mode for SQLite (better concurrency)</p>
+<p><strong>SSRDE:</strong> Shared compute server with Slurm scheduling</p>
+<p><strong>wild_west:</strong> GPU server for manual training workloads</p>
+<hr />
+<h2 id="document-history">Document History<a class="headerlink" href="#document-history" title="Permanent link">&para;</a></h2>
+<p><strong>v1.0 (2025-09-30):</strong> Initial specification for implementation</p>
+<hr />
+<h2 id="contact-and-support">Contact and Support<a class="headerlink" href="#contact-and-support" title="Permanent link">&para;</a></h2>
+<p><strong>For Questions:</strong>
+- Review this specification document
+- Check logs in <code>/mnt/shared/subject-drop/logs/</code>
+- Query SQLite databases for state information
+- Inspect MLflow UI for run details</p>
+<p><strong>For Issues:</strong>
+- File bug reports with logs attached
+- Include experiment name and relevant timestamps
+- Provide steps to reproduce</p>
+<hr />
+<p><em>End of Specification</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
