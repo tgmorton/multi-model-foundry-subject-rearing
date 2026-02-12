@@ -6,7 +6,7 @@ metadata:
 spec:
   completionMode: Indexed
   completions: 27
-  parallelism: 9
+  parallelism: 27
   backoffLimit: 2
   template:
     spec:
