@@ -11,24 +11,22 @@ spec:
   template:
     spec:
       initContainers:
-      - name: clone-repo
-        image: alpine/git
-        args:
-        - clone
-        - --single-branch
-        - --depth=1
-        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
-        - /opt/repo
+      - name: copy-repo
+        image: alpine
+        command: ["sh", "-c", "cp -a /mnt/data/repo/. /opt/repo/"]
         resources:
           requests:
-            memory: 1Gi
+            memory: 512Mi
             cpu: "200m"
           limits:
-            memory: 1Gi
+            memory: 512Mi
             cpu: "200m"
         volumeMounts:
         - name: repo
           mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+          readOnly: true
       containers:
       - name: sweep-runner
         image: python:3.10-slim
