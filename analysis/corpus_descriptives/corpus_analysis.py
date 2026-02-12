@@ -270,7 +270,7 @@ def childes_child_vs_adult(
         pl.col("genre").str.starts_with("CHILDES")
     )
 
-    available = set(childes.columns)
+    available = set(childes.collect_schema().names())
     aggs: list = [
         pl.count().alias("n_sentences"),
         pl.col("n_tokens").sum().alias("total_tokens"),
@@ -378,6 +378,151 @@ def childes_person_distribution(
     return raw.with_columns(
         (pl.col("count") / pl.col("count").sum().over("role")).alias("proportion")
     ).sort(["role", "person"])
+
+
+# -- 4e: Age-stratified developmental analyses --
+
+_AGE_BINS = [
+    (12, 24, "12-23m"),
+    (24, 36, "24-35m"),
+    (36, 48, "36-47m"),
+    (48, 60, "48-59m"),
+    (60, 200, "60m+"),
+]
+
+
+def _add_age_band(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """Add an ``age_band`` column based on ``child_age_months``."""
+    expr = pl.when(pl.col("child_age_months").is_null()).then(pl.lit(None))
+    for lo, hi, label in _AGE_BINS:
+        expr = expr.when(
+            (pl.col("child_age_months") >= lo) & (pl.col("child_age_months") < hi)
+        ).then(pl.lit(label))
+    expr = expr.otherwise(pl.lit(None))
+    return lf.with_columns(expr.alias("age_band"))
+
+
+def childes_developmental_trajectory(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    min_age: int = 12,
+) -> pl.DataFrame:
+    """
+    §4e – Developmental trajectory: phenomenon rates by child age band.
+
+    Returns rates for child speakers only, grouped by age band.
+    Ages below *min_age* months are excluded (pre-linguistic / misassigned).
+    """
+    lf = _ensure_lazy(df)
+    childes = lf.filter(
+        pl.col("genre").str.starts_with("CHILDES")
+        & (pl.col("role") == "child")
+        & pl.col("child_age_months").is_not_null()
+        & (pl.col("child_age_months") >= min_age)
+    )
+    childes = _add_age_band(childes)
+
+    available = set(childes.collect_schema().names())
+    aggs: list = [
+        pl.len().alias("n_sentences"),
+        pl.col("n_tokens").sum().alias("total_tokens"),
+        pl.col("n_tokens").mean().alias("mean_sent_length"),
+    ]
+
+    for flag in [
+        "has_null_subject", "has_overt_subject_pronoun",
+        "has_expletive", "is_fragment", "is_imperative",
+        "has_relative_clause",
+    ]:
+        if flag in available:
+            aggs.append(pl.col(flag).mean().alias(f"{flag}_rate"))
+
+    if "complexity" in available:
+        aggs.extend([
+            pl.col("complexity").struct.field("n_clauses").mean().alias("mean_clauses"),
+            pl.col("complexity").struct.field("max_embedding_depth").mean().alias("mean_depth"),
+        ])
+
+    return (
+        childes
+        .filter(pl.col("age_band").is_not_null())
+        .group_by("age_band")
+        .agg(aggs)
+        .sort("age_band")
+        .collect()
+    )
+
+
+def childes_pronoun_by_age(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    min_age: int = 12,
+) -> pl.DataFrame:
+    """
+    §4f – Pronoun person distribution by child age band.
+
+    Shows how 1st/2nd/3rd person pronoun usage shifts with age.
+    Ages below *min_age* months are excluded.
+    """
+    lf = _ensure_lazy(df)
+    childes = lf.filter(
+        pl.col("genre").str.starts_with("CHILDES")
+        & (pl.col("role") == "child")
+        & pl.col("child_age_months").is_not_null()
+        & (pl.col("child_age_months") >= min_age)
+    )
+    childes = _add_age_band(childes)
+
+    raw = (
+        childes
+        .filter(pl.col("age_band").is_not_null())
+        .select(["age_band", "pronouns"])
+        .explode("pronouns")
+        .filter(pl.col("pronouns").is_not_null())
+        .select([
+            "age_band",
+            pl.col("pronouns").struct.field("person").alias("person"),
+        ])
+        .group_by(["age_band", "person"])
+        .agg(pl.len().alias("count"))
+        .collect()
+    )
+
+    if raw.is_empty():
+        return raw
+
+    return raw.with_columns(
+        (pl.col("count") / pl.col("count").sum().over("age_band")).alias("proportion")
+    ).sort(["age_band", "person"])
+
+
+def childes_mlu_by_age(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    min_age: int = 12,
+) -> pl.DataFrame:
+    """
+    §4g – Mean length of utterance (MLU in words) by child age.
+
+    Returns per-month MLU for children only, for fine-grained plotting.
+    Ages below *min_age* months are excluded.
+    """
+    lf = _ensure_lazy(df)
+    childes = lf.filter(
+        pl.col("genre").str.starts_with("CHILDES")
+        & (pl.col("role") == "child")
+        & pl.col("child_age_months").is_not_null()
+        & (pl.col("child_age_months") >= min_age)
+    )
+
+    return (
+        childes
+        .group_by("child_age_months")
+        .agg([
+            pl.len().alias("n_sentences"),
+            pl.col("n_tokens").mean().alias("mlu_words"),
+        ])
+        .filter(pl.col("n_sentences") >= 50)  # drop sparse months
+        .sort("child_age_months")
+        .collect()
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -923,7 +1068,7 @@ def verb_null_subject_rate(
         .filter(pl.col("is_finite") == True)
         .group_by("verb_lemma")
         .agg([
-            (pl.col("subject_status") == "none").sum().alias("null_count"),
+            pl.col("subject_status").is_in(["none", "inherited", "imperative"]).sum().alias("null_count"),
             pl.count().alias("total_count"),
         ])
         .filter(pl.col("total_count") >= min_occurrences)
@@ -1697,6 +1842,317 @@ def null_subject_by_embedding_depth(
         .sort("depth")
         .collect()
     )
+
+
+# ---------------------------------------------------------------------------
+# Null-subject focused analyses
+# ---------------------------------------------------------------------------
+
+def null_subject_rate_by_clause_type(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    finite_only: bool = True,
+) -> pl.DataFrame:
+    """
+    Null-subject rate broken down by clause type (ROOT, ccomp, advcl, xcomp, …).
+
+    Optionally filters to finite clauses only.
+    """
+    lf = _ensure_lazy(df)
+    clauses = (
+        lf
+        .select("clauses")
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            pl.col("clauses").struct.field("clause_type").alias("clause_type"),
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+    )
+    if finite_only:
+        clauses = clauses.filter(pl.col("is_finite") == True)
+
+    return (
+        clauses
+        .group_by("clause_type")
+        .agg([
+            pl.col("subject_status").is_in(["none", "inherited", "imperative"]).sum().alias("null_count"),
+            pl.count().alias("total_count"),
+        ])
+        .with_columns(
+            (pl.col("null_count") / pl.col("total_count")).alias("null_rate")
+        )
+        .sort("null_rate", descending=True)
+        .collect()
+    )
+
+
+def subject_person_number_distribution(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    finite_only: bool = True,
+) -> pl.DataFrame:
+    """
+    Person x number distribution of overt subjects, broken down by genre.
+
+    Shows what person/number combinations exist in overt subjects,
+    useful for inferring what is being dropped in null-subject contexts.
+    """
+    lf = _ensure_lazy(df)
+    clauses = (
+        lf
+        .select(["genre", "clauses"])
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            "genre",
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("subject_person").alias("subject_person"),
+            pl.col("clauses").struct.field("subject_number").alias("subject_number"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+    )
+    if finite_only:
+        clauses = clauses.filter(pl.col("is_finite") == True)
+
+    return (
+        clauses
+        .filter(pl.col("subject_status") == "overt")
+        .filter(pl.col("subject_person").is_not_null())
+        .filter(pl.col("subject_number").is_not_null())
+        .group_by(["genre", "subject_person", "subject_number"])
+        .agg(pl.count().alias("count"))
+        .sort(["genre", "count"], descending=[False, True])
+        .collect()
+    )
+
+
+def null_subject_by_role_and_clause_type(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+) -> pl.DataFrame:
+    """
+    Null-subject rate by speaker role and clause type (CHILDES only, finite clauses).
+
+    Returns DataFrame with columns: role, clause_type, null_rate, n_clauses.
+    """
+    lf = _ensure_lazy(df)
+    childes = lf.filter(pl.col("genre").str.starts_with("CHILDES"))
+
+    clauses = (
+        childes
+        .select(["role", "clauses"])
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            "role",
+            pl.col("clauses").struct.field("clause_type").alias("clause_type"),
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+        .filter(pl.col("is_finite") == True)
+    )
+
+    return (
+        clauses
+        .group_by(["role", "clause_type"])
+        .agg([
+            pl.col("subject_status").is_in(["none", "inherited", "imperative"]).mean().alias("null_rate"),
+            pl.count().alias("n_clauses"),
+        ])
+        .sort(["role", "null_rate"], descending=[False, True])
+        .collect()
+    )
+
+
+def child_adult_null_subject_comparison(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+) -> pl.DataFrame:
+    """
+    Direct child vs adult null-subject rate comparison (CHILDES, clause-level).
+
+    Returns one row per role with overall finite null-subject rate and
+    a ROOT-only rate.
+    """
+    lf = _ensure_lazy(df)
+    _null = ["none", "inherited", "imperative"]
+    childes = lf.filter(
+        pl.col("genre").str.starts_with("CHILDES")
+        & pl.col("role").is_in(["child", "adult"])
+    )
+
+    clauses = (
+        childes
+        .select(["role", "clauses"])
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            "role",
+            pl.col("clauses").struct.field("clause_type").alias("clause_type"),
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+        .filter(pl.col("is_finite") == True)
+    )
+
+    overall = (
+        clauses
+        .group_by("role")
+        .agg([
+            pl.col("subject_status").is_in(_null).mean().alias("null_rate"),
+            pl.count().alias("n_clauses"),
+        ])
+    )
+
+    root_only = (
+        clauses
+        .filter(pl.col("clause_type") == "ROOT")
+        .group_by("role")
+        .agg([
+            pl.col("subject_status").is_in(_null).mean().alias("root_null_rate"),
+            pl.count().alias("root_n_clauses"),
+        ])
+    )
+
+    return (
+        overall
+        .join(root_only, on="role", how="left")
+        .sort("role")
+        .collect()
+    )
+
+
+def clause_level_null_rate_by_genre(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+) -> pl.DataFrame:
+    """
+    Clause-level null-subject rate by genre (finite clauses only).
+
+    Returns DataFrame with columns: genre, null_rate, n_clauses.
+    """
+    lf = _ensure_lazy(df)
+    _null = ["none", "inherited", "imperative"]
+
+    clauses = (
+        lf
+        .select(["genre", "clauses"])
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            "genre",
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+        .filter(pl.col("is_finite") == True)
+    )
+
+    return (
+        clauses
+        .group_by("genre")
+        .agg([
+            pl.col("subject_status").is_in(_null).mean().alias("null_rate"),
+            pl.count().alias("n_clauses"),
+        ])
+        .sort("genre")
+        .collect()
+    )
+
+
+def clause_level_developmental_trajectory(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+    min_age: int = 12,
+) -> pl.DataFrame:
+    """
+    Clause-level null-subject rate by child age band (CHILDES children only,
+    finite clauses), with sentence-level MLU joined in.
+
+    Returns DataFrame with columns: age_band, null_rate, n_clauses, mlu.
+    """
+    lf = _ensure_lazy(df)
+    _null = ["none", "inherited", "imperative"]
+
+    childes = lf.filter(
+        pl.col("genre").str.starts_with("CHILDES")
+        & (pl.col("role") == "child")
+        & pl.col("child_age_months").is_not_null()
+        & (pl.col("child_age_months") >= min_age)
+    )
+    childes = _add_age_band(childes)
+    childes = childes.filter(pl.col("age_band").is_not_null())
+
+    # Sentence-level MLU per age band
+    mlu = (
+        childes
+        .group_by("age_band")
+        .agg(pl.col("n_tokens").mean().alias("mlu"))
+    )
+
+    # Clause-level null-subject rate per age band
+    clauses = (
+        childes
+        .select(["age_band", "clauses"])
+        .explode("clauses")
+        .filter(pl.col("clauses").is_not_null())
+        .select([
+            "age_band",
+            pl.col("clauses").struct.field("subject_status").alias("subject_status"),
+            pl.col("clauses").struct.field("is_finite").alias("is_finite"),
+        ])
+        .filter(pl.col("is_finite") == True)
+    )
+
+    ns_rate = (
+        clauses
+        .group_by("age_band")
+        .agg([
+            pl.col("subject_status").is_in(_null).mean().alias("null_rate"),
+            pl.count().alias("n_clauses"),
+        ])
+    )
+
+    return (
+        ns_rate
+        .join(mlu, on="age_band", how="left")
+        .sort("age_band")
+        .collect()
+    )
+
+
+def null_subject_false_positive_audit(
+    df: Union[pl.DataFrame, pl.LazyFrame],
+) -> Dict[str, Any]:
+    """
+    Cross-tab has_null_subject x is_fragment x is_imperative.
+
+    Fragments (verbless sentences) are the only category excluded from
+    "true" null subjects.  Imperatives are a *subtype* of null subject
+    (covert "you"), so they are counted, not excluded.
+    """
+    lf = _ensure_lazy(df)
+    ns = lf.filter(pl.col("has_null_subject") == True)
+
+    total_null = ns.select(pl.count()).collect().item()
+
+    fragment_and_null = (
+        ns.filter(pl.col("is_fragment") == True)
+        .select(pl.count()).collect().item()
+    )
+    imperative_and_null = (
+        ns.filter(pl.col("is_imperative") == True)
+        .select(pl.count()).collect().item()
+    )
+
+    # True null subjects: exclude only fragments (imperatives count)
+    true_null = (
+        ns.filter(pl.col("is_fragment") == False)
+        .select(pl.count()).collect().item()
+    )
+
+    return {
+        "total_null_subject": total_null,
+        "true_null_subject": true_null,
+        "fragment_overlap": fragment_and_null,
+        "imperative_count": imperative_and_null,
+        "true_null_rate": true_null / total_null if total_null > 0 else None,
+    }
 
 
 # ---------------------------------------------------------------------------

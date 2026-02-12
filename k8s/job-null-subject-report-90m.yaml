@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: null-subject-report-90m
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: report
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          pip install --no-cache-dir polars pyarrow &&
+          cd /opt/repo &&
+          PYTHONPATH=. python analysis/scripts/generate_null_subject_report.py \
+            /mnt/annotate/output/train_90M/annotated_corpus/ \
+            --layered \
+            --split-name train_90M \
+            --output /mnt/data/output/train_90M/null_subject_report.html
+        resources:
+          requests:
+            memory: 32Gi
+            cpu: "4"
+          limits:
+            memory: 32Gi
+            cpu: "4"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: annotate-data
+          mountPath: /mnt/annotate
+          readOnly: true
+        - name: analysis-data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: annotate-data
+        persistentVolumeClaim:
+          claimName: corpus-annotate-90m-data
+      - name: analysis-data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
