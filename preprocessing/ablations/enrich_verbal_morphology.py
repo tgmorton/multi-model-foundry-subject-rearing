@@ -143,6 +143,16 @@ def _enrich_verbal_morphology(
 
     for tok in doc:
         if tok.pos_ in ("VERB", "AUX"):
+            # Only enrich finite present-tense verbs — past tense lacks
+            # agreement morphology (except suppletive was/were), and
+            # participles/gerunds (VerbForm=Part, e.g. "giving") don't
+            # carry agreement either.
+            tense = tok.morph.get("Tense")
+            verb_form = tok.morph.get("VerbForm")
+            if not tense or "Pres" not in tense or not verb_form or "Fin" not in verb_form:
+                modified_parts.append(tok.text_with_ws)
+                continue
+
             subj = _find_subject(tok)
             if subj is not None:
                 pn = _get_person_number(subj)
@@ -154,9 +164,8 @@ def _enrich_verbal_morphology(
                         num_enriched += 1
                         continue
 
-            # No subject or unknown person/number → bare lemma (impoverish)
+            # Present tense but no subject or unknown person/number → bare lemma
             modified_parts.append(tok.lemma_ + tok.whitespace_)
-            # Not counted as enriched — this is the fallback impoverishment
         else:
             modified_parts.append(tok.text_with_ws)
 

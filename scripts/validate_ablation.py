@@ -49,17 +49,12 @@ def find_matching_files(original_dir: Path, ablated_dir: Path):
         yield genre, orig_files[name], abl_files[name]
 
 
-def sample_lines(original_path: Path, ablated_path: Path, n: int, rng: random.Random):
+def sample_lines_token(original_path: Path, ablated_path: Path, n: int, rng: random.Random):
     """
     Sample up to *n* aligned (original, ablated) line pairs at random indices.
 
-    If the ablated file has fewer lines (because whole-line ablation removed
-    some), we sample from the *original* file indices and pair with the ablated
-    line at the same index — which may be empty / different due to the ablation
-    pipeline's line-level processing.
-
     For token-replacement ablations where line counts are preserved, the indices
-    map 1-to-1.
+    map 1-to-1 between original and ablated files.
     """
     with open(original_path, "r", encoding="utf-8") as f:
         orig_lines = f.readlines()
@@ -79,6 +74,40 @@ def sample_lines(original_path: Path, ablated_path: Path, n: int, rng: random.Ra
         orig = orig_lines[idx].rstrip("\n")
         abl = abl_lines[idx].rstrip("\n") if idx < len(abl_lines) else "<LINE_REMOVED>"
         pairs.append((idx + 1, orig, abl))  # 1-indexed for human readability
+
+    return pairs
+
+
+def sample_lines_line_removal(original_path: Path, ablated_path: Path, n: int, rng: random.Random):
+    """
+    Sample up to *n* lines from the original file and label each as
+    ``<KEPT>`` or ``<REMOVED>`` based on whether the line appears in the
+    ablated file.
+
+    For line-removal ablations, original line N does NOT correspond to ablated
+    line N (removed lines shift all subsequent indices, and replacement pool
+    lines may be appended).  Instead, we check set membership.
+
+    Note: duplicate lines in the original may produce false-positive KEPT
+    labels.  For a small i.i.d. sample this is acceptable.
+    """
+    with open(original_path, "r", encoding="utf-8") as f:
+        orig_lines = f.readlines()
+    with open(ablated_path, "r", encoding="utf-8") as f:
+        abl_lines_set = set(line.rstrip("\n") for line in f.readlines())
+
+    max_idx = len(orig_lines) - 1
+    if max_idx < 0:
+        return []
+
+    sample_size = min(n, max_idx + 1)
+    indices = sorted(rng.sample(range(max_idx + 1), sample_size))
+
+    pairs = []
+    for idx in indices:
+        orig = orig_lines[idx].rstrip("\n")
+        label = "<KEPT>" if orig in abl_lines_set else "<REMOVED>"
+        pairs.append((idx + 1, orig, label))
 
     return pairs
 
@@ -124,6 +153,15 @@ def main():
         help="Random seed for reproducible sampling (default: 42).",
     )
     parser.add_argument(
+        "--mode", choices=["token", "line-removal"], default="token",
+        help=(
+            "Sampling mode. 'token' (default) compares original and ablated "
+            "lines at the same index (for token-replacement ablations). "
+            "'line-removal' samples from the original and labels each line "
+            "as <KEPT> or <REMOVED> based on set membership in the ablated file."
+        ),
+    )
+    parser.add_argument(
         "--output", required=True, type=Path,
         help="Output TSV file path.",
     )
@@ -151,8 +189,10 @@ def main():
     all_samples = []
     all_stats = []
 
+    sample_fn = sample_lines_line_removal if args.mode == "line-removal" else sample_lines_token
+
     for genre, orig_path, abl_path in matches:
-        pairs = sample_lines(orig_path, abl_path, args.n_per_genre, rng)
+        pairs = sample_fn(orig_path, abl_path, args.n_per_genre, rng)
         for line_num, orig, abl in pairs:
             all_samples.append((genre, line_num, orig, abl))
 

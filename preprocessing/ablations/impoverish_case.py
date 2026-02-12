@@ -120,6 +120,12 @@ def _impoverish_case(
     for tok in doc:
         lower = tok.lower_
         if tok.pos_ in target_pos and lower in mapping:
+            # Skip definite articles — PronType=Art distinguishes e.g.
+            # Italian "lo" (article, DET) from "lo" (clitic pronoun, PRON).
+            pron_type = tok.morph.get("PronType")
+            if pron_type and "Art" in pron_type:
+                modified_parts.append(tok.text_with_ws)
+                continue
             nom = mapping[lower]
             # Skip identity mappings (e.g. "si" → "si")
             if nom == lower:
@@ -183,6 +189,7 @@ def validate_impoverish_case_it(original: str, ablated: str, nlp) -> bool:
             if tok.pos_ in _IT_PRONOUN_POS
             and tok.lower_ in ITALIAN_CASE_TO_NOM
             and ITALIAN_CASE_TO_NOM[tok.lower_] != tok.lower_
+            and "Art" not in (tok.morph.get("PronType") or [])
         )
 
     orig_count = count_oblique(original_doc)

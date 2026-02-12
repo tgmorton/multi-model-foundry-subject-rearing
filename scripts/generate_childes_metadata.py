@@ -133,6 +133,10 @@ CORPUS_AGE_LOOKUP = {
     "Bernstein": 48,
     # Edwards — ~4 years
     "Edwards": 48,
+    # NewmanRatner — longitudinal, directory = age in months
+    "NewmanRatner/07": 7, "NewmanRatner/10": 10, "NewmanRatner/11": 11,
+    "NewmanRatner/13": 13, "NewmanRatner/18": 18, "NewmanRatner/21": 21,
+    "NewmanRatner/24": 24, "NewmanRatner/27": 27,
     # Brent — 9-15 months
     "Brent": 10,
     # Forrester — 12-36 months
@@ -187,16 +191,10 @@ def resolve_age(full_path: str) -> dict:
             result["age_source"] = "filename"
             return result
 
-    # Tier 2: Directory-level age (e.g., NewmanRatner/18/)
-    dir_m = re.match(r".*/(\d{1,2})$", corpus_path)
-    if dir_m:
-        dir_age = int(dir_m.group(1))
-        if dir_age <= 72:
-            result["age_months"] = dir_age
-            result["age_source"] = "directory"
-            return result
-
-    # Tier 3: Static corpus lookup (longest match wins)
+    # Tier 2: Static corpus lookup (longest match wins)
+    # Run this BEFORE directory-level parsing, since the lookup table
+    # has verified ages and avoids misinterpreting directory numbers
+    # (e.g. Fletcher/3 = 3 years, not 3 months).
     best_match = None
     best_len = 0
     for pattern, age in CORPUS_AGE_LOOKUP.items():
@@ -208,6 +206,18 @@ def resolve_age(full_path: str) -> dict:
         result["age_months"] = best_match
         result["age_source"] = "corpus_lookup"
         return result
+
+    # Tier 3: Directory-level age (e.g., EllisWeismer/TD/30/)
+    # Only used as a fallback when no lookup match exists.
+    # Require age >= 12 to avoid misinterpreting child/session IDs
+    # as ages (e.g. NewmanRatner/07/ is a session, not 7 months).
+    dir_m = re.match(r".*/(\d{1,2})$", corpus_path)
+    if dir_m:
+        dir_age = int(dir_m.group(1))
+        if 12 <= dir_age <= 72:
+            result["age_months"] = dir_age
+            result["age_source"] = "directory"
+            return result
 
     return result
 
