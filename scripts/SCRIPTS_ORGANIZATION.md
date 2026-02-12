@@ -167,7 +167,7 @@ sbatch scripts/a5000/submit_experiment.sh experiment_1
 sbatch scripts/p6000/run_phase_slurm.sh experiment_1 run
 
 # New
-sbatch scripts/ssrde/train.sh configs/experiment_1.yaml
+sbatch scripts/ssrde/train.sh configs/experiments/experiment_1.yaml
 ```
 
 #### Old TitanX/3070ti Scripts → Wild-West
@@ -177,7 +177,7 @@ sbatch scripts/ssrde/train.sh configs/experiment_1.yaml
 ./scripts/3070ti/run_experiment.sh experiment_1
 
 # New
-./scripts/wild_west/train.sh configs/experiment_1.yaml
+./scripts/wild_west/train.sh configs/experiments/experiment_1.yaml
 ```
 
 #### Old Run Scripts → New Train Scripts
@@ -187,7 +187,7 @@ python scripts/run_experiment.py 1
 ./scripts/run_direct_training.sh configs/exp1.yaml
 
 # New
-./scripts/wild_west/train.sh configs/experiment_1.yaml
+./scripts/wild_west/train.sh configs/experiments/experiment_1.yaml
 ```
 
 ## Why This Reorganization?

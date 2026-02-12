@@ -274,7 +274,7 @@ logging:
 
 ```bash
 # Test with tiny config
-./scripts/wild_west/train.sh configs/test_tiny.yaml
+./scripts/wild_west/train.sh configs/testing/test_tiny.yaml
 
 # Scale to full size
 sbatch --gres=gpu:4 scripts/ssrde/train.sh configs/production.yaml
@@ -515,7 +515,7 @@ sbatch scripts/ssrde/train.sh configs/your_config.yaml
 
 ## Further Reading
 
-- [Configuration Reference](../configs/TEMPLATE.yaml) - Full config options
+- [Configuration Reference](../configs/templates/TEMPLATE.yaml) - Full config options
 - [Architecture Guide](ARCHITECTURE.md) - Model architecture details
 - [Wild-West Guide](TRAINING_ON_WILD_WEST.md) - Direct GPU access
 - [SLURM Guide](TRAINING_ON_SLURM.md) - Cluster training

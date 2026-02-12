@@ -86,16 +86,16 @@ python scripts/run_experiment.py <experiment_number>
 **Option 2: Step-by-Step**
 ```bash
 # 1. Preprocess corpus
-python -m model_foundry.cli preprocess configs/experiment_1.yaml
+python -m model_foundry.cli preprocess configs/experiments/experiment_1.yaml
 
 # 2. Train tokenizer
-python -m model_foundry.cli train-tokenizer configs/experiment_1.yaml
+python -m model_foundry.cli train-tokenizer configs/experiments/experiment_1.yaml
 
 # 3. Train model
-python -m model_foundry.cli run configs/experiment_1.yaml
+python -m model_foundry.cli run configs/experiments/experiment_1.yaml
 
 # 4. Evaluate
-python -m evaluation.runners.evaluation_runner --config configs/eval_experiment_1.yaml
+python -m evaluation.runners.evaluation_runner --config configs/evaluation/eval_experiment_1.yaml
 ```
 
 ## Available Ablations

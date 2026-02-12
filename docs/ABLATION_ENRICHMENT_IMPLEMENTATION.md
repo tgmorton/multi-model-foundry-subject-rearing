@@ -259,13 +259,13 @@ All configs share the same model architecture (12-layer GPT-2, 768 hidden, 12 he
 | `preprocessing/ablations/enrich_verbal_morphology.py` | 221 |
 | `scripts/validate_ablation.py` | 185 |
 | `preprocessing/ablations/archived/__init__.py` | 6 |
-| `configs/experiment_en_remove_expletive_sentences.yaml` | 68 |
-| `configs/experiment_it_remove_expletive_sentences.yaml` | 68 |
-| `configs/experiment_en_impoverish_case.yaml` | 68 |
-| `configs/experiment_it_impoverish_case.yaml` | 68 |
-| `configs/experiment_en_lemmatize_verbs.yaml` | 67 |
-| `configs/experiment_it_lemmatize_verbs.yaml` | 67 |
-| `configs/experiment_en_enrich_verbal_morphology.yaml` | 68 |
+| `configs/experiments/experiment_en_remove_expletive_sentences.yaml` | 68 |
+| `configs/experiments/experiment_it_remove_expletive_sentences.yaml` | 68 |
+| `configs/experiments/experiment_en_impoverish_case.yaml` | 68 |
+| `configs/experiments/experiment_it_impoverish_case.yaml` | 68 |
+| `configs/experiments/experiment_en_lemmatize_verbs.yaml` | 67 |
+| `configs/experiments/experiment_it_lemmatize_verbs.yaml` | 67 |
+| `configs/experiments/experiment_en_enrich_verbal_morphology.yaml` | 68 |
 
 ### Modified (2 files)
 

@@ -35,7 +35,7 @@ wandb login
 
 ```bash
 # Run with example configuration
-python -m model_foundry.cli train configs/example_with_wandb.yaml
+python -m model_foundry.cli train configs/templates/example_with_wandb.yaml
 ```
 
 ### View Results

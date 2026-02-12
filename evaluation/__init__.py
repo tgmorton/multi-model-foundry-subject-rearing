@@ -15,7 +15,7 @@ Main components:
 - result_aggregator: Export results for statistical analysis
 
 Example usage:
-    python evaluation/evaluation_runner.py --config configs/evaluation_config.yaml
+    python evaluation/evaluation_runner.py --config configs/evaluation/evaluation_config.yaml
 """
 
 __version__ = "1.0.0"

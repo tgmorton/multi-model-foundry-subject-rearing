@@ -111,7 +111,7 @@ pip install -r requirements.txt
 wandb login
 
 # 3. Run training
-python -m model_foundry.cli train configs/example_with_wandb.yaml
+python -m model_foundry.cli train configs/templates/example_with_wandb.yaml
 ```
 
 See: [Getting Started Guide](model_foundry/guides/getting-started.md)
@@ -153,13 +153,13 @@ See: [Running Tests](model_foundry/testing/running-tests.md)
 
 ```bash
 # Copy example config
-cp configs/example_with_wandb.yaml configs/my_experiment.yaml
+cp configs/templates/example_with_wandb.yaml configs/experiments/my_experiment.yaml
 
 # Edit configuration
-vim configs/my_experiment.yaml
+vim configs/experiments/my_experiment.yaml
 
 # Run experiment
-python -m model_foundry.cli train configs/my_experiment.yaml
+python -m model_foundry.cli train configs/experiments/my_experiment.yaml
 ```
 
 See: [Configuration Guide](model_foundry/guides/configuration.md)

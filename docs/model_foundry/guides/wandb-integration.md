@@ -140,7 +140,7 @@ python -c "import wandb; wandb.login()"
 Edit your experiment YAML configuration to enable WandB:
 
 ```yaml
-# configs/experiment_with_wandb.yaml
+# configs/templates/experiment_with_wandb.yaml
 
 experiment_name: "exp0_baseline_wandb"
 
@@ -262,7 +262,7 @@ from model_foundry.config import ExperimentConfig
 import yaml
 
 # Load config with WandB enabled
-with open('configs/experiment_with_wandb.yaml', 'r') as f:
+with open('configs/templates/experiment_with_wandb.yaml', 'r') as f:
     config_dict = yaml.safe_load(f)
 
 config = ExperimentConfig(**config_dict)

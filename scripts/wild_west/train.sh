@@ -14,7 +14,7 @@
 #
 # Examples:
 #   ./scripts/wild_west/train.sh configs/gpt2_small.yaml
-#   ./scripts/wild_west/train.sh --lock-gpus configs/experiment_0_baseline.yaml
+#   ./scripts/wild_west/train.sh --lock-gpus configs/experiments/experiment_0_baseline.yaml
 #   ./scripts/wild_west/train.sh --gpus 2,3 --lock-gpus configs/bert_base.yaml
 #
 

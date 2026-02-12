@@ -25,7 +25,7 @@
 # Examples:
 #   sbatch scripts/ssrde/train.sh configs/gpt2_small.yaml
 #   sbatch --gres=gpu:4 --time=48:00:00 scripts/ssrde/train.sh configs/gpt2_large.yaml
-#   sbatch --partition=a5000 scripts/ssrde/train.sh configs/experiment_0_baseline.yaml
+#   sbatch --partition=a5000 scripts/ssrde/train.sh configs/experiments/experiment_0_baseline.yaml
 #
 
 set -euo pipefail

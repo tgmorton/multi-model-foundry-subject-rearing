@@ -7,20 +7,20 @@ This directory contains the evaluation system for the Subject Drop language mode
 ### 1. Basic Usage (Recommended: Parallel Runner)
 ```bash
 # Run full evaluation on experiment (multi-GPU with threading)
-python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation/evaluation_config.yaml
 
 # Evaluate single checkpoint
-python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml --checkpoint models/exp0_baseline/epoch_10/
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation/evaluation_config.yaml --checkpoint models/exp0_baseline/epoch_10/
 
 # Run with Singularity
 apptainer exec --nv --bind .:/workspace training.sif \
-    python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config.yaml
+    python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation/evaluation_config.yaml
 ```
 
 ### 1b. Single-Threaded Alternative
 ```bash
 # Use single-threaded runner if parallel causes issues
-python evaluation/runners/evaluation_runner.py --config configs/evaluation_config.yaml
+python evaluation/runners/evaluation_runner.py --config configs/evaluation/evaluation_config.yaml
 ```
 
 ### 2. Quick Testing
@@ -29,12 +29,12 @@ python evaluation/runners/evaluation_runner.py --config configs/evaluation_confi
 python evaluation/tests/test_evaluation.py
 
 # Test with limited samples
-python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation_config_test.yaml
+python evaluation/runners/parallel_evaluation_runner.py --config configs/evaluation/evaluation_config_test.yaml
 ```
 
 ## Configuration
 
-Edit `configs/evaluation_config.yaml`:
+Edit `configs/evaluation/evaluation_config.yaml`:
 
 ```yaml
 evaluation:

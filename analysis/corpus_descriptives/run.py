@@ -7,10 +7,10 @@ Supports two modes:
 
 Usage:
     # Analyzer mode
-    python -m analysis.corpus_descriptives.run --config configs/corpus_analysis_train90m.yaml
+    python -m analysis.corpus_descriptives.run --config configs/analysis/corpus/corpus_analysis_train90m.yaml
 
     # Annotation mode
-    python -m analysis.corpus_descriptives.run --config configs/corpus_analysis_train90m.yaml --annotate
+    python -m analysis.corpus_descriptives.run --config configs/analysis/corpus/corpus_analysis_train90m.yaml --annotate
 
     # Annotation mode (via config)
     # Set annotation_mode: true in the config YAML

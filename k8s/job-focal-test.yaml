@@ -49,7 +49,7 @@ spec:
             sentencepiece
 
           python scripts/sweep_weight_alpha.py \
-            --config configs/pronoun_recovery_it_train.yaml \
+            --config configs/analysis/pronoun_recovery/pronoun_recovery_it_train.yaml \
             --data-path /mnt/data/pronoun_recovery/annotations/it/checkpoint.jsonl \
             --output-dir /mnt/data/pronoun_recovery/models/focal_test \
             --alphas 0.0 \

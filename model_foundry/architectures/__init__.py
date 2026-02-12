@@ -88,7 +88,7 @@ def create_model_from_config(config, **kwargs) -> BaseLanguageModel:
         AttributeError: If config doesn't have required model field
 
     Example:
-        config = load_config("configs/experiment_gpt2.yaml")
+        config = load_config("configs/experiments/experiment_gpt2.yaml")
         model = create_model_from_config(config)
         print(f"Created {model.model_type} model")
     """

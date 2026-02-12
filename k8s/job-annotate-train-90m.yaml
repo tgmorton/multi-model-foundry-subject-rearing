@@ -55,7 +55,7 @@ spec:
           fi
 
           python3 -m analysis.corpus_descriptives.run \
-            --config configs/corpus_analysis_train90m.yaml \
+            --config configs/analysis/corpus/corpus_analysis_train90m.yaml \
             --annotate --file "$FILE_STEM"
         resources:
           requests:

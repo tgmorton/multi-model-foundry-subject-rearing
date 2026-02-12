@@ -68,7 +68,7 @@ spec:
         - name: PYTHONPATH
           value: "/opt/repo"
         - name: SWEEP_CONFIG
-          value: "configs/pronoun_recovery_it_train.yaml"
+          value: "configs/analysis/pronoun_recovery/pronoun_recovery_it_train.yaml"
         - name: SWEEP_DATA_PATH
           value: "/mnt/data/pronoun_recovery/annotations/it/checkpoint.jsonl"
         - name: SWEEP_OUTPUT_DIR

@@ -35,8 +35,8 @@ When no subject is found and the immediately preceding token has the same lemma 
 `en_core_web_lg` systematically mislabels inverted subjects as `attr` or `npadvmod` in short copular questions (e.g., "is today payday?", "was that magic?", "what color is the paper?"). Comparison against `en_core_web_trf` confirmed it handles all 14 cases correctly.
 
 Changed files:
-- `configs/corpus_analysis_test10m.yaml` — `spacy_model: en_core_web_trf`
-- `configs/corpus_analysis_train90m.yaml` — `spacy_model: en_core_web_trf`
+- `configs/analysis/corpus/corpus_analysis_test10m.yaml` — `spacy_model: en_core_web_trf`
+- `configs/analysis/corpus/corpus_analysis_train90m.yaml` — `spacy_model: en_core_web_trf`
 - `k8s/job-annotate-test-10m.yaml` — CUDA base image, `spacy-transformers` dependency, GPU resource requests
 - `k8s/job-annotate-train-90m.yaml` — same
 

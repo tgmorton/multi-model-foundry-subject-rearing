@@ -25,7 +25,7 @@ model_foundry/
 
 1. **[Main Documentation Index](/docs/README.md)** - Overview of all documentation
 2. **[Getting Started](/docs/model_foundry/guides/getting-started.md)** (planned) - Installation and first run
-3. **[Example Configuration](/configs/example_with_wandb.yaml)** - Ready-to-use config file
+3. **[Example Configuration](/configs/templates/example_with_wandb.yaml)** - Ready-to-use config file
 
 ---
 
@@ -166,7 +166,7 @@ Everything you need to know about testing:
 **🆕 New User**
 1. [Main Docs Index](/docs/README.md)
 2. [Getting Started](guides/getting-started.md) (planned)
-3. [Example Config](/configs/example_with_wandb.yaml)
+3. [Example Config](/configs/templates/example_with_wandb.yaml)
 
 **👨‍💻 Developer**
 1. [Training Refactoring](architecture/training-refactoring.md)

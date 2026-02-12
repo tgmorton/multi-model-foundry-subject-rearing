@@ -2,14 +2,14 @@
 CLI entry point for the pronoun recovery pipeline.
 
 Usage:
-    python -m analysis.pronoun_recovery.run synthetic --config configs/pronoun_recovery_en_synthetic.yaml
-    python -m analysis.pronoun_recovery.run sample --config configs/pronoun_recovery_en_annotate.yaml
-    python -m analysis.pronoun_recovery.run annotate --config configs/pronoun_recovery_en_annotate.yaml
-    python -m analysis.pronoun_recovery.run validate --config configs/pronoun_recovery_en_annotate.yaml
-    python -m analysis.pronoun_recovery.run train --config configs/pronoun_recovery_en_train.yaml
-    python -m analysis.pronoun_recovery.run insert --config configs/pronoun_recovery_en_insert.yaml
-    python -m analysis.pronoun_recovery.run train-seq2seq --config configs/pronoun_recovery_en_train_seq2seq.yaml
-    python -m analysis.pronoun_recovery.run insert-seq2seq --config configs/pronoun_recovery_en_insert_seq2seq.yaml
+    python -m analysis.pronoun_recovery.run synthetic --config configs/analysis/pronoun_recovery/pronoun_recovery_en_synthetic.yaml
+    python -m analysis.pronoun_recovery.run sample --config configs/analysis/pronoun_recovery/pronoun_recovery_en_annotate.yaml
+    python -m analysis.pronoun_recovery.run annotate --config configs/analysis/pronoun_recovery/pronoun_recovery_en_annotate.yaml
+    python -m analysis.pronoun_recovery.run validate --config configs/analysis/pronoun_recovery/pronoun_recovery_en_annotate.yaml
+    python -m analysis.pronoun_recovery.run train --config configs/analysis/pronoun_recovery/pronoun_recovery_en_train.yaml
+    python -m analysis.pronoun_recovery.run insert --config configs/analysis/pronoun_recovery/pronoun_recovery_en_insert.yaml
+    python -m analysis.pronoun_recovery.run train-seq2seq --config configs/analysis/pronoun_recovery/pronoun_recovery_en_train_seq2seq.yaml
+    python -m analysis.pronoun_recovery.run insert-seq2seq --config configs/analysis/pronoun_recovery/pronoun_recovery_en_insert_seq2seq.yaml
 """
 
 import logging

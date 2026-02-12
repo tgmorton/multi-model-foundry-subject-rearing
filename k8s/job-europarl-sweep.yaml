@@ -7,22 +7,20 @@ spec:
   completionMode: Indexed
   completions: 27
   parallelism: 27
-  backoffLimit: 2
+  backoffLimit: 54
+  backoffLimitPerIndex: 3
   template:
     spec:
       containers:
       - name: sweep-runner
-        image: python:3.10-slim
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
         command: ["/bin/bash", "-c"]
         args:
         - |
           set -e
+          echo "=== Pod index $JOB_COMPLETION_INDEX started at $(date) on $(hostname) ==="
 
-          # Install PyTorch with CUDA 12.1
-          pip install --no-cache-dir \
-            torch --index-url https://download.pytorch.org/whl/cu121
-
-          # Install project deps from PVC repo
+          # PyTorch already in image; install lightweight project deps only
           pip install --no-cache-dir \
             -r /mnt/data/repo/requirements.txt \
             accelerate>=0.26.0 \
@@ -31,19 +29,14 @@ spec:
             seqeval>=1.2.2 \
             sentencepiece
 
+          echo "=== pip install done at $(date) ==="
+
           # Run the sweep for this index
           cd /mnt/data/repo
-          python scripts/run_europarl_sweep.py
+          python -u scripts/run_europarl_sweep.py
         env:
-        - name: WANDB_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: wandb-secret-thomas
-              key: WANDB_API_KEY
-        - name: WANDB_ENTITY
-          value: "thmorton-uc-san-diego"
-        - name: WANDB_PROJECT
-          value: "pronoun-recovery"
+        - name: WANDB_MODE
+          value: "disabled"
         - name: PYTHONPATH
           value: "/mnt/data/repo"
         - name: SWEEP_DATA_DIR
@@ -54,11 +47,11 @@ spec:
           value: "expandable_segments:True"
         resources:
           requests:
-            memory: 16Gi
+            memory: 32Gi
             cpu: "4"
             nvidia.com/gpu: 1
           limits:
-            memory: 16Gi
+            memory: 32Gi
             cpu: "4"
             nvidia.com/gpu: 1
         volumeMounts:

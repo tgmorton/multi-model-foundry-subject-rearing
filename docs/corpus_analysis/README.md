@@ -7,12 +7,12 @@ Sentence-level linguistic annotation and analysis pipeline for multi-genre Engli
 ```bash
 # Annotate a corpus split
 python -m analysis.corpus_descriptives.run \
-  --config configs/corpus_analysis_train90m.yaml \
+  --config configs/analysis/corpus/corpus_analysis_train90m.yaml \
   --annotate
 
 # Run aggregate analyses over annotated data
 python -m analysis.corpus_descriptives.run \
-  --config configs/corpus_analysis_train90m.yaml
+  --config configs/analysis/corpus/corpus_analysis_train90m.yaml
 ```
 
 ```python

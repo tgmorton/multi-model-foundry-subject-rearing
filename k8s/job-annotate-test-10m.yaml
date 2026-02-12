@@ -41,7 +41,7 @@ spec:
             /mnt/data/raw/test_10M/childes.test \
             -o /mnt/data/raw/test_10M/childes_metadata.json &&
           python3 -m analysis.corpus_descriptives.run \
-            --config configs/corpus_analysis_test10m.yaml \
+            --config configs/analysis/corpus/corpus_analysis_test10m.yaml \
             --annotate
         resources:
           requests:

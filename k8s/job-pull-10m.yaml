@@ -35,7 +35,7 @@ spec:
           python -m spacy download en_core_web_lg &&
           cd /opt/repo &&
           python -m analysis.corpus_descriptives.run \
-            --config configs/corpus_analysis_pull10m.yaml
+            --config configs/analysis/corpus/corpus_analysis_pull10m.yaml
         resources:
           requests:
             memory: 4Gi

@@ -9,12 +9,12 @@ all alphas with a single LR.
 
 Usage (local):
     python scripts/sweep_weight_alpha.py \
-        --config configs/pronoun_recovery_it_train.yaml \
+        --config configs/analysis/pronoun_recovery/pronoun_recovery_it_train.yaml \
         --output-dir data/pronoun_recovery/models/it_sweep
 
 Usage (K8s / single alpha+lr):
     python scripts/sweep_weight_alpha.py \
-        --config configs/pronoun_recovery_it_train.yaml \
+        --config configs/analysis/pronoun_recovery/pronoun_recovery_it_train.yaml \
         --data-path /mnt/data/pronoun_recovery/annotations/it/checkpoint.jsonl \
         --output-dir /mnt/data/pronoun_recovery/models/it_sweep \
         --alphas 0.5 --learning-rate 1e-5 \

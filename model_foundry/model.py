@@ -33,7 +33,7 @@ def create_model(config: ExperimentConfig, **kwargs) -> BaseLanguageModel:
         ValueError: If architecture field is missing or invalid
 
     Example:
-        config = load_config("configs/experiment_gpt2.yaml")
+        config = load_config("configs/experiments/experiment_gpt2.yaml")
         model = create_model(config)
 
     Note:

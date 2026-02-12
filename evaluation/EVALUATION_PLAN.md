@@ -19,7 +19,7 @@ We will use the **training.def** singularity container dependencies:
 ### Execution Environment
 ```bash
 # Using Singularity/Apptainer
-apptainer exec --nv --bind .:/workspace training.sif python evaluation/evaluation_runner.py --config configs/eval_config.yaml
+apptainer exec --nv --bind .:/workspace training.sif python evaluation/evaluation_runner.py --config configs/evaluation/eval_config.yaml
 ```
 
 ## Evaluation Components
@@ -225,12 +225,12 @@ evaluation/results/
 # Single checkpoint evaluation
 python evaluation/evaluation_runner.py \
     --checkpoint models/exp0_baseline/checkpoint-1000/ \
-    --config configs/eval_config.yaml
+    --config configs/evaluation/eval_config.yaml
 
 # Full experiment evaluation
 python evaluation/evaluate_experiment.py \
     --experiment exp0_baseline \
-    --config configs/eval_config.yaml
+    --config configs/evaluation/eval_config.yaml
 ```
 
 ### Batch Evaluation Script

@@ -35,7 +35,7 @@ spec:
           python -m spacy download it_core_news_lg &&
           cd /opt/repo &&
           python -m analysis.corpus_descriptives.run \
-            --config configs/corpus_analysis_it_train90m.yaml \
+            --config configs/analysis/corpus/corpus_analysis_it_train90m.yaml \
             --annotate
         resources:
           requests:

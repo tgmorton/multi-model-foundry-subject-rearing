@@ -8,7 +8,7 @@ eval metrics to W&B.
 
 Setup:
     wandb sweep --entity thmorton-uc-san-diego --project pronoun-recovery \
-        configs/wandb_sweep.yaml
+        configs/sweeps/wandb_sweep.yaml
     # → returns SWEEP_ID
 
     wandb agent --count 1 thmorton-uc-san-diego/pronoun-recovery/SWEEP_ID
@@ -32,7 +32,7 @@ logger = logging.getLogger("sweep_agent")
 
 # Defaults — overridden by env vars in K8s
 CONFIG_PATH = os.environ.get(
-    "SWEEP_CONFIG", "configs/pronoun_recovery_it_train.yaml"
+    "SWEEP_CONFIG", "configs/analysis/pronoun_recovery/pronoun_recovery_it_train.yaml"
 )
 DATA_PATH = os.environ.get(
     "SWEEP_DATA_PATH", "data/pronoun_recovery/annotations/it/r1_final_clean.jsonl"

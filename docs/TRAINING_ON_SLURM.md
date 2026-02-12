@@ -23,7 +23,7 @@ sinfo -o "%20P %5a %.10l %16F %N"
 ### 2. Submit a Training Job
 ```bash
 # Submit with default settings (2 GPUs, 24 hours)
-sbatch scripts/ssrde/train.sh configs/experiment_0_baseline.yaml
+sbatch scripts/ssrde/train.sh configs/experiments/experiment_0_baseline.yaml
 
 # Submit with custom resources
 sbatch --gres=gpu:4 --time=48:00:00 scripts/ssrde/train.sh configs/gpt2_large.yaml
@@ -75,7 +75,7 @@ sbatch --time=48:00:00 scripts/ssrde/train.sh configs/bert_base.yaml
 sbatch --partition=a5000 scripts/ssrde/train.sh configs/mamba.yaml
 
 # With job name
-sbatch --job-name=gpt2_exp1 scripts/ssrde/train.sh configs/experiment_1.yaml
+sbatch --job-name=gpt2_exp1 scripts/ssrde/train.sh configs/experiments/experiment_1.yaml
 ```
 
 ## SLURM Options
@@ -159,7 +159,7 @@ cat logs/slurm-<JOBID>.err
 ### Submit Multiple Experiments
 ```bash
 # Simple loop
-for config in configs/experiment_*.yaml; do
+for config in configs/experiments/experiment_*.yaml; do
     sbatch scripts/ssrde/train.sh "$config"
 done
 
@@ -190,7 +190,7 @@ training:
 ### Manual Resumption
 If job times out, resubmit with same config - it will resume automatically:
 ```bash
-sbatch scripts/ssrde/train.sh configs/experiment_0_baseline.yaml
+sbatch scripts/ssrde/train.sh configs/experiments/experiment_0_baseline.yaml
 ```
 
 ## Resource Optimization
@@ -365,7 +365,7 @@ sbatch --gres=gpu:4 --time=48:00:00 scripts/ssrde/train.sh configs/production.ya
 ```bash
 # Submit all ablations as job array
 for i in {1..7}; do
-    sbatch --job-name=exp${i} scripts/ssrde/train.sh configs/experiment_${i}.yaml
+    sbatch --job-name=exp${i} scripts/ssrde/train.sh configs/experiments/experiment_${i}.yaml
 done
 ```
 

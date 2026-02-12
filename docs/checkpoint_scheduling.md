@@ -39,7 +39,7 @@ The checkpoint scheduling system provides intelligent, adaptive checkpoint gener
 3. **Save to separate file**:
    ```bash
    python -m model_foundry.cli generate-checkpoints configs/experiment.yaml \
-     --output configs/experiment_with_schedule.yaml
+     --output configs/experiments/experiment_with_schedule.yaml
    ```
 
 ### Direct Script Usage

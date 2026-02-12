@@ -129,7 +129,7 @@ subject-drop/
 Start: /docs/README.md
 ├── Quick Start section
 ├── /docs/model_foundry/guides/getting-started.md (planned)
-└── /configs/example_with_wandb.yaml
+└── /configs/templates/example_with_wandb.yaml
 ```
 
 **👨‍💻 Developer**

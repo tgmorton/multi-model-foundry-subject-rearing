@@ -21,13 +21,13 @@ Wild-West is a lightweight GPU management system for servers without SLURM. It p
 ### 2. Train a Model
 ```bash
 # Train using available GPUs
-./scripts/wild_west/train.sh configs/experiment_0_baseline.yaml
+./scripts/wild_west/train.sh configs/experiments/experiment_0_baseline.yaml
 
 # Train on specific GPUs
-CUDA_VISIBLE_DEVICES=1,2 ./scripts/wild_west/train.sh configs/experiment_0_baseline.yaml
+CUDA_VISIBLE_DEVICES=1,2 ./scripts/wild_west/train.sh configs/experiments/experiment_0_baseline.yaml
 
 # With GPU locking (recommended for long jobs)
-./scripts/wild_west/train.sh --lock-gpus configs/experiment_0_baseline.yaml
+./scripts/wild_west/train.sh --lock-gpus configs/experiments/experiment_0_baseline.yaml
 ```
 
 ## GPU Monitor
@@ -194,9 +194,9 @@ TORCH_CUDA_MEMORY_FRACTION=0.95                   # Leave some for OS
 All Model Foundry configs work directly:
 ```bash
 # Use any config from configs/
-./scripts/wild_west/train.sh configs/experiment_0_baseline.yaml
-./scripts/wild_west/train.sh configs/test_mamba_tiny.yaml
-./scripts/wild_west/train.sh configs/experiment_1_remove_expletives.yaml
+./scripts/wild_west/train.sh configs/experiments/experiment_0_baseline.yaml
+./scripts/wild_west/train.sh configs/testing/test_mamba_tiny.yaml
+./scripts/wild_west/train.sh configs/experiments/experiment_1_remove_expletives.yaml
 ```
 
 ## Monitoring Training
@@ -233,7 +233,7 @@ CUDA_VISIBLE_DEVICES=1 ./scripts/wild_west/train.sh configs/model.yaml
 ### Multiple Experiments
 ```bash
 # Sequential
-for config in configs/experiment_*.yaml; do
+for config in configs/experiments/experiment_*.yaml; do
     ./scripts/wild_west/train.sh --lock-gpus "$config"
 done
 

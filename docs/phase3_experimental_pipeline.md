@@ -80,22 +80,22 @@ python scripts/run_experiment.py 5 --checkpoint-step 1000
 
 ```bash
 # 1. Data preprocessing (including ablations)
-python -m model_foundry.cli preprocess-data configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli preprocess-data configs/experiments/experiment_1_remove_expletives.yaml
 
 # 2. Train tokenizer
-python -m model_foundry.cli train-tokenizer configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli train-tokenizer configs/experiments/experiment_1_remove_expletives.yaml
 
 # 3. Tokenize dataset
-python -m model_foundry.cli tokenize-dataset configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli tokenize-dataset configs/experiments/experiment_1_remove_expletives.yaml
 
 # 4. Preprocess data (chunking)
-python -m model_foundry.cli preprocess-data configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli preprocess-data configs/experiments/experiment_1_remove_expletives.yaml
 
 # 5. Generate checkpoint schedule
-python -m model_foundry.cli generate-checkpoints configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli generate-checkpoints configs/experiments/experiment_1_remove_expletives.yaml
 
 # 6. Train model
-python -m model_foundry.cli run configs/experiment_1_remove_expletives.yaml
+python -m model_foundry.cli run configs/experiments/experiment_1_remove_expletives.yaml
 
 # 7. Evaluate model
 python evaluation/surprisal.py models/experiment_1_remove_expletives/ tokenizers/experiment_1_remove_expletives/ evaluation/stimuli/subject_drop_stimuli.json

@@ -84,7 +84,7 @@ spec:
           python -c "
           from analysis.pronoun_recovery.config import EuroparlAlignmentConfig, load_config
           from analysis.pronoun_recovery.parallel_data.generator import EuroparlAlignmentGenerator
-          cfg = load_config('configs/pronoun_recovery_it_europarl_train_k8s.yaml', EuroparlAlignmentConfig)
+          cfg = load_config('configs/analysis/pronoun_recovery/pronoun_recovery_it_europarl_train_k8s.yaml', EuroparlAlignmentConfig)
           EuroparlAlignmentGenerator(cfg).run()
           "
 
@@ -93,7 +93,7 @@ spec:
           python -c "
           from analysis.pronoun_recovery.config import EuroparlAlignmentConfig, load_config
           from analysis.pronoun_recovery.parallel_data.generator import EuroparlAlignmentGenerator
-          cfg = load_config('configs/pronoun_recovery_it_europarl_test_k8s.yaml', EuroparlAlignmentConfig)
+          cfg = load_config('configs/analysis/pronoun_recovery/pronoun_recovery_it_europarl_test_k8s.yaml', EuroparlAlignmentConfig)
           EuroparlAlignmentGenerator(cfg).run()
           "
 
