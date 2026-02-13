@@ -65,8 +65,8 @@ spec:
             cpu: "2"
             nvidia.com/gpu: 1
           limits:
-            memory: 12Gi
-            cpu: "4"
+            memory: 9Gi
+            cpu: "2"
             nvidia.com/gpu: 1
         volumeMounts:
         - name: data
