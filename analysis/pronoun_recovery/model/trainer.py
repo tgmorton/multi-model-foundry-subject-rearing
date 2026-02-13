@@ -548,19 +548,44 @@ class PronounRecoveryTrainer:
         f1 = f1_score(true_labels, pred_labels, zero_division=0)
         accuracy = accuracy_score(true_labels, pred_labels)
 
+        # ── Binary detection: any-PRO vs NONE ─────────────────────────
+        flat_true = [l for seq in true_labels for l in seq]
+        flat_pred = [l for seq in pred_labels for l in seq]
+        true_bin = [0 if l == LABEL_NONE else 1 for l in flat_true]
+        pred_bin = [0 if l == LABEL_NONE else 1 for l in flat_pred]
+
+        from sklearn.metrics import f1_score as sk_f1
+        detection_f1 = float(sk_f1(true_bin, pred_bin, zero_division=0))
+
+        # Feature accuracy: among tokens where both true and pred are
+        # non-NONE, fraction with exact label match (person/number).
+        feat_correct = sum(
+            1 for t, p in zip(flat_true, flat_pred)
+            if t != LABEL_NONE and p != LABEL_NONE and t == p
+        )
+        feat_total = sum(
+            1 for t, p in zip(flat_true, flat_pred)
+            if t != LABEL_NONE and p != LABEL_NONE
+        )
+        feature_acc = feat_correct / feat_total if feat_total > 0 else 0.0
+
         metrics = {
             "precision": precision,
             "recall": recall,
             "f1": f1,
             "accuracy": accuracy,
+            "detection_f1": detection_f1,
+            "feature_accuracy": feature_acc,
         }
 
         logger.info(
-            "Eval metrics: P=%.4f R=%.4f F1=%.4f Acc=%.4f",
+            "Eval metrics: P=%.4f R=%.4f F1=%.4f Acc=%.4f | DetF1=%.4f FeatAcc=%.4f",
             precision,
             recall,
             f1,
             accuracy,
+            detection_f1,
+            feature_acc,
         )
 
         return metrics
