@@ -9,6 +9,7 @@ subword token of each word (the rest receive -100, which PyTorch
 CrossEntropyLoss ignores).
 """
 
+import gc
 import json
 import logging
 import re
@@ -364,11 +365,16 @@ def build_dataset(
         max_length,
     )
 
-    # Collect into column-oriented dict for Dataset.from_dict.
+    # Collect into column-oriented dict for Dataset.from_dict,
+    # then free the intermediate list of dicts to reduce peak memory.
     words_col = [ex["words"] for ex in examples]
     labels_col = [ex["labels"] for ex in examples]
+    del examples
+    gc.collect()
 
     dataset = Dataset.from_dict({"words": words_col, "labels": labels_col})
+    del words_col, labels_col
+    gc.collect()
 
     # Tokenise and align labels.
     dataset = dataset.map(
