@@ -36,7 +36,7 @@ import polars as pl
 # Constants
 # ---------------------------------------------------------------------------
 
-_NULL_STATUSES = ["none", "inherited", "imperative"]
+_NULL_STATUSES = ["none", "imperative"]
 
 _BASE_COLS = ["sentence_id", "genre", "role", "child_age_months", "n_tokens"]
 
