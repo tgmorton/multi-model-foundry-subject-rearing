@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ttq-data-gen
+  namespace: lemn-lab
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 1
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: data-gen
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          # Install PyTorch with CUDA 12.1
+          pip install --no-cache-dir \
+            torch --index-url https://download.pytorch.org/whl/cu121
+
+          # Install project deps + spaCy models
+          cd /opt/repo
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            accelerate>=0.26.0 \
+            sentencepiece
+
+          # Pin spaCy model versions explicitly
+          pip install --no-cache-dir \
+            https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.7.3/en_core_web_trf-3.7.3-py3-none-any.whl \
+            https://github.com/explosion/spacy-models/releases/download/it_core_news_lg-3.7.0/it_core_news_lg-3.7.0-py3-none-any.whl
+
+          # Stage TTQ source data from PVC
+          mkdir -p data/italian/ttq
+          if [ -f /mnt/data/italian/ttq/ttq.en ]; then
+            echo "=== TTQ data found on PVC ==="
+            ln -sf /mnt/data/italian/ttq/ttq.en data/italian/ttq/ttq.en
+            ln -sf /mnt/data/italian/ttq/ttq.it data/italian/ttq/ttq.it
+          else
+            echo "ERROR: TTQ data not found on PVC. Upload first via data-access pod."
+            exit 1
+          fi
+
+          echo "EN lines: $(wc -l < data/italian/ttq/ttq.en)"
+          echo "IT lines: $(wc -l < data/italian/ttq/ttq.it)"
+
+          # ── Run alignment pipeline on full 1.45M TTQ pairs ──
+          echo "=== Generating TTQ aligned data (1.45M pairs) ==="
+          python -c "
+          from analysis.pronoun_recovery.config import EuroparlAlignmentConfig, load_config
+          from analysis.pronoun_recovery.parallel_data.generator import EuroparlAlignmentGenerator
+          cfg = load_config('configs/analysis/pronoun_recovery/pronoun_recovery_it_ttq_align.yaml', EuroparlAlignmentConfig)
+          EuroparlAlignmentGenerator(cfg).run()
+          "
+
+          # ── Copy outputs to PVC ──
+          echo "=== Copying outputs to PVC ==="
+          mkdir -p /mnt/data/pronoun_recovery/europarl_aligned
+          cp -r data/pronoun_recovery/europarl_aligned/it_ttq /mnt/data/pronoun_recovery/europarl_aligned/
+
+          # Print summary
+          echo "=== TTQ data generation complete ==="
+          echo "Aligned checkpoint:"
+          wc -l /mnt/data/pronoun_recovery/europarl_aligned/it_ttq/aligned_checkpoint.jsonl
+          echo "Packed passages:"
+          wc -l /mnt/data/pronoun_recovery/europarl_aligned/it_ttq/packed_checkpoint.jsonl
+          if [ -f /mnt/data/pronoun_recovery/europarl_aligned/it_ttq/pilot_statistics.json ]; then
+            echo "=== Pilot statistics ==="
+            cat /mnt/data/pronoun_recovery/europarl_aligned/it_ttq/pilot_statistics.json
+          fi
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 9Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: europarl-sweep-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
