@@ -30,17 +30,13 @@ spec:
           mountPath: /opt/repo
       containers:
       - name: data-gen
-        image: python:3.10-slim
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
         command: ["/bin/bash", "-c"]
         args:
         - |
           set -e
 
-          # Install PyTorch with CUDA 12.1
-          pip install --no-cache-dir \
-            torch --index-url https://download.pytorch.org/whl/cu121
-
-          # Install project deps + spaCy models
+          # PyTorch already in image; install project deps + spaCy models
           cd /opt/repo
           pip install --no-cache-dir \
             -r requirements.txt \
