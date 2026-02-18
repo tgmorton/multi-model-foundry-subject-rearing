@@ -6,9 +6,9 @@ europarl_it_path: data/italian/ttq/ttq.it
 output_path: data/pronoun_recovery/europarl_aligned/it_ttq
 language: it
 
-# Process all pairs
+# Process 500K pairs (~70K aligned records at ~15% yield)
 start_line: 0
-end_line: 0
+end_line: 500000
 
 # spaCy models
 en_spacy_model: en_core_web_trf
