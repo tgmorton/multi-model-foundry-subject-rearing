@@ -64,6 +64,7 @@ spec:
 
           # ── Symlink output dir to PVC for checkpoint persistence ──
           mkdir -p /mnt/data/pronoun_recovery/europarl_aligned/it_ttq
+          mkdir -p data/pronoun_recovery/europarl_aligned
           ln -sfn /mnt/data/pronoun_recovery/europarl_aligned/it_ttq data/pronoun_recovery/europarl_aligned/it_ttq
 
           # ── Run alignment pipeline on full 1.45M TTQ pairs ──
