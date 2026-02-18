@@ -13,11 +13,11 @@ end_line: 0
 # spaCy models
 en_spacy_model: en_core_web_trf
 it_spacy_model: it_core_news_lg
-spacy_batch_size: 50
+spacy_batch_size: 128
 
 # awesome-align
 align_model: aneuraz/awesome-align-with-co
-align_batch_size: 32
+align_batch_size: 128
 
 # Pronoun extraction
 skip_all_it: true
@@ -28,8 +28,8 @@ max_tokens: 128
 max_length_ratio: 3.0
 
 # Processing
-chunk_size: 1000
-checkpoint_interval: 5000
+chunk_size: 2000
+checkpoint_interval: 10000
 
 # Passage packing
 pack_passages: true
