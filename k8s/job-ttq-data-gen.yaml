@@ -44,7 +44,7 @@ spec:
             sentencepiece
 
           # CuPy for spaCy GPU support (must match CUDA 12.x in base image)
-          pip install --no-cache-dir cupy-cuda12x
+          pip install --no-cache-dir 'cupy-cuda12x<14'
 
           # Pin spaCy model versions explicitly
           pip install --no-cache-dir \
@@ -92,6 +92,8 @@ spec:
         env:
         - name: PYTHONPATH
           value: "/opt/repo"
+        - name: LD_LIBRARY_PATH
+          value: "/opt/conda/lib/python3.11/site-packages/nvidia/cublas/lib:/opt/conda/lib/python3.11/site-packages/nvidia/cusparse/lib"
         - name: PYTORCH_CUDA_ALLOC_CONF
           value: "expandable_segments:True"
         resources:
