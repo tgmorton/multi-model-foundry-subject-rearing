@@ -49,10 +49,10 @@ spec:
             --annotate --layered --file "$FILE_STEM"
         resources:
           requests:
-            memory: 16Gi
+            memory: 8Gi
             cpu: "7"
           limits:
-            memory: 16Gi
+            memory: 8Gi
             cpu: "7"
         volumeMounts:
         - name: repo
