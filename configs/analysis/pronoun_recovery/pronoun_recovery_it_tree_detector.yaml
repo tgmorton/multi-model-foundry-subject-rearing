@@ -1,0 +1,35 @@
+# Tree-based null subject detector for Italian
+#
+# Usage:
+#   python -m analysis.pronoun_recovery.run tree-extract --config configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_detector.yaml
+#   python -m analysis.pronoun_recovery.run tree-train --config configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_detector.yaml
+#   python -m analysis.pronoun_recovery.run tree-predict --config configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_detector.yaml --text "Vogliamo approvare i regolamenti"
+
+aligned_data_path: data/pronoun_recovery/europarl_aligned/it/aligned_checkpoint.jsonl
+output_path: data/pronoun_recovery/tree_detector/it
+language: it
+
+# spaCy model
+it_spacy_model: it_core_news_lg
+spacy_batch_size: 50
+
+# Classifier selection (used by tree-predict and quality gates)
+classifier_type: decision_tree
+
+# Decision tree hyperparameters (None = grid search)
+# max_depth: null
+min_samples_leaf: 5
+
+# Gradient boosting hyperparameters
+n_estimators: 200
+learning_rate: 0.1
+# gb_max_depth: null
+
+# Cross-validation
+cv_folds: 5
+test_fraction: 0.2
+seed: 42
+
+# Quality gates
+min_detection_f1: 0.78
+min_feature_accuracy: 0.95

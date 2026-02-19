@@ -19,6 +19,20 @@ WEATHER_VERBS = frozenset({
     "sleet", "pour", "storm", "freeze", "thaw",
 })
 
+# §1.2 Raising verbs — take expletive "it" subject with clausal complement
+RAISING_VERBS = frozenset({
+    "seem", "appear", "happen", "turn", "follow",
+    "matter", "suffice", "transpire", "emerge",
+})
+
+# §1.2 Raising adjectives — copula + adj + clausal complement (e.g., "it is clear that...")
+RAISING_ADJECTIVES = frozenset({
+    "clear", "obvious", "likely", "unlikely", "possible", "impossible",
+    "certain", "evident", "apparent", "true", "false", "important",
+    "necessary", "probable", "fortunate", "unfortunate", "surprising",
+    "known",
+})
+
 # §1.5 Wh-lemmas for question detection
 WH_LEMMAS_EN = frozenset({
     "who", "what", "which", "where", "when", "why", "how",

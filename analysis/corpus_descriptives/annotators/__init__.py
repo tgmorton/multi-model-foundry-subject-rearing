@@ -49,7 +49,7 @@ def get_default_annotators(language: str = "en") -> list[BaseSentenceAnnotator]:
     Returns all annotators except fragment (which overlaps with complexity).
     """
     return [
-        ClauseStructureAnnotator(),
+        ClauseStructureAnnotator(language=language),
         ThatTraceAnnotator(language=language),
         ExpletiveAnnotator(language=language),
         PronounAnnotator(),
@@ -57,9 +57,9 @@ def get_default_annotators(language: str = "en") -> list[BaseSentenceAnnotator]:
         WhExtractionAnnotator(language=language),
         RelativeClauseAnnotator(language=language),
         VerbAnnotator(),
-        ArgumentStructureAnnotator(),
+        ArgumentStructureAnnotator(language=language),
         TopicAnnotator(),
-        ComplexityAnnotator(),
+        ComplexityAnnotator(language=language),
     ]
 
 
@@ -71,7 +71,8 @@ def get_annotator(name: str, language: str = "en") -> BaseSentenceAnnotator:
         name: Annotator name (e.g., "clause_structure", "that_trace")
         language: Language code ("en" for English, "it" for Italian).
             Affects language-aware annotators (expletive, that_trace,
-            wh_extraction, relative_clause, fragment).
+            wh_extraction, relative_clause, fragment, clause_structure,
+            argument_structure, complexity).
 
     Returns:
         Instance of the specified annotator
@@ -85,7 +86,10 @@ def get_annotator(name: str, language: str = "en") -> BaseSentenceAnnotator:
             f"Available: {list(ANNOTATOR_REGISTRY.keys())}"
         )
     # Pass language to annotators that need it
-    language_aware = {"expletive", "that_trace", "wh_extraction", "relative_clause", "fragment"}
+    language_aware = {
+        "expletive", "that_trace", "wh_extraction", "relative_clause", "fragment",
+        "clause_structure", "argument_structure", "complexity",
+    }
     if name in language_aware:
         return ANNOTATOR_REGISTRY[name](language=language)
     return ANNOTATOR_REGISTRY[name]()

@@ -164,6 +164,18 @@ def _complexity_struct() -> pa.DataType:
     ])
 
 
+def _tree_detection_struct() -> pa.DataType:
+    """Schema for tree-based null subject detection results."""
+    return pa.struct([
+        ("token_idx", pa.int32()),
+        ("verb_text", pa.string()),
+        ("verb_lemma", pa.string()),
+        ("label", pa.string()),         # PRO.1sg, PRO.3pl, etc.
+        ("confidence", pa.float64()),
+        ("lexical_form", pa.string()),
+    ])
+
+
 # === Base Schema (identifiers + text + spacy_base) ===
 
 def get_base_schema() -> pa.Schema:
@@ -336,6 +348,12 @@ def get_layer_schema(layer_name: str) -> pa.Schema:
             ("is_imperative", pa.bool_()),
             ("has_null_subject", pa.bool_()),
         ]),
+        "tree_detector": pa.schema([
+            ("sentence_id", pa.string()),
+            ("null_subject_detections", pa.list_(_tree_detection_struct())),
+            ("n_null_subjects", pa.int32()),
+            ("has_null_subject_tree", pa.bool_()),
+        ]),
     }
 
     if layer_name not in schemas:
@@ -359,4 +377,5 @@ LAYER_VERSIONS = {
     "verbs": "1.0.0",
     "topic_continuity": "1.0.0",
     "complexity": "1.0.0",
+    "tree_detector": "1.0.0",
 }

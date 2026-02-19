@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: corpus-annotate-train-90m-it
+  name: tree-detect-it-train-90m
 spec:
   completionMode: Indexed
   completions: 8
@@ -29,7 +29,7 @@ spec:
         - name: repo
           mountPath: /opt/repo
       containers:
-      - name: annotator
+      - name: tree-detector
         image: python:3.10-slim
         command: ["/bin/bash", "-c"]
         args:
@@ -39,14 +39,17 @@ spec:
           FILE_STEM="${FILES[$JOB_COMPLETION_INDEX]}"
           echo "Pod index=$JOB_COMPLETION_INDEX → file=$FILE_STEM"
 
-          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars joblib scikit-learn pandas numpy &&
           python -m spacy download it_core_news_lg
 
           cd /opt/repo
 
-          python -m analysis.corpus_descriptives.run \
-            --config configs/analysis/corpus/corpus_analysis_it_train90m.yaml \
-            --annotate --layered --file "$FILE_STEM"
+          python -m analysis.scripts.reporting.apply_tree_detector_it \
+            --annotated-dir /mnt/data/output/it_train_90M/annotated_corpus/ \
+            --model-dir /mnt/data/pronoun_recovery/tree_detector/it/ \
+            --classifier-type gradient_boosted \
+            --batch-size 256 \
+            --file "$FILE_STEM"
         resources:
           requests:
             memory: 16Gi

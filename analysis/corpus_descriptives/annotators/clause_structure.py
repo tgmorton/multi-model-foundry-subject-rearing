@@ -76,6 +76,9 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
         "clauses": "List of clause annotation dicts",
     }
 
+    def __init__(self, language: str = "en"):
+        self.language = language
+
     def annotate_sentence(
         self,
         sent: spacy.tokens.Span,
@@ -179,11 +182,18 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
             # Non-ROOT imperative: advcl/ccomp at sentence start with
             # no subject — e.g., "look at this we got a problem"
             if subject_status == "none" and dep in ("advcl", "ccomp"):
-                if _is_nonroot_imperative(tok, sent):
-                    subject_status = "imperative"
+                if self.language == "en":
+                    if _is_nonroot_imperative(tok, sent):
+                        subject_status = "imperative"
+                else:
+                    # For Italian, check Mood=Imp from morphology
+                    mood = tok.morph.get("Mood")
+                    if mood and "Imp" in mood:
+                        subject_status = "imperative"
 
             # Serial verb subject sharing: "go get it", "come see this"
-            if subject_status == "none" and dep == "advcl":
+            # English-only — Italian uses prepositions (e.g., "vai a prendere")
+            if subject_status == "none" and dep == "advcl" and self.language == "en":
                 if tok.head.lemma_.lower() in _SERIAL_VERB_LEMMAS:
                     has_to = any(
                         c.dep_ == "mark" and c.lemma_.lower() == "to"

@@ -1,14 +1,12 @@
-input_path: /mnt/data/italian/train_90M/
-output_path: /mnt/data/output/it_train_90M/
-split_name: it_train_90M
+input_path: data/italian_test/
+output_path: data/output/it_local_test/
+split_name: it_local_test
 spacy_model: it_core_news_lg
-spacy_batch_size: 256
+spacy_batch_size: 64
 spacy_disable_components:
   - ner
-chunk_size: 5000
+chunk_size: 500
 language: it
-checkpoint_dir: /mnt/data/checkpoints/it_train_90M/
-checkpoint_interval: 10000
 annotation_mode: true
 layered_output: true
 annotators:
@@ -24,9 +22,6 @@ annotators:
   - topic
   - complexity
 genre_map:
-  childes: CHILDES
-  clta: CltA
-  corpus_isacco: ISACCO
   europarl: Europarl
   leipzig_web: Leipzig Web
   paccss: PaCCSS

@@ -1,0 +1,304 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: annotate-smoke-test-it
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: smoke-test
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          echo "=== Installing dependencies ==="
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
+          python -m spacy download it_core_news_lg
+
+          cd /opt/repo
+          export PYTHONPATH=/opt/repo
+
+          echo ""
+          echo "=== Phase 1: Verify imports ==="
+          python3 -c "
+          import spacy, pyarrow as pa, polars as pl
+          from analysis.corpus_descriptives.config import CorpusAnalysisConfig
+          from analysis.corpus_descriptives.pipeline import CorpusAnnotationPipeline
+          from analysis.corpus_descriptives.annotators import get_default_annotators, get_annotator, ANNOTATOR_REGISTRY
+          from analysis.corpus_descriptives.schema import get_base_schema, get_layer_schema, LAYER_VERSIONS
+          from analysis.corpus_descriptives.line_cleaners import CHILDESCleaner
+          from analysis.corpus_descriptives.output import LayeredAnnotationWriter
+          print('All imports OK')
+          print(f'spaCy {spacy.__version__}, PyArrow {pa.__version__}, Polars {pl.__version__}')
+          print(f'Annotators: {list(ANNOTATOR_REGISTRY.keys())}')
+          print(f'Layer versions: {LAYER_VERSIONS}')
+          "
+
+          echo ""
+          echo "=== Phase 2: Italian annotator correctness ==="
+          python3 -c "
+          import spacy
+          from analysis.corpus_descriptives.annotators import get_default_annotators, get_annotator
+
+          nlp = spacy.load('it_core_news_lg', disable=['ner'])
+          annotators = get_default_annotators(language='it')
+          print(f'Annotators ({len(annotators)}): {[a.name for a in annotators]}')
+
+          doc = nlp('Dichiaro ripresa la sessione del Parlamento europeo.')
+          sent = list(doc.sents)[0]
+          for ann in annotators:
+              result = ann.annotate_sentence(sent=sent, genre='Europarl', speaker=None, metadata={})
+              flags = ann.get_sentence_flags(result)
+              if flags:
+                  print(f'  {ann.name}: {flags}')
+
+          complexity_ann = get_annotator('complexity', language='it')
+          result = complexity_ann.annotate_sentence(sent=sent, genre='Europarl', speaker=None, metadata={})
+          flags = complexity_ann.get_sentence_flags(result)
+          assert flags.get('is_imperative') == False, 'FAIL: null subject classified as imperative!'
+          print('Annotator correctness PASSED')
+          "
+
+          echo ""
+          echo "=== Phase 3: Memory profiling with realistic workload ==="
+          python3 << 'PYEOF'
+          import os, sys, time, resource
+
+          def mem_mb():
+              """Current RSS in MB from /proc/self/status."""
+              try:
+                  with open("/proc/self/status") as f:
+                      for line in f:
+                          if line.startswith("VmRSS:"):
+                              return int(line.split()[1]) / 1024  # kB -> MB
+              except FileNotFoundError:
+                  # macOS fallback
+                  ru = resource.getrusage(resource.RUSAGE_SELF)
+                  return ru.ru_maxrss / (1024 * 1024)
+              return 0
+
+          def peak_mb():
+              """Peak RSS in MB."""
+              try:
+                  with open("/proc/self/status") as f:
+                      for line in f:
+                          if line.startswith("VmPeak:"):
+                              return int(line.split()[1]) / 1024
+              except FileNotFoundError:
+                  ru = resource.getrusage(resource.RUSAGE_SELF)
+                  return ru.ru_maxrss / (1024 * 1024)
+              return 0
+
+          def report(label):
+              print(f"  [{label:40s}]  RSS={mem_mb():.0f} MB  Peak={peak_mb():.0f} MB")
+
+          print("--- Memory profile ---")
+          report("baseline (python + deps)")
+
+          # 1. Load spaCy model
+          import spacy
+          nlp = spacy.load("it_core_news_lg", disable=["ner"])
+          report("after spaCy model load")
+
+          # 2. Load annotators
+          from analysis.corpus_descriptives.annotators import get_default_annotators
+          annotators = get_default_annotators(language="it")
+          report("after annotator init")
+
+          # 3. Find largest .train file on PVC for realistic test
+          data_dir = "/mnt/data/italian/train_90M"
+          train_files = []
+          if os.path.isdir(data_dir):
+              train_files = sorted(
+                  [f for f in os.listdir(data_dir) if f.endswith(".train")],
+                  key=lambda f: os.path.getsize(os.path.join(data_dir, f)),
+                  reverse=True,
+              )
+
+          if not train_files:
+              print("  WARNING: No .train files on PVC — using synthetic data")
+              # Generate ~5000 synthetic Italian sentences
+              raw_lines = ["Dichiaro ripresa la sessione del Parlamento europeo.\n"] * 5000
+              test_file = "synthetic"
+              file_size_mb = len(raw_lines) * 55 / (1024 * 1024)
+          else:
+              # Use the largest file
+              test_file = train_files[0]
+              fpath = os.path.join(data_dir, test_file)
+              file_size_mb = os.path.getsize(fpath) / (1024 * 1024)
+              print(f"  Using largest file: {test_file} ({file_size_mb:.1f} MB)")
+              print(f"  All files on PVC:")
+              for f in train_files:
+                  sz = os.path.getsize(os.path.join(data_dir, f)) / (1024 * 1024)
+                  lines = sum(1 for _ in open(os.path.join(data_dir, f)))
+                  print(f"    {f:30s} {sz:8.1f} MB  {lines:>10,} lines")
+              report("after file listing")
+
+              # Read entire file (matches production pipeline: f.readlines())
+              with open(fpath, "r", encoding="utf-8") as f:
+                  raw_lines = f.readlines()
+              print(f"  Loaded {len(raw_lines):,} lines into memory")
+
+          report("after file read (full file)")
+
+          # 4. Clean a chunk (5000 lines = production chunk_size)
+          from analysis.corpus_descriptives.line_cleaners import get_cleaner
+          cleaner = get_cleaner("Europarl")
+          chunk = raw_lines[:5000]
+          cleaned = []
+          meta_list = []
+          for line in chunk:
+              text, meta = cleaner(line)
+              if text:
+                  cleaned.append(text)
+                  meta_list.append(meta)
+          print(f"  Cleaned chunk: {len(cleaned)} non-empty lines from {len(chunk)}")
+          report("after line cleaning (5000 lines)")
+
+          # 5. spaCy batch parse
+          t0 = time.time()
+          docs = list(nlp.pipe(cleaned, batch_size=256))
+          parse_time = time.time() - t0
+          print(f"  Parsed {len(docs)} docs in {parse_time:.1f}s ({len(docs)/parse_time:.0f} docs/s)")
+          report("after spaCy parse (5000 lines)")
+
+          # 6. Run all annotators on parsed docs
+          t0 = time.time()
+          n_annotated = 0
+          for doc in docs:
+              for sent in doc.sents:
+                  for ann in annotators:
+                      result = ann.annotate_sentence(
+                          sent=sent, genre="Europarl", speaker=None, metadata={}
+                      )
+                      flags = ann.get_sentence_flags(result)
+                  n_annotated += 1
+          ann_time = time.time() - t0
+          print(f"  Annotated {n_annotated} sentences in {ann_time:.1f}s ({n_annotated/ann_time:.0f} sent/s)")
+          report("after annotation (5000 lines)")
+
+          # 7. PyArrow table construction (simulate writer buffer flush)
+          import pyarrow as pa
+          from analysis.corpus_descriptives.schema import get_base_schema
+          base_schema = get_base_schema()
+          rows = []
+          for i, doc in enumerate(docs[:1000]):
+              for sent in doc.sents:
+                  rows.append({
+                      "sentence_id": f"test_{i:06d}",
+                      "split": "test",
+                      "genre": "Europarl",
+                      "speaker": None,
+                      "role": None,
+                      "file_name": "test",
+                      "sent_idx": i,
+                      "text": sent.text,
+                      "n_tokens": len(sent),
+                      "child_age_months": None,
+                      "tokens": [tok.text for tok in sent],
+                      "lemmas": [tok.lemma_ for tok in sent],
+                      "pos_tags": [tok.pos_ for tok in sent],
+                      "dep_rels": [tok.dep_ for tok in sent],
+                      "dep_heads": [tok.head.i - sent.start for tok in sent],
+                  })
+          table = pa.Table.from_pylist(rows, schema=base_schema)
+          report("after PyArrow table build (1000 rows)")
+
+          # Clean up large objects to test true baseline
+          del docs, cleaned, table, rows
+          import gc; gc.collect()
+          report("after gc.collect()")
+
+          # Summary
+          print()
+          print("=" * 60)
+          final_peak = peak_mb()
+          print(f"  PEAK MEMORY:  {final_peak:.0f} MB  ({final_peak/1024:.2f} GB)")
+          if train_files:
+              print(f"  LARGEST FILE: {train_files[0]} ({file_size_mb:.1f} MB)")
+              raw_line_mb = len(raw_lines) * sys.getsizeof(raw_lines[0]) / (1024 * 1024) if raw_lines else 0
+              print(f"  RAW LINES:    {len(raw_lines):,} ({raw_line_mb:.0f} MB in-memory)")
+          # Recommendation
+          headroom = 1.5  # 50% headroom for GC pressure, spaCy internals
+          recommended_gb = max(2, (final_peak / 1024) * headroom)
+          # Round up to nearest power-of-2 GB
+          import math
+          recommended_gb = 2 ** math.ceil(math.log2(recommended_gb))
+          print(f"  RECOMMENDED:  {recommended_gb} Gi per pod (peak × 1.5 headroom, rounded up)")
+          current_gb = 16
+          if recommended_gb < current_gb:
+              print(f"  NOTE: Current request is {current_gb} Gi — could reduce to {recommended_gb} Gi")
+          elif recommended_gb > current_gb:
+              print(f"  WARNING: Current request is {current_gb} Gi — INCREASE to {recommended_gb} Gi!")
+          else:
+              print(f"  Current request of {current_gb} Gi matches recommendation")
+          print("=" * 60)
+          PYEOF
+
+          echo ""
+          echo "=== Phase 4: PVC data inventory ==="
+          if [ -d /mnt/data/italian/train_90M/ ]; then
+            echo "Train data:"
+            for f in /mnt/data/italian/train_90M/*.train; do
+              lines=$(wc -l < "$f")
+              size=$(du -h "$f" | cut -f1)
+              echo "  $(basename $f): $lines lines ($size)"
+            done
+          else
+            echo "WARNING: /mnt/data/italian/train_90M/ not found"
+          fi
+
+          echo ""
+          echo "=== Phase 5: Output directory write test ==="
+          mkdir -p /mnt/data/output/it_train_90M/annotated_corpus/base
+          mkdir -p /mnt/data/output/it_train_90M/annotated_corpus/layers
+          # Test we can actually write
+          echo "test" > /mnt/data/output/it_train_90M/annotated_corpus/.smoke_test
+          rm /mnt/data/output/it_train_90M/annotated_corpus/.smoke_test
+          echo "Output dirs created + write test OK"
+
+          echo ""
+          echo "========================================="
+          echo "  SMOKE TEST PASSED - Ready for full run"
+          echo "========================================="
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "4"
+          limits:
+            memory: 8Gi
+            cpu: "4"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never

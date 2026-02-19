@@ -1,0 +1,25 @@
+input_path: data/italian_test_small/
+output_path: data/output/it_quick_test/
+split_name: it_quick_test
+spacy_model: it_core_news_lg
+spacy_batch_size: 64
+spacy_disable_components:
+  - ner
+chunk_size: 200
+language: it
+annotation_mode: true
+layered_output: true
+annotators:
+  - clause_structure
+  - that_trace
+  - expletive
+  - pronoun
+  - negation
+  - wh_extraction
+  - relative_clause
+  - verb
+  - argument_structure
+  - topic
+  - complexity
+genre_map:
+  europarl: Europarl

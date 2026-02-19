@@ -1126,7 +1126,8 @@ class TestAnnotatorRegistry:
 
     def test_get_annotator_with_language(self):
         """Test that language-aware annotators accept language parameter."""
-        for name in ("expletive", "that_trace", "wh_extraction", "relative_clause", "fragment"):
+        for name in ("expletive", "that_trace", "wh_extraction", "relative_clause",
+                      "fragment", "clause_structure", "argument_structure", "complexity"):
             ann = get_annotator(name, language="it")
             assert ann.language == "it"
 
@@ -1344,3 +1345,329 @@ class TestItalianExpletive:
     def test_italian_annotator_creation(self):
         annotator = ExpletiveAnnotator(language="it")
         assert annotator.language == "it"
+
+
+# === Italian ComplexityAnnotator Tests ===
+
+
+class TestItalianComplexityAnnotator:
+    """Test ComplexityAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return ComplexityAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_finite_null_subject_not_imperative(self, blank_nlp, annotator):
+        """Italian: finite verb with no subject → NOT imperative (pro-drop)."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Mangia la mela" = "Eats the apple" (null subject, NOT imperative)
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia", "la", "mela"],
+            pos=["VERB", "DET", "NOUN"],
+            deps=["ROOT", "det", "obj"],
+            heads=[0, 2, 0],
+            lemmas=["mangiare", "il", "mela"],
+            morphs=["VerbForm=Fin|Person=3|Number=Sing", None, None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is False
+        assert result["is_fragment"] is False
+
+    def test_mood_imp_still_imperative(self, blank_nlp, annotator):
+        """Italian: Mood=Imp verb → IS imperative (morphological tag)."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Mangia!" with Mood=Imp
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia", "!"],
+            pos=["VERB", "PUNCT"],
+            deps=["ROOT", "punct"],
+            heads=[0, 0],
+            lemmas=["mangiare", "!"],
+            morphs=["VerbForm=Fin|Mood=Imp", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+
+    def test_bare_infinitive_is_fragment(self, blank_nlp, annotator):
+        """Italian: bare infinitive → fragment (not bare imperative heuristic)."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["mangiare"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["mangiare"],
+            morphs=["VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_fragment"] is True
+        assert result["is_imperative"] is False
+
+    def test_english_regression_bare_imperative(self, blank_nlp):
+        """Regression: English ComplexityAnnotator still detects bare imperatives."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotator = ComplexityAnnotator(language="en")
+        doc = make_doc(
+            blank_nlp,
+            words=["look"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["look"],
+            morphs=["VerbForm=Inf"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+        assert result["is_fragment"] is False
+
+    def test_english_regression_finite_no_subject_imperative(self, blank_nlp):
+        """Regression: English finite verb + no subject → imperative."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotator = ComplexityAnnotator(language="en")
+        doc = make_doc(
+            blank_nlp,
+            words=["goes", "there"],
+            pos=["VERB", "ADV"],
+            deps=["ROOT", "advmod"],
+            heads=[0, 0],
+            lemmas=["go", "there"],
+            morphs=["VerbForm=Fin", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert result["is_imperative"] is True
+
+
+# === Italian ClauseStructureAnnotator Tests ===
+
+
+class TestItalianClauseStructureAnnotator:
+    """Test ClauseStructureAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return ClauseStructureAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_null_subject_status_none(self, blank_nlp, annotator):
+        """Italian: null subject → subject_status='none' (not imperative)."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Piove" = "It rains" (null subject)
+        doc = make_doc(
+            blank_nlp,
+            words=["piove"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["piovere"],
+            morphs=["VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        root_clauses = [c for c in result["clauses"] if c["clause_type"] == "ROOT"]
+        assert len(root_clauses) == 1
+        assert root_clauses[0]["subject_status"] == "none"
+
+    def test_serial_verb_heuristic_skipped(self, blank_nlp, annotator):
+        """Italian: serial verb heuristic (go get) is NOT applied."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # Simulate an unlikely Italian serial parse: "vai prendi" = "go get"
+        doc = make_doc(
+            blank_nlp,
+            words=["vai", "prendi"],
+            pos=["VERB", "VERB"],
+            deps=["ROOT", "advcl"],
+            heads=[0, 0],
+            lemmas=["go", "get"],  # English lemmas for testing serial verb set
+            morphs=["VerbForm=Fin", "VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        advcl_clauses = [c for c in result["clauses"] if c["clause_type"] == "advcl"]
+        assert len(advcl_clauses) == 1
+        # Should NOT inherit — serial verb heuristic is English-only
+        assert advcl_clauses[0]["subject_status"] == "none"
+
+    def test_nonroot_imperative_via_mood(self, blank_nlp, annotator):
+        """Italian: non-ROOT verb with Mood=Imp → subject_status='imperative'."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Mangia e bevi" = "Eat and drink" — "bevi" as advcl with Mood=Imp
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia", "e", "bevi"],
+            pos=["VERB", "CCONJ", "VERB"],
+            deps=["ROOT", "cc", "advcl"],
+            heads=[0, 2, 0],
+            lemmas=["mangiare", "e", "bere"],
+            morphs=["VerbForm=Fin|Mood=Imp", None, "VerbForm=Fin|Mood=Imp"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        advcl_clauses = [c for c in result["clauses"] if c["clause_type"] == "advcl"]
+        assert len(advcl_clauses) == 1
+        assert advcl_clauses[0]["subject_status"] == "imperative"
+
+    def test_english_regression_serial_verb(self, blank_nlp):
+        """Regression: English serial verb 'go get it' still works."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotator = ClauseStructureAnnotator(language="en")
+        doc = make_doc(
+            blank_nlp,
+            words=["go", "get", "it"],
+            pos=["VERB", "VERB", "PRON"],
+            deps=["ROOT", "advcl", "obj"],
+            heads=[0, 0, 1],
+            lemmas=["go", "get", "it"],
+            morphs=["VerbForm=Inf", "VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        get_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "get"]
+        assert len(get_clauses) == 1
+        assert get_clauses[0]["subject_status"] == "inherited"
+
+    def test_english_regression_nonroot_imperative(self, blank_nlp):
+        """Regression: English non-root imperative still works."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotator = ClauseStructureAnnotator(language="en")
+        doc = make_doc(
+            blank_nlp,
+            words=["look", "at", "this", "we", "got", "a", "problem"],
+            pos=["VERB", "ADP", "PRON", "PRON", "VERB", "DET", "NOUN"],
+            deps=["advcl", "prep", "pobj", "nsubj", "ROOT", "det", "obj"],
+            heads=[4, 0, 1, 4, 4, 6, 4],
+            lemmas=["look", "at", "this", "we", "get", "a", "problem"],
+            morphs=["VerbForm=Inf", None, None, None, "VerbForm=Fin", None, None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        look_clauses = [c for c in result["clauses"] if c["verb_lemma"] == "look"]
+        assert len(look_clauses) == 1
+        assert look_clauses[0]["subject_status"] == "imperative"
+
+
+# === Italian ArgumentStructureAnnotator Tests ===
+
+
+class TestItalianArgumentStructureAnnotator:
+    """Test ArgumentStructureAnnotator with Italian language."""
+
+    @pytest.fixture
+    def annotator(self):
+        return ArgumentStructureAnnotator(language="it")
+
+    def test_italian_language_stored(self, annotator):
+        assert annotator.language == "it"
+
+    def test_null_subject_status_null(self, blank_nlp, annotator):
+        """Italian: null subject → subject_status='null' (not imperative)."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        # "Mangia" = "Eats" (null subject)
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia"],
+            pos=["VERB"],
+            deps=["ROOT"],
+            heads=[0],
+            lemmas=["mangiare"],
+            morphs=["VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        assert len(result["argument_structure"]) == 1
+        assert result["argument_structure"][0]["subject_status"] == "null"
+
+    def test_serial_verb_heuristic_skipped(self, blank_nlp, annotator):
+        """Italian: serial verb heuristic is NOT applied."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        doc = make_doc(
+            blank_nlp,
+            words=["vai", "prendi"],
+            pos=["VERB", "VERB"],
+            deps=["ROOT", "advcl"],
+            heads=[0, 0],
+            lemmas=["go", "get"],  # English lemmas for testing serial verb set
+            morphs=["VerbForm=Fin", "VerbForm=Fin"],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        advcl_args = [a for a in result["argument_structure"] if a["verb_lemma"] == "get"]
+        assert len(advcl_args) == 1
+        # Should NOT inherit — serial verb heuristic is English-only
+        assert advcl_args[0]["subject_status"] == "null"
+
+    def test_english_regression_serial_verb(self, blank_nlp):
+        """Regression: English serial verb 'go get it' still works."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotator = ArgumentStructureAnnotator(language="en")
+        doc = make_doc(
+            blank_nlp,
+            words=["go", "get", "it"],
+            pos=["VERB", "VERB", "PRON"],
+            deps=["ROOT", "advcl", "obj"],
+            heads=[0, 0, 1],
+            lemmas=["go", "get", "it"],
+            morphs=["VerbForm=Inf", "VerbForm=Inf", None],
+        )
+        sent = doc[:]
+        result = annotator.annotate_sentence(sent, "test")
+        get_args = [a for a in result["argument_structure"] if a["verb_lemma"] == "get"]
+        assert len(get_args) == 1
+        assert get_args[0]["subject_status"] == "inherited"
+
+
+# === Italian CompositeAnnotator Integration Test ===
+
+
+class TestItalianCompositeAnnotator:
+    """Integration test: CompositeAnnotator with Italian annotators."""
+
+    def test_italian_null_subject_not_imperative(self, blank_nlp):
+        """Italian null-subject sentence: is_imperative=False, has_null_subject=True."""
+        from analysis.corpus_descriptives.tests.conftest import make_doc
+
+        annotators = get_default_annotators(language="it")
+        composite = CompositeAnnotator(annotators)
+
+        # "Mangia la mela" = "[pro] eats the apple"
+        doc = make_doc(
+            blank_nlp,
+            words=["mangia", "la", "mela"],
+            pos=["VERB", "DET", "NOUN"],
+            deps=["ROOT", "det", "obj"],
+            heads=[0, 2, 0],
+            lemmas=["mangiare", "il", "mela"],
+            morphs=["VerbForm=Fin|Person=3|Number=Sing", None, None],
+        )
+        sent = doc[:]
+        result = composite.annotate_sentence(sent, "test")
+
+        # Should NOT be flagged as imperative
+        assert result.get("is_imperative") is False
+        # Should have null subject from clause_structure
+        assert result.get("has_null_subject") is True

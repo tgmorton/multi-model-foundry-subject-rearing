@@ -72,13 +72,14 @@ class CHILDESCleaner:
             self._current_corpus = it_corpus.group(1).strip()
             return "", {}
 
-        # Italian file boundary (= = = 030409.cha = = =) — extract age, skip
+        # Italian file boundary (= = = 030409.cha = = =) — extract age + child, skip
         it_file = _IT_FILE_BOUNDARY.match(line)
         if it_file:
             filename = it_file.group(1).strip()
-            self._current_age = self._parse_italian_age(filename)
+            child_name, age_months = self._parse_italian_file_boundary(filename)
+            self._current_age = age_months
             self._current_age_source = "filename"
-            self._current_child = None
+            self._current_child = child_name
             return "", {}
 
         # Annotation-only lines (start with [ but no speaker label)
@@ -119,22 +120,56 @@ class CHILDESCleaner:
         # No match — return as-is (shouldn't happen in well-formed CHILDES)
         return line, {"speaker": None, "role": None}
 
-    @staticmethod
-    def _parse_italian_age(filename: str) -> Optional[int]:
+    def _parse_italian_file_boundary(
+        self, filename: str
+    ) -> Tuple[Optional[str], Optional[int]]:
         """
-        Extract child age in months from Italian CHILDES filename.
+        Extract child name and age from Italian CHILDES file boundary.
 
-        Italian filenames encode age as YYMMDD (e.g., '030409' → 3y4m → 40 months).
-        Returns None if the filename doesn't match the expected pattern.
+        Handles several formats found across Italian CHILDES corpora:
+        - ``030409`` — age-only (YYMMDD), child from corpus name
+        - ``Diana/011007`` — child/YYMMDD (Calambrone, Tonelli)
+        - ``davide_18_233`` — child_agemonths_id (D'Odorico)
+
+        Returns:
+            (child_name, age_months) — either may be None.
         """
-        # Strip any leading path components
-        name = filename.rsplit("/", 1)[-1]
-        # Match 6-digit age pattern
-        m = re.match(r"^(\d{2})(\d{2})(\d{2})$", name)
+        # Format: Child/YYMMDD (Calambrone, Tonelli)
+        if "/" in filename:
+            parts = filename.split("/", 1)
+            child = parts[0].strip()
+            age = self._parse_yymmdd(parts[1].strip())
+            return child, age
+
+        # Format: childname_agemonths_id (D'Odorico)
+        m = re.match(r"^([a-zA-Z]+)_(\d+)_\d+$", filename)
+        if m:
+            child = m.group(1).strip()
+            age = int(m.group(2))
+            return child, age
+
+        # Format: YYMMDD only (Antelmi, Roma) — use corpus name as child proxy
+        age = self._parse_yymmdd(filename)
+        if age is not None:
+            return self._current_corpus, age
+
+        return None, None
+
+    @staticmethod
+    def _parse_yymmdd(name: str) -> Optional[int]:
+        """Parse YYMMDD string (with optional letter suffix) to age in months.
+
+        Returns None if the parsed age exceeds 120 months (10 years),
+        which indicates a data entry error in the filename.
+        """
+        m = re.match(r"^(\d{2})(\d{2})(\d{2})[a-z]?$", name)
         if m:
             years = int(m.group(1))
             months = int(m.group(2))
-            return years * 12 + months
+            age = years * 12 + months
+            if age > 120:
+                return None
+            return age
         return None
 
 

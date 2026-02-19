@@ -59,7 +59,11 @@ class FragmentAnnotator(BaseSentenceAnnotator):
 
         Also catches negative imperatives ("don't cry") where "don't" is an
         AUX child of the ROOT verb.
+
+        For Italian, returns False — Italian spaCy reliably sets Mood=Imp.
         """
+        if self.language != "en":
+            return False
         # Allow AUX through only for "be" (e.g., "be careful", "be quiet")
         if root.pos_ == "AUX" and root.lemma_.lower() == "be":
             pass

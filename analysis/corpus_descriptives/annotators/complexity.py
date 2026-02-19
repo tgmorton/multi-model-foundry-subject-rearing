@@ -27,13 +27,18 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
         "complexity": "Complexity metrics dict",
     }
 
-    @staticmethod
-    def _is_bare_imperative(root: spacy.tokens.Token, sent: spacy.tokens.Span) -> bool:
+    def __init__(self, language: str = "en"):
+        self.language = language
+
+    def _is_bare_imperative(self, root: spacy.tokens.Token, sent: spacy.tokens.Span) -> bool:
         """
         Heuristic: detect bare-form imperatives that spaCy tags as VerbForm=Inf.
 
         Mirrors FragmentAnnotator._is_bare_imperative.
+        For Italian, returns False — Italian spaCy reliably sets Mood=Imp.
         """
+        if self.language != "en":
+            return False
         # Allow AUX through only for "be" (e.g., "be careful", "be quiet")
         if root.pos_ == "AUX" and root.lemma_.lower() == "be":
             pass
@@ -120,8 +125,10 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
                     is_imperative = True
                 else:
                     is_fragment = True
-            elif verb_forms and "Fin" in verb_forms:
-                # Finite root without subject could be imperative
+            elif verb_forms and "Fin" in verb_forms and self.language == "en":
+                # Finite root without subject could be imperative (English only).
+                # In pro-drop languages like Italian, subjectless finite verbs
+                # are the norm, so this heuristic must not apply.
                 has_subject = any(
                     c.dep_ in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
                     for c in root.children
