@@ -478,13 +478,13 @@ class CorpusAnnotationPipeline:
             if not cleaned:
                 continue
 
-            # Run spaCy
-            docs = list(
-                self.nlp.pipe(cleaned, batch_size=self.config.spacy_batch_size)
+            # Run spaCy (iterate lazily to avoid materialising all Docs at once)
+            doc_stream = self.nlp.pipe(
+                cleaned, batch_size=self.config.spacy_batch_size
             )
 
             # Process each doc (which may have multiple sentences)
-            for doc, meta in zip(docs, meta_list):
+            for doc, meta in zip(doc_stream, meta_list):
                 speaker = meta.get("speaker")
                 role = meta.get("role")
 
