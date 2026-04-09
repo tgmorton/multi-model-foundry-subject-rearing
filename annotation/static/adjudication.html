@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adjudication</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --border: #e2e4e8;
+    --accent: #2563eb; --accent-hover: #1d4ed8; --accent-light: #dbeafe;
+    --muted: #71757e; --text: #1a1a1a;
+    --yes-bg: #dcfce7; --yes-border: #16a34a; --yes-text: #166534;
+    --no-bg: #fee2e2; --no-border: #dc2626; --no-text: #991b1b;
+    --pill-bg: #dbeafe; --pill-border: #93c5fd; --pill-text: #1e40af;
+    --a-color: #7c3aed; --b-color: #0891b2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+  }
+
+  .header {
+    background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header h1 { font-size: 1.05rem; font-weight: 700; }
+  .header-links { display: flex; gap: 14px; font-size: 0.82rem; }
+  .header-links a { color: var(--accent); text-decoration: none; }
+  .progress-text { font-size: 0.82rem; color: var(--muted); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 20px 24px; }
+
+  .queue-list { margin-bottom: 20px; }
+  .queue-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 6px; cursor: pointer; transition: all 0.12s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .queue-item:hover { border-color: var(--accent); }
+  .queue-item.active { border-color: var(--accent); background: var(--accent-light); }
+  .queue-text { font-size: 0.88rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-id { font-size: 0.76rem; color: var(--muted); margin-right: 10px; }
+
+  .adjudication-area { display: none; }
+  .adjudication-area.visible { display: block; }
+
+  .sentence-display {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-bottom: 16px; font-size: 1.1rem; line-height: 1.8;
+  }
+
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .ann-card {
+    background: var(--card); border: 2px solid var(--border); border-radius: 8px;
+    padding: 14px; position: relative;
+  }
+  .ann-card.card-a { border-color: var(--a-color); }
+  .ann-card.card-b { border-color: var(--b-color); }
+  .ann-label {
+    position: absolute; top: -10px; left: 12px; background: var(--card);
+    padding: 0 6px; font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
+  }
+  .ann-card.card-a .ann-label { color: var(--a-color); }
+  .ann-card.card-b .ann-label { color: var(--b-color); }
+  .ann-decision { font-size: 0.88rem; margin-bottom: 8px; }
+  .ann-decision .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.76rem; font-weight: 600;
+  }
+  .badge-yes { background: var(--yes-bg); color: var(--yes-text); }
+  .badge-no { background: var(--no-bg); color: var(--no-text); }
+  .ann-pronouns { font-size: 0.84rem; }
+  .ann-pronoun-pill {
+    display: inline-block; padding: 2px 8px; margin: 2px;
+    background: var(--pill-bg); border: 1px solid var(--pill-border);
+    border-radius: 10px; font-size: 0.8rem; color: var(--pill-text);
+  }
+  .ann-meta { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+
+  .resolution-section {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .resolution-section h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 10px; }
+  .resolution-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+  .res-btn {
+    padding: 8px 20px; border: 2px solid var(--border); border-radius: 8px;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; background: var(--card);
+    transition: all 0.15s;
+  }
+  .res-btn:hover { border-color: var(--accent); }
+  .res-btn.selected { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  .reannotate-area { display: none; margin-top: 12px; }
+  .reannotate-area.visible { display: block; }
+  .reannotate-area .sentence-words {
+    display: flex; flex-wrap: wrap; align-items: center;
+    font-size: 1.05rem; line-height: 2.2;
+  }
+  .gap-zone {
+    width: 8px; min-height: 28px; cursor: pointer; position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: width 0.15s; border-radius: 4px;
+  }
+  .gap-zone:hover { width: 28px; background: rgba(37,99,235,0.08); }
+  .gap-zone:hover::after { content: '+'; font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+  .gap-zone.has-pronoun { width: auto; padding: 0 2px; }
+  .gap-zone.has-pronoun:hover { background: transparent; }
+  .gap-zone.has-pronoun:hover::after { content: none; }
+  .pronoun-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--pill-text);
+    border-radius: 12px; padding: 2px 8px 2px 10px; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+  }
+  .pronoun-pill .remove-btn {
+    width: 16px; height: 16px; border-radius: 50%; background: rgba(0,0,0,0.1);
+    border: none; cursor: pointer; font-size: 0.7rem;
+    display: flex; align-items: center; justify-content: center; color: var(--pill-text);
+  }
+
+  .pronoun-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .pronoun-choice {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.84rem; cursor: pointer; background: var(--card);
+  }
+  .pronoun-choice:hover { border-color: var(--accent); }
+  .pronoun-choice.selected { background: var(--pill-bg); border-color: var(--pill-border); color: var(--pill-text); font-weight: 600; }
+
+  .confidence-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 0.82rem; }
+  .conf-btn {
+    width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 5px;
+    font-size: 0.82rem; cursor: pointer; background: var(--card); font-weight: 500;
+  }
+  .conf-btn:hover { border-color: var(--accent); }
+  .conf-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .note-input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.84rem; font-family: inherit; margin: 8px 0;
+  }
+  .save-btn {
+    padding: 8px 24px; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  }
+  .save-btn:hover { background: var(--accent-hover); }
+  .save-status { font-size: 0.82rem; color: var(--yes-text); margin-left: 10px; }
+
+  .login-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 32px; width: 340px;
+  }
+  .login-box h2 { font-size: 1.1rem; margin-bottom: 16px; }
+  .login-box input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; margin-bottom: 10px; font-family: inherit;
+  }
+  .login-box button {
+    width: 100%; padding: 9px; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  }
+  .login-error { color: var(--no-text); font-size: 0.8rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>Adjudication Login</h2>
+    <input id="loginUser" placeholder="Username">
+    <input id="loginToken" type="password" placeholder="Token">
+    <button onclick="doLogin()">Log in</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div class="header">
+  <h1>Adjudication</h1>
+  <div class="header-links">
+    <a href="/">Annotate</a>
+    <a href="/admin">Admin</a>
+    <span class="progress-text" id="progressText"></span>
+  </div>
+</div>
+
+<div class="main" id="mainContent" style="display:none">
+  <div class="queue-list" id="queueList"></div>
+
+  <div class="adjudication-area" id="adjArea">
+    <div class="sentence-display" id="sentenceDisplay"></div>
+
+    <div class="side-by-side" id="sideBySide"></div>
+
+    <div class="resolution-section">
+      <h3>Resolution</h3>
+      <div class="resolution-btns" id="resBtns"></div>
+
+      <div class="reannotate-area" id="reannotateArea">
+        <div>
+          <label style="font-size:0.88rem;font-weight:600">Null subject?</label>
+          <span style="margin-left:8px">
+            <button class="res-btn" id="reYes" onclick="setReDecision(true)" style="padding:4px 14px;font-size:0.82rem">Yes</button>
+            <button class="res-btn" id="reNo" onclick="setReDecision(false)" style="padding:4px 14px;font-size:0.82rem">No</button>
+          </span>
+        </div>
+        <div class="sentence-words" id="reSentenceWords" style="margin:10px 0"></div>
+        <div id="rePronounDetails"></div>
+        <div class="confidence-row">
+          <label>Confidence:</label>
+          <span id="reConfBtns"></span>
+        </div>
+      </div>
+
+      <input class="note-input" id="adjNote" placeholder="Adjudication note...">
+      <div style="display:flex;align-items:center;margin-top:8px">
+        <button class="save-btn" onclick="saveAdjudication()">Save</button>
+        <span class="save-status" id="saveStatus"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let token = localStorage.getItem('ann_token') || '';
+let queue = [];
+let currentStimId = null;
+let adjData = null;
+let resolution = null;
+let acceptedUserId = null;
+let reAnnotation = { has_null_subject: null, pronouns: [], confidence: 3 };
+let pronounChoices = [];
+
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+  };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  if (res.status === 401 || res.status === 403) { doLogout(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json();
+}
+
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const tk = document.getElementById('loginToken').value.trim();
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, token: tk }),
+    });
+    if (!res.ok) throw new Error('Invalid credentials');
+    const data = await res.json();
+    if (data.user.role !== 'admin') throw new Error('Admin access required');
+    token = data.token;
+    localStorage.setItem('ann_token', token);
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('mainContent').style.display = '';
+    init();
+  } catch (e) {
+    document.getElementById('loginError').textContent = e.message;
+  }
+}
+
+function doLogout() { localStorage.removeItem('ann_token'); location.reload(); }
+
+async function init() {
+  pronounChoices = await api('GET', '/api/pronouns');
+  await loadQueue();
+}
+
+async function loadQueue() {
+  queue = await api('GET', '/api/adjudication/queue');
+  const progress = await api('GET', '/api/adjudication/progress');
+  document.getElementById('progressText').textContent =
+    `${progress.adjudicated} / ${progress.total} adjudicated`;
+
+  const list = document.getElementById('queueList');
+  list.innerHTML = queue.map(q => `
+    <div class="queue-item" data-id="${q.id}" onclick="selectStimulus(${q.id})">
+      <span class="queue-id">#${q.id}</span>
+      <span class="queue-text">${escapeHtml(q.text)}</span>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+async function selectStimulus(stimId) {
+  currentStimId = stimId;
+  adjData = await api('GET', `/api/adjudication/${stimId}`);
+  resolution = null;
+  acceptedUserId = null;
+  reAnnotation = { has_null_subject: null, pronouns: [], confidence: 3 };
+
+  // Highlight queue item
+  document.querySelectorAll('.queue-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.id) === stimId);
+  });
+
+  renderAdjudication();
+}
+
+function renderAdjudication() {
+  const area = document.getElementById('adjArea');
+  area.classList.add('visible');
+
+  // Sentence
+  document.getElementById('sentenceDisplay').textContent = adjData.stimulus.text;
+
+  // Side by side
+  const container = document.getElementById('sideBySide');
+  const anns = adjData.annotations;
+  container.innerHTML = anns.map((a, i) => {
+    const letter = i === 0 ? 'A' : 'B';
+    const cardClass = i === 0 ? 'card-a' : 'card-b';
+    const decisionBadge = a.has_null_subject
+      ? '<span class="badge badge-yes">Yes</span>'
+      : '<span class="badge badge-no">No</span>';
+    const pronouns = (a.pronouns || []).map(p =>
+      `<span class="ann-pronoun-pill">${escapeHtml(p.lexical_form)} @${p.position}</span>`
+    ).join(' ');
+    return `
+      <div class="ann-card ${cardClass}">
+        <div class="ann-label">${letter}: ${escapeHtml(a.display_name)}</div>
+        <div class="ann-decision">${decisionBadge}</div>
+        ${a.has_null_subject ? `<div class="ann-pronouns">${pronouns}</div>` : ''}
+        <div class="ann-meta">Confidence: ${a.overall_confidence}/5${a.note ? ' | ' + escapeHtml(a.note) : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Resolution buttons
+  const resBtns = document.getElementById('resBtns');
+  const btns = [
+    { val: 'accept_a', label: `Accept A (${anns[0]?.display_name || ''})` },
+    { val: 'accept_b', label: `Accept B (${anns[1]?.display_name || ''})` },
+    { val: 'reannotate', label: 'Re-annotate' },
+  ];
+  resBtns.innerHTML = btns.map(b =>
+    `<button class="res-btn${resolution === b.val ? ' selected' : ''}"
+             onclick="setResolution('${b.val}')">${b.label}</button>`
+  ).join('');
+
+  // Reannotate area
+  document.getElementById('reannotateArea').classList.toggle('visible', resolution === 'reannotate');
+  if (resolution === 'reannotate') renderReannotate();
+}
+
+function setResolution(val) {
+  resolution = val;
+  const anns = adjData.annotations;
+  if (val === 'accept_a' && anns[0]) {
+    acceptedUserId = anns[0].user_id;
+  } else if (val === 'accept_b' && anns[1]) {
+    acceptedUserId = anns[1].user_id;
+  } else {
+    acceptedUserId = null;
+  }
+  renderAdjudication();
+}
+
+function setReDecision(val) {
+  reAnnotation.has_null_subject = val;
+  document.getElementById('reYes').classList.toggle('selected', val === true);
+  document.getElementById('reNo').classList.toggle('selected', val === false);
+  renderReannotate();
+}
+
+function renderReannotate() {
+  // Sentence with gaps
+  const container = document.getElementById('reSentenceWords');
+  container.innerHTML = '';
+  const text = adjData.stimulus.text || '';
+  const words = text.split(/\s+/).filter(w => w);
+
+  const gapPronouns = {};
+  reAnnotation.pronouns.forEach((p, i) => {
+    if (!gapPronouns[p.position]) gapPronouns[p.position] = [];
+    gapPronouns[p.position].push({ ...p, idx: i });
+  });
+
+  for (let i = 0; i <= words.length; i++) {
+    const gap = document.createElement('span');
+    gap.className = 'gap-zone' + (gapPronouns[i] ? ' has-pronoun' : '');
+    if (gapPronouns[i]) {
+      gapPronouns[i].forEach(p => {
+        const pill = document.createElement('span');
+        pill.className = 'pronoun-pill';
+        pill.innerHTML = `<span>${p.lexical_form || '?'}</span>`;
+        const rm = document.createElement('button');
+        rm.className = 'remove-btn';
+        rm.textContent = '\u00d7';
+        rm.onclick = (e) => { e.stopPropagation(); reAnnotation.pronouns.splice(p.idx, 1); renderReannotate(); };
+        pill.appendChild(rm);
+        gap.appendChild(pill);
+      });
+    } else {
+      gap.onclick = () => {
+        if (reAnnotation.has_null_subject !== true) reAnnotation.has_null_subject = true;
+        reAnnotation.pronouns.push({ position: i, label: '', lexical_form: '?', confidence: 3 });
+        renderReannotate();
+      };
+    }
+    container.appendChild(gap);
+    if (i < words.length) {
+      const span = document.createElement('span');
+      span.textContent = words[i];
+      span.style.padding = '2px 0';
+      container.appendChild(span);
+    }
+  }
+
+  // Pronoun details
+  const details = document.getElementById('rePronounDetails');
+  details.innerHTML = '';
+  reAnnotation.pronouns.forEach((p, idx) => {
+    const grid = document.createElement('div');
+    grid.className = 'pronoun-grid';
+    pronounChoices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'pronoun-choice' + (p.lexical_form === c.lexical_form ? ' selected' : '');
+      btn.textContent = c.lexical_form;
+      btn.onclick = () => {
+        reAnnotation.pronouns[idx].label = c.label;
+        reAnnotation.pronouns[idx].lexical_form = c.lexical_form;
+        renderReannotate();
+      };
+      grid.appendChild(btn);
+    });
+    details.appendChild(grid);
+  });
+
+  // Confidence
+  const confContainer = document.getElementById('reConfBtns');
+  confContainer.innerHTML = '';
+  for (let c = 1; c <= 5; c++) {
+    const btn = document.createElement('button');
+    btn.className = 'conf-btn' + (reAnnotation.confidence === c ? ' selected' : '');
+    btn.textContent = c;
+    btn.onclick = () => { reAnnotation.confidence = c; renderReannotate(); };
+    confContainer.appendChild(btn);
+  }
+}
+
+async function saveAdjudication() {
+  if (!resolution || !currentStimId) return;
+
+  const anns = adjData.annotations;
+  let hasNull, pronouns, confidence;
+
+  if (resolution === 'accept_a') {
+    hasNull = !!anns[0].has_null_subject;
+    pronouns = (anns[0].pronouns || []).map(p => ({
+      position: p.position, label: p.label, lexical_form: p.lexical_form, confidence: p.confidence || 3,
+    }));
+    confidence = anns[0].overall_confidence;
+  } else if (resolution === 'accept_b') {
+    hasNull = !!anns[1].has_null_subject;
+    pronouns = (anns[1].pronouns || []).map(p => ({
+      position: p.position, label: p.label, lexical_form: p.lexical_form, confidence: p.confidence || 3,
+    }));
+    confidence = anns[1].overall_confidence;
+  } else {
+    hasNull = !!reAnnotation.has_null_subject;
+    pronouns = reAnnotation.pronouns.filter(p => p.label);
+    confidence = reAnnotation.confidence;
+  }
+
+  try {
+    await api('PUT', `/api/adjudication/${currentStimId}`, {
+      resolution,
+      accepted_user_id: acceptedUserId,
+      has_null_subject: hasNull,
+      pronouns,
+      overall_confidence: confidence,
+      note: document.getElementById('adjNote').value,
+    });
+    document.getElementById('saveStatus').textContent = 'Saved!';
+    setTimeout(() => document.getElementById('saveStatus').textContent = '', 2000);
+    await loadQueue();
+  } catch (e) {
+    document.getElementById('saveStatus').textContent = 'Error: ' + e.message;
+  }
+}
+
+(async () => {
+  if (!token) return;
+  try {
+    const user = await api('GET', '/api/auth/me');
+    if (user.role !== 'admin') return;
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('mainContent').style.display = '';
+    init();
+  } catch {}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Null Subject Annotation</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --border: #e2e4e8;
+    --accent: #2563eb; --accent-hover: #1d4ed8; --accent-light: #dbeafe;
+    --muted: #71757e; --text: #1a1a1a;
+    --yes-bg: #dcfce7; --yes-border: #16a34a; --yes-text: #166534;
+    --no-bg: #fee2e2; --no-border: #dc2626; --no-text: #991b1b;
+    --pill-bg: #dbeafe; --pill-border: #93c5fd; --pill-text: #1e40af;
+    --star-color: #eab308;
+    --gap-hover: #93c5fd;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+  }
+
+  /* --- Login overlay --- */
+  .login-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .login-overlay.hidden { display: none; }
+  .login-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 32px; width: 340px; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  .login-box h2 { font-size: 1.1rem; margin-bottom: 16px; }
+  .login-box input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; margin-bottom: 10px; font-family: inherit;
+  }
+  .login-box button {
+    width: 100%; padding: 9px; background: var(--accent); color: #fff; border: none;
+    border-radius: 6px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  }
+  .login-box button:hover { background: var(--accent-hover); }
+  .login-error { color: var(--no-text); font-size: 0.8rem; margin-top: 8px; }
+
+  /* --- Header --- */
+  .header {
+    background: #fff; border-bottom: 1px solid var(--border); padding: 12px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header h1 { font-size: 1.05rem; font-weight: 700; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .progress-text { font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .progress-bar-wrap {
+    width: 120px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+  }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+  .user-name { font-size: 0.82rem; font-weight: 600; }
+  .logout-btn {
+    font-size: 0.76rem; color: var(--muted); cursor: pointer; background: none; border: none;
+    text-decoration: underline;
+  }
+
+  /* --- Main container --- */
+  .main { max-width: 800px; margin: 0 auto; padding: 20px 24px; }
+
+  /* --- Sentence display with gaps --- */
+  .sentence-area {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; margin: 8px 0; user-select: none;
+  }
+  .placement-prompt {
+    font-size: 0.84rem; color: var(--accent); font-weight: 600; margin-bottom: 10px;
+    display: none;
+  }
+  .placement-prompt.visible { display: block; }
+  .sentence-words {
+    display: flex; flex-wrap: wrap; align-items: center;
+    font-size: 1.15rem; line-height: 2.2; gap: 0;
+  }
+  .word-span { cursor: default; padding: 2px 0; }
+  .sentence-words.no-gaps .word-span { margin-right: 0.3em; }
+  .context-word { color: var(--muted); padding: 2px 0; cursor: default; margin-right: 0.3em; }
+  .context-spacer { width: 6px; flex-shrink: 0; }
+  .line-break { flex-basis: 100%; height: 4px; }
+  .more-context-btn {
+    font-size: 0.78rem; color: var(--accent); background: none; border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 10px; cursor: pointer; margin-top: 6px; transition: all 0.12s;
+  }
+  .more-context-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+  .more-context-btn:disabled { opacity: 0.3; cursor: default; }
+  .gap-zone {
+    width: 16px; min-height: 28px; cursor: pointer; position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 4px; flex-shrink: 0;
+  }
+  .gap-zone::after {
+    content: ''; position: absolute; left: 50%; top: 4px; bottom: 4px;
+    width: 2px; margin-left: -1px; background: transparent; border-radius: 1px;
+    transition: background 0.12s;
+  }
+  .gap-zone:hover::after {
+    background: var(--accent);
+  }
+  .gap-zone.has-pronoun {
+    width: auto; padding: 0 4px; margin: 0 2px;
+  }
+  .gap-zone.has-pronoun::after { content: none; }
+  .gap-zone.has-pronoun:hover::after { content: none; }
+  .pronoun-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--pill-text);
+    border-radius: 12px; padding: 2px 8px 2px 10px; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+  }
+  .pronoun-pill.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .pronoun-pill .remove-btn {
+    width: 16px; height: 16px; border-radius: 50%; background: rgba(0,0,0,0.1);
+    border: none; cursor: pointer; font-size: 0.7rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center; color: var(--pill-text);
+  }
+  .pronoun-pill .remove-btn:hover { background: rgba(0,0,0,0.2); }
+
+  /* --- Binary question --- */
+  .question-section { margin: 16px 0; }
+  .question-label { font-size: 0.92rem; font-weight: 600; margin-bottom: 8px; }
+  .binary-btns { display: flex; gap: 8px; }
+  .binary-btn {
+    padding: 8px 28px; border: 2px solid var(--border); border-radius: 8px;
+    font-size: 0.92rem; font-weight: 600; cursor: pointer; background: var(--card);
+    transition: all 0.15s;
+  }
+  .binary-btn:hover { border-color: var(--accent); }
+  .binary-btn.selected-yes { background: var(--yes-bg); border-color: var(--yes-border); color: var(--yes-text); }
+  .binary-btn.selected-no { background: var(--no-bg); border-color: var(--no-border); color: var(--no-text); }
+
+  /* --- Pronoun detail panel --- */
+  .pronoun-panel { margin: 16px 0; }
+  .pronoun-panel.collapsed { display: none; }
+  .pronoun-detail {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; margin-bottom: 10px;
+  }
+  .pronoun-context { font-size: 0.88rem; margin-bottom: 10px; color: var(--muted); }
+  .pronoun-context .highlight { color: var(--accent); font-weight: 700; }
+  .pronoun-grid {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+  }
+  .pronoun-choice {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.84rem; cursor: pointer; background: var(--card); transition: all 0.12s;
+  }
+  .pronoun-choice:hover { border-color: var(--accent); color: var(--accent); }
+  .pronoun-choice.selected {
+    background: var(--pill-bg); border-color: var(--pill-border); color: var(--pill-text); font-weight: 600;
+  }
+  .confidence-row {
+    display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted);
+  }
+  .confidence-row label { font-weight: 500; }
+  .conf-btn {
+    width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 5px;
+    font-size: 0.82rem; cursor: pointer; background: var(--card); font-weight: 500;
+  }
+  .conf-btn:hover { border-color: var(--accent); }
+  .conf-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* --- Overall confidence --- */
+  .overall-section { margin: 16px 0; display: flex; align-items: center; gap: 10px; }
+  .overall-section label { font-size: 0.88rem; font-weight: 600; }
+  .overall-btns { display: flex; gap: 4px; }
+  .overall-btn {
+    width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; cursor: pointer; background: var(--card); font-weight: 600;
+  }
+  .overall-btn:hover { border-color: var(--accent); }
+  .overall-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* --- Note --- */
+  .note-section { margin: 16px 0; }
+  .note-input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.84rem; font-family: inherit; resize: vertical; min-height: 36px;
+  }
+
+  /* --- Navigation bar --- */
+  .nav-bar {
+    display: flex; align-items: center; gap: 10px; margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-btn {
+    padding: 8px 20px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; background: var(--card);
+    transition: all 0.12s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-spacer { flex: 1; }
+  .star-btn {
+    width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 1.2rem; cursor: pointer; background: var(--card); transition: all 0.12s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .star-btn:hover { border-color: var(--star-color); }
+  .star-btn.starred { color: var(--star-color); border-color: var(--star-color); background: #fefce8; }
+  .jump-input {
+    width: 60px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.84rem; text-align: center; font-family: inherit;
+  }
+  .jump-label { font-size: 0.82rem; color: var(--muted); }
+  .save-indicator {
+    font-size: 0.78rem; color: var(--yes-text); opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-indicator.visible { opacity: 1; }
+
+  /* --- Index / list view --- */
+  .index-view { display: none; }
+  .index-view.visible { display: block; }
+  .annotate-view { display: none; }
+  .annotate-view.visible { display: block; }
+  .index-summary {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .index-summary-stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; text-align: center; min-width: 90px;
+  }
+  .index-summary-stat .stat-value {
+    font-size: 1.3rem; font-weight: 700; color: var(--accent);
+  }
+  .index-summary-stat .stat-label {
+    font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .index-progress-bar {
+    flex: 1; min-width: 140px;
+  }
+  .index-progress-track {
+    height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .index-progress-fill {
+    height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s;
+  }
+  .index-progress-label {
+    font-size: 0.78rem; color: var(--muted); margin-top: 4px;
+  }
+  .index-list { display: flex; flex-direction: column; gap: 4px; }
+  .index-row {
+    background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; cursor: pointer; transition: all 0.12s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .index-row:hover { border-color: var(--accent); }
+  .index-row.done { border-left: 3px solid var(--yes-border); }
+  .index-row.not-done { border-left: 3px solid var(--border); }
+  .index-num {
+    font-size: 0.76rem; color: var(--muted); min-width: 28px;
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .index-text {
+    flex: 1; font-size: 0.88rem; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .index-pills { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; }
+  .index-pill {
+    background: var(--pill-bg); border: 1px solid var(--pill-border); color: var(--pill-text);
+    border-radius: 10px; padding: 1px 8px; font-size: 0.74rem; font-weight: 600;
+    white-space: nowrap;
+  }
+  .index-conf {
+    font-size: 0.74rem; color: var(--muted); min-width: 20px; text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .index-star { color: var(--star-color); font-size: 0.82rem; }
+  .index-badge-no {
+    font-size: 0.72rem; color: var(--no-text); background: var(--no-bg);
+    border-radius: 4px; padding: 1px 6px; font-weight: 600;
+  }
+  .back-btn {
+    font-size: 0.82rem; color: var(--accent); background: none; border: none;
+    cursor: pointer; font-weight: 600; padding: 0;
+  }
+  .back-btn:hover { text-decoration: underline; }
+
+  /* --- Keyboard hints --- */
+  .shortcuts-bar {
+    margin-top: 12px; font-size: 0.72rem; color: var(--muted);
+    display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  kbd {
+    display: inline-block; padding: 1px 5px; background: #f0f0f0; border: 1px solid var(--border);
+    border-radius: 3px; font-size: 0.72rem; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<!-- Login overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>Null Subject Annotation</h2>
+    <input id="loginUser" placeholder="Username" autocomplete="username">
+    <input id="loginToken" type="password" placeholder="Token" autocomplete="current-password">
+    <button onclick="doLogin()">Log in</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <h1 style="cursor:pointer" onclick="showIndex()">Null Subject Annotation</h1>
+  <div class="header-right">
+    <span class="progress-text" id="progressText">0 / 0</span>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+    <span class="user-name" id="userName"></span>
+    <button class="logout-btn" onclick="doLogout()">logout</button>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main" id="mainContent" style="display:none">
+
+  <!-- ── Index view ── -->
+  <div class="index-view visible" id="indexView">
+    <div class="index-summary" id="indexSummary"></div>
+    <div class="index-list" id="indexList"></div>
+  </div>
+
+  <!-- ── Annotate view ── -->
+  <div class="annotate-view" id="annotateView">
+    <button class="back-btn" onclick="showIndex()">&larr; Back to list</button>
+
+    <!-- Binary question (above sentence) -->
+    <div class="question-section">
+      <div class="question-label">Does this sentence contain any unspoken subjects?</div>
+      <div class="binary-btns">
+        <button class="binary-btn" id="btnYes" onclick="setBinary(true)">Yes</button>
+        <button class="binary-btn" id="btnNo" onclick="setBinary(false)">No</button>
+      </div>
+    </div>
+
+    <!-- Sentence with inline context + gaps -->
+    <div class="sentence-area">
+      <div class="placement-prompt" id="placementPrompt">Click between words to place the unspoken subject(s)</div>
+      <div class="sentence-words" id="sentenceWords"></div>
+      <button class="more-context-btn" id="moreContextBtn" onclick="expandContext()">more context</button>
+    </div>
+
+    <!-- Pronoun detail panel -->
+    <div class="pronoun-panel collapsed" id="pronounPanel">
+      <div id="pronounDetails"></div>
+    </div>
+
+    <!-- Overall confidence -->
+    <div class="overall-section">
+      <label>Overall confidence:</label>
+      <div class="overall-btns" id="overallBtns"></div>
+    </div>
+
+    <!-- Note -->
+    <div class="note-section">
+      <input class="note-input" id="noteInput" placeholder="Optional note..." oninput="markDirty()">
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-bar">
+      <button class="nav-btn" id="btnPrev" onclick="navigate(-1)">Prev</button>
+      <button class="star-btn" id="btnStar" onclick="toggleStar()">&#9734;</button>
+      <span class="save-indicator" id="saveIndicator">Saved</span>
+      <span class="nav-spacer"></span>
+      <span class="jump-label">Go to:</span>
+      <input class="jump-input" id="jumpInput" type="number" min="1"
+             onkeydown="if(event.key==='Enter')jumpTo()">
+      <button class="nav-btn" id="btnNext" onclick="navigate(1)">Next</button>
+    </div>
+
+    <!-- Keyboard shortcuts hint -->
+    <div class="shortcuts-bar">
+      <span><kbd>D</kbd>/<kbd>F</kbd> prev/next</span>
+      <span><kbd>Y</kbd>/<kbd>N</kbd> yes/no</span>
+      <span><kbd>S</kbd> star</span>
+      <span><kbd>1</kbd>-<kbd>5</kbd> confidence</span>
+      <span><kbd>Esc</kbd> back to list</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ───────────────────────────────────────────────────────────
+let token = localStorage.getItem('ann_token') || '';
+let currentUser = null;
+let stimuli = [];         // cached page of stimuli
+let totalStimuli = 0;
+let currentIndex = 0;     // index within stimuli array
+let currentPage = 1;
+let pageSize = 200;
+let stimulus = null;      // full current stimulus detail
+let annotation = {
+  has_null_subject: null,
+  pronouns: [],
+  overall_confidence: 3,
+  starred: false,
+  note: '',
+};
+let dirty = false;
+let activePronounIdx = null; // index into annotation.pronouns being edited
+let pronounChoices = [];     // from /api/pronouns
+let saving = false;
+let contextLevel = 1;        // how many context sentences to show (1 = nearest only)
+
+// ── API helpers ─────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+  };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  if (res.status === 401) { doLogout(); throw new Error('Unauthorized'); }
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json();
+}
+
+// ── Login / Auth ────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const tk = document.getElementById('loginToken').value.trim();
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, token: tk }),
+    });
+    if (!res.ok) throw new Error('Invalid credentials');
+    const data = await res.json();
+    token = data.token;
+    currentUser = data.user;
+    localStorage.setItem('ann_token', token);
+    document.getElementById('loginOverlay').classList.add('hidden');
+    init();
+  } catch (e) {
+    document.getElementById('loginError').textContent = e.message;
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('ann_token');
+  token = '';
+  currentUser = null;
+  location.reload();
+}
+
+async function checkAuth() {
+  if (!token) return false;
+  try {
+    currentUser = await api('GET', '/api/auth/me');
+    return true;
+  } catch { return false; }
+}
+
+// ── Init ────────────────────────────────────────────────────────────
+async function init() {
+  document.getElementById('userName').textContent = currentUser.display_name;
+  document.getElementById('mainContent').style.display = '';
+
+  pronounChoices = await api('GET', '/api/pronouns');
+  await loadPage(1);
+  buildOverallBtns();
+  updateProgress();
+  renderIndex();
+}
+
+// ── Index view ──────────────────────────────────────────────────────
+function renderIndex() {
+  const progress = {
+    total: totalStimuli,
+    done: stimuli.filter(s => s.annotation_id != null).length,
+    starred: stimuli.filter(s => s.starred).length,
+  };
+  // Recount across all loaded stimuli
+  let doneCount = 0, starCount = 0;
+  stimuli.forEach(s => {
+    if (s.annotation_id != null) doneCount++;
+    if (s.starred) starCount++;
+  });
+  const pct = totalStimuli > 0 ? (doneCount / totalStimuli * 100) : 0;
+
+  document.getElementById('indexSummary').innerHTML = `
+    <div class="index-summary-stat">
+      <div class="stat-value">${doneCount}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+    <div class="index-summary-stat">
+      <div class="stat-value">${totalStimuli - doneCount}</div>
+      <div class="stat-label">Remaining</div>
+    </div>
+    <div class="index-summary-stat">
+      <div class="stat-value">${starCount}</div>
+      <div class="stat-label">Starred</div>
+    </div>
+    <div class="index-progress-bar">
+      <div class="index-progress-track">
+        <div class="index-progress-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="index-progress-label">${doneCount} of ${totalStimuli} (${pct.toFixed(0)}%)</div>
+    </div>
+  `;
+
+  const list = document.getElementById('indexList');
+  list.innerHTML = stimuli.map((s, idx) => {
+    const done = s.annotation_id != null;
+    const hasNull = s.has_null_subject;
+    const starred = s.starred;
+    const num = (currentPage - 1) * pageSize + idx + 1;
+
+    // We need pronoun info — fetch it inline from the cached page data
+    // The stimuli page endpoint returns annotation_id, has_null_subject, starred
+    // but not pronouns. We'll show what we can and load pronouns on demand.
+    let badges = '';
+    if (done) {
+      if (hasNull) {
+        badges = '<span class="index-pill">Yes</span>';
+      } else {
+        badges = '<span class="index-badge-no">No</span>';
+      }
+    }
+
+    return `
+      <div class="index-row ${done ? 'done' : 'not-done'}" onclick="openStimulus(${idx})">
+        <span class="index-num">${num}</span>
+        <span class="index-text">${escHtml(s.text)}</span>
+        <span class="index-pills" id="indexPills${idx}">${badges}</span>
+        ${done ? `<span class="index-conf">${s.has_null_subject != null ? '' : ''}</span>` : ''}
+        ${starred ? '<span class="index-star">&#9733;</span>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  // Load pronoun details for completed items
+  loadIndexPronouns();
+}
+
+async function loadIndexPronouns() {
+  // For each completed stimulus, fetch its detail to get pronouns
+  for (let idx = 0; idx < stimuli.length; idx++) {
+    const s = stimuli[idx];
+    if (s.annotation_id == null) continue;
+    try {
+      const detail = await api('GET', `/api/stimuli/${s.id}`);
+      if (detail.annotation && detail.annotation.pronouns) {
+        const pillsEl = document.getElementById(`indexPills${idx}`);
+        if (!pillsEl) continue;
+        const pronounPills = detail.annotation.pronouns
+          .map(p => `<span class="index-pill">${escHtml(p.lexical_form)}</span>`)
+          .join('');
+        const confEl = detail.annotation.overall_confidence
+          ? `<span class="index-conf">${detail.annotation.overall_confidence}/5</span>`
+          : '';
+        if (detail.annotation.has_null_subject) {
+          pillsEl.innerHTML = pronounPills + confEl;
+        }
+      }
+    } catch {}
+  }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+async function showIndex() {
+  // Auto-save before going back
+  if (dirty && stimulus) {
+    annotation.note = document.getElementById('noteInput').value;
+    await saveAnnotation();
+  }
+  // Reload page data to get fresh annotation status
+  await loadPage(currentPage);
+  renderIndex();
+  updateProgress();
+  document.getElementById('indexView').classList.add('visible');
+  document.getElementById('annotateView').classList.remove('visible');
+}
+
+async function openStimulus(idx) {
+  document.getElementById('indexView').classList.remove('visible');
+  document.getElementById('annotateView').classList.add('visible');
+  await loadStimulus(idx);
+}
+
+async function loadPage(page) {
+  currentPage = page;
+  const data = await api('GET', `/api/stimuli?page=${page}&page_size=${pageSize}`);
+  stimuli = data.items;
+  totalStimuli = data.total;
+  if (stimuli.length > 0) {
+    // Don't auto-open first stimulus; stay on index
+  }
+}
+
+// ── Stimulus loading ────────────────────────────────────────────────
+async function loadStimulus(idx) {
+  if (saving) return;
+  // Auto-save current before navigating
+  if (dirty && stimulus) {
+    await saveAnnotation();
+  }
+
+  currentIndex = idx;
+  const item = stimuli[idx];
+  stimulus = await api('GET', `/api/stimuli/${item.id}`);
+
+  // Load existing annotation or reset
+  if (stimulus.annotation) {
+    const a = stimulus.annotation;
+    annotation = {
+      has_null_subject: a.has_null_subject ? true : false,
+      pronouns: (a.pronouns || []).map(p => ({
+        position: p.position,
+        label: p.label,
+        lexical_form: p.lexical_form,
+        confidence: p.confidence || 3,
+      })),
+      overall_confidence: a.overall_confidence || 3,
+      starred: !!a.starred,
+      note: a.note || '',
+      context_expansions: a.context_expansions || 0,
+    };
+  } else {
+    annotation = {
+      has_null_subject: null,
+      pronouns: [],
+      overall_confidence: 3,
+      starred: false,
+      note: '',
+      context_expansions: 0,
+    };
+  }
+  contextLevel = 1;
+  activePronounIdx = null;
+  dirty = false;
+
+  render();
+}
+
+// ── Rendering ───────────────────────────────────────────────────────
+function render() {
+  // Sentence with inline context + gaps
+  renderSentence();
+
+  // Binary buttons
+  document.getElementById('btnYes').className = 'binary-btn' +
+    (annotation.has_null_subject === true ? ' selected-yes' : '');
+  document.getElementById('btnNo').className = 'binary-btn' +
+    (annotation.has_null_subject === false ? ' selected-no' : '');
+
+  // Placement prompt
+  const prompt = document.getElementById('placementPrompt');
+  prompt.classList.toggle('visible', annotation.has_null_subject === true);
+
+  // Pronoun panel
+  const panel = document.getElementById('pronounPanel');
+  panel.classList.toggle('collapsed', annotation.has_null_subject !== true);
+  renderPronounDetails();
+
+  // Overall confidence
+  document.querySelectorAll('.overall-btn').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.val) === annotation.overall_confidence);
+  });
+
+  // Note
+  document.getElementById('noteInput').value = annotation.note;
+
+  // Star
+  const starBtn = document.getElementById('btnStar');
+  starBtn.innerHTML = annotation.starred ? '&#9733;' : '&#9734;';
+  starBtn.classList.toggle('starred', annotation.starred);
+
+  // Nav
+  document.getElementById('btnPrev').disabled = (currentIndex === 0 && currentPage === 1);
+  document.getElementById('btnNext').disabled = (
+    currentIndex >= stimuli.length - 1 &&
+    (currentPage - 1) * pageSize + stimuli.length >= totalStimuli
+  );
+
+  // Jump
+  const globalIdx = (currentPage - 1) * pageSize + currentIndex + 1;
+  document.getElementById('jumpInput').value = globalIdx;
+  document.getElementById('jumpInput').max = totalStimuli;
+}
+
+function renderSentence() {
+  const container = document.getElementById('sentenceWords');
+  container.innerHTML = '';
+
+  const showGaps = annotation.has_null_subject === true;
+  container.classList.toggle('no-gaps', !showGaps);
+
+  // Parse context arrays (stored as JSON array or plain string)
+  const ctxBeforeSentences = parseContextArray(stimulus.context_before);
+  const ctxAfterSentences = parseContextArray(stimulus.context_after);
+
+  // Show up to contextLevel sentences of context before (reversed so nearest is last)
+  const beforeVisible = ctxBeforeSentences.slice(0, contextLevel).reverse();
+  if (beforeVisible.length > 0) {
+    beforeVisible.forEach(sent => {
+      sent.split(/\s+/).filter(w => w).forEach(w => {
+        const span = document.createElement('span');
+        span.className = 'context-word';
+        span.textContent = w;
+        container.appendChild(span);
+      });
+    });
+    const lb = document.createElement('div');
+    lb.className = 'line-break';
+    container.appendChild(lb);
+  }
+
+  // Main sentence words with gaps
+  const text = stimulus.text || '';
+  const words = text.split(/\s+/).filter(w => w);
+
+  // Build gap -> pronoun lookup
+  const gapPronouns = {};
+  annotation.pronouns.forEach((p, i) => {
+    if (!gapPronouns[p.position]) gapPronouns[p.position] = [];
+    gapPronouns[p.position].push({ ...p, idx: i });
+  });
+
+  for (let i = 0; i <= words.length; i++) {
+    if (showGaps) {
+      // Gap zone
+      const gap = document.createElement('span');
+      gap.className = 'gap-zone' + (gapPronouns[i] ? ' has-pronoun' : '');
+      gap.dataset.pos = i;
+
+      if (gapPronouns[i]) {
+        gapPronouns[i].forEach(p => {
+          const pill = document.createElement('span');
+          pill.className = 'pronoun-pill' + (activePronounIdx === p.idx ? ' active' : '');
+          pill.innerHTML = `<span>${p.lexical_form || '?'}</span>`;
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.textContent = '\u00d7';
+          removeBtn.onclick = (e) => { e.stopPropagation(); removePronoun(p.idx); };
+          pill.appendChild(removeBtn);
+          pill.onclick = (e) => { e.stopPropagation(); selectPronoun(p.idx); };
+          gap.appendChild(pill);
+        });
+      } else {
+        gap.onclick = () => addPronounAtGap(i);
+      }
+      container.appendChild(gap);
+    }
+
+    // Word
+    if (i < words.length) {
+      const span = document.createElement('span');
+      span.className = 'word-span';
+      span.textContent = words[i];
+      container.appendChild(span);
+    }
+  }
+
+  // Context after (show up to contextLevel sentences)
+  const afterVisible = ctxAfterSentences.slice(0, contextLevel);
+  if (afterVisible.length > 0) {
+    const lb = document.createElement('div');
+    lb.className = 'line-break';
+    container.appendChild(lb);
+    afterVisible.forEach(sent => {
+      sent.split(/\s+/).filter(w => w).forEach(w => {
+        const span = document.createElement('span');
+        span.className = 'context-word';
+        span.textContent = w;
+        container.appendChild(span);
+      });
+    });
+  }
+
+  // Update more-context button visibility
+  const maxAvailable = Math.max(ctxBeforeSentences.length, ctxAfterSentences.length);
+  const btn = document.getElementById('moreContextBtn');
+  btn.style.display = maxAvailable > 1 ? '' : 'none';
+  btn.disabled = contextLevel >= maxAvailable;
+}
+
+function renderPronounDetails() {
+  const container = document.getElementById('pronounDetails');
+  container.innerHTML = '';
+
+  annotation.pronouns.forEach((p, idx) => {
+    const div = document.createElement('div');
+    div.className = 'pronoun-detail';
+    if (activePronounIdx === idx) div.style.borderColor = 'var(--accent)';
+
+    // Full sentence with pronoun highlighted in context
+    const words = (stimulus.text || '').split(/\s+/).filter(w => w);
+    const beforeWords = words.slice(0, p.position).join(' ');
+    const afterWords = words.slice(p.position).join(' ');
+    const ctx = document.createElement('div');
+    ctx.className = 'pronoun-context';
+    ctx.innerHTML = (beforeWords ? beforeWords + ' ' : '') +
+      `<span class="highlight">[${p.lexical_form || '?'}]</span>` +
+      (afterWords ? ' ' + afterWords : '');
+    div.appendChild(ctx);
+
+    // Pronoun grid
+    const grid = document.createElement('div');
+    grid.className = 'pronoun-grid';
+    pronounChoices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'pronoun-choice' + (p.lexical_form === choice.lexical_form ? ' selected' : '');
+      btn.textContent = choice.lexical_form;
+      btn.onclick = () => {
+        annotation.pronouns[idx].label = choice.label;
+        annotation.pronouns[idx].lexical_form = choice.lexical_form;
+        markDirty();
+        render();
+      };
+      grid.appendChild(btn);
+    });
+    div.appendChild(grid);
+
+    // Confidence
+    const confRow = document.createElement('div');
+    confRow.className = 'confidence-row';
+    confRow.innerHTML = '<label>Confidence:</label>';
+    for (let c = 1; c <= 5; c++) {
+      const btn = document.createElement('button');
+      btn.className = 'conf-btn' + (p.confidence === c ? ' selected' : '');
+      btn.textContent = c;
+      btn.onclick = () => {
+        annotation.pronouns[idx].confidence = c;
+        markDirty();
+        render();
+      };
+      confRow.appendChild(btn);
+    }
+    div.appendChild(confRow);
+
+    container.appendChild(div);
+  });
+}
+
+function buildOverallBtns() {
+  const container = document.getElementById('overallBtns');
+  container.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'overall-btn';
+    btn.dataset.val = i;
+    btn.textContent = i;
+    btn.onclick = () => setOverallConfidence(i);
+    container.appendChild(btn);
+  }
+}
+
+// ── Context helpers ──────────────────────────────────────────────────
+function parseContextArray(val) {
+  // Returns array of sentences, nearest first.
+  if (!val) return [];
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed.filter(s => s && s.trim());
+    } catch {}
+    // Plain string fallback
+    return val.trim() ? [val.trim()] : [];
+  }
+  if (Array.isArray(val)) return val.filter(s => s && s.trim());
+  return [];
+}
+
+function expandContext() {
+  contextLevel++;
+  annotation.context_expansions = Math.max(annotation.context_expansions, contextLevel - 1);
+  markDirty();
+  render();
+}
+
+// ── Actions ─────────────────────────────────────────────────────────
+function setBinary(val) {
+  annotation.has_null_subject = val;
+  markDirty();
+  render();
+  // Save immediately so annotation exists
+  saveAnnotation();
+}
+
+function setOverallConfidence(val) {
+  annotation.overall_confidence = val;
+  markDirty();
+  render();
+  saveAnnotation();
+}
+
+function toggleStar() {
+  annotation.starred = !annotation.starred;
+  markDirty();
+  render();
+  // Save immediately if possible
+  saveAnnotation();
+}
+
+function addPronounAtGap(position) {
+  if (annotation.has_null_subject !== true) {
+    annotation.has_null_subject = true;
+  }
+  annotation.pronouns.push({
+    position,
+    label: '',
+    lexical_form: '?',
+    confidence: 3,
+  });
+  activePronounIdx = annotation.pronouns.length - 1;
+  markDirty();
+  render();
+}
+
+function removePronoun(idx) {
+  annotation.pronouns.splice(idx, 1);
+  if (activePronounIdx === idx) activePronounIdx = null;
+  else if (activePronounIdx !== null && activePronounIdx > idx) activePronounIdx--;
+  markDirty();
+  render();
+}
+
+function selectPronoun(idx) {
+  activePronounIdx = activePronounIdx === idx ? null : idx;
+  render();
+}
+
+function markDirty() { dirty = true; }
+
+// ── Save ────────────────────────────────────────────────────────────
+async function saveAnnotation() {
+  if (!stimulus || saving) return;
+  saving = true;
+  try {
+    await api('PUT', `/api/annotations/${stimulus.id}`, {
+      has_null_subject: annotation.has_null_subject,
+      pronouns: annotation.pronouns.filter(p => p.label),
+      overall_confidence: annotation.overall_confidence,
+      starred: annotation.starred,
+      note: annotation.note,
+      context_expansions: annotation.context_expansions,
+    });
+    dirty = false;
+    showSaveIndicator();
+    updateProgress();
+  } finally {
+    saving = false;
+  }
+}
+
+function showSaveIndicator() {
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 1500);
+}
+
+async function updateProgress() {
+  try {
+    const p = await api('GET', '/api/annotations/progress');
+    document.getElementById('progressText').textContent = `${p.completed} / ${p.total}`;
+    const pct = p.total > 0 ? (p.completed / p.total * 100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+  } catch {}
+}
+
+// ── Navigation ──────────────────────────────────────────────────────
+async function navigate(dir) {
+  annotation.note = document.getElementById('noteInput').value;
+  const newIdx = currentIndex + dir;
+  if (newIdx >= 0 && newIdx < stimuli.length) {
+    await loadStimulus(newIdx);
+  } else if (dir > 0 && (currentPage * pageSize) < totalStimuli) {
+    await loadPage(currentPage + 1);
+  } else if (dir < 0 && currentPage > 1) {
+    currentPage--;
+    const data = await api('GET', `/api/stimuli?page=${currentPage}&page_size=${pageSize}`);
+    stimuli = data.items;
+    await loadStimulus(stimuli.length - 1);
+  }
+}
+
+async function jumpTo() {
+  const val = parseInt(document.getElementById('jumpInput').value);
+  if (isNaN(val) || val < 1 || val > totalStimuli) return;
+  annotation.note = document.getElementById('noteInput').value;
+  const page = Math.ceil(val / pageSize);
+  const idx = (val - 1) % pageSize;
+  if (page !== currentPage) {
+    currentPage = page;
+    const data = await api('GET', `/api/stimuli?page=${page}&page_size=${pageSize}`);
+    stimuli = data.items;
+  }
+  await loadStimulus(Math.min(idx, stimuli.length - 1));
+}
+
+// ── Keyboard shortcuts ──────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  // Don't capture if typing in input/textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  // Escape always goes back to list
+  if (e.key === 'Escape') {
+    e.preventDefault(); showIndex(); return;
+  }
+
+  // Other shortcuts only in annotate view
+  if (!stimulus || !document.getElementById('annotateView').classList.contains('visible')) return;
+
+  switch (e.key.toLowerCase()) {
+    case 'd': case 'arrowleft':
+      e.preventDefault(); navigate(-1); break;
+    case 'f': case 'arrowright':
+      e.preventDefault(); navigate(1); break;
+    case 'y':
+      e.preventDefault(); setBinary(true); break;
+    case 'n':
+      e.preventDefault(); setBinary(false); break;
+    case 's':
+      e.preventDefault(); toggleStar(); break;
+    case '1': case '2': case '3': case '4': case '5':
+      e.preventDefault(); setOverallConfidence(parseInt(e.key)); break;
+  }
+});
+
+// ── Before unload ───────────────────────────────────────────────────
+window.addEventListener('beforeunload', (e) => {
+  if (dirty) {
+    annotation.note = document.getElementById('noteInput').value;
+    saveAnnotation();
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// ── Startup ─────────────────────────────────────────────────────────
+(async () => {
+  if (await checkAuth()) {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    init();
+  }
+})();
+</script>
+</body>
+</html>
