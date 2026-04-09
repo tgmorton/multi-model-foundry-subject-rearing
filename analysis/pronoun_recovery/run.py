@@ -28,6 +28,8 @@ from .config import (
     Seq2SeqInsertionConfig,
     Seq2SeqTrainingConfig,
     SyntheticDataConfig,
+    TreeCrossEvalConfig,
+    TreeDetectorConfig,
     ValidationConfig,
     load_config,
 )
@@ -336,6 +338,147 @@ def insert_seq2seq(
     metadata = pipeline.run()
     logger.info(f"Seq2seq insertion complete. Output: {cfg.output_path}")
     logger.info(f"Processed {metadata.get('total_lines', '?')} lines.")
+
+
+@app.command("tree-extract")
+def tree_extract(
+    config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Extract feature matrix from gold Europarl data for tree detector."""
+    _setup_logging(verbose)
+    cfg = load_config(config, TreeDetectorConfig)
+    logger.info("Extracting features from %s", cfg.aligned_data_path)
+
+    import spacy
+
+    from .tree_detector.feature_extractor import ItalianVerbFeatureExtractor
+    from .tree_detector.label_aligner import align_gold_data, save_aligned_data
+
+    nlp = spacy.load(cfg.it_spacy_model)
+    extractor = ItalianVerbFeatureExtractor(language=cfg.language)
+
+    X, y = align_gold_data(
+        cfg.aligned_data_path,
+        nlp,
+        extractor,
+        batch_size=cfg.spacy_batch_size,
+    )
+
+    save_aligned_data(X, y, Path(cfg.output_path))
+    logger.info("Feature extraction complete: %d rows, %d features", len(X), X.shape[1])
+
+
+@app.command("tree-train")
+def tree_train(
+    config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Train decision tree null subject detector."""
+    _setup_logging(verbose)
+    cfg = load_config(config, TreeDetectorConfig)
+    logger.info("Training tree detector from %s", cfg.output_path)
+
+    from .tree_detector.evaluator import check_quality_gates
+    from .tree_detector.label_aligner import load_aligned_data
+    from .tree_detector.trainer import run_training
+
+    X, y = load_aligned_data(Path(cfg.output_path))
+
+    report = run_training(
+        X, y,
+        output_dir=Path(cfg.output_path),
+        test_fraction=cfg.test_fraction,
+        cv_folds=cfg.cv_folds,
+        max_depth=cfg.max_depth,
+        min_samples_leaf=cfg.min_samples_leaf,
+        n_estimators=cfg.n_estimators,
+        learning_rate=cfg.learning_rate,
+        gb_max_depth=cfg.gb_max_depth,
+        seed=cfg.seed,
+    )
+
+    # Check quality gates for the selected classifier
+    if cfg.classifier_type == "gradient_boosted":
+        metrics = report["gradient_boosted"]["metrics"]
+    else:
+        metrics = report["decision_tree"]["metrics"]
+
+    gates = check_quality_gates(
+        metrics,
+        min_detection_f1=cfg.min_detection_f1,
+        min_feature_accuracy=cfg.min_feature_accuracy,
+    )
+
+    if not gates["all_pass"]:
+        logger.warning("Quality gates not met for %s", cfg.classifier_type)
+
+    logger.info("Training complete. Models saved to %s", cfg.output_path)
+
+
+@app.command("tree-predict")
+def tree_predict(
+    config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
+    text: str = typer.Option(None, "--text", "-t", help="Italian text to predict"),
+    input_file: str = typer.Option(None, "--input", "-i", help="Input file (one sentence per line)"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Apply trained tree detector to Italian text."""
+    _setup_logging(verbose)
+    cfg = load_config(config, TreeDetectorConfig)
+
+    if text is None and input_file is None:
+        typer.echo("Error: provide --text or --input")
+        raise typer.Exit(1)
+
+    import json
+
+    from .tree_detector.inference import TreeNullSubjectDetector
+
+    detector = TreeNullSubjectDetector(
+        model_dir=Path(cfg.output_path),
+        classifier_type=cfg.classifier_type,
+        spacy_model=cfg.it_spacy_model,
+    )
+
+    if text is not None:
+        predictions = detector.predict_text(text)
+        for pred in predictions:
+            typer.echo(json.dumps(pred, ensure_ascii=False))
+    else:
+        with open(input_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                predictions = detector.predict_text(line)
+                for pred in predictions:
+                    pred["source_text"] = line
+                    typer.echo(json.dumps(pred, ensure_ascii=False))
+
+
+@app.command("tree-cross-eval")
+def tree_cross_eval(
+    config: str = typer.Option(..., "--config", "-c", help="Path to YAML config"),
+    verbose: bool = typer.Option(False, "--verbose", "-v"),
+) -> None:
+    """Cross-domain evaluation of tree detectors."""
+    _setup_logging(verbose)
+    cfg = load_config(config, TreeCrossEvalConfig)
+    logger.info("Running cross-domain tree detector evaluation")
+
+    from .tree_detector.cross_evaluator import run_cross_evaluation
+    from .tree_detector.label_aligner import load_aligned_data
+
+    domains = {}
+    for name, path in cfg.domain_paths.items():
+        logger.info("Loading domain '%s' from %s", name, path)
+        X, y = load_aligned_data(Path(path))
+        logger.info("  %d rows, %d features", len(X), X.shape[1])
+        domains[name] = (X, y)
+
+    run_cross_evaluation(domains, cfg)
+    logger.info("Cross-domain evaluation complete. Output: %s", cfg.output_path)
 
 
 if __name__ == "__main__":

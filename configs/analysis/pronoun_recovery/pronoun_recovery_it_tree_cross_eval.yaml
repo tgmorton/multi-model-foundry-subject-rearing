@@ -1,0 +1,27 @@
+# Cross-domain evaluation of Italian null subject tree detectors
+#
+# Trains models on Europarl, TTQ (at various sizes), and combined data,
+# then evaluates each on all test sets.
+#
+# Prerequisites:
+#   - Europarl features: data/pronoun_recovery/tree_detector/it/features.parquet
+#   - TTQ features: data/pronoun_recovery/tree_detector/it_ttq/features.parquet
+#
+# Usage:
+#   python -m analysis.pronoun_recovery.run tree-cross-eval \
+#     -c configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_cross_eval.yaml -v
+
+domain_paths:
+  europarl: data/pronoun_recovery/tree_detector/it
+  ttq: data/pronoun_recovery/tree_detector/it_ttq
+
+output_path: data/pronoun_recovery/tree_detector/cross_eval
+
+ttq_sweep_sizes: [20000, 50000, 100000, 200000, 0]
+
+test_fraction: 0.2
+seed: 42
+cv_folds: 5
+min_samples_leaf: 5
+n_estimators: 200
+learning_rate: 0.1

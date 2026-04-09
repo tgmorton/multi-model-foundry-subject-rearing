@@ -473,6 +473,106 @@ class Seq2SeqInsertionConfig(_BaseConfig):
         return _apply_language_defaults(self)
 
 
+class TreeDetectorConfig(_BaseConfig):
+    """Configuration for rule-based decision tree null subject detector.
+
+    Two-stage architecture: (1) binary detection tree, (2) person/number
+    from verb morphology.  Trains both a DecisionTreeClassifier and a
+    HistGradientBoostingClassifier for comparison.
+    """
+
+    aligned_data_path: Path = Field(
+        ...,
+        description="Path to aligned_checkpoint.jsonl with gold markers",
+    )
+    output_path: Path = Field(
+        "data/pronoun_recovery/tree_detector/it",
+        description="Output directory for models, features, and reports",
+    )
+    language: str = Field("it")
+
+    # spaCy
+    it_spacy_model: str = Field("it_core_news_lg")
+    spacy_batch_size: int = Field(50, gt=0)
+
+    # Classifier selection for final export
+    classifier_type: str = Field(
+        "decision_tree",
+        description="Primary classifier: 'decision_tree' or 'gradient_boosted'",
+    )
+
+    # Decision tree hyperparameters
+    max_depth: Optional[int] = Field(
+        None,
+        description="Max tree depth (None = unlimited, tuned via CV)",
+    )
+    min_samples_leaf: int = Field(
+        5,
+        ge=1,
+        description="Minimum samples per leaf node",
+    )
+
+    # Gradient boosting hyperparameters
+    n_estimators: int = Field(200, gt=0)
+    learning_rate: float = Field(0.1, gt=0.0, le=1.0)
+    gb_max_depth: Optional[int] = Field(
+        None,
+        description="Max tree depth for gradient boosting (None = unlimited)",
+    )
+
+    # Cross-validation
+    cv_folds: int = Field(5, ge=2, le=20)
+    test_fraction: float = Field(0.2, gt=0.0, lt=1.0)
+    seed: int = Field(42)
+
+    # Quality gates
+    min_detection_f1: float = Field(0.80, ge=0.0, le=1.0)
+    min_feature_accuracy: float = Field(0.95, ge=0.0, le=1.0)
+
+    @field_validator("aligned_data_path", "output_path", mode="before")
+    @classmethod
+    def resolve_paths(cls, v):
+        return _resolve_path(v)
+
+
+class TreeCrossEvalConfig(_BaseConfig):
+    """Cross-domain evaluation of tree detectors across multiple data sources."""
+
+    domain_paths: Dict[str, Path]  # name -> dir with features.parquet + labels.npy
+
+    output_path: Path = Field(
+        "data/pronoun_recovery/tree_detector/cross_eval",
+        description="Output directory for cross-evaluation results",
+    )
+
+    # TTQ size sweep: list of training-set sizes (0 = use all available)
+    ttq_sweep_sizes: List[int] = Field(
+        default=[20000, 50000, 100000, 200000, 0],
+    )
+
+    # Standard training params
+    test_fraction: float = Field(0.2, gt=0.0, lt=1.0)
+    seed: int = Field(42)
+    cv_folds: int = Field(5, ge=2, le=20)
+    min_samples_leaf: int = Field(5, ge=1)
+    n_estimators: int = Field(200, gt=0)
+    learning_rate: float = Field(0.1, gt=0.0, le=1.0)
+    gb_max_depth: Optional[int] = Field(None)
+    max_depth: Optional[int] = Field(None)
+
+    @field_validator("output_path", mode="before")
+    @classmethod
+    def resolve_output_path(cls, v):
+        return _resolve_path(v)
+
+    @field_validator("domain_paths", mode="before")
+    @classmethod
+    def resolve_domain_paths(cls, v):
+        if isinstance(v, dict):
+            return {k: _resolve_path(p) for k, p in v.items()}
+        return v
+
+
 def load_config(config_path: str, config_class: type) -> BaseModel:
     """Load a YAML config file into the specified Pydantic model."""
     import yaml

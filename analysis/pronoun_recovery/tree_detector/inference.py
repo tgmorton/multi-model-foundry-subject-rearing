@@ -111,19 +111,38 @@ class TreeNullSubjectDetector:
         feature_dicts = [row.features for row in verb_rows]
         X = pd.DataFrame(feature_dicts, columns=FEATURE_NAMES)
 
-        # Encode categoricals
-        cat_cols = [
-            col for col in X.columns
-            if X[col].dtype == object or X[col].dtype == bool
-        ]
-        X_encoded = X.copy()
-        if cat_cols and hasattr(self.encoder, "categories_") and len(self.encoder.categories_) > 0:
-            X_encoded[cat_cols] = self.encoder.transform(X[cat_cols].astype(str))
-        X_encoded = X_encoded.fillna(-1)
-
-        # Apply prefilter: verbs with reachable subject → NONE (pred=0)
+        # Filter to tree feature columns before encoding (encoder may have
+        # been fit on tree features only, excluding verb_person/verb_number)
         prefilter_col = self.pipeline_config.get("prefilter_col")
-        tree_cols = self.pipeline_config.get("tree_feature_names", list(X_encoded.columns))
+        tree_cols = self.pipeline_config.get("tree_feature_names", list(X.columns))
+        X_tree_all = X[tree_cols].copy()
+
+        # Encode categoricals — use encoder's own feature names if available,
+        # intersected with available columns (encoder may have been fit on a
+        # wider or narrower set than tree_cols)
+        X_encoded = X_tree_all.copy()
+        if hasattr(self.encoder, "feature_names_in_") and len(self.encoder.feature_names_in_) > 0:
+            cat_cols = [c for c in self.encoder.feature_names_in_ if c in X_tree_all.columns]
+        else:
+            cat_cols = [
+                col for col in X_tree_all.columns
+                if X_tree_all[col].dtype == object or X_tree_all[col].dtype == bool
+            ]
+        if cat_cols and hasattr(self.encoder, "categories_") and len(self.encoder.categories_) > 0:
+            # Build a sub-encoder for just the columns present in both
+            enc_cols = list(self.encoder.feature_names_in_) if hasattr(self.encoder, "feature_names_in_") else cat_cols
+            col_indices = [list(enc_cols).index(c) for c in cat_cols]
+            sub_cats = [self.encoder.categories_[i] for i in col_indices]
+            from sklearn.preprocessing import OrdinalEncoder
+            sub_encoder = OrdinalEncoder(
+                categories=sub_cats,
+                handle_unknown="use_encoded_value",
+                unknown_value=-1,
+            )
+            sub_encoder.fit(X_tree_all[cat_cols].astype(str).head(1))  # fit to set structure
+            sub_encoder.categories_ = sub_cats
+            X_encoded[cat_cols] = sub_encoder.transform(X_tree_all[cat_cols].astype(str))
+        X_encoded = X_encoded.fillna(-1)
 
         preds = np.zeros(len(X_encoded), dtype=int)
         probas = np.zeros(len(X_encoded))
@@ -134,7 +153,7 @@ class TreeNullSubjectDetector:
             tree_mask = pd.Series(True, index=X_encoded.index)
 
         if tree_mask.any():
-            X_tree = X_encoded.loc[tree_mask, tree_cols]
+            X_tree = X_encoded.loc[tree_mask]
             preds[tree_mask.values] = self.model.predict(X_tree)
             if hasattr(self.model, "predict_proba"):
                 probas[tree_mask.values] = self.model.predict_proba(X_tree)[:, 1]

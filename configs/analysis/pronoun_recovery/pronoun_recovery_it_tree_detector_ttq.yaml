@@ -1,0 +1,32 @@
+# Tree-based null subject detector for Italian — TTQ domain (TED2020+Tatoeba+QED)
+#
+# Usage:
+#   python -m analysis.pronoun_recovery.run tree-extract -c configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_detector_ttq.yaml -v
+#   python -m analysis.pronoun_recovery.run tree-train -c configs/analysis/pronoun_recovery/pronoun_recovery_it_tree_detector_ttq.yaml -v
+
+aligned_data_path: data/pronoun_recovery/europarl_aligned/it_ttq/aligned_checkpoint.jsonl
+output_path: data/pronoun_recovery/tree_detector/it_ttq
+language: it
+
+# spaCy model
+it_spacy_model: it_core_news_lg
+spacy_batch_size: 50
+
+# Classifier selection
+classifier_type: gradient_boosted
+
+# Decision tree hyperparameters
+min_samples_leaf: 5
+
+# Gradient boosting hyperparameters
+n_estimators: 200
+learning_rate: 0.1
+
+# Cross-validation
+cv_folds: 5
+test_fraction: 0.2
+seed: 42
+
+# Quality gates
+min_detection_f1: 0.78
+min_feature_accuracy: 0.95
