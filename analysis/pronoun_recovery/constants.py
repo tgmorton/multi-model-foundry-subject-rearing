@@ -51,8 +51,19 @@ IT_LABEL_TO_FORMS: Dict[str, FrozenSet[str]] = {
     "PRO.3pl": frozenset({"loro", "essi", "esse"}),
 }
 
+# ── Spanish Pronoun Lexical Forms (Peninsular) ───────────────────────
+ES_LABEL_TO_FORMS: Dict[str, FrozenSet[str]] = {
+    "PRO.1sg": frozenset({"yo"}),
+    "PRO.2sg": frozenset({"tú"}),
+    "PRO.3sg": frozenset({"él", "ella"}),
+    "PRO.1pl": frozenset({"nosotros", "nosotras"}),
+    "PRO.2pl": frozenset({"vosotros", "vosotras", "ustedes"}),
+    "PRO.3pl": frozenset({"ellos", "ellas"}),
+}
+
 LANGUAGE_FORM_MAPS: Dict[str, Dict[str, FrozenSet[str]]] = {
     "en": EN_LABEL_TO_FORMS,
+    "es": ES_LABEL_TO_FORMS,
     "it": IT_LABEL_TO_FORMS,
 }
 
@@ -76,8 +87,18 @@ IT_DEFAULT_PRONOUN: Dict[str, str] = {
     "PRO.3pl": "loro",
 }
 
+ES_DEFAULT_PRONOUN: Dict[str, str] = {
+    "PRO.1sg": "yo",
+    "PRO.2sg": "tú",
+    "PRO.3sg": "él",       # masculine default
+    "PRO.1pl": "nosotros",
+    "PRO.2pl": "vosotros",
+    "PRO.3pl": "ellos",
+}
+
 LANGUAGE_DEFAULT_PRONOUNS: Dict[str, Dict[str, str]] = {
     "en": EN_DEFAULT_PRONOUN,
+    "es": ES_DEFAULT_PRONOUN,
     "it": IT_DEFAULT_PRONOUN,
 }
 

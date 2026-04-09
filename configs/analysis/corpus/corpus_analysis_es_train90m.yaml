@@ -1,0 +1,36 @@
+input_path: /mnt/data/spanish/train_90M/
+output_path: /mnt/data/output/es_train_90M/
+split_name: es_train_90M
+spacy_model: es_core_news_lg
+spacy_batch_size: 256
+spacy_disable_components:
+  - ner
+chunk_size: 5000
+language: es
+checkpoint_dir: /mnt/data/checkpoints/es_train_90M/
+checkpoint_interval: 10000
+annotation_mode: true
+layered_output: true
+annotators:
+  - clause_structure
+  - that_trace
+  - expletive
+  - pronoun
+  - negation
+  - wh_extraction
+  - relative_clause
+  - verb
+  - argument_structure
+  - topic
+  - complexity
+genre_map:
+  childes: CHILDES
+  child_narratives: Child Narratives
+  grerli: GRERLI
+  europarl: Europarl
+  opensubtitles: OpenSubtitles
+  qed: QED
+  gutenberg: Gutenberg
+  leipzig_web: Leipzig Web
+  vikidia: Vikidia
+  spoken: Spoken
