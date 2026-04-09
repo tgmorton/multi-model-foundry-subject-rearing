@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: annotate-spgc-it
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: annotator
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "Pod: SPGC standalone (16Gi for long web documents)"
+
+          pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars &&
+          python -m spacy download it_core_news_lg
+
+          cd /opt/repo
+
+          # Reduce batch sizes for SPGC's long web documents
+          sed -i 's/spacy_batch_size: 256/spacy_batch_size: 64/' \
+            configs/analysis/corpus/corpus_analysis_it_train90m.yaml
+          sed -i 's/chunk_size: 5000/chunk_size: 1000/' \
+            configs/analysis/corpus/corpus_analysis_it_train90m.yaml
+
+          python -m analysis.corpus_descriptives.run \
+            --config configs/analysis/corpus/corpus_analysis_it_train90m.yaml \
+            --annotate --layered --file spgc
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "7"
+          limits:
+            memory: 16Gi
+            cpu: "7"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never

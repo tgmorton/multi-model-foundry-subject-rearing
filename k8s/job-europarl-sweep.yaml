@@ -11,20 +11,6 @@ spec:
   backoffLimitPerIndex: 3
   template:
     spec:
-      initContainers:
-      - name: git-pull
-        image: alpine/git
-        command: ["sh", "-c", "cd /mnt/data/repo && git pull origin main"]
-        resources:
-          requests:
-            memory: 512Mi
-            cpu: "200m"
-          limits:
-            memory: 512Mi
-            cpu: "200m"
-        volumeMounts:
-        - name: data
-          mountPath: /mnt/data
       containers:
       - name: sweep-runner
         image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
@@ -61,11 +47,11 @@ spec:
           value: "expandable_segments:True"
         resources:
           requests:
-            memory: 8Gi
+            memory: 4Gi
             cpu: "2"
             nvidia.com/gpu: 1
           limits:
-            memory: 9Gi
+            memory: 4Gi
             cpu: "2"
             nvidia.com/gpu: 1
         volumeMounts:

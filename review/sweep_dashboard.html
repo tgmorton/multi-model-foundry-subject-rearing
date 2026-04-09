@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pronoun Recovery Sweep Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-deep: #ffffff;
+  --bg-primary: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-elevated: #f4f5f7;
+  --bg-hover: #eef0f3;
+  --border: #d8dce3;
+  --border-subtle: #e8ecf0;
+  --text-primary: #1a1f2e;
+  --text-secondary: #4a5568;
+  --text-muted: #8694a7;
+  --accent-cyan: #1a73a7;
+  --accent-blue: #2563a8;
+  --accent-teal: #0f7b6c;
+  --accent-green: #1a8a4a;
+  --accent-orange: #b37a00;
+  --accent-red: #c53030;
+  --accent-purple: #6b46c1;
+  --accent-pink: #c53a7a;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+  --font-display: 'DM Sans', -apple-system, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* No overlay for clean theme */
+
+/* Top navigation */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 2rem;
+}
+
+nav .nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  gap: 0.25rem;
+}
+
+nav .nav-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-right: 2rem;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+nav a:hover, nav a.active {
+  color: var(--accent-cyan);
+  background: rgba(26, 115, 167, 0.06);
+}
+
+/* Main layout */
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 5rem 2rem 4rem;
+}
+
+/* Hero section */
+.hero {
+  text-align: center;
+  padding: 2.5rem 0 2rem;
+  position: relative;
+}
+
+.hero::before {
+  display: none;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.hero .subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  font-weight: 300;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat .value {
+  font-family: var(--font-code);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hero-stat .label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.25rem;
+}
+
+/* Section styling */
+section {
+  margin-bottom: 5rem;
+  scroll-margin-top: 80px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-number {
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  background: rgba(26, 115, 167, 0.08);
+  border: 1px solid rgba(26, 115, 167, 0.15);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+  max-width: 800px;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  display: none;
+}
+
+/* Pipeline diagram */
+.pipeline-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pipeline-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  align-items: stretch;
+}
+
+.pipeline-side {
+  padding: 1.25rem;
+}
+
+.pipeline-side.en {
+  border-right: 2px dashed var(--border);
+}
+
+.pipeline-side.it {
+  border-left: none;
+}
+
+.pipeline-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  min-width: 60px;
+}
+
+.pipeline-connector .conn-line {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+}
+
+.pipeline-connector .conn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  position: relative;
+  z-index: 1;
+}
+
+.pipeline-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+  transition: border-color 0.2s;
+}
+
+.pipeline-box:hover {
+  border-color: var(--accent-cyan);
+}
+
+.pipeline-box .box-title {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pipeline-box .box-title .tag {
+  font-size: 0.65rem;
+  background: rgba(26, 115, 167, 0.08);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  color: var(--accent-cyan);
+}
+
+.pipeline-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pipeline-box ul li {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  padding: 0.15rem 0;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.pipeline-box ul li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+  font-family: var(--font-code);
+  font-size: 0.7rem;
+}
+
+/* Vertical pipeline */
+.vpipeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.vpipe-node {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  width: 100%;
+  max-width: 700px;
+  transition: border-color 0.2s;
+}
+
+.vpipe-node:hover {
+  border-color: var(--accent-cyan);
+}
+
+.vpipe-node.highlight {
+  border-color: var(--accent-teal);
+  background: rgba(15, 123, 108, 0.04);
+}
+
+.vpipe-node .node-title {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.35rem;
+}
+
+.vpipe-node .node-detail {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.vpipe-node .node-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.vpipe-arrow {
+  width: 2px;
+  height: 28px;
+  background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-teal));
+  position: relative;
+}
+
+.vpipe-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--accent-teal);
+}
+
+/* Full-width pipeline stages */
+.stage-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+.stage-row > * {
+  flex: 1;
+}
+
+.align-bridge {
+  background: rgba(26, 115, 167, 0.04);
+  border: 1px solid rgba(26, 115, 167, 0.15);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.align-bridge .bridge-label {
+  font-family: var(--font-code);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.align-bridge .bridge-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.align-bridge .bridge-arrows {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-family: var(--font-code);
+  font-size: 1.2rem;
+  color: var(--accent-cyan);
+}
+
+/* Downstream pipeline (after alignment) */
+.down-pipeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-top: 1.5rem;
+}
+
+.down-stage {
+  width: 100%;
+  max-width: 800px;
+}
+
+.down-arrow {
+  width: 2px;
+  height: 24px;
+  background: var(--accent-teal);
+  position: relative;
+}
+
+.down-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--accent-teal);
+}
+
+/* Example record */
+.example-record {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+}
+
+.example-record .record-header {
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 1.25rem;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.example-record pre {
+  padding: 1.25rem;
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-secondary);
+}
+
+.example-record pre .json-key { color: var(--accent-cyan); }
+.example-record pre .json-str { color: var(--accent-teal); }
+.example-record pre .json-num { color: var(--accent-orange); }
+.example-record pre .json-bracket { color: var(--text-muted); }
+
+/* Data yield stats */
+.yield-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.yield-stat {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+}
+
+.yield-stat .ys-value {
+  font-family: var(--font-code);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.yield-stat .ys-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.yield-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  padding: 0 0.25rem;
+}
+
+/* Model architecture */
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 2rem 0;
+}
+
+.arch-block {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 10px;
+  padding: 1.25rem 1.75rem;
+  text-align: center;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.arch-block.input {
+  background: rgba(26, 115, 167, 0.04);
+  border-color: rgba(26, 115, 167, 0.2);
+}
+
+.arch-block.encoder {
+  background: rgba(107, 70, 193, 0.04);
+  border-color: rgba(107, 70, 193, 0.2);
+  padding: 1.75rem;
+}
+
+.arch-block.head {
+  background: rgba(15, 123, 108, 0.04);
+  border-color: rgba(15, 123, 108, 0.2);
+}
+
+.arch-block.loss {
+  background: rgba(179, 122, 0, 0.04);
+  border-color: rgba(179, 122, 0, 0.2);
+}
+
+.arch-block.labels {
+  background: rgba(197, 48, 48, 0.04);
+  border-color: rgba(197, 48, 48, 0.2);
+}
+
+.arch-block .arch-title {
+  font-family: var(--font-code);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.arch-block.input .arch-title { color: var(--accent-cyan); }
+.arch-block.encoder .arch-title { color: var(--accent-purple); }
+.arch-block.head .arch-title { color: var(--accent-teal); }
+.arch-block.loss .arch-title { color: var(--accent-orange); }
+.arch-block.labels .arch-title { color: var(--accent-red); }
+
+.arch-block .arch-detail {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.arch-block .arch-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.arch-block .arch-dim {
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.04);
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-top: 0.35rem;
+}
+
+.arch-arrow {
+  width: 2px;
+  height: 24px;
+  position: relative;
+}
+
+.arch-arrow.cyan { background: var(--accent-cyan); }
+.arch-arrow.cyan::after { border-top-color: var(--accent-cyan); }
+.arch-arrow.purple { background: var(--accent-purple); }
+.arch-arrow.purple::after { border-top-color: var(--accent-purple); }
+.arch-arrow.teal { background: var(--accent-teal); }
+.arch-arrow.teal::after { border-top-color: var(--accent-teal); }
+.arch-arrow.orange { background: var(--accent-orange); }
+.arch-arrow.orange::after { border-top-color: var(--accent-orange); }
+
+.arch-arrow::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid;
+}
+
+.label-chips {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.label-chip {
+  font-family: var(--font-code);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.label-chip.none { color: var(--text-muted); border-color: var(--border); background: var(--bg-elevated); }
+.label-chip.pro { color: var(--accent-teal); border-color: rgba(15, 123, 108, 0.25); background: rgba(15, 123, 108, 0.06); }
+
+/* Training pipeline */
+.training-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.training-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+}
+
+.training-card:hover {
+  border-color: var(--accent-cyan);
+}
+
+.training-card .tc-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.training-card .tc-title {
+  font-family: var(--font-code);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+}
+
+.training-card .tc-detail {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.training-card .tc-param {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.training-card .tc-param:last-child { border-bottom: none; }
+
+.training-card .tc-param .param-key {
+  color: var(--text-muted);
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+}
+
+.training-card .tc-param .param-val {
+  color: var(--text-primary);
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+/* Results table */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+thead th {
+  background: var(--bg-elevated);
+  border-bottom: 2px solid var(--border);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+  position: relative;
+}
+
+thead th:hover {
+  color: var(--accent-cyan);
+}
+
+thead th .sort-arrow {
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  opacity: 0.3;
+}
+
+thead th.sorted .sort-arrow {
+  opacity: 1;
+  color: var(--accent-cyan);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s;
+}
+
+tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+tbody tr:first-child {
+  background: rgba(26, 115, 167, 0.04);
+}
+
+tbody tr:first-child:hover {
+  background: rgba(26, 115, 167, 0.08);
+}
+
+tbody td {
+  padding: 0.6rem 1rem;
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+tbody td.run-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.72rem;
+}
+
+tbody td.metric-high { color: var(--accent-green); font-weight: 600; }
+tbody td.metric-mid { color: var(--accent-orange); }
+tbody td.metric-low { color: var(--accent-red); }
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.rank-1 { background: rgba(26, 115, 167, 0.1); color: var(--accent-cyan); }
+.rank-2 { background: rgba(15, 123, 108, 0.08); color: var(--accent-teal); }
+.rank-3 { background: rgba(107, 70, 193, 0.08); color: var(--accent-purple); }
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.chart-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container::before {
+  display: none;
+}
+
+.chart-container.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-title {
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.chart-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+svg text {
+  font-family: var(--font-code);
+}
+
+/* Next steps cards */
+.next-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.25rem;
+}
+
+.next-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.next-card::before {
+  display: none;
+}
+
+.next-card:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.next-card .nc-number {
+  font-family: var(--font-code);
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  background: rgba(26, 115, 167, 0.06);
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.next-card .nc-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.next-card .nc-body {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.next-card .nc-visual {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+}
+
+/* Model comparison table */
+.model-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.model-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-code);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.model-table td {
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.model-table tr.current td {
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.model-table tr.not-suitable td {
+  opacity: 0.5;
+}
+
+/* Diagram box for next steps */
+.diagram-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.diagram-node {
+  background: rgba(26, 115, 167, 0.05);
+  border: 1px solid rgba(26, 115, 167, 0.15);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+}
+
+.diagram-node.alt {
+  background: rgba(107, 70, 193, 0.05);
+  border-color: rgba(107, 70, 193, 0.15);
+  color: var(--accent-purple);
+}
+
+.diagram-node.result {
+  background: rgba(15, 123, 108, 0.05);
+  border-color: rgba(15, 123, 108, 0.15);
+  color: var(--accent-teal);
+}
+
+.diagram-arrow-h {
+  color: var(--text-muted);
+  font-family: var(--font-code);
+  font-size: 1rem;
+}
+
+/* Key insights callout */
+.insight-box {
+  background: rgba(26, 115, 167, 0.03);
+  border: 1px solid rgba(26, 115, 167, 0.12);
+  border-left: 3px solid var(--accent-cyan);
+  border-radius: 0 8px 8px 0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.insight-box .insight-title {
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.insight-box p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .next-steps-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.8rem; }
+  .stage-row { flex-direction: column; }
+}
+
+@media (max-width: 768px) {
+  nav .nav-inner { overflow-x: auto; }
+  main { padding: 4rem 1rem 2rem; }
+  .pipeline-row { grid-template-columns: 1fr; }
+  .pipeline-side.en { border-right: none; border-bottom: 2px dashed var(--border); }
+}
+
+/* No animations for professional look */
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">Pronoun Recovery</span>
+    <a href="#pipeline" onclick="setActive(this)">Pipeline</a>
+    <a href="#training" onclick="setActive(this)">Training</a>
+    <a href="#architecture" onclick="setActive(this)">Architecture</a>
+    <a href="#results" onclick="setActive(this)">Results</a>
+    <a href="#next" onclick="setActive(this)">Next Steps</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Italian Pronoun Recovery</h1>
+  <p class="subtitle">Hyperparameter sweep results for mDeBERTa-v3-base fine-tuned on Europarl parallel-aligned data. 27 runs across 3 scales, 3 learning rates, and 3 alpha values.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="value">0.768</div>
+      <div class="label">Best Detection F1</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">1.000</div>
+      <div class="label">Feature Accuracy</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">27</div>
+      <div class="label">Sweep Runs</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">500K</div>
+      <div class="label">Max Scale</div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 1: Pipeline -->
+<section id="pipeline">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2>Europarl Annotation Pipeline</h2>
+  </div>
+  <p class="section-desc">How we created training data from parallel EN-IT Europarl proceedings. The pipeline extracts English subject pronouns, aligns them to Italian finite verbs, and identifies null-subject positions.</p>
+
+  <div class="card">
+    <!-- Parallel extraction -->
+    <div class="stage-row">
+      <div class="pipeline-box">
+        <div class="box-title">English Processing <span class="tag">spaCy en_core_web_trf</span></div>
+        <ul>
+          <li>Parse Europarl EN text</li>
+          <li>Extract subject pronouns: I, we, he, she, they, you</li>
+          <li>Filter expletives, relatives, all "it"</li>
+          <li>Map to candidate labels (I &rarr; PRO.1sg, we &rarr; PRO.1pl, &hellip;)</li>
+        </ul>
+      </div>
+      <div class="pipeline-box">
+        <div class="box-title">Italian Processing <span class="tag">spaCy it_core_news_lg</span></div>
+        <ul>
+          <li>Parse Europarl IT text</li>
+          <li>Detect finite verbs (VerbForm=Fin)</li>
+          <li>Check subject status: overt / null / clausal / expletive</li>
+          <li>Extract morphology: Person, Number</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Alignment bridge -->
+    <div class="align-bridge">
+      <div class="bridge-label">awesome-align</div>
+      <div class="bridge-sub">BERT-based statistical word alignment</div>
+      <div class="bridge-arrows">EN &harr; IT</div>
+    </div>
+
+    <!-- Downstream -->
+    <div class="down-pipeline">
+      <div class="down-arrow"></div>
+      <div class="down-stage">
+        <div class="pipeline-box">
+          <div class="box-title">Label Resolution</div>
+          <ul>
+            <li>Follow alignment: EN pronoun &rarr; IT verb</li>
+            <li>Walk dependency tree if needed (max 3 hops)</li>
+            <li>Skip if overt subject present</li>
+            <li>Cross-check morphology (high / medium confidence)</li>
+            <li>Deduplicate: one marker per verb</li>
+          </ul>
+        </div>
+      </div>
+      <div class="down-arrow"></div>
+      <div class="down-stage">
+        <div class="pipeline-box">
+          <div class="box-title">Quality Filters</div>
+          <ul>
+            <li>Pair-level: sentence length, ratio, empty check</li>
+            <li>Pronoun-level: alignment confidence, morphology agreement</li>
+          </ul>
+        </div>
+      </div>
+      <div class="down-arrow"></div>
+      <div class="down-stage">
+        <div class="pipeline-box">
+          <div class="box-title">Passage Packing</div>
+          <ul>
+            <li>Pack sentences into ~180-word passages</li>
+            <li>Preserve sentence boundaries and marker positions</li>
+          </ul>
+        </div>
+      </div>
+      <div class="down-arrow"></div>
+      <div class="down-stage">
+        <div class="pipeline-box" style="border-color: var(--accent-teal);">
+          <div class="box-title" style="color: var(--accent-teal);">Output: packed_checkpoint.jsonl</div>
+          <ul>
+            <li>Training-ready JSONL with clean text, markers, and passage IDs</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example record -->
+    <div class="example-record">
+      <div class="record-header">Example Record</div>
+      <pre><span class="json-bracket">{</span>
+  <span class="json-key">"clean_text"</span>: <span class="json-str">"Dichiaro ripresa la sessione del Parlamento europeo."</span>,
+  <span class="json-key">"markers"</span>: <span class="json-bracket">[</span><span class="json-bracket">{</span>
+    <span class="json-key">"label"</span>: <span class="json-str">"PRO.1sg"</span>,
+    <span class="json-key">"lexical_form"</span>: <span class="json-str">"io"</span>,
+    <span class="json-key">"position"</span>: <span class="json-num">0</span>
+  <span class="json-bracket">}</span><span class="json-bracket">]</span>,
+  <span class="json-key">"id"</span>: <span class="json-str">"europarl_passage:42"</span>
+<span class="json-bracket">}</span></pre>
+    </div>
+
+    <!-- Yield stats -->
+    <div class="yield-stats">
+      <div class="yield-stat">
+        <div class="ys-value">500K</div>
+        <div class="ys-label">Input Pairs</div>
+      </div>
+      <div class="yield-arrow">&rarr;</div>
+      <div class="yield-stat">
+        <div class="ys-value">~45K</div>
+        <div class="ys-label">Packed Passages</div>
+      </div>
+      <div class="yield-arrow">&rarr;</div>
+      <div class="yield-stat">
+        <div class="ys-value">7</div>
+        <div class="ys-label">Label Classes</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 2: Training -->
+<section id="training">
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2>Fine-Tuning Procedure</h2>
+  </div>
+  <p class="section-desc">Token-level sequence labeling with mDeBERTa-v3-base. The training loop uses a custom WeightedLossTrainer with class-weighted cross-entropy loss and early stopping.</p>
+
+  <div class="training-grid">
+    <div class="training-card">
+      <div class="tc-title">Data Loading</div>
+      <div class="tc-detail">
+        JSONL passages are tokenized with label alignment: the first subword of each word inherits the label, remaining subwords receive <code style="font-family:var(--font-code);color:var(--accent-orange);font-size:0.78rem;">-100</code> (ignored by loss).
+      </div>
+      <div style="margin-top:0.75rem;">
+        <div class="diagram-box">
+          <div class="diagram-node">JSONL</div>
+          <div class="diagram-arrow-h">&rarr;</div>
+          <div class="diagram-node">Word Labels</div>
+          <div class="diagram-arrow-h">&rarr;</div>
+          <div class="diagram-node">Subword Align</div>
+          <div class="diagram-arrow-h">&rarr;</div>
+          <div class="diagram-node result">Tensors</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="training-card">
+      <div class="tc-title">Base Model</div>
+      <div style="margin-top:0.5rem;">
+        <div class="tc-param"><span class="param-key">model</span><span class="param-val">microsoft/mdeberta-v3-base</span></div>
+        <div class="tc-param"><span class="param-key">parameters</span><span class="param-val">278M</span></div>
+        <div class="tc-param"><span class="param-key">layers</span><span class="param-val">12</span></div>
+        <div class="tc-param"><span class="param-key">hidden_dim</span><span class="param-val">768</span></div>
+        <div class="tc-param"><span class="param-key">vocab</span><span class="param-val">250K (SentencePiece)</span></div>
+        <div class="tc-param"><span class="param-key">languages</span><span class="param-val">100+</span></div>
+      </div>
+    </div>
+
+    <div class="training-card">
+      <div class="tc-title">Training Loop</div>
+      <div class="tc-detail">
+        WeightedLossTrainer extends HuggingFace Trainer with class-weighted CrossEntropyLoss. The <code style="font-family:var(--font-code);color:var(--accent-orange);font-size:0.78rem;">alpha</code> exponent controls weighting strength. Optional focal loss via gamma parameter.
+      </div>
+      <div style="margin-top:0.75rem;">
+        <div class="tc-param"><span class="param-key">loss</span><span class="param-val">Weighted CE (alpha sweep)</span></div>
+        <div class="tc-param"><span class="param-key">eval</span><span class="param-val">Every epoch</span></div>
+        <div class="tc-param"><span class="param-key">early_stop</span><span class="param-val">patience=3 on eval_f1</span></div>
+        <div class="tc-param"><span class="param-key">precision</span><span class="param-val">fp16 mixed</span></div>
+      </div>
+    </div>
+
+    <div class="training-card">
+      <div class="tc-title">Hyperparameters</div>
+      <div style="margin-top:0.5rem;">
+        <div class="tc-param"><span class="param-key">warmup_ratio</span><span class="param-val">0.1</span></div>
+        <div class="tc-param"><span class="param-key">weight_decay</span><span class="param-val">0.01</span></div>
+        <div class="tc-param"><span class="param-key">max_seq_len</span><span class="param-val">256</span></div>
+        <div class="tc-param"><span class="param-key">batch_size</span><span class="param-val">16</span></div>
+        <div class="tc-param"><span class="param-key">scheduler</span><span class="param-val">linear</span></div>
+      </div>
+    </div>
+
+    <div class="training-card">
+      <div class="tc-title">Evaluation Metrics</div>
+      <div class="tc-detail" style="margin-bottom:0.5rem;">Computed every epoch on held-out validation split:</div>
+      <div class="tc-param"><span class="param-key">seqeval P/R/F1</span><span class="param-val">Full label match</span></div>
+      <div class="tc-param"><span class="param-key">detection_f1</span><span class="param-val">Binary: PRO vs NONE</span></div>
+      <div class="tc-param"><span class="param-key">feature_accuracy</span><span class="param-val">Among correct detections</span></div>
+    </div>
+
+    <div class="training-card">
+      <div class="tc-title">Sweep Grid</div>
+      <div style="margin-top:0.5rem;">
+        <div class="tc-param"><span class="param-key">scale</span><span class="param-val">100k, 300k, 500k</span></div>
+        <div class="tc-param"><span class="param-key">learning_rate</span><span class="param-val">5e-6, 1e-5, 2e-5</span></div>
+        <div class="tc-param"><span class="param-key">alpha</span><span class="param-val">0.0, 0.5, 1.0</span></div>
+        <div class="tc-param"><span class="param-key">total runs</span><span class="param-val">27 (3 &times; 3 &times; 3)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 3: Architecture -->
+<section id="architecture">
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2>Classifier Head Architecture</h2>
+  </div>
+  <p class="section-desc">Token-level classification on top of mDeBERTa encoder hidden states. Each subword position produces logits over 7 classes.</p>
+
+  <div class="card">
+    <div class="arch-diagram">
+      <div class="arch-block input">
+        <div class="arch-title">Input Tokens</div>
+        <div class="arch-detail">"Dichiaro ripresa la sessione del Parlamento europeo ."</div>
+        <div class="arch-dim">raw text &rarr; SentencePiece tokenizer</div>
+      </div>
+
+      <div class="arch-arrow cyan"></div>
+
+      <div class="arch-block input">
+        <div class="arch-title">Subword Tokenization + Padding</div>
+        <div class="arch-detail">SentencePiece with 250K vocabulary, padded to max_seq_length=256</div>
+        <div class="arch-dim">(batch, 256) &mdash; input_ids, attention_mask</div>
+      </div>
+
+      <div class="arch-arrow cyan"></div>
+
+      <div class="arch-block encoder">
+        <div class="arch-title">mDeBERTa-v3-base Encoder</div>
+        <div class="arch-detail">12 Transformer layers, 768-dimensional hidden states</div>
+        <div class="arch-sub">
+          Disentangled attention (content + position) &bull; Enhanced mask decoder &bull; 278M parameters &bull; All layers fine-tuned
+        </div>
+        <div class="arch-dim">(batch, 256, 768)</div>
+      </div>
+
+      <div class="arch-arrow purple"></div>
+
+      <div class="arch-block head">
+        <div class="arch-title">Classifier Head</div>
+        <div class="arch-detail">Dropout(0.1) &rarr; Linear(768 &rarr; 7)</div>
+        <div class="arch-dim">(batch, 256, 7) &mdash; logits per token position</div>
+      </div>
+
+      <div class="arch-arrow teal"></div>
+
+      <div class="arch-block loss">
+        <div class="arch-title">CrossEntropyLoss</div>
+        <div class="arch-detail">Ignores positions with label = -100 (non-first subwords + padding)</div>
+        <div class="arch-sub">Optionally weighted by class frequency (alpha exponent) + focal loss (gamma)</div>
+      </div>
+
+      <div class="arch-arrow orange"></div>
+
+      <div class="arch-block labels">
+        <div class="arch-title">Output Labels</div>
+        <div class="label-chips">
+          <span class="label-chip none">NONE</span>
+          <span class="label-chip pro">PRO.1sg</span>
+          <span class="label-chip pro">PRO.1pl</span>
+          <span class="label-chip pro">PRO.2sg</span>
+          <span class="label-chip pro">PRO.2pl</span>
+          <span class="label-chip pro">PRO.3sg</span>
+          <span class="label-chip pro">PRO.3pl</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 4: Results -->
+<section id="results">
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2>Sweep Results</h2>
+  </div>
+  <p class="section-desc">All 26 completed runs sorted by Detection F1. Feature accuracy is near-perfect across all configurations &mdash; the entire performance gap lies in detection, not classification.</p>
+
+  <div class="insight-box">
+    <div class="insight-title">Key Finding</div>
+    <p><strong>Alpha = 0.0 dominates.</strong> Uniform class weights (no reweighting) consistently outperform weighted variants. Higher alpha values boost recall at the cost of precision, but the net DetF1 is always lower. The best run achieves <strong>DetF1 = 0.768</strong> with <strong>Feature Accuracy = 1.000</strong>, meaning every correctly detected pronoun is assigned the right person/number label.</p>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <table id="sweepTable">
+      <thead>
+        <tr>
+          <th data-col="rank" data-type="num"># <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="name" data-type="str">Run Name <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="scale" data-type="str">Scale <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="lr" data-type="num">LR <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="alpha" data-type="num">Alpha <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="epoch" data-type="num">Epoch <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="p" data-type="num">P <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="r" data-type="num">R <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="f1" data-type="num">F1 <span class="sort-arrow">&udarr;</span></th>
+          <th data-col="detf1" data-type="num" class="sorted">DetF1 <span class="sort-arrow">&darr;</span></th>
+          <th data-col="featAcc" data-type="num">FeatAcc <span class="sort-arrow">&udarr;</span></th>
+        </tr>
+      </thead>
+      <tbody id="sweepBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <!-- Bar chart: DetF1 by scale grouped by alpha -->
+    <div class="chart-container">
+      <div class="chart-title">DetF1 by Scale &times; Alpha</div>
+      <div class="chart-subtitle">Mean DetF1 across learning rates, grouped by class weight exponent</div>
+      <div id="barChart"></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan)"></div> &alpha; = 0.0</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-purple)"></div> &alpha; = 0.5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange)"></div> &alpha; = 1.0</div>
+      </div>
+    </div>
+
+    <!-- Line chart: DetF1 vs Scale at alpha=0.0 -->
+    <div class="chart-container">
+      <div class="chart-title">Scaling Curve (&alpha; = 0.0)</div>
+      <div class="chart-subtitle">DetF1 vs training scale for each learning rate</div>
+      <div id="lineChart"></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan)"></div> LR = 5e-6</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-teal)"></div> LR = 1e-5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-purple)"></div> LR = 2e-5</div>
+      </div>
+    </div>
+
+    <!-- Scatter: F1 vs DetF1 -->
+    <div class="chart-container full-width">
+      <div class="chart-title">F1 vs Detection F1</div>
+      <div class="chart-subtitle">Color = alpha, size = scale. The gap between F1 and DetF1 is bridged entirely by feature accuracy.</div>
+      <div id="scatterChart"></div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan)"></div> &alpha; = 0.0</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-purple)"></div> &alpha; = 0.5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-orange)"></div> &alpha; = 1.0</div>
+        <div class="legend-item" style="margin-left:1rem;"><div class="legend-dot" style="background:var(--text-muted);width:6px;height:6px;border-radius:50%;"></div> 100k</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted);width:10px;height:10px;border-radius:50%;"></div> 300k</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted);width:14px;height:14px;border-radius:50%;"></div> 500k</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Section 5: Next Steps -->
+<section id="next">
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2>Next Steps</h2>
+  </div>
+  <p class="section-desc">Five directions to improve detection performance beyond the current DetF1 = 0.768 ceiling.</p>
+
+  <div class="next-steps-grid">
+    <!-- Card 1: Scale Data -->
+    <div class="next-card">
+      <div class="nc-number">01</div>
+      <div class="nc-title">Scale the Data Further</div>
+      <div class="nc-body">
+        We've used 500K of the available 1.9M Europarl pairs. DetF1 gains are clear from 100K &rarr; 300K &rarr; 500K and the curve hasn't plateaued. Scaling to the full corpus should yield an estimated ~170K packed passages.
+      </div>
+      <div class="nc-visual">
+        <svg viewBox="0 0 440 200" style="width:100%;height:auto;">
+          <!-- Grid -->
+          <line x1="60" y1="20" x2="60" y2="170" stroke="#d8dce3" stroke-width="1"/>
+          <line x1="60" y1="170" x2="420" y2="170" stroke="#d8dce3" stroke-width="1"/>
+          <!-- Y-axis labels -->
+          <text x="55" y="170" fill="#8694a7" font-size="10" text-anchor="end">0.70</text>
+          <text x="55" y="120" fill="#8694a7" font-size="10" text-anchor="end">0.75</text>
+          <text x="55" y="70" fill="#8694a7" font-size="10" text-anchor="end">0.80</text>
+          <text x="55" y="24" fill="#8694a7" font-size="10" text-anchor="end">0.85</text>
+          <!-- Gridlines -->
+          <line x1="60" y1="120" x2="420" y2="120" stroke="#e8ecf0" stroke-width="1" stroke-dasharray="4"/>
+          <line x1="60" y1="70" x2="420" y2="70" stroke="#e8ecf0" stroke-width="1" stroke-dasharray="4"/>
+          <!-- X-axis labels -->
+          <text x="100" y="188" fill="#8694a7" font-size="10" text-anchor="middle">100K</text>
+          <text x="190" y="188" fill="#8694a7" font-size="10" text-anchor="middle">300K</text>
+          <text x="280" y="188" fill="#8694a7" font-size="10" text-anchor="middle">500K</text>
+          <text x="390" y="188" fill="#4a5568" font-size="10" text-anchor="middle">1.9M</text>
+          <!-- Actual data line -->
+          <polyline points="100,127 190,107 280,102" fill="none" stroke="#1a73a7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="100" cy="127" r="4" fill="#1a73a7"/>
+          <circle cx="190" cy="107" r="4" fill="#1a73a7"/>
+          <circle cx="280" cy="102" r="4" fill="#1a73a7"/>
+          <!-- Labels -->
+          <text x="100" y="120" fill="#1a73a7" font-size="9" text-anchor="middle">0.743</text>
+          <text x="190" y="100" fill="#1a73a7" font-size="9" text-anchor="middle">0.763</text>
+          <text x="280" y="95" fill="#1a73a7" font-size="9" text-anchor="middle">0.767</text>
+          <!-- Projection -->
+          <line x1="280" y1="102" x2="390" y2="78" stroke="#1a73a7" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5"/>
+          <circle cx="390" cy="78" r="5" fill="none" stroke="#1a73a7" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.6"/>
+          <text x="390" y="71" fill="#1a73a7" font-size="9" text-anchor="middle" opacity="0.7">~0.79?</text>
+          <!-- Axis labels -->
+          <text x="240" y="200" fill="#8694a7" font-size="9" text-anchor="middle">Training Pairs</text>
+          <text x="15" y="95" fill="#8694a7" font-size="9" text-anchor="middle" transform="rotate(-90,15,95)">DetF1</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card 2: Binary Classifier -->
+    <div class="next-card">
+      <div class="nc-number">02</div>
+      <div class="nc-title">Make the Classifier Binary</div>
+      <div class="nc-body">
+        Feature accuracy is already 99.9&ndash;100%, so the 7-class head wastes gradient signal on a solved problem. A binary classifier (NONE vs PRO) gives cleaner gradients; person/number can be resolved post-hoc from Italian verb morphology.
+      </div>
+      <div class="nc-visual">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:180px;">
+            <div style="font-family:var(--font-code);font-size:0.7rem;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;">Current: 7-class</div>
+            <div class="diagram-box" style="flex-direction:column;align-items:flex-start;gap:0.3rem;">
+              <div class="diagram-node" style="width:100%;text-align:center;font-size:0.68rem;">Softmax(7)</div>
+              <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+                <span class="label-chip none" style="font-size:0.6rem;">NONE</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">1sg</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">1pl</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">2sg</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">2pl</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">3sg</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">3pl</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1;min-width:180px;">
+            <div style="font-family:var(--font-code);font-size:0.7rem;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05em;">Proposed: 2-class + rules</div>
+            <div class="diagram-box" style="flex-direction:column;align-items:flex-start;gap:0.3rem;">
+              <div class="diagram-node alt" style="width:100%;text-align:center;font-size:0.68rem;">Sigmoid(1)</div>
+              <div style="display:flex;gap:0.25rem;align-items:center;">
+                <span class="label-chip none" style="font-size:0.6rem;">NONE</span>
+                <span class="label-chip pro" style="font-size:0.6rem;">PRO</span>
+                <span style="font-family:var(--font-code);font-size:0.8rem;color:var(--text-muted);">&rarr;</span>
+                <span class="diagram-node result" style="font-size:0.6rem;padding:0.2rem 0.4rem;">spaCy morph</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Threshold Tuning -->
+    <div class="next-card">
+      <div class="nc-number">03</div>
+      <div class="nc-title">Threshold Tuning</div>
+      <div class="nc-body">
+        Currently using argmax with no threshold. With a binary head, we can sweep the P(PRO) decision threshold to optimize the precision&ndash;recall trade-off for the target use case.
+      </div>
+      <div class="nc-visual">
+        <svg viewBox="0 0 440 180" style="width:100%;height:auto;">
+          <!-- Axes -->
+          <line x1="60" y1="20" x2="60" y2="150" stroke="#d8dce3" stroke-width="1"/>
+          <line x1="60" y1="150" x2="420" y2="150" stroke="#d8dce3" stroke-width="1"/>
+          <text x="55" y="155" fill="#8694a7" font-size="9" text-anchor="end">0</text>
+          <text x="55" y="25" fill="#8694a7" font-size="9" text-anchor="end">1.0</text>
+          <text x="420" y="165" fill="#8694a7" font-size="9" text-anchor="end">Recall</text>
+          <text x="15" y="85" fill="#8694a7" font-size="9" text-anchor="middle" transform="rotate(-90,15,85)">Precision</text>
+          <!-- P-R curve (conceptual) -->
+          <path d="M70,30 Q120,32 180,40 Q240,52 300,80 Q360,120 400,148" fill="none" stroke="var(--accent-teal)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Threshold marker -->
+          <circle cx="220" cy="45" r="6" fill="var(--accent-cyan)" stroke="var(--bg-deep)" stroke-width="2"/>
+          <line x1="220" y1="51" x2="220" y2="150" stroke="var(--accent-cyan)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="220" y="170" fill="var(--accent-cyan)" font-size="9" text-anchor="middle">threshold</text>
+          <!-- Current operating point -->
+          <circle cx="290" cy="72" r="5" fill="none" stroke="var(--accent-orange)" stroke-width="2"/>
+          <text x="305" y="68" fill="var(--accent-orange)" font-size="8">current (argmax)</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card 4: Longer Context -->
+    <div class="next-card">
+      <div class="nc-number">04</div>
+      <div class="nc-title">Longer Context Window</div>
+      <div class="nc-body">
+        Pro-drop is discourse-sensitive: the antecedent for a null subject may appear several sentences back. Increasing max_seq_length from 256 to 512 tokens doubles the context window from ~180 to ~360 words.
+      </div>
+      <div class="nc-visual">
+        <div style="display:flex;gap:1rem;flex-direction:column;">
+          <div>
+            <div style="font-family:var(--font-code);font-size:0.7rem;color:var(--text-muted);margin-bottom:0.4rem;">CURRENT: 256 tokens &asymp; 180 words</div>
+            <div style="height:16px;background:linear-gradient(90deg,rgba(26,115,167,0.2),rgba(26,115,167,0.05));border:1px solid rgba(26,115,167,0.15);border-radius:4px;width:50%;"></div>
+          </div>
+          <div>
+            <div style="font-family:var(--font-code);font-size:0.7rem;color:var(--accent-teal);margin-bottom:0.4rem;">PROPOSED: 512 tokens &asymp; 360 words</div>
+            <div style="height:16px;background:linear-gradient(90deg,rgba(15,123,108,0.2),rgba(15,123,108,0.05));border:1px solid rgba(15,123,108,0.15);border-radius:4px;width:100%;"></div>
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem;">Trade-off: 2&times; memory, ~1.5&times; training time. May need gradient accumulation or smaller batch size.</div>
+      </div>
+    </div>
+
+    <!-- Card 5: Different Models -->
+    <div class="next-card" style="grid-column: 1 / -1;">
+      <div class="nc-number">05</div>
+      <div class="nc-title">Test Different Base Models</div>
+      <div class="nc-body">
+        mDeBERTa-v3-base is a strong multilingual choice, but Italian-specific or larger models may improve encoding quality for pro-drop detection.
+      </div>
+      <div class="nc-visual" style="overflow-x:auto;">
+        <table class="model-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Params</th>
+              <th>Languages</th>
+              <th>Hidden</th>
+              <th>Layers</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="current">
+              <td>microsoft/mdeberta-v3-base</td>
+              <td>278M</td>
+              <td>100+</td>
+              <td>768</td>
+              <td>12</td>
+              <td>Current model</td>
+            </tr>
+            <tr class="not-suitable">
+              <td>microsoft/deberta-v3-large</td>
+              <td>435M</td>
+              <td>EN only</td>
+              <td>1024</td>
+              <td>24</td>
+              <td>Not suitable (EN only)</td>
+            </tr>
+            <tr>
+              <td>dbmdz/bert-base-italian-xxl-cased</td>
+              <td>110M</td>
+              <td>IT</td>
+              <td>768</td>
+              <td>12</td>
+              <td>Italian-specific BERT</td>
+            </tr>
+            <tr>
+              <td>xlm-roberta-base</td>
+              <td>278M</td>
+              <td>100</td>
+              <td>768</td>
+              <td>12</td>
+              <td>Strong multilingual baseline</td>
+            </tr>
+            <tr>
+              <td>xlm-roberta-large</td>
+              <td>560M</td>
+              <td>100</td>
+              <td>1024</td>
+              <td>24</td>
+              <td>Larger capacity, higher compute</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// === SWEEP DATA ===
+const sweepData = [
+  {name:"lr5e-06_scale500k_alpha0.0", scale:"500k", lr:5e-6, alpha:0.0, epoch:9, p:0.680, r:0.700, f1:0.690, detf1:0.768, featAcc:1.000},
+  {name:"lr2e-05_scale500k_alpha0.0", scale:"500k", lr:2e-5, alpha:0.0, epoch:4, p:0.674, r:0.703, f1:0.688, detf1:0.767, featAcc:1.000},
+  {name:"lr1e-05_scale500k_alpha0.0", scale:"500k", lr:1e-5, alpha:0.0, epoch:7, p:0.671, r:0.702, f1:0.686, detf1:0.765, featAcc:1.000},
+  {name:"lr2e-05_scale300k_alpha0.0", scale:"300k", lr:2e-5, alpha:0.0, epoch:5, p:0.667, r:0.698, f1:0.682, detf1:0.764, featAcc:1.000},
+  {name:"lr5e-06_scale300k_alpha0.0", scale:"300k", lr:5e-6, alpha:0.0, epoch:12, p:0.660, r:0.703, f1:0.681, detf1:0.762, featAcc:1.000},
+  {name:"lr1e-05_scale300k_alpha0.0", scale:"300k", lr:1e-5, alpha:0.0, epoch:4, p:0.653, r:0.707, f1:0.679, detf1:0.762, featAcc:1.000},
+  {name:"lr2e-05_scale100k_alpha0.0", scale:"100k", lr:2e-5, alpha:0.0, epoch:12, p:0.641, r:0.692, f1:0.665, detf1:0.745, featAcc:0.999},
+  {name:"lr2e-05_scale100k_alpha0.5", scale:"100k", lr:2e-5, alpha:0.5, epoch:20, p:0.587, r:0.731, f1:0.651, detf1:0.740, featAcc:0.999},
+  {name:"lr5e-06_scale100k_alpha0.0", scale:"100k", lr:5e-6, alpha:0.0, epoch:13, p:0.632, r:0.684, f1:0.657, detf1:0.739, featAcc:0.999},
+  {name:"lr1e-05_scale300k_alpha0.5", scale:"300k", lr:1e-5, alpha:0.5, epoch:20, p:0.549, r:0.751, f1:0.635, detf1:0.732, featAcc:0.999},
+  {name:"lr2e-05_scale500k_alpha0.5", scale:"500k", lr:2e-5, alpha:0.5, epoch:9, p:0.521, r:0.762, f1:0.619, detf1:0.722, featAcc:0.999},
+  {name:"lr1e-05_scale500k_alpha0.5", scale:"500k", lr:1e-5, alpha:0.5, epoch:9, p:0.505, r:0.761, f1:0.607, detf1:0.713, featAcc:0.999},
+  {name:"lr2e-05_scale300k_alpha0.5", scale:"300k", lr:2e-5, alpha:0.5, epoch:9, p:0.502, r:0.752, f1:0.602, detf1:0.707, featAcc:0.999},
+  {name:"lr1e-05_scale100k_alpha0.5", scale:"100k", lr:1e-5, alpha:0.5, epoch:16, p:0.507, r:0.738, f1:0.601, detf1:0.706, featAcc:0.999},
+  {name:"lr5e-06_scale500k_alpha0.5", scale:"500k", lr:5e-6, alpha:0.5, epoch:13, p:0.491, r:0.757, f1:0.596, detf1:0.704, featAcc:0.999},
+  {name:"lr2e-05_scale300k_alpha1.0", scale:"300k", lr:2e-5, alpha:1.0, epoch:19, p:0.477, r:0.745, f1:0.581, detf1:0.691, featAcc:0.999},
+  {name:"lr2e-05_scale500k_alpha1.0", scale:"500k", lr:2e-5, alpha:1.0, epoch:15, p:0.473, r:0.752, f1:0.580, detf1:0.691, featAcc:0.999},
+  {name:"lr2e-05_scale100k_alpha1.0", scale:"100k", lr:2e-5, alpha:1.0, epoch:20, p:0.470, r:0.736, f1:0.574, detf1:0.684, featAcc:0.999},
+  {name:"lr1e-05_scale300k_alpha1.0", scale:"300k", lr:1e-5, alpha:1.0, epoch:20, p:0.452, r:0.740, f1:0.561, detf1:0.675, featAcc:0.999},
+  {name:"lr5e-06_scale100k_alpha0.5", scale:"100k", lr:5e-6, alpha:0.5, epoch:13, p:0.440, r:0.724, f1:0.547, detf1:0.662, featAcc:0.999},
+  {name:"lr1e-05_scale100k_alpha1.0", scale:"100k", lr:1e-5, alpha:1.0, epoch:20, p:0.418, r:0.718, f1:0.528, detf1:0.650, featAcc:0.999},
+  {name:"lr5e-06_scale300k_alpha0.5", scale:"300k", lr:5e-6, alpha:0.5, epoch:5, p:0.393, r:0.714, f1:0.507, detf1:0.631, featAcc:0.999},
+  {name:"lr5e-06_scale300k_alpha1.0", scale:"300k", lr:5e-6, alpha:1.0, epoch:16, p:0.391, r:0.717, f1:0.506, detf1:0.628, featAcc:0.999},
+  {name:"lr5e-06_scale500k_alpha1.0", scale:"500k", lr:5e-6, alpha:1.0, epoch:9, p:0.373, r:0.711, f1:0.489, detf1:0.613, featAcc:0.999},
+  {name:"lr1e-05_scale500k_alpha1.0", scale:"500k", lr:1e-5, alpha:1.0, epoch:7, p:0.357, r:0.702, f1:0.473, detf1:0.599, featAcc:0.999},
+  {name:"lr5e-06_scale100k_alpha1.0", scale:"100k", lr:5e-6, alpha:1.0, epoch:19, p:0.344, r:0.685, f1:0.458, detf1:0.588, featAcc:0.998},
+];
+
+// === TABLE ===
+let currentSort = {col: 'detf1', dir: 'desc'};
+
+function renderTable(data) {
+  const tbody = document.getElementById('sweepBody');
+  tbody.innerHTML = '';
+  data.forEach((d, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? ` rank-${rank}` : '';
+    const detClass = d.detf1 >= 0.75 ? 'metric-high' : d.detf1 >= 0.68 ? 'metric-mid' : 'metric-low';
+    const f1Class = d.f1 >= 0.68 ? 'metric-high' : d.f1 >= 0.58 ? 'metric-mid' : 'metric-low';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge${rankClass}">${rank}</span></td>
+      <td class="run-name">${d.name}</td>
+      <td>${d.scale}</td>
+      <td>${d.lr.toExponential(0)}</td>
+      <td>${d.alpha.toFixed(1)}</td>
+      <td>${d.epoch}</td>
+      <td>${d.p.toFixed(3)}</td>
+      <td>${d.r.toFixed(3)}</td>
+      <td class="${f1Class}">${d.f1.toFixed(3)}</td>
+      <td class="${detClass}">${d.detf1.toFixed(3)}</td>
+      <td>${d.featAcc.toFixed(3)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function scaleToNum(s) { return parseInt(s.replace('k','')); }
+
+document.querySelectorAll('#sweepTable thead th').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    const type = th.dataset.type;
+    if (currentSort.col === col) {
+      currentSort.dir = currentSort.dir === 'desc' ? 'asc' : 'desc';
+    } else {
+      currentSort = {col, dir: 'desc'};
+    }
+    document.querySelectorAll('#sweepTable thead th').forEach(h => {
+      h.classList.remove('sorted');
+      h.querySelector('.sort-arrow').textContent = '\u21C5';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-arrow').textContent = currentSort.dir === 'desc' ? '\u2193' : '\u2191';
+
+    const sorted = [...sweepData].sort((a, b) => {
+      let va, vb;
+      if (col === 'rank') { return 0; }
+      if (col === 'name') { va = a.name; vb = b.name; }
+      else if (col === 'scale') { va = scaleToNum(a.scale); vb = scaleToNum(b.scale); }
+      else { va = a[col]; vb = b[col]; }
+      if (type === 'str') {
+        return currentSort.dir === 'asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      }
+      return currentSort.dir === 'asc' ? va - vb : vb - va;
+    });
+    renderTable(sorted);
+  });
+});
+
+renderTable(sweepData);
+
+// === BAR CHART ===
+(function() {
+  const scales = ['100k', '300k', '500k'];
+  const alphas = [0.0, 0.5, 1.0];
+  const colors = ['#1a73a7', '#6b46c1', '#b37a00'];
+
+  // Compute means
+  const means = {};
+  scales.forEach(s => {
+    alphas.forEach(a => {
+      const runs = sweepData.filter(d => d.scale === s && d.alpha === a);
+      const avg = runs.reduce((sum, d) => sum + d.detf1, 0) / runs.length;
+      means[`${s}_${a}`] = avg;
+    });
+  });
+
+  const W = 440, H = 240;
+  const ml = 60, mr = 20, mt = 20, mb = 40;
+  const pw = W - ml - mr;
+  const ph = H - mt - mb;
+
+  const yMin = 0.55, yMax = 0.80;
+  const yScale = v => mt + ph * (1 - (v - yMin) / (yMax - yMin));
+  const groupW = pw / scales.length;
+  const barW = groupW / (alphas.length + 1);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">`;
+
+  // Grid lines
+  for (let v = 0.55; v <= 0.80; v += 0.05) {
+    const y = yScale(v);
+    svg += `<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e8ecf0" stroke-width="1" ${v===0.55?'':'stroke-dasharray="4"'}/>`;
+    svg += `<text x="${ml-5}" y="${y+3}" fill="#8694a7" font-size="9" text-anchor="end">${v.toFixed(2)}</text>`;
+  }
+
+  scales.forEach((s, si) => {
+    const gx = ml + si * groupW + barW * 0.5;
+    alphas.forEach((a, ai) => {
+      const val = means[`${s}_${a}`];
+      const bx = gx + ai * barW;
+      const by = yScale(val);
+      const bh = yScale(yMin) - by;
+      svg += `<rect x="${bx}" y="${by}" width="${barW * 0.8}" height="${bh}" rx="3" fill="${colors[ai]}" opacity="0.85"/>`;
+      svg += `<text x="${bx + barW * 0.4}" y="${by - 5}" fill="${colors[ai]}" font-size="8" text-anchor="middle">${val.toFixed(3)}</text>`;
+    });
+    svg += `<text x="${gx + groupW/2 - barW*0.5}" y="${H - mb + 15}" fill="#4a5568" font-size="10" text-anchor="middle">${s}</text>`;
+  });
+
+  svg += `</svg>`;
+  document.getElementById('barChart').innerHTML = svg;
+})();
+
+// === LINE CHART ===
+(function() {
+  const lrs = [5e-6, 1e-5, 2e-5];
+  const lrLabels = ['5e-6', '1e-5', '2e-5'];
+  const colors = ['#1a73a7', '#0f7b6c', '#6b46c1'];
+  const scales = ['100k', '300k', '500k'];
+  const scaleX = [100, 270, 400];
+
+  const W = 440, H = 240;
+  const ml = 60, mr = 20, mt = 20, mb = 40;
+
+  const yMin = 0.72, yMax = 0.78;
+  const yScale = v => mt + (H - mt - mb) * (1 - (v - yMin) / (yMax - yMin));
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">`;
+
+  // Grid
+  for (let v = 0.72; v <= 0.78; v += 0.01) {
+    const y = yScale(v);
+    svg += `<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e8ecf0" stroke-width="1" stroke-dasharray="4"/>`;
+    if (v === 0.72 || v === 0.74 || v === 0.76 || v === 0.78) {
+      svg += `<text x="${ml-5}" y="${y+3}" fill="#8694a7" font-size="9" text-anchor="end">${v.toFixed(2)}</text>`;
+    }
+  }
+
+  // X labels
+  scales.forEach((s, i) => {
+    svg += `<text x="${scaleX[i]}" y="${H - mb + 15}" fill="#4a5568" font-size="10" text-anchor="middle">${s}</text>`;
+  });
+
+  // Lines
+  lrs.forEach((lr, li) => {
+    const points = scales.map((s, si) => {
+      const run = sweepData.find(d => d.scale === s && d.alpha === 0.0 && d.lr === lr);
+      return run ? {x: scaleX[si], y: yScale(run.detf1), val: run.detf1} : null;
+    }).filter(Boolean);
+
+    const line = points.map(p => `${p.x},${p.y}`).join(' ');
+    svg += `<polyline points="${line}" fill="none" stroke="${colors[li]}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    points.forEach(p => {
+      svg += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${colors[li]}" stroke="var(--bg-card)" stroke-width="2"/>`;
+      svg += `<text x="${p.x}" y="${p.y - 10}" fill="${colors[li]}" font-size="8" text-anchor="middle">${p.val.toFixed(3)}</text>`;
+    });
+  });
+
+  svg += `</svg>`;
+  document.getElementById('lineChart').innerHTML = svg;
+})();
+
+// === SCATTER CHART ===
+(function() {
+  const W = 900, H = 360;
+  const ml = 65, mr = 30, mt = 20, mb = 45;
+  const pw = W - ml - mr;
+  const ph = H - mt - mb;
+
+  const f1Min = 0.42, f1Max = 0.72;
+  const detMin = 0.55, detMax = 0.80;
+
+  const xScale = v => ml + pw * (v - detMin) / (detMax - detMin);
+  const yScale = v => mt + ph * (1 - (v - f1Min) / (f1Max - f1Min));
+
+  const alphaColors = {'0': '#1a73a7', '0.5': '#6b46c1', '1': '#b37a00'};
+  const scaleRadius = {'100k': 5, '300k': 8, '500k': 11};
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">`;
+
+  // Grid
+  for (let v = 0.55; v <= 0.80; v += 0.05) {
+    const x = xScale(v);
+    svg += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${H-mb}" stroke="#e8ecf0" stroke-width="1" stroke-dasharray="4"/>`;
+    svg += `<text x="${x}" y="${H-mb+15}" fill="#8694a7" font-size="9" text-anchor="middle">${v.toFixed(2)}</text>`;
+  }
+  for (let v = 0.45; v <= 0.70; v += 0.05) {
+    const y = yScale(v);
+    svg += `<line x1="${ml}" y1="${y}" x2="${W-mr}" y2="${y}" stroke="#e8ecf0" stroke-width="1" stroke-dasharray="4"/>`;
+    svg += `<text x="${ml-5}" y="${y+3}" fill="#8694a7" font-size="9" text-anchor="end">${v.toFixed(2)}</text>`;
+  }
+
+  // Diagonal reference (F1 = DetF1)
+  const diagX1 = xScale(Math.max(detMin, f1Min));
+  const diagY1 = yScale(Math.max(detMin, f1Min));
+  const diagX2 = xScale(Math.min(detMax, f1Max));
+  const diagY2 = yScale(Math.min(detMax, f1Max));
+  svg += `<line x1="${diagX1}" y1="${diagY1}" x2="${diagX2}" y2="${diagY2}" stroke="#d8dce3" stroke-width="1.5" stroke-dasharray="6,4"/>`;
+  svg += `<text x="${diagX2+5}" y="${diagY2+3}" fill="#8694a7" font-size="8" text-anchor="start">F1 = DetF1</text>`;
+
+  // Axis labels
+  svg += `<text x="${ml + pw/2}" y="${H-5}" fill="#8694a7" font-size="10" text-anchor="middle">Detection F1</text>`;
+  svg += `<text x="15" y="${mt + ph/2}" fill="#8694a7" font-size="10" text-anchor="middle" transform="rotate(-90,15,${mt + ph/2})">F1 (seqeval)</text>`;
+
+  // Points
+  sweepData.forEach(d => {
+    const cx = xScale(d.detf1);
+    const cy = yScale(d.f1);
+    const r = scaleRadius[d.scale];
+    const color = alphaColors[String(d.alpha)];
+    svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="0.65" stroke="${color}" stroke-width="1.5"/>`;
+  });
+
+  svg += `</svg>`;
+  document.getElementById('scatterChart').innerHTML = svg;
+})();
+
+// === NAV ACTIVE STATE ===
+function setActive(el) {
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Intersection observer for nav highlights
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      document.querySelectorAll('nav a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === `#${id}`);
+      });
+    }
+  });
+}, {rootMargin: '-80px 0px -60% 0px'});
+
+document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
