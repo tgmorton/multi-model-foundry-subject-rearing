@@ -46,6 +46,7 @@ markdown_extensions:
 nav:
   - Home: README.md
   - Project Structure: STRUCTURE.md
+  - Documentation Map: DOCUMENTATION_MAP.md
 
   - Getting Started:
     - Training Guide: TRAINING_GUIDE.md
@@ -53,11 +54,40 @@ nav:
     - Training on Wild West: TRAINING_ON_WILD_WEST.md
     - Data Processing: data_processing.md
 
+  - Preprocessing:
+    - Overview: preprocessing/README.md
+    - User Guide: preprocessing/USER_GUIDE.md
+    - Advanced Usage: preprocessing/ADVANCED.md
+    - Developer Guide: preprocessing/DEVELOPER_GUIDE.md
+    - Testing: preprocessing/TESTING.md
+    - Changelog: preprocessing/CHANGES.md
+    - Ablation Enrichment: ABLATION_ENRICHMENT_IMPLEMENTATION.md
+
+  - Pronoun Recovery & Null Subjects:
+    - System Reference: pronoun_recovery.md
+    - Italian Pipeline: italian_null_subject.md
+    - TTQ Corpus: ttq_corpus_report.md
+    - Spanish Corpus: spanish_corpus.md
+
+  - Annotation:
+    - Web App: annotation_app.md
+    - Layered Architecture: LAYERED_ANNOTATION_ARCHITECTURE.md
+
+  - Corpus Analysis:
+    - Specification: NEW_CORPUS_ANALYSIS_PLAN.md
+    - Original Specification (superseded): CORPUS_ANALYSIS_SPEC.md
+    - Corpus Analysis Module: corpus_analysis/README.md
+    - Corpus Analysis Changelog: corpus_analysis/CHANGES.md
+
   - Experiments:
-    - Checkpoint Scheduling: checkpoint_scheduling.md
-    - New Checkpoint Scheduling: new_checkpoint_scheduling.md
     - Phase 3 Pipeline: phase3_experimental_pipeline.md
     - Cross Architecture Comparison: CROSS_ARCHITECTURE_COMPARISON.md
+    - Checkpoint Scheduling: new_checkpoint_scheduling.md
+    - Checkpoint Scheduling (Phase 2, superseded): checkpoint_scheduling.md
+
+  - Infrastructure:
+    - Kubernetes Jobs: k8s_jobs.md
+    - NRP Registry Setup: NRP_REGISTRY_SETUP.md
 
   - Model Foundry:
     - Overview: model_foundry/README.md
@@ -73,9 +103,8 @@ nav:
     - Guides:
       - WandB Integration: model_foundry/guides/wandb-integration.md
 
-  - Preprocessing:
-    - User Guide: preprocessing/USER_GUIDE.md
-    - Advanced Usage: preprocessing/ADVANCED_USAGE.md
+  - Research:
+    - OSF Preregistration: OSF_PREREGISTRATION.md
 
 plugins:
   - search

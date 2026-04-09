@@ -1,246 +1,103 @@
 # Documentation Map
 
-**Quick reference for finding documentation across the Model Foundry project.**
+Quick topic-to-file lookup. For the full table of contents, see [README.md](README.md); for the on-disk layout, see [STRUCTURE.md](STRUCTURE.md).
 
----
-
-## 📁 All Documentation is Now in `/docs/`
-
-All documentation has been centralized in the `/docs/` directory for easy access.
-
-**Start here:** [`/docs/README.md`](/docs/README.md)
-
----
-
-## 🗺️ Documentation Structure
-
-```
-docs/
-├── README.md                                    # 📚 Master documentation index
-│
-├── model_foundry/                              # Model Foundry framework
-│   │
-│   ├── guides/                                 # 📖 User guides
-│   │   └── wandb-integration.md               # WandB setup (500+ lines)
-│   │
-│   ├── architecture/                          # 🏗️ System design
-│   │   ├── logging-system.md                 # Logging architecture (1000+ lines)
-│   │   ├── training-refactoring.md           # Training module design
-│   │   └── refactoring-status.md             # Refactoring summary
-│   │
-│   ├── testing/                               # 🧪 Testing docs
-│   │   ├── strategy.md                       # Testing strategy
-│   │   ├── running-tests.md                  # How to run tests
-│   │   └── logging-tests.md                  # Logging test specs (600+ lines)
-│   │
-│   ├── api/                                   # 📋 API reference (planned)
-│   │   ├── configuration.md
-│   │   ├── logging-components.md
-│   │   ├── training-components.md
-│   │   └── data-processing.md
-│   │
-│   └── tutorials/                             # 🎓 Tutorials (planned)
-│       ├── basic-training.md
-│       ├── custom-datasets.md
-│       └── hyperparameter-tuning.md
-│
-└── analysis/                                   # Analysis tools (planned)
-    ├── statistical-analysis.md
-    └── visualization.md
-```
-
----
-
-## 🎯 Find Documentation By Topic
-
-### Getting Started
-- **Installation & Setup** → `/docs/README.md` (Quick Start section)
-- **First Training Run** → `/docs/model_foundry/guides/getting-started.md` (planned)
-- **Example Configs** → `/configs/templates/example_with_wandb.yaml`
+## Find Documentation by Topic
 
 ### Training
-- **Training Architecture** → `/docs/model_foundry/architecture/training-refactoring.md`
-- **Checkpoint Management** → `/docs/model_foundry/architecture/training-refactoring.md#checkpoint-management`
-- **Configuration Options** → `/docs/model_foundry/guides/configuration.md` (planned)
 
-### Logging & Monitoring
-- **Logging System Overview** → `/docs/model_foundry/architecture/logging-system.md`
-- **WandB Integration** → `/docs/model_foundry/guides/wandb-integration.md`
-- **Metrics Tracking** → `/docs/model_foundry/architecture/logging-system.md#metricslogger`
-- **Performance Profiling** → `/docs/model_foundry/architecture/logging-system.md#performancelogger`
+- Running a training experiment — [TRAINING_GUIDE.md](TRAINING_GUIDE.md)
+- SLURM cluster instructions — [TRAINING_ON_SLURM.md](TRAINING_ON_SLURM.md)
+- Wild West GPU cluster — [TRAINING_ON_WILD_WEST.md](TRAINING_ON_WILD_WEST.md)
+- Training framework architecture — [model_foundry/architecture/training-refactoring.md](model_foundry/architecture/training-refactoring.md)
+- Multi-architecture support — [model_foundry/architecture/multi-architecture-system.md](model_foundry/architecture/multi-architecture-system.md)
+- Checkpoint scheduling (current) — [new_checkpoint_scheduling.md](new_checkpoint_scheduling.md)
+- Checkpoint scheduling (Phase 2, superseded) — [checkpoint_scheduling.md](checkpoint_scheduling.md)
 
-### Testing
-- **Testing Strategy** → `/docs/model_foundry/testing/strategy.md`
-- **Running Tests** → `/docs/model_foundry/testing/running-tests.md`
-- **Writing Tests** → `/docs/model_foundry/testing/writing-tests.md` (planned)
-- **Logging Tests** → `/docs/model_foundry/testing/logging-tests.md`
+### Preprocessing and Ablations
 
-### API Reference
-- **Configuration API** → `/docs/model_foundry/api/configuration.md` (planned)
-- **Logging Components** → `/docs/model_foundry/api/logging-components.md` (planned)
-- **Training Components** → `/docs/model_foundry/api/training-components.md` (planned)
-- **Data Processing** → `/docs/model_foundry/api/data-processing.md` (planned)
+- Preprocessing overview — [preprocessing/README.md](preprocessing/README.md)
+- User guide — [preprocessing/USER_GUIDE.md](preprocessing/USER_GUIDE.md)
+- Advanced usage — [preprocessing/ADVANCED.md](preprocessing/ADVANCED.md)
+- Adding custom ablations — [preprocessing/DEVELOPER_GUIDE.md](preprocessing/DEVELOPER_GUIDE.md)
+- Testing the preprocessing pipeline — [preprocessing/TESTING.md](preprocessing/TESTING.md)
+- Preprocessing changelog — [preprocessing/CHANGES.md](preprocessing/CHANGES.md)
+- Ablation enrichment implementation — [ABLATION_ENRICHMENT_IMPLEMENTATION.md](ABLATION_ENRICHMENT_IMPLEMENTATION.md)
+- Data processing pipeline overview — [data_processing.md](data_processing.md)
 
----
+### Pronoun Recovery and Null Subjects
 
-## 📍 Documentation Migration Complete
+- System reference — [pronoun_recovery.md](pronoun_recovery.md)
+- Italian null-subject pipeline (tree detector, CHILDES longitudinal analysis) — [italian_null_subject.md](italian_null_subject.md)
+- TTQ corpus report — [ttq_corpus_report.md](ttq_corpus_report.md)
+- Spanish corpus construction — [spanish_corpus.md](spanish_corpus.md)
 
-**✅ All documentation has been moved to `/docs/` and originals deleted.**
+### Annotation
 
-### Migration Summary
+- Annotation web app (Flask) — [annotation_app.md](annotation_app.md)
+- Layered annotation architecture — [LAYERED_ANNOTATION_ARCHITECTURE.md](LAYERED_ANNOTATION_ARCHITECTURE.md)
 
-| Old Location | New Location | Status |
-|-------------|--------------|--------|
-| `model_foundry/LOGGING_PLAN.md` | `/docs/model_foundry/architecture/logging-system.md` | ✅ Moved & Deleted |
-| `model_foundry/WANDB_INTEGRATION_GUIDE.md` | `/docs/model_foundry/guides/wandb-integration.md` | ✅ Moved & Deleted |
-| `model_foundry/TESTING_STRATEGY.md` | `/docs/model_foundry/testing/strategy.md` | ✅ Moved & Deleted |
-| `model_foundry/IMPLEMENTATION_SUMMARY.md` | `/docs/model_foundry/architecture/training-refactoring.md` | ✅ Moved & Deleted |
-| `model_foundry/FINAL_STATUS.md` | `/docs/model_foundry/architecture/refactoring-status.md` | ✅ Moved & Deleted |
-| `model_foundry/tests/README.md` | `/docs/model_foundry/testing/running-tests.md` | ✅ Moved & Deleted |
-| `model_foundry/tests/LOGGING_TESTS_SPEC.md` | `/docs/model_foundry/testing/logging-tests.md` | ✅ Moved & Deleted |
-| `gemini.md` | `/docs/project-charter.md` | ✅ Moved & Deleted |
-| `preprocessing/project.md` | `/docs/preprocessing-plan.md` | ✅ Moved & Deleted |
+### Corpus Analysis
 
-**Note:** Only `model_foundry/README.md` remains as it points to the centralized documentation.
+- Current descriptive analysis spec — [NEW_CORPUS_ANALYSIS_PLAN.md](NEW_CORPUS_ANALYSIS_PLAN.md)
+- Superseded original spec — [CORPUS_ANALYSIS_SPEC.md](CORPUS_ANALYSIS_SPEC.md)
+- Module README — [corpus_analysis/README.md](corpus_analysis/README.md)
+- Module changelog — [corpus_analysis/CHANGES.md](corpus_analysis/CHANGES.md)
 
----
+### Experiments
 
-## 🔍 Find Documentation By File Type
+- Phase 3 experimental pipeline — [phase3_experimental_pipeline.md](phase3_experimental_pipeline.md)
+- Cross-architecture comparison — [CROSS_ARCHITECTURE_COMPARISON.md](CROSS_ARCHITECTURE_COMPARISON.md)
 
-### Architecture & Design
-- Logging System: `/docs/model_foundry/architecture/logging-system.md`
-- Training Refactoring: `/docs/model_foundry/architecture/training-refactoring.md`
-- Refactoring Status: `/docs/model_foundry/architecture/refactoring-status.md`
+### Infrastructure
 
-### Guides & Tutorials
-- WandB Integration: `/docs/model_foundry/guides/wandb-integration.md`
+- Kubernetes job workflow — [k8s_jobs.md](k8s_jobs.md)
+- NRP container registry setup — [NRP_REGISTRY_SETUP.md](NRP_REGISTRY_SETUP.md)
+
+### Logging and Monitoring
+
+- Logging system architecture — [model_foundry/architecture/logging-system.md](model_foundry/architecture/logging-system.md)
+- WandB integration guide — [model_foundry/guides/wandb-integration.md](model_foundry/guides/wandb-integration.md)
 
 ### Testing
-- Testing Strategy: `/docs/model_foundry/testing/strategy.md`
-- Running Tests: `/docs/model_foundry/testing/running-tests.md`
-- Logging Tests Spec: `/docs/model_foundry/testing/logging-tests.md`
 
-### API Reference
-- (Planned) Configuration: `/docs/model_foundry/api/configuration.md`
-- (Planned) Logging Components: `/docs/model_foundry/api/logging-components.md`
-- (Planned) Training Components: `/docs/model_foundry/api/training-components.md`
+- Testing strategy — [model_foundry/testing/strategy.md](model_foundry/testing/strategy.md)
+- Running tests — [model_foundry/testing/running-tests.md](model_foundry/testing/running-tests.md)
+- Logging test specs — [model_foundry/testing/logging-tests.md](model_foundry/testing/logging-tests.md)
+- Preprocessing test suite — [preprocessing/TESTING.md](preprocessing/TESTING.md)
 
----
+### Research Artefacts
 
-## 📊 Documentation Statistics
+- OSF preregistration — [OSF_PREREGISTRATION.md](OSF_PREREGISTRATION.md)
 
-### Current Status
+## Duplicate and Superseded Files
 
-| Category | Files | Lines | Status |
-|----------|-------|-------|--------|
-| Guides | 1 | 500+ | ✅ Active |
-| Architecture | 3 | 2,400+ | ✅ Active |
-| Testing | 3 | 1,400+ | ✅ Active |
-| API Reference | 0 | - | 🚧 Planned |
-| Tutorials | 0 | - | 🚧 Planned |
-| **Total** | **7** | **4,300+** | **✅** |
+Two pairs of "plan" files exist side by side. The newer version is canonical; the older version has a banner at the top pointing to it and is kept so historical links keep working.
 
-### Coverage
+| Superseded | Canonical |
+|------------|-----------|
+| [checkpoint_scheduling.md](checkpoint_scheduling.md) | [new_checkpoint_scheduling.md](new_checkpoint_scheduling.md) |
+| [CORPUS_ANALYSIS_SPEC.md](CORPUS_ANALYSIS_SPEC.md) | [NEW_CORPUS_ANALYSIS_PLAN.md](NEW_CORPUS_ANALYSIS_PLAN.md) |
 
-- ✅ **Logging System** - Complete (1,000+ lines)
-- ✅ **WandB Integration** - Complete (500+ lines)
-- ✅ **Testing** - Complete (1,400+ lines)
-- ✅ **Training Architecture** - Complete (900+ lines)
-- 🚧 **Getting Started** - Planned
-- 🚧 **API Reference** - Planned
-- 🚧 **Tutorials** - Planned
+## Where to Add New Docs
 
----
+| Type | Location | Notes |
+|------|----------|-------|
+| Training framework architecture / design | `docs/model_foundry/architecture/` | Use kebab-case. |
+| Training framework tests | `docs/model_foundry/testing/` | |
+| Training framework user guides | `docs/model_foundry/guides/` | |
+| Preprocessing | `docs/preprocessing/` | Match existing SCREAMING_SNAKE_CASE. |
+| Corpus analysis module | `docs/corpus_analysis/` | |
+| Pipeline / research docs | `docs/` (top level) | Use lowercase_with_underscores like `pronoun_recovery.md`. |
+| Infrastructure (K8s, SLURM, NRP) | `docs/` (top level) | |
 
-## 🚀 Quick Links
+After adding a file, update `mkdocs.yml`, [README.md](README.md), [STRUCTURE.md](STRUCTURE.md), and this map.
 
-### Most Common Docs
+## Files Not in the Published Site
 
-1. **[Main Documentation Index](/docs/README.md)** - Start here
-2. **[WandB Integration Guide](/docs/model_foundry/guides/wandb-integration.md)** - Setup experiment tracking
-3. **[Logging System](/docs/model_foundry/architecture/logging-system.md)** - Understanding logging
-4. **[Running Tests](/docs/model_foundry/testing/running-tests.md)** - Test your code
-5. **[Training Architecture](/docs/model_foundry/architecture/training-refactoring.md)** - How training works
-
-### By User Type
-
-**I'm a new user:**
-1. Start with `/docs/README.md`
-2. Read "Quick Start" section
-3. Try example config in `/configs/templates/example_with_wandb.yaml`
-
-**I want to understand the architecture:**
-1. Read `/docs/model_foundry/architecture/training-refactoring.md`
-2. Read `/docs/model_foundry/architecture/logging-system.md`
-3. Check `/docs/model_foundry/architecture/refactoring-status.md`
-
-**I want to contribute:**
-1. Read `/docs/model_foundry/testing/strategy.md`
-2. Read `/docs/model_foundry/testing/running-tests.md`
-3. Check existing tests in `/model_foundry/tests/`
-
-**I want to use WandB:**
-1. Read `/docs/model_foundry/guides/wandb-integration.md`
-2. Copy `/configs/templates/example_with_wandb.yaml`
-3. Follow setup instructions
-
----
-
-## 📝 Adding New Documentation
-
-### Where to Put New Docs
-
-| Type of Documentation | Location | Example |
-|----------------------|----------|---------|
-| User guide / How-to | `/docs/model_foundry/guides/` | `wandb-integration.md` |
-| Architecture / Design | `/docs/model_foundry/architecture/` | `logging-system.md` |
-| Testing documentation | `/docs/model_foundry/testing/` | `strategy.md` |
-| API reference | `/docs/model_foundry/api/` | `configuration.md` |
-| Step-by-step tutorial | `/docs/model_foundry/tutorials/` | `basic-training.md` |
-
-### Naming Conventions
-
-- Use lowercase with hyphens: `my-document.md`
-- Be descriptive: `wandb-integration.md` not `wandb.md`
-- Group related docs: `logging-system.md`, `logging-tests.md`
-
-### After Adding Documentation
-
-1. Update `/docs/README.md` index
-2. Update this file (`DOCUMENTATION_MAP.md`)
-3. Add cross-references to related docs
-4. Update status table
-
----
-
-## 🔄 Migration Status
-
-### Completed ✅
-- Created centralized `/docs/` directory
-- Moved 7 documentation files to new structure
-- Created master index (`/docs/README.md`)
-- Created model_foundry README (`/model_foundry/README.md`)
-- Created this documentation map
-
-### Remaining 🚧
-- Remove old documentation files (kept for backwards compatibility)
-- Create getting started guide
-- Create API reference docs
-- Create tutorials
-- Update all documentation links in code comments
-
----
-
-## 📧 Questions?
-
-If you can't find the documentation you need:
-
-1. Check `/docs/README.md` - Master index
-2. Check this file (`DOCUMENTATION_MAP.md`) - Quick reference
-3. Search the `/docs/` directory
-4. Open an issue requesting the documentation
-
----
-
-**Last Updated**: 2025-09-30
-**Documentation Structure Version**: 1.0.0
+- `docs/archive/` — historical plans and validation records.
+- `docs/research-notes/` — private notes and presentation drafts.
+- `docs/nrp-docs/` — scraped third-party NRP documentation.
+- `docs/2502.12317v1.pdf` — reference paper.
+- `docs/jobpostings.md` — unrelated scratch file.
+- `docs/OSF_PREREGISTRATION.tex`, `docs/OSF_PREREGISTRATION.docx` — source formats; the `.md` version is canonical.

@@ -1,313 +1,112 @@
-# Model Foundry Documentation
+# Multi-Model Foundry — Subject Rearing Documentation
 
-**Complete documentation for the Model Foundry training framework and analysis tools.**
+Documentation index for the controlled-rearing language model project. This site is built with MkDocs Material and deployed to GitHub Pages.
 
----
+This repository combines:
 
-## 📚 Documentation Index
-
-### 📋 Project Overview
-
-- **[Project Charter](project-charter.md)** - High-level project goals, design principles, and workflow
-- **[Preprocessing Plan](preprocessing-plan.md)** - Data preprocessing and environment setup guide
-
-### 🚀 Quick Start
-
-- **[Getting Started](model_foundry/guides/getting-started.md)** - Installation, setup, and first training run
-- **[Configuration Guide](model_foundry/guides/configuration.md)** - Understanding and customizing experiment configs
-- **[CLI Reference](model_foundry/guides/cli-reference.md)** - Command-line interface usage
-
-### 🏗️ Architecture & Design
-
-- **[Logging System](model_foundry/architecture/logging-system.md)** - Comprehensive logging architecture with structured logs, metrics tracking, and performance profiling
-- **[Training Refactoring](model_foundry/architecture/training-refactoring.md)** - Modular training system design and implementation details
-- **[Refactoring Status](model_foundry/architecture/refactoring-status.md)** - Complete refactoring summary with before/after comparison
-- **[Code Organization](model_foundry/architecture/code-organization.md)** - Module structure and design patterns
-
-### 🧪 Testing
-
-- **[Testing Strategy](model_foundry/testing/strategy.md)** - Comprehensive testing plan for the entire system
-- **[Running Tests](model_foundry/testing/running-tests.md)** - How to run unit, integration, and end-to-end tests
-- **[Logging Tests](model_foundry/testing/logging-tests.md)** - Detailed specifications for logging component tests
-- **[Writing Tests](model_foundry/testing/writing-tests.md)** - Guide for contributing new tests
-
-### 📊 Experiment Tracking
-
-- **[WandB Integration](model_foundry/guides/wandb-integration.md)** - Complete Weights & Biases setup and usage guide
-- **[Metrics & Logging](model_foundry/guides/metrics-logging.md)** - Understanding and customizing metrics logging
-- **[Comparing Experiments](model_foundry/guides/experiment-comparison.md)** - Analyzing and comparing multiple training runs
-
-### 🔧 API Reference
-
-- **[Configuration API](model_foundry/api/configuration.md)** - ExperimentConfig, DataConfig, ModelConfig, etc.
-- **[Logging Components](model_foundry/api/logging-components.md)** - StructuredLogger, MetricsLogger, PerformanceLogger, ErrorTracker, WandBLogger
-- **[Training Components](model_foundry/api/training-components.md)** - Trainer, TrainingLoop, CheckpointManager
-- **[Data Processing](model_foundry/api/data-processing.md)** - DataProcessor, chunking, validation
-
-### 🎓 Tutorials
-
-- **[Basic Training](model_foundry/tutorials/basic-training.md)** - Run your first experiment
-- **[Custom Datasets](model_foundry/tutorials/custom-datasets.md)** - Preparing and using custom datasets
-- **[Hyperparameter Tuning](model_foundry/tutorials/hyperparameter-tuning.md)** - Optimizing model performance
-- **[Ablation Studies](model_foundry/tutorials/ablation-studies.md)** - Systematic feature removal experiments
+- A training framework (Model Foundry) for controlled-rearing experiments with GPT-2 and related architectures.
+- A preprocessing pipeline with ablations for linguistic phenomena (expletive removal, subject drop, etc.).
+- A layered annotation system over CHILDES, Europarl, and TTQ corpora.
+- A null-subject / pronoun-recovery pipeline (English and Italian; Spanish in progress).
+- Kubernetes and SLURM infrastructure for running long jobs on the Nautilus Research Platform and university HPC clusters.
 
 ---
 
-## 📁 Documentation Structure
+## Getting Started
 
-```
-docs/
-├── README.md                                    # This file - master index
-│
-├── model_foundry/                              # Model Foundry framework docs
-│   ├── guides/                                 # User guides and how-tos
-│   │   ├── getting-started.md                 # Quick start guide
-│   │   ├── configuration.md                   # Config file reference
-│   │   ├── cli-reference.md                   # CLI commands
-│   │   ├── wandb-integration.md              # WandB setup (500+ lines)
-│   │   ├── metrics-logging.md                # Metrics and logging
-│   │   └── experiment-comparison.md          # Comparing runs
-│   │
-│   ├── architecture/                          # System design docs
-│   │   ├── logging-system.md                 # Logging architecture (23k words)
-│   │   ├── training-refactoring.md           # Training module design
-│   │   ├── refactoring-status.md             # Refactoring summary
-│   │   └── code-organization.md              # Module structure
-│   │
-│   ├── testing/                               # Testing documentation
-│   │   ├── strategy.md                       # Testing strategy (500+ lines)
-│   │   ├── running-tests.md                  # How to run tests
-│   │   ├── logging-tests.md                  # Logging test specs (15k words)
-│   │   └── writing-tests.md                  # Contributing tests
-│   │
-│   ├── api/                                   # API reference
-│   │   ├── configuration.md                  # Config classes
-│   │   ├── logging-components.md             # Logging API
-│   │   ├── training-components.md            # Training API
-│   │   └── data-processing.md                # Data API
-│   │
-│   └── tutorials/                             # Step-by-step tutorials
-│       ├── basic-training.md
-│       ├── custom-datasets.md
-│       ├── hyperparameter-tuning.md
-│       └── ablation-studies.md
-│
-└── analysis/                                   # Analysis tools docs
-    ├── statistical-analysis.md
-    └── visualization.md
-```
+- [Training Guide](TRAINING_GUIDE.md) — end-to-end guide for running a training experiment.
+- [Training on SLURM](TRAINING_ON_SLURM.md) — running on a SLURM cluster.
+- [Training on Wild West](TRAINING_ON_WILD_WEST.md) — running on the Wild West GPU cluster.
+- [Data Processing](data_processing.md) — how input corpora are processed before training.
 
----
+## Preprocessing
 
-## 🎯 Common Tasks
+Source: `preprocessing/`. The preprocessing pipeline produces cleaned, tokenised, and ablated training corpora.
 
-### Running Your First Experiment
+- [Overview](preprocessing/README.md)
+- [User Guide](preprocessing/USER_GUIDE.md)
+- [Advanced Usage](preprocessing/ADVANCED.md) — performance tuning, coreference, production notes.
+- [Developer Guide](preprocessing/DEVELOPER_GUIDE.md) — adding new ablations.
+- [Testing](preprocessing/TESTING.md)
+- [Changelog](preprocessing/CHANGES.md)
+- [Ablation Enrichment Implementation](ABLATION_ENRICHMENT_IMPLEMENTATION.md)
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+## Pronoun Recovery and Null Subjects
 
-# 2. Login to WandB (optional)
-wandb login
+The pronoun recovery pipeline identifies null-subject verbs and recovers the dropped pronoun, used both to construct training ablations and to evaluate model acquisition of null-subject phenomena.
 
-# 3. Run training
-python -m model_foundry.cli train configs/templates/example_with_wandb.yaml
-```
+- [System Reference](pronoun_recovery.md) — overall architecture, models, and data flow.
+- [Italian Pipeline](italian_null_subject.md) — Italian null-subject detection, tree detector, CHILDES longitudinal analysis.
+- [TTQ Corpus Report](ttq_corpus_report.md) — Tatoeba translation questions corpus for Italian.
+- [Spanish Corpus](spanish_corpus.md) — Spanish BebeLM monolingual and parallel corpus construction.
 
-See: [Getting Started Guide](model_foundry/guides/getting-started.md)
+## Annotation
 
-### Viewing Logs and Metrics
+- [Annotation Web App](annotation_app.md) — Flask-based annotation interface in `annotation/`.
+- [Layered Annotation Architecture](LAYERED_ANNOTATION_ARCHITECTURE.md) — design of the multi-layer annotation system.
 
-**Local Logs:**
-```bash
-# View latest log
-tail -f logs/your-experiment/main_*.log
+## Corpus Analysis
 
-# View metrics
-cat logs/your-experiment/metrics.jsonl | jq '.'
-```
+- [Specification](NEW_CORPUS_ANALYSIS_PLAN.md) — current corpus descriptive analysis spec.
+- [Original Specification](CORPUS_ANALYSIS_SPEC.md) (superseded)
+- [Corpus Analysis Module](corpus_analysis/README.md)
+- [Corpus Analysis Changelog](corpus_analysis/CHANGES.md)
 
-**WandB Dashboard:**
-1. Go to [wandb.ai/home](https://wandb.ai/home)
-2. Click on your project
-3. View real-time metrics and comparisons
+## Experiments
 
-See: [WandB Integration Guide](model_foundry/guides/wandb-integration.md)
+- [Phase 3 Experimental Pipeline](phase3_experimental_pipeline.md)
+- [Cross-Architecture Comparison](CROSS_ARCHITECTURE_COMPARISON.md)
+- [Checkpoint Scheduling](new_checkpoint_scheduling.md) — current system with configurable frequency and spacing.
+- [Checkpoint Scheduling (Phase 2)](checkpoint_scheduling.md) (superseded)
 
-### Running Tests
+## Infrastructure
 
-```bash
-# Run all tests
-pytest model_foundry/tests/ -v
+- [Kubernetes Jobs](k8s_jobs.md) — job templates under `k8s/` for NRP and related clusters.
+- [NRP Registry Setup](NRP_REGISTRY_SETUP.md) — container registry configuration for Nautilus.
 
-# Run specific test suite
-pytest model_foundry/tests/unit/test_structured_logger.py -v
+## Model Foundry
 
-# Run with markers
-pytest model_foundry/tests/ -v -m "not slow"
-```
+The training framework. Source: `model_foundry/`.
 
-See: [Running Tests](model_foundry/testing/running-tests.md)
+- [Overview](model_foundry/README.md)
 
-### Creating a New Experiment
+**Architecture**
 
-```bash
-# Copy example config
-cp configs/templates/example_with_wandb.yaml configs/experiments/my_experiment.yaml
+- [Multi-Architecture System](model_foundry/architecture/multi-architecture-system.md)
+- [Logging System](model_foundry/architecture/logging-system.md)
+- [Training Refactoring](model_foundry/architecture/training-refactoring.md)
+- [Refactoring Status](model_foundry/architecture/refactoring-status.md)
 
-# Edit configuration
-vim configs/experiments/my_experiment.yaml
+**Testing**
 
-# Run experiment
-python -m model_foundry.cli train configs/experiments/my_experiment.yaml
-```
+- [Testing Strategy](model_foundry/testing/strategy.md)
+- [Running Tests](model_foundry/testing/running-tests.md)
+- [Logging Tests](model_foundry/testing/logging-tests.md)
 
-See: [Configuration Guide](model_foundry/guides/configuration.md)
+**Guides**
+
+- [WandB Integration](model_foundry/guides/wandb-integration.md)
+
+## Research
+
+- [OSF Preregistration](OSF_PREREGISTRATION.md)
 
 ---
 
-## 📊 Quick Reference
+## Conventions
 
-### Configuration File Structure
+- Source code lives outside `docs/`; documentation within the repo should live in `docs/` and be linked from this index.
+- For new docs, prefer kebab-case or lowercase-with-underscores filenames consistent with neighbouring files in the same section.
+- Update `mkdocs.yml` whenever adding, renaming, or removing a doc so the deployed site stays consistent with the tree.
+- The deployment workflow (`.github/workflows/deploy-docs.yml`) rebuilds on changes to `docs/**` or `mkdocs.yml`.
 
-```yaml
-experiment_name: "my_experiment"
+## Not in the Site
 
-data:
-  source_corpus: "data/corpus"
-  batch_size: 32
-  max_sequence_length: 512
+The following are present in `docs/` but intentionally excluded from the published site:
 
-tokenizer:
-  output_dir: "tokenizers/my_tokenizer"
-  vocab_size: 16000
-
-model:
-  layers: 12
-  embedding_size: 768
-  hidden_size: 768
-  # ... more config
-
-training:
-  output_dir: "output/my_experiment"
-  learning_rate: 0.0001
-  epochs: 3
-  # ... more config
-
-logging:
-  use_wandb: true
-  wandb_project: "my-project"
-  log_metrics_every_n_steps: 10
-
-random_seed: 42
-```
-
-### Key Modules
-
-| Module | Purpose | Documentation |
-|--------|---------|---------------|
-| `model_foundry.trainer` | Main training orchestration | [API](model_foundry/api/training-components.md) |
-| `model_foundry.training.loop` | Training loop execution | [Architecture](model_foundry/architecture/training-refactoring.md) |
-| `model_foundry.training.checkpointing` | Checkpoint management | [API](model_foundry/api/training-components.md) |
-| `model_foundry.logging_components` | Logging infrastructure | [Architecture](model_foundry/architecture/logging-system.md) |
-| `model_foundry.data` | Data processing | [API](model_foundry/api/data-processing.md) |
-| `model_foundry.model` | Model creation | [API](model_foundry/api/training-components.md) |
-| `model_foundry.config` | Configuration validation | [API](model_foundry/api/configuration.md) |
-
-### Logging Components
-
-| Component | Purpose | Documentation |
-|-----------|---------|---------------|
-| `StructuredLogger` | JSON-formatted structured logging | [Logging System](model_foundry/architecture/logging-system.md#structuredlogger) |
-| `MetricsLogger` | Training metrics tracking (JSONL) | [Logging System](model_foundry/architecture/logging-system.md#metricslogger) |
-| `PerformanceLogger` | Timing and profiling | [Logging System](model_foundry/architecture/logging-system.md#performancelogger) |
-| `ErrorTracker` | Error aggregation | [Logging System](model_foundry/architecture/logging-system.md#errortracker) |
-| `WandBLogger` | Weights & Biases integration | [WandB Guide](model_foundry/guides/wandb-integration.md) |
-
----
-
-## 🧪 Testing Coverage
-
-**Current Status:**
-- **174 tests** passing (122 core + 52 logging)
-- **8 skipped** (integration tests)
-- **~85% coverage** on core modules
-
-See: [Testing Strategy](model_foundry/testing/strategy.md)
-
----
-
-## 🔗 External Resources
-
-### Model Foundry
-- **GitHub**: [github.com/your-repo/model-foundry](https://github.com)
-- **Issues**: [github.com/your-repo/model-foundry/issues](https://github.com)
-
-### Weights & Biases
-- **Documentation**: [docs.wandb.ai](https://docs.wandb.ai)
-- **Quickstart**: [docs.wandb.ai/quickstart](https://docs.wandb.ai/quickstart)
-- **Gallery**: [wandb.ai/gallery](https://wandb.ai/gallery)
-
-### PyTorch & Transformers
-- **PyTorch Docs**: [pytorch.org/docs](https://pytorch.org/docs)
-- **HuggingFace**: [huggingface.co/docs](https://huggingface.co/docs)
-- **GPT-2**: [huggingface.co/docs/transformers/model_doc/gpt2](https://huggingface.co/docs/transformers/model_doc/gpt2)
-
----
-
-## 📝 Documentation Status
-
-| Document | Status | Last Updated | Lines |
-|----------|--------|--------------|-------|
-| Logging System | ✅ Complete | 2025-09-30 | 1,000+ |
-| WandB Integration | ✅ Complete | 2025-09-30 | 500+ |
-| Testing Strategy | ✅ Complete | 2025-09-30 | 500+ |
-| Logging Tests Spec | ✅ Complete | 2025-09-30 | 600+ |
-| Training Refactoring | ✅ Complete | 2025-09-30 | 400+ |
-| Refactoring Status | ✅ Complete | 2025-09-30 | 600+ |
-| Running Tests | ✅ Complete | 2025-09-30 | 300+ |
-| Getting Started | 🚧 Planned | - | - |
-| Configuration Guide | 🚧 Planned | - | - |
-| CLI Reference | 🚧 Planned | - | - |
-| API Reference | 🚧 Planned | - | - |
-| Tutorials | 🚧 Planned | - | - |
-
----
-
-## 🤝 Contributing
-
-When adding new documentation:
-
-1. **Choose the right location:**
-   - User-facing guides → `guides/`
-   - Architecture/design docs → `architecture/`
-   - Testing docs → `testing/`
-   - API reference → `api/`
-   - Step-by-step tutorials → `tutorials/`
-
-2. **Follow naming conventions:**
-   - Use kebab-case: `my-document.md`
-   - Be descriptive: `wandb-integration.md` not `wandb.md`
-
-3. **Update this README:**
-   - Add your document to the index
-   - Update the status table
-   - Add relevant quick reference entries
-
-4. **Link related docs:**
-   - Cross-reference related documentation
-   - Use relative links: `[link](../guides/guide.md)`
-
----
-
-## 📧 Support
-
-- **Documentation Issues**: Open an issue with the `documentation` label
-- **Questions**: Check existing docs first, then open a discussion
-- **Contributions**: See `CONTRIBUTING.md`
-
----
-
-**Last Updated**: 2025-09-30
-**Documentation Version**: 1.0.0
-**Model Foundry Version**: 0.1.0
+- `docs/archive/**` — historical plans and validation records.
+- `docs/research-notes/**` — private research notes and presentation drafts.
+- `docs/nrp-docs/**` — scraped third-party Nautilus documentation.
+- `docs/2502.12317v1.pdf` — reference paper, not project documentation.
+- `docs/jobpostings.md` — unrelated scratch file.
+- `docs/OSF_PREREGISTRATION.tex`, `docs/OSF_PREREGISTRATION.docx` — source formats for the preregistration (the Markdown version is canonical).

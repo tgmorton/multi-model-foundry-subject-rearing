@@ -1,4 +1,6 @@
-# Checkpoint Scheduling System
+> **Superseded.** This describes the Phase 2 checkpoint scheduling system. The current system is documented in [new_checkpoint_scheduling.md](new_checkpoint_scheduling.md).
+
+# Checkpoint Scheduling System (Phase 2, superseded)
 
 This document describes the checkpoint scheduling system implemented in Phase 2 of the Model Foundry framework.
 

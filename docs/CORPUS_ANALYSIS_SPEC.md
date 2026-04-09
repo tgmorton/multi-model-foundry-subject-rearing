@@ -1,4 +1,6 @@
-# Corpus Descriptive Analysis Specification
+> **Superseded.** This is the original corpus analysis specification. The current revised specification is [NEW_CORPUS_ANALYSIS_PLAN.md](NEW_CORPUS_ANALYSIS_PLAN.md).
+
+# Corpus Descriptive Analysis Specification (superseded)
 
 ## Overview
 
