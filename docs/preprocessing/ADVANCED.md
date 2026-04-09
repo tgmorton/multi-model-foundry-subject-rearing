@@ -1,460 +1,263 @@
 # Advanced Preprocessing
 
-Performance tuning, production deployment, and advanced features.
+Performance tuning, tier counting, coreference confirmation, and production
+deployment.
 
 ## When You Need This
 
-**Large-scale processing** (>100M tokens): Optimize for speed and memory
+- **Large-scale processing** (>100M tokens): optimise for speed and memory.
+- **Stateful ablations**: track per-file tier counts and replacement-pool
+  provenance.
+- **High-precision expletive detection**: use coreference confirmation to
+  filter referential *it*.
+- **Production environments**: error handling and reproducibility guarantees.
 
-**High-accuracy requirements**: Use coreference resolution for expletive detection
+## Performance Optimisation
 
-**Production environments**: Error handling, monitoring, and reliability
+### Bottlenecks
 
-## Performance Optimization
+1. **spaCy pipeline** — parsing and tagging dominate runtime. The English
+   expletive detector requires the parser, so
+   `spacy_model="en_core_web_trf"` is the tested default.
+2. **Batch size** — larger `spacy_batch_size` improves throughput up to the
+   memory ceiling.
+3. **I/O** — many small `.train` files are slower than a few large ones.
 
-### Understanding Performance Bottlenecks
-
-Processing speed is primarily determined by:
-1. **spaCy pipeline**: Parsing and tagging are expensive
-2. **Batch size**: Larger batches = better GPU/CPU utilization
-3. **I/O**: Reading/writing many small files is slow
-
-### Speed-Optimized Configuration
+### Speed-Optimised Configuration
 
 ```python
 config = AblationConfig(
-    type="remove_articles",
-    input_path="data/large_corpus/",
+    type="remove_expletive_sentences_en",
+    input_path="data/raw/train_90M/",
     output_path="data/processed/",
+    spacy_model="en_core_web_trf",
     seed=42,
-    # Performance tuning
-    spacy_batch_size=100,                    # Default: 50
+    spacy_batch_size=100,
     spacy_disable_components=["ner", "textcat", "lemmatizer"],
-    chunk_size=2000,                         # Default: 1000
-    skip_validation=True                     # Skip post-processing validation
+    chunk_size=2000,
+    skip_validation=True,
 )
 ```
-
-**Expected improvement**: 40-50% faster than defaults
 
 ### Component Selection
 
-Only enable what you need:
+| Ablation                         | Required                 | Safe to disable               |
+|----------------------------------|--------------------------|-------------------------------|
+| `remove_expletive_sentences_en`  | tagger, parser, lemmatizer | ner, textcat                |
+| `remove_expletive_sentences_it`  | tagger, parser, lemmatizer | ner, textcat                |
+| `impoverish_case_en` / `_it`     | tagger, morphologizer    | ner, textcat, parser          |
+| `lemmatize_verbs`                | tagger, lemmatizer       | ner, textcat, parser          |
+| `enrich_verbal_morphology`       | tagger, morphologizer, parser | ner, textcat             |
 
-| Ablation | Required Components | Disable |
-|----------|---------------------|---------|
-| remove_articles | tagger | ner, textcat, lemmatizer |
-| remove_expletives | tagger, parser | ner, textcat, lemmatizer |
-| lemmatize_verbs | tagger | ner, textcat, parser |
-| impoverish_determiners | tagger | ner, textcat, lemmatizer, parser |
-| remove_subject_pronominals | tagger, parser | ner, textcat, lemmatizer |
+Do not disable `lemmatizer` for the expletive detector — it uses
+`token.lemma_` to match verb / adjective lists.
 
-Example:
+## Tier Counting and Provenance
 
-```python
-# For remove_articles (only needs POS tags)
-config = AblationConfig(
-    type="remove_articles",
-    spacy_disable_components=["ner", "textcat", "lemmatizer", "parser"]
-)
+`AblationPipeline._process_file` (`preprocessing/base.py:257`) inspects the
+registered ablation for two optional hooks:
+
+- `reset_file_state()` — called before each file so stateful detectors can
+  clear per-file counters and context buffers.
+- `get_file_tier_counts() -> Dict[str, int]` — returns per-tier removal
+  counts for the file just processed.
+
+It also reads a `_removed_line_indices` attribute if present and captures
+it into the manifest.
+
+### English Expletive Sentence Remover — tier fields
+
+`EnglishExpletiveSentenceRemover`
+(`preprocessing/ablations/remove_expletive_sentences.py:57`) populates these
+keys in `FileStatistics.tier_counts`:
+
+| Key                       | Meaning                                                    |
+|---------------------------|------------------------------------------------------------|
+| `tier1_expl`              | spaCy parser tagged a token with `dep_ == 'expl'`.         |
+| `tier2_weather`           | Heuristic weather verb ("it is raining").                  |
+| `tier2_raising`           | Heuristic raising verb with clausal complement ("it seems that ..."). |
+| `tier2_copular`           | Copula + raising adjective ("it is clear that ...").       |
+| `tier3_coref_confirmed`   | Heuristic candidate confirmed as expletive by coreference. |
+| `tier3_coref_kept`        | Heuristic candidate kept because coreference resolved *it* to an antecedent. |
+
+When `coref_model` is `None` the tier-3 bucket stays at zero and matches
+are charged to the `tier2_*` bucket that first fired.
+
+### Provenance fields
+
+`FileStatistics` (`preprocessing/config.py:221`) and `ProvenanceMetadata`
+(`preprocessing/config.py:120`) carry:
+
+- `tier_counts` (per-file) and `aggregate_tier_counts` (summed over the run)
+- `removed_line_indices` — zero-based indices of dropped lines, useful for
+  post-hoc audit against the original file
+- `replacement_pool_size`, `replacement_lines_drawn`,
+  `replacement_pool_remainder` per file
+- `total_pool_lines_available`, `total_pool_lines_drawn`,
+  `total_pool_lines_remaining` aggregated across the run
+
+### Replacement-pool remainder
+
+`_rebuild_to_target_size` (`preprocessing/base.py:433`) returns pool stats
+and writes any unused pool sentences to
+`<output_path>/replacement_pool_remainder/<file_stem>.txt`. The remainder
+is deterministic given the `seed` (auto-injected from the experiment-level
+`random_seed` by `model_foundry/cli.py:135` if absent).
+
+### Document Boundary Handling
+
+Lines matching the regex `^= = =.+= = =$` are treated as document
+boundaries by the English detector
+(`remove_expletive_sentences.py:45`). They:
+
+- Pass through unchanged (never removed).
+- Reset the coref context buffer so coreference resolution does not cross
+  document boundaries.
+
+## Coreference Confirmation
+
+### Why
+
+Simple dependency-based detection can over-remove referential *it*:
+
+```text
+"The report was late. It arrived yesterday."
+# dep_=='expl' is False, but a naive heuristic on "it" could still fire.
 ```
 
-### Batch Size Tuning
+The three-tier detector only applies coref to **tier 2** candidates. Tier 1
+(spaCy `dep_ == 'expl'`) is always removed regardless of coref state.
 
-Start with defaults and increase until you hit memory limits:
+### Enabling
 
-```python
-# Conservative (low memory)
-spacy_batch_size=25
+Set `coref_model` in the step parameters (see example config
+`configs/experiments/experiment_en_remove_expletive_sentences.yaml`):
 
-# Default (balanced)
-spacy_batch_size=50
-
-# Aggressive (high memory)
-spacy_batch_size=100
-
-# Maximum (careful!)
-spacy_batch_size=200
+```yaml
+dataset_manipulation:
+  - type: remove_expletive_sentences_en
+    input_path: "data/raw/train_90M/"
+    output_path: "data/processed/exp_remove_expletive_sentences_en/"
+    spacy_model: "en_core_web_trf"
+    parameters:
+      replacement_pool_dir: "data/raw/pull_10M/"
+      coref_model: "en_coreference_web_trf"
 ```
 
-Monitor memory usage:
-
-```bash
-# While processing
-watch -n 1 "ps aux | grep python | grep -v grep"
-```
-
-### Performance Comparison
-
-Expected processing speeds (on modern CPU):
-
-| Configuration | Tokens/sec | Relative Speed |
-|---------------|------------|----------------|
-| Default | 5,000 | 1.0x |
-| Optimized components | 7,000 | 1.4x |
-| + Larger batches | 8,500 | 1.7x |
-| + Skip validation | 10,000 | 2.0x |
-
-Your mileage may vary based on hardware and corpus characteristics.
-
-## Coreference Resolution
-
-### Why Coreference Matters
-
-Simple expletive detection uses dependency parsing:
-
-```python
-# "It is raining" → "it" marked as expletive
-# "The report was late. It arrived yesterday." → "It" marked as expletive (WRONG!)
-```
-
-Coreference resolution distinguishes referential from non-referential pronouns by checking for antecedents.
-
-### Using Coreference Resolution
-
-```python
-import spacy
-from preprocessing.ablations.remove_expletives import make_remove_expletives_with_coref
-from preprocessing.registry import AblationRegistry
-
-# Load spaCy model with coreference
-nlp_coref = spacy.load("en_core_web_sm")
-
-# Create coreference-enabled ablation
-ablate_with_coref = make_remove_expletives_with_coref(nlp_coref)
-
-# Register (replaces simple version)
-AblationRegistry.unregister("remove_expletives")
-AblationRegistry.register(
-    "remove_expletives",
-    ablate_with_coref,
-    validator_fn  # Use existing validator
-)
-
-# Use normally
-config = AblationConfig(
-    type="remove_expletives",
-    input_path="data/corpus/",
-    output_path="data/processed/"
-)
-```
-
-### Coreference Model Options
-
-**Option 1: Basic (fast, less accurate)**
-```python
-nlp_coref = spacy.load("en_core_web_sm")
-```
-
-**Option 2: Neural (slower, more accurate)**
-```python
-# Install: pip install spacy-experimental
-# Download: python -m spacy download en_coreference_web_trf
-nlp_coref = spacy.load("en_coreference_web_trf")
-```
+The model is lazy-loaded on the first heuristic candidate
+(`remove_expletive_sentences.py:224`). If it cannot be loaded the detector
+falls back to trusting the heuristic.
 
 ### Context Window
 
-The coreference system includes previous sentence context for long-distance dependencies:
+The detector keeps the last `context_lines` (default 3) prior lines in a
+buffer. On each tier-2 candidate it concatenates
+`<context_prefix> <current_line>`, runs coreference, and checks whether
+the candidate *it* character span falls inside any multi-mention cluster.
+If so the line is kept (`tier3_coref_kept`), otherwise it is removed
+(`tier3_coref_confirmed`). The buffer resets at document boundaries.
 
-```python
-# Input:
-# "I saw a cat. It was sleeping on the porch."
+### Performance
 
-# Context analyzed:
-# "I saw a cat. It was sleeping..."
-
-# Result: "It" found in coreference chain with "cat" → NOT removed
-```
-
-### Performance Impact
-
-Coreference resolution is significantly slower:
-
-| Mode | Speed | Accuracy |
-|------|-------|----------|
-| Simple | 100% | ~85% |
-| Coreference (basic) | ~40% | ~95% |
-| Coreference (neural) | ~15% | ~98% |
-
-**Recommendation**: Use simple mode for large corpora (>100M tokens) unless high precision is critical.
+Coreference roughly halves throughput on CPU and is significantly slower
+on GPU than the base `en_core_web_trf` pipeline. Use it when precision
+matters more than throughput; skip it for multi-hundred-million-token runs
+where the tier-2 heuristics are accurate enough.
 
 ## Production Deployment
 
 ### Error Handling
 
-File-level error recovery prevents single failures from crashing entire runs:
+Files that raise are logged into `manifest.metadata.failed_files` but do
+not abort the corpus run (`preprocessing/base.py:199`).
 
 ```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/corpus/",
-    output_path="data/processed/",
-    verbose=True  # Enable detailed logging
-)
+manifest = AblationPipeline(config).process_corpus()
 
-pipeline = AblationPipeline(config)
-manifest = pipeline.process_corpus()
-
-# Check for failures
 if manifest.metadata.failed_files:
-    print(f"Warning: {len(manifest.metadata.failed_files)} files failed")
-
-    # Log failures for investigation
     with open("failed_files.log", "w") as f:
-        for file_path, error_msg in manifest.metadata.failed_files:
-            f.write(f"{file_path}: {error_msg}\n")
-
-    # Optionally re-process failed files with different settings
-    failed_paths = [path for path, _ in manifest.metadata.failed_files]
-    # ... retry logic
+        for path, error_msg in manifest.metadata.failed_files:
+            f.write(f"{path}: {error_msg}\n")
 ```
 
 ### Monitoring
 
-Track processing progress:
-
 ```python
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
 config = AblationConfig(
-    type="remove_articles",
-    input_path="data/corpus/",
-    output_path="data/processed/",
+    ...,
     verbose=True,
-    log_dir="logs/preprocessing/"
+    log_dir="logs/preprocessing/",
 )
-
-# Processing logs go to:
-# - logs/preprocessing.remove_articles/preprocessing_TIMESTAMP.log
-```
-
-Log format:
-
-```
-2025-10-09 14:32:15 INFO Processing file 1/100: data/corpus/file1.train
-2025-10-09 14:32:20 INFO Processed file1.train: 5,234 items ablated
-2025-10-09 14:32:20 INFO Processing file 2/100: data/corpus/file2.train
-...
-```
-
-### Resource Management
-
-For very large corpora:
-
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/huge_corpus/",
-    output_path="data/processed/",
-    # Conservative settings
-    spacy_batch_size=50,
-    chunk_size=1000,
-    # Don't load entire corpus into memory
-    # (Pipeline processes files one-by-one already)
-)
+# Logs: logs/preprocessing.<ablation_type>/preprocessing_<timestamp>.log
 ```
 
 ### Validation Strategy
 
-Choose validation level based on needs:
-
-**Development (full validation)**:
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/test/",
-    output_path="data/output/",
-    skip_validation=False,  # Run validation
-    verbose=True
-)
-```
-
-**Production (skip for speed)**:
-```python
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/corpus/",
-    output_path="data/processed/",
-    skip_validation=True  # Faster, trust the implementation
-)
-```
-
-**Hybrid (validate sample)**:
-```python
-# Validate on small sample first
-test_config = AblationConfig(
-    type="remove_articles",
-    input_path="data/corpus_sample/",
-    output_path="data/sample_output/",
-    skip_validation=False
-)
-
-# If validation passes, run full corpus with skip
-prod_config = AblationConfig(
-    type="remove_articles",
-    input_path="data/full_corpus/",
-    output_path="data/processed/",
-    skip_validation=True
-)
-```
+- **Development**: `skip_validation=False` on a small sample to sanity-check
+  the ablation.
+- **Production**: `skip_validation=True` to save time once the detector is
+  known-good.
 
 ## Cluster Processing
 
-### SLURM Job Array
-
-Process large corpora in parallel:
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=ablation
-#SBATCH --array=1-100
-#SBATCH --time=4:00:00
-#SBATCH --mem=16G
-
-# Split corpus into 100 parts
-# Process part $SLURM_ARRAY_TASK_ID
-
-python process_part.py \
-    --part $SLURM_ARRAY_TASK_ID \
-    --total-parts 100 \
-    --config configs/ablation.yaml
-```
-
-```python
-# process_part.py
-import sys
-from pathlib import Path
-
-part_id = int(sys.argv[1])
-total_parts = int(sys.argv[2])
-
-# Get list of all files
-all_files = sorted(Path("data/corpus/").glob("*.train"))
-
-# Process this part's files
-files_per_part = len(all_files) // total_parts
-start_idx = (part_id - 1) * files_per_part
-end_idx = start_idx + files_per_part if part_id < total_parts else len(all_files)
-
-my_files = all_files[start_idx:end_idx]
-
-# Process each file separately
-for file_path in my_files:
-    config = AblationConfig(
-        type="remove_articles",
-        input_path=str(file_path),
-        output_path=f"data/processed/part_{part_id}/",
-        seed=42
-    )
-    pipeline = AblationPipeline(config)
-    manifest = pipeline.process_corpus()
-```
-
-### Combining Results
-
-After parallel processing:
+Split the corpus by file, run each shard as a separate pipeline, then
+aggregate manifests:
 
 ```python
 from pathlib import Path
 import json
 
-# Collect all manifests
 manifests = []
-for part_dir in Path("data/processed/").glob("part_*/"):
-    manifest_path = part_dir / "ABLATION_MANIFEST.json"
-    if manifest_path.exists():
-        with open(manifest_path) as f:
-            manifests.append(json.load(f))
+for part in Path("data/processed/").glob("part_*/ABLATION_MANIFEST.json"):
+    manifests.append(json.loads(part.read_text()))
 
-# Aggregate statistics
-total_files = sum(m['metadata']['total_files_processed'] for m in manifests)
-total_items = sum(m['metadata']['total_items_ablated'] for m in manifests)
-total_time = sum(m['metadata']['processing_time_seconds'] for m in manifests)
+total_items = sum(m["metadata"]["total_items_ablated"] for m in manifests)
+total_tiers: dict[str, int] = {}
+for m in manifests:
+    for k, v in m["metadata"].get("aggregate_tier_counts", {}).items():
+        total_tiers[k] = total_tiers.get(k, 0) + v
 
-print(f"Total files: {total_files}")
-print(f"Total items ablated: {total_items:,}")
-print(f"Total time: {total_time:.1f}s")
+print(f"Items removed: {total_items:,}")
+print(f"Tier totals:   {total_tiers}")
 ```
 
 ## Troubleshooting
 
 ### Memory Issues
 
-**Symptom**: Process killed or OOM errors
-
-**Solutions**:
 ```python
-# Reduce batch size
-spacy_batch_size=10  # Very conservative
-
-# Reduce chunk size
+spacy_batch_size=10
 chunk_size=500
-
-# Disable more components
-spacy_disable_components=["ner", "textcat", "lemmatizer", "parser"]
+spacy_disable_components=["ner", "textcat"]
 ```
 
 ### Slow Processing
 
-**Symptom**: <1,000 tokens/sec
-
-**Diagnose**:
 ```python
-# Check what components are enabled
-import spacy
-nlp = spacy.load("en_core_web_sm")
-print(nlp.pipe_names)  # ['tok2vec', 'tagger', 'parser', 'ner', ...]
-```
-
-**Solutions**:
-```python
-# Increase batch size
 spacy_batch_size=100
-
-# Disable unused components
 spacy_disable_components=["ner", "textcat"]
-
-# Skip validation
 skip_validation=True
 ```
 
 ### Validation Failures
 
-**Symptom**: Warnings about validation failures
+Validation uses a stateless detector
+(`_has_expletive_en_enhanced`, `remove_expletive_sentences.py:325`) without
+coref. On files with heavy coref-driven keeps, the stateless validator may
+warn; this is not fatal and processing continues.
 
-**Solutions**:
+## Best Practices
 
-1. Check if validation is too strict (false positives)
-2. Verify ablation logic is correct
-3. Consider skipping validation in production
-
-```python
-# Debug validation
-config = AblationConfig(
-    type="remove_articles",
-    input_path="data/test_single_file.train",
-    output_path="data/output/",
-    verbose=True  # See detailed validation logs
-)
-```
-
-## Best Practices Summary
-
-1. **Start conservative**: Use default settings first
-2. **Measure before optimizing**: Profile to find bottlenecks
-3. **Validate once**: Test on sample, then skip for production
-4. **Monitor failures**: Check `manifest.metadata.failed_files`
-5. **Use coreference sparingly**: Only when accuracy demands it
-6. **Match hardware to workload**: More cores = larger batch sizes
-7. **Keep provenance**: Always save manifests for reproducibility
+1. Start from the shipped experiment YAML
+   (`configs/experiments/experiment_en_remove_expletive_sentences.yaml`).
+2. Set `random_seed` at the experiment level — preprocessing inherits it.
+3. Keep `spacy_model="en_core_web_trf"` for the English detector.
+4. Inspect `aggregate_tier_counts` after each run to sanity-check the mix
+   of tier-1 / tier-2 / tier-3 removals.
+5. Preserve `ABLATION_MANIFEST.json` alongside the processed corpus — it is
+   the only source of truth for reproducibility.
 
 ## Next Steps
 
-**Understanding internals**: See architecture docs for how the pipeline works
-
-**Contributing**: See [Testing Guide](TESTING.md) for test requirements
-
-**Questions**: Open an issue with your config and error logs
+- **Custom ablations**: [Developer Guide](DEVELOPER_GUIDE.md)
+- **Change log**: [CHANGES.md](CHANGES.md)

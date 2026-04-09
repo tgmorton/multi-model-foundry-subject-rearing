@@ -11,12 +11,27 @@ The data processing pipeline handles the conversion of raw text corpora into fix
 ### 1. Text Preprocessing (Ablations)
 - **Location**: `preprocessing/` directory
 - **Purpose**: Apply linguistic ablations to the raw corpus
-- **Scripts**: 
-  - `remove_expletives.py`
-  - `impoverish_determiners.py`
-  - `remove_articles.py`
-  - `lemmatize_verbs.py`
-  - `remove_subject_pronominals.py`
+- **Entry point**: `preprocessing.base.AblationPipeline`, driven by
+  `AblationConfig` (`preprocessing/config.py`). Ablations register
+  themselves with `AblationRegistry` on import
+  (`preprocessing/ablations/__init__.py`).
+- **Active ablation modules** (`preprocessing/ablations/`):
+  - `remove_expletive_sentences.py` — registers
+    `remove_expletive_sentences_en` (three-tier stateful detector:
+    spaCy `dep_=='expl'`, weather / raising-*it* heuristics, optional
+    coreference confirmation) and `remove_expletive_sentences_it`
+    (weather verbs, existential *ci + essere*, impersonal raising and
+    necessity verbs).
+  - `impoverish_case.py` — registers `impoverish_case_en` and
+    `impoverish_case_it` (collapses pronoun case distinctions).
+  - `lemmatize_verbs.py` — registers `lemmatize_verbs` (replaces verbs
+    with their lemma).
+  - `enrich_verbal_morphology.py` — registers
+    `enrich_verbal_morphology` (appends subject-agreement clitics to
+    finite verbs).
+- **Archived** (not registered): anything under
+  `preprocessing/ablations/archived/`.
+- See `docs/preprocessing/USER_GUIDE.md` for the full list and usage.
 
 ### 2. Tokenization
 - **Location**: `model_foundry/tokenizer/`

@@ -1,5 +1,73 @@
 # Preprocessing Documentation Changes
 
+## 2026-04 — Three-Tier English Expletive Detector
+
+The `remove_expletive_sentences_en` ablation has been upgraded from a
+single-line `dep_ == 'expl'` check into a **stateful three-tier detector**
+implemented as a callable class
+(`EnglishExpletiveSentenceRemover`,
+`preprocessing/ablations/remove_expletive_sentences.py:57`).
+
+### Detection tiers
+
+1. **Tier 1** — spaCy `dep_ == 'expl'` (existential-*there*, expletive-*it*).
+2. **Tier 2** — heuristic weather / raising-*it*:
+   - `tier2_weather` — "it" as `nsubj` of a verb in `WEATHER_VERBS`.
+   - `tier2_raising` — "it" as `nsubj` of a raising verb with a clausal
+     complement.
+   - `tier2_copular` — copula + adjective in `RAISING_ADJECTIVES` with a
+     clausal complement.
+3. **Tier 3** — optional coreference confirmation. When `coref_model` is
+   set, referential *it* is kept (`tier3_coref_kept`), otherwise the line
+   is removed (`tier3_coref_confirmed`).
+
+Document boundary markers (`= = = ... = = =`) are detected and pass
+through untouched, also resetting the coref context buffer.
+
+### Per-tier provenance plumbing
+
+`AblationPipeline._process_file` (`preprocessing/base.py:257`) now looks
+for two optional hooks on the registered ablation:
+
+- `reset_file_state()` — called at the start of each file.
+- `get_file_tier_counts()` — returns a `Dict[str, int]` of per-tier
+  removal counts for the file.
+
+If the ablation exposes `_removed_line_indices`, those indices are also
+captured into `FileStatistics`.
+
+`FileStatistics` (`preprocessing/config.py:221`) and `ProvenanceMetadata`
+(`preprocessing/config.py:120`) grew new fields:
+
+- `tier_counts`, `removed_line_indices`
+- `replacement_pool_size`, `replacement_lines_drawn`,
+  `replacement_pool_remainder`
+- `aggregate_tier_counts`, `total_pool_lines_{available,drawn,remaining}`
+
+### Replacement-pool stats
+
+`_rebuild_to_target_size` now returns pool statistics alongside the
+rebuilt text (`preprocessing/base.py:433`) so the manifest records how
+many lines were drawn from the pool and how many remained.
+
+### Experiment-level seed fallback
+
+`model_foundry/cli.py:135` auto-injects the experiment-level `random_seed`
+into preprocessing step `parameters` if the step does not set `seed`
+itself, so experiments remain reproducible without per-step duplication.
+
+### Documentation updates
+
+- `USER_GUIDE.md` — rewrote the expletive section around the three-tier
+  detector; refreshed the available-ablations list to match
+  `preprocessing/ablations/__init__.py`.
+- `ADVANCED.md` — added tier counting, provenance fields, document
+  boundary handling, and the optional coref confirmation workflow.
+- `DEVELOPER_GUIDE.md` — documented the stateful-class pattern with
+  `reset_file_state` / `get_file_tier_counts` hooks.
+- `docs/data_processing.md` — replaced the stale script list with the
+  current registry.
+
 ## Summary
 
 Preprocessing documentation has been completely rewritten for clarity, usability, and maintainability. The changes prioritize human-centric design, remove unnecessary metadata, and consolidate redundant content.
