@@ -132,6 +132,12 @@ def preprocess(
         if cli_log_level.upper() in ["DEBUG", "VERBOSE"]:
             cmd.append("--verbose")
         
+        # Inject experiment-level seed as fallback if not already in parameters
+        step_params = step.get('parameters', {})
+        if 'seed' not in step_params:
+            step_params['seed'] = config.random_seed
+            step['parameters'] = step_params
+
         # Add additional parameters if specified
         if 'parameters' in step:
             for key, value in step['parameters'].items():

@@ -161,6 +161,16 @@ class ProvenanceMetadata(BaseModel):
     )
     processing_time_seconds: float = Field(0.0, ge=0.0, description="Processing duration")
 
+    # Aggregate tier-level provenance (Change 2)
+    aggregate_tier_counts: Dict[str, int] = Field(
+        default_factory=dict, description="Aggregate per-tier removal counts across all files"
+    )
+
+    # Aggregate replacement pool provenance (Change 3)
+    total_pool_lines_available: int = Field(0, ge=0, description="Total replacement pool lines available")
+    total_pool_lines_drawn: int = Field(0, ge=0, description="Total replacement pool lines drawn")
+    total_pool_lines_remaining: int = Field(0, ge=0, description="Total replacement pool lines remaining")
+
     # Error tracking
     failed_files: List[tuple] = Field(
         default_factory=list,
@@ -218,6 +228,15 @@ class FileStatistics(BaseModel):
     proportion_removed: float = Field(0.0, ge=0.0, le=1.0, description="Proportion removed")
     processing_time_seconds: float = Field(0.0, ge=0.0, description="Processing time")
 
+    # Tier-level provenance (Change 2)
+    tier_counts: Dict[str, int] = Field(default_factory=dict, description="Per-tier removal counts")
+    removed_line_indices: List[int] = Field(default_factory=list, description="Indices of removed lines")
+
+    # Replacement pool provenance (Change 3)
+    replacement_pool_size: int = Field(0, ge=0, description="Total lines in replacement pool")
+    replacement_lines_drawn: int = Field(0, ge=0, description="Lines drawn from replacement pool")
+    replacement_pool_remainder: int = Field(0, ge=0, description="Lines remaining in replacement pool")
+
 
 class ProvenanceManifest(BaseModel):
     """
@@ -263,3 +282,14 @@ class ProvenanceManifest(BaseModel):
         self.metadata.total_tokens_original += stats.original_tokens
         self.metadata.total_tokens_final += stats.final_tokens
         self.metadata.total_items_ablated += stats.items_ablated
+
+        # Aggregate tier counts (Change 2)
+        for tier, count in stats.tier_counts.items():
+            self.metadata.aggregate_tier_counts[tier] = (
+                self.metadata.aggregate_tier_counts.get(tier, 0) + count
+            )
+
+        # Aggregate pool stats (Change 3)
+        self.metadata.total_pool_lines_available += stats.replacement_pool_size
+        self.metadata.total_pool_lines_drawn += stats.replacement_lines_drawn
+        self.metadata.total_pool_lines_remaining += stats.replacement_pool_remainder

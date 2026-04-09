@@ -266,6 +266,10 @@ class AblationPipeline:
         """
         file_start_time = time.time()
 
+        # Reset per-file state on ablation function if supported
+        if hasattr(self.ablation_fn, 'reset_file_state'):
+            self.ablation_fn.reset_file_state()
+
         # Calculate paths
         relative_path = os.path.relpath(file_path, self.config.input_path)
         output_path = self.config.output_path / relative_path
@@ -294,6 +298,14 @@ class AblationPipeline:
         # Ablate the file
         ablated_text, items_ablated = self._ablate_lines(lines)
 
+        # Extract tier counts and removed line indices if supported
+        tier_counts = {}
+        removed_line_indices = []
+        if hasattr(self.ablation_fn, 'get_file_tier_counts'):
+            tier_counts = self.ablation_fn.get_file_tier_counts()
+        if hasattr(self.ablation_fn, '_removed_line_indices'):
+            removed_line_indices = list(self.ablation_fn._removed_line_indices)
+
         # Validate ablation (if not skipped)
         if not self.config.skip_validation and self.validation_fn:
             self.logger.info(f"Validating ablation for {file_path.name}")
@@ -313,9 +325,10 @@ class AblationPipeline:
                 )
 
         # Rebuild to target size if replacement pool provided
+        pool_stats = {}
         current_token_count = count_tokens(ablated_text)
         if self.config.replacement_pool_dir and current_token_count < original_token_count:
-            ablated_text, additional_items = self._rebuild_to_target_size(
+            ablated_text, additional_items, pool_stats = self._rebuild_to_target_size(
                 ablated_text=ablated_text,
                 target_token_count=original_token_count,
                 source_file_path=file_path
@@ -347,7 +360,12 @@ class AblationPipeline:
             final_tokens=final_token_count,
             items_ablated=items_ablated,
             proportion_removed=proportion_removed,
-            processing_time_seconds=time.time() - file_start_time
+            processing_time_seconds=time.time() - file_start_time,
+            tier_counts=tier_counts,
+            removed_line_indices=removed_line_indices,
+            replacement_pool_size=pool_stats.get("pool_total", 0),
+            replacement_lines_drawn=pool_stats.get("pool_lines_drawn", 0),
+            replacement_pool_remainder=pool_stats.get("pool_remainder", 0),
         )
 
     def _ablate_lines(self, lines: List[str]) -> Tuple[str, int]:
@@ -417,7 +435,7 @@ class AblationPipeline:
         ablated_text: str,
         target_token_count: int,
         source_file_path: Path
-    ) -> Tuple[str, int]:
+    ) -> Tuple[str, int, dict]:
         """
         Rebuild corpus to target token count using replacement pool.
 
@@ -427,7 +445,7 @@ class AblationPipeline:
             source_file_path: Path to source file (for finding pool file)
 
         Returns:
-            Tuple of (rebuilt_text, additional_items_ablated)
+            Tuple of (rebuilt_text, additional_items_ablated, pool_stats)
         """
         # Find corresponding pool file
         relative_path = os.path.relpath(source_file_path, self.config.input_path)
@@ -438,7 +456,7 @@ class AblationPipeline:
                 f"No replacement pool found for {source_file_path.name}. "
                 "Cannot rebuild to target size."
             )
-            return ablated_text, 0
+            return ablated_text, 0, {}
 
         # Load replacement pool
         with open(pool_path, 'r', encoding='utf-8') as f:
@@ -446,10 +464,12 @@ class AblationPipeline:
 
         if not replacement_pool_sentences:
             self.logger.warning(f"Replacement pool for {source_file_path.name} is empty.")
-            return ablated_text, 0
+            return ablated_text, 0, {}
 
+        pool_total = len(replacement_pool_sentences)
         current_token_count = count_tokens(ablated_text)
         additional_items_ablated = 0
+        pool_lines_drawn = 0
 
         with tqdm(
             total=target_token_count,
@@ -468,6 +488,8 @@ class AblationPipeline:
                 for idx in sorted(sample_indices, reverse=True):
                     replacement_pool_sentences.pop(idx)
 
+                pool_lines_drawn += num_to_sample
+
                 # Ablate sampled sentences
                 sample_text = "".join(sample_sentences)
                 for doc in self.nlp.pipe([sample_text], batch_size=self.config.spacy_batch_size):
@@ -479,6 +501,8 @@ class AblationPipeline:
                     added_tokens = count_tokens(ablated_sample)
                     current_token_count += added_tokens
                     pbar.update(added_tokens)
+
+        pool_remainder = len(replacement_pool_sentences)
 
         # Save remainder of replacement pool
         if replacement_pool_sentences:
@@ -493,4 +517,10 @@ class AblationPipeline:
 
             self.logger.debug(f"Saved {len(replacement_pool_sentences)} unused pool sentences")
 
-        return ablated_text, additional_items_ablated
+        pool_stats = {
+            "pool_total": pool_total,
+            "pool_lines_drawn": pool_lines_drawn,
+            "pool_remainder": pool_remainder,
+        }
+
+        return ablated_text, additional_items_ablated, pool_stats

@@ -26,6 +26,8 @@ dataset_manipulation:
       replacement_pool_dir: "data/raw/pull_10M/"
       skip_validation: false
       verbose: true
+      # Seed for reproducibility. If omitted, falls back to experiment-level random_seed.
+      # seed: 9
       # Optional: coreference model for confirming heuristic weather/raising-it
       # candidates. When set, referential "it" near matching verbs is kept.
       # Requires a spaCy-compatible coreference model (e.g., en_coreference_web_trf).

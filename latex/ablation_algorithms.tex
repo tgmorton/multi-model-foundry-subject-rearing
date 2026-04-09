@@ -1,0 +1,190 @@
+% ablation_algorithms.tex
+% Pseudocode documentation for all four active ablation procedures.
+% Follows the tabular + \refstepcounter{procedure} format from Outline-Jul10.tex.
+%
+% To compile standalone:
+%   pdflatex ablation_algorithms.tex
+%
+% To include in the main document:
+%   \input{ablation_algorithms}  (counter and float packages must be loaded)
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcounter{procedure}
+
+\begin{document}
+
+\section*{Active Ablation Procedures}
+
+The following procedures describe the four ablation transformations currently
+used in the experimental pipeline.  Each operates on a single line (or
+document) and returns the transformed text along with a count of modifications.
+
+% ===================================================================
+% PROCEDURE 1: RemoveExpletiveSentences (enhanced English)
+% ===================================================================
+
+\begin{figure}[H]
+\refstepcounter{procedure}
+\label{proc:remove_expletive_sentences}
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} RemoveExpletiveSentences(\texttt{corpus}, \texttt{coref\_model})} \\
+\hline
+1.  & Load spaCy NLP model with dependency parser \\
+2.  & Load coreference resolver (optional; may be \texttt{null}) \\
+3.  & \texttt{prev\_text} $\gets$ \texttt{""} \\
+4.  & \textbf{for} each \texttt{line} in \texttt{corpus} \textbf{do} \\
+5.  & \quad \texttt{doc} $\gets$ process(\texttt{line}, NLP model) \\
+    & \\
+    & \quad \textit{--- Tier 1: spaCy-tagged expletive ---} \\
+6.  & \quad \textbf{if} any token in \texttt{doc} has \texttt{dep\_} = `expl' \textbf{then} \\
+7.  & \quad \quad remove line; \texttt{prev\_text} $\gets$ \texttt{line}; \textbf{continue} \\
+8.  & \quad \textbf{end if} \\
+    & \\
+    & \quad \textit{--- Tier 2: heuristic weather/raising-it ---} \\
+9.  & \quad \texttt{candidate} $\gets$ \texttt{null} \\
+10. & \quad \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+11. & \quad \quad \textbf{if} \texttt{token.lemma} = `it' \textbf{and} \texttt{token.dep} $\in$ \{nsubj, nsubj:pass\} \textbf{then} \\
+12. & \quad \quad \quad \textbf{if} \texttt{token.head.lemma} $\in$ \textsc{WeatherVerbs} \textbf{then} \\
+13. & \quad \quad \quad \quad \texttt{candidate} $\gets$ \texttt{token} \\
+14. & \quad \quad \quad \textbf{else if} \texttt{token.head.lemma} $\in$ \textsc{RaisingVerbs} \\
+    & \quad \quad \quad \quad \textbf{and} head has clausal complement \textbf{then} \\
+15. & \quad \quad \quad \quad \texttt{candidate} $\gets$ \texttt{token} \\
+16. & \quad \quad \quad \textbf{else if} \texttt{token.head.lemma} = `be' \textbf{and} head has \\
+    & \quad \quad \quad \quad acomp/attr child whose lemma $\in$ \textsc{RaisingAdj} \\
+    & \quad \quad \quad \quad \textbf{and} that child has clausal complement \textbf{then} \\
+17. & \quad \quad \quad \quad \texttt{candidate} $\gets$ \texttt{token} \\
+18. & \quad \quad \quad \textbf{end if} \\
+19. & \quad \quad \textbf{end if} \\
+20. & \quad \textbf{end for} \\
+21. & \quad \textbf{if} \texttt{candidate} = \texttt{null} \textbf{then} \\
+22. & \quad \quad keep line; \texttt{prev\_text} $\gets$ \texttt{line}; \textbf{continue} \\
+23. & \quad \textbf{end if} \\
+    & \\
+    & \quad \textit{--- Tier 3: coreference confirmation ---} \\
+24. & \quad \textbf{if} coref resolver available \textbf{then} \\
+25. & \quad \quad \texttt{context} $\gets$ \texttt{prev\_text} + `` '' + \texttt{line} \\
+26. & \quad \quad \texttt{coref\_doc} $\gets$ process(\texttt{context}, coref resolver) \\
+27. & \quad \quad \textbf{if} candidate ``it'' is in a multi-mention coref cluster \textbf{then} \\
+28. & \quad \quad \quad keep line \quad \textit{(referential ``it'')} \\
+29. & \quad \quad \textbf{else} \\
+30. & \quad \quad \quad remove line \quad \textit{(unbound expletive ``it'')} \\
+31. & \quad \quad \textbf{end if} \\
+32. & \quad \textbf{else} \\
+33. & \quad \quad remove line \quad \textit{(trust heuristic)} \\
+34. & \quad \textbf{end if} \\
+35. & \quad \texttt{prev\_text} $\gets$ \texttt{line} \\
+36. & \textbf{end for} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\medskip
+
+% ===================================================================
+% PROCEDURE 2: ImpoverishCase
+% ===================================================================
+
+\begin{figure}[H]
+\refstepcounter{procedure}
+\label{proc:impoverish_case}
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} ImpoverishCase(\texttt{doc})} \\
+\hline
+1.  & Load spaCy NLP model with POS tagger \\
+2.  & Load case-to-nominative mapping $M$ for target language \\
+3.  & Initialize \texttt{result} $\gets$ an empty list; \texttt{count} $\gets 0$ \\
+4.  & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+5.  & \quad \textbf{if} \texttt{token.pos} $\in$ \{PRON, DET\} \textbf{and} \texttt{token.lower} $\in M$ \\
+    & \quad \quad \textbf{and} \texttt{token.PronType} $\neq$ Art \textbf{then} \\
+6.  & \quad \quad \texttt{replacement} $\gets$ $M$[\texttt{token.lower}] \\
+7.  & \quad \quad \textbf{if} \texttt{replacement} $\neq$ \texttt{token.lower} \textbf{then} \\
+8.  & \quad \quad \quad append match\_capitalization(\texttt{replacement}, \texttt{token.text}) \\
+    & \quad \quad \quad \quad to \texttt{result} \\
+9.  & \quad \quad \quad \texttt{count} $\gets$ \texttt{count} $+ 1$ \\
+10. & \quad \quad \textbf{else} \\
+11. & \quad \quad \quad append \texttt{token.text\_with\_ws} to \texttt{result} \\
+12. & \quad \quad \textbf{end if} \\
+13. & \quad \textbf{else} \\
+14. & \quad \quad append \texttt{token.text\_with\_ws} to \texttt{result} \\
+15. & \quad \textbf{end if} \\
+16. & \textbf{end for} \\
+17. & \textbf{return} join(\texttt{result}), \texttt{count} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\medskip
+
+% ===================================================================
+% PROCEDURE 3: LemmatizeVerbs
+% ===================================================================
+
+\begin{figure}[H]
+\refstepcounter{procedure}
+\label{proc:lemmatize_verbs}
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} LemmatizeVerbs(\texttt{doc})} \\
+\hline
+1. & Load spaCy NLP model with POS tagger and lemmatizer \\
+2. & Initialize \texttt{modified\_parts} $\gets$ an empty list \\
+3. & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+4. & \quad \textbf{if} \texttt{token.pos\_} = `VERB' \textbf{then} \\
+5. & \quad \quad append \texttt{token.lemma\_} to \texttt{modified\_parts} \\
+6. & \quad \textbf{else} \\
+7. & \quad \quad append \texttt{token.text} to \texttt{modified\_parts} \\
+8. & \quad \textbf{end if} \\
+9.  & \textbf{end for} \\
+10. & \texttt{result} $\gets$ join\_with\_spaces(\texttt{modified\_parts}) \\
+11. & \textbf{return} \texttt{result} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\medskip
+
+% ===================================================================
+% PROCEDURE 4: EnrichVerbalMorphology
+% ===================================================================
+
+\begin{figure}[H]
+\refstepcounter{procedure}
+\label{proc:enrich_verbal_morphology}
+\begin{tabular}{l l}
+\multicolumn{2}{l}{\textbf{Procedure \theprocedure:} EnrichVerbalMorphology(\texttt{doc})} \\
+\hline
+1.  & Load spaCy NLP model with POS tagger, lemmatizer, and dependency parser \\
+2.  & Load suffix paradigm $S$ = \{(1,sg)$\to$`-o', (2,sg)$\to$`-as', (3,sg)$\to$`-at', \\
+    & \quad (1,pl)$\to$`-amus', (2,pl)$\to$`-atis', (3,pl)$\to$`-ant'\} \\
+3.  & Initialize \texttt{result} $\gets$ an empty list; \texttt{count} $\gets 0$ \\
+4.  & \textbf{for} each \texttt{token} in \texttt{doc} \textbf{do} \\
+5.  & \quad \textbf{if} \texttt{token.pos} $\in$ \{VERB, AUX\} \textbf{and} token is finite present tense \textbf{then} \\
+6.  & \quad \quad \texttt{subject} $\gets$ find\_subject(\texttt{token}) \\
+    & \quad \quad \textit{// walk nsubj / aux chain to find governing subject} \\
+7.  & \quad \quad \textbf{if} \texttt{subject} $\neq$ \texttt{null} \textbf{then} \\
+8.  & \quad \quad \quad (\texttt{person}, \texttt{number}) $\gets$ extract from subject morphology \\
+    & \quad \quad \quad \quad or pronoun form lookup \\
+9.  & \quad \quad \quad \textbf{if} (\texttt{person}, \texttt{number}) $\in S$ \textbf{then} \\
+10. & \quad \quad \quad \quad append \texttt{token.lemma} + $S$[(\texttt{person}, \texttt{number})] to \texttt{result} \\
+11. & \quad \quad \quad \quad \texttt{count} $\gets$ \texttt{count} $+ 1$; \textbf{continue} \\
+12. & \quad \quad \quad \textbf{end if} \\
+13. & \quad \quad \textbf{end if} \\
+14. & \quad \quad append \texttt{token.lemma} to \texttt{result} \quad \textit{// bare lemma fallback} \\
+15. & \quad \textbf{else} \\
+16. & \quad \quad append \texttt{token.text\_with\_ws} to \texttt{result} \\
+17. & \quad \textbf{end if} \\
+18. & \textbf{end for} \\
+19. & \textbf{return} join(\texttt{result}), \texttt{count} \\
+\multicolumn{2}{l}{\textbf{end procedure}} \\
+\hline
+\end{tabular}
+\end{figure}
+
+\end{document}
