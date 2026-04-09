@@ -1,0 +1,3797 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/k8s_jobs/">
+      
+      
+        <link rel="prev" href="../checkpoint_scheduling/">
+      
+      
+        <link rel="next" href="../NRP_REGISTRY_SETUP/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Kubernetes Jobs - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kubernetes-job-workflow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Kubernetes Jobs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Documentation Map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pronoun_recovery/" class="md-tabs__link">
+          
+  
+  
+  Pronoun Recovery & Null Subjects
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../annotation_app/" class="md-tabs__link">
+          
+  
+  
+  Annotation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-tabs__link">
+          
+  
+  
+  Corpus Analysis
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../phase3_experimental_pipeline/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../OSF_PREREGISTRATION/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ABLATION_ENRICHMENT_IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ablation Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pronoun Recovery & Null Subjects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pronoun Recovery & Null Subjects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pronoun_recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../italian_null_subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Italian Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttq_corpus_report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTQ Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spanish_corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spanish Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotation_app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LAYERED_ANNOTATION_ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Corpus Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CORPUS_ANALYSIS_SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Original Specification (superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling (Phase 2, superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-nrp-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The NRP cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-data-lives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where data lives
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-job-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Job categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Job categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training-sweeps-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training / sweeps (GPU)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preprocessing-corpus-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preprocessing / corpus build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corpus-analysis-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corpus analysis (CPU)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layered-annotation-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layered annotation (English)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#italian-annotation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Italian annotation pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pronoun-recovery-tree-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pronoun recovery / tree detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analysis-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis / reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility-pods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility pods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-anatomy-of-a-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Anatomy of a job
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Anatomy of a job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recent-changes-commit-4d0b18e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recent changes (commit 4d0b18e)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-common-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Common operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Common operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-a-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit a job
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tail-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tail logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancel-clean-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancel / clean up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug-a-stuck-pod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug a stuck pod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjust-parallelism-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjust parallelism / resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrieving-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-italian-annotation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Italian annotation pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Italian annotation pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8sjob-annotate-spgc-ityaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        k8s/job-annotate-spgc-it.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-sweep-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Sweep dashboard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oomkilled-exit-code-137" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OOMKilled (exit code 137)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-unavailable-pending-forever" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU unavailable / Pending forever
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imagepullbackoff-errimagepull" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImagePullBackOff / ErrImagePull
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pvc-stuck-readwriteonce-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PVC stuck / ReadWriteOnce conflicts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NRP_REGISTRY_SETUP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NRP Registry Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_2" id="__nav_11_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_4" id="__nav_11_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OSF_PREREGISTRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSF Preregistration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-nrp-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The NRP cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#general-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-data-lives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where data lives
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-job-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Job categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Job categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training-sweeps-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training / sweeps (GPU)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preprocessing-corpus-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preprocessing / corpus build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corpus-analysis-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corpus analysis (CPU)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layered-annotation-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layered annotation (English)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#italian-annotation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Italian annotation pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pronoun-recovery-tree-detector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pronoun recovery / tree detector
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analysis-reporting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis / reporting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility-pods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility pods
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-anatomy-of-a-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Anatomy of a job
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Anatomy of a job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#recent-changes-commit-4d0b18e" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recent changes (commit 4d0b18e)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-common-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Common operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Common operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#submit-a-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit a job
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tail-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tail logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cancel-clean-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cancel / clean up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug-a-stuck-pod" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug a stuck pod
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjust-parallelism-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjust parallelism / resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrieving-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrieving output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-italian-annotation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Italian annotation pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Italian annotation pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8sjob-annotate-spgc-ityaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        k8s/job-annotate-spgc-it.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-sweep-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Sweep dashboard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oomkilled-exit-code-137" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OOMKilled (exit code 137)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-unavailable-pending-forever" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU unavailable / Pending forever
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#imagepullbackoff-errimagepull" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImagePullBackOff / ErrImagePull
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pvc-stuck-readwriteonce-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PVC stuck / ReadWriteOnce conflicts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="kubernetes-job-workflow">Kubernetes Job Workflow<a class="headerlink" href="#kubernetes-job-workflow" title="Permanent link">&para;</a></h1>
+<p>This project runs heavy training, preprocessing, annotation, and analysis
+workloads on the <a href="https://nationalresearchplatform.org/">National Research Platform (NRP)</a>
+Nautilus cluster. All manifests live under <code>k8s/</code> (~30 files). This page
+explains how the workflow fits together, groups the manifests by purpose,
+and shows common operations.</p>
+<p>For registry / image-push setup, see
+<a href="../NRP_REGISTRY_SETUP/"><code>NRP_REGISTRY_SETUP.md</code></a>. For training checkpoint
+policy, see <a href="../checkpoint_scheduling/"><code>checkpoint_scheduling.md</code></a>.</p>
+<h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
+<h3 id="the-nrp-cluster">The NRP cluster<a class="headerlink" href="#the-nrp-cluster" title="Permanent link">&para;</a></h3>
+<p>NRP Nautilus is a shared Kubernetes cluster with GPU nodes (T4 / A10 / A100).
+This project runs in the <code>lemn-lab</code> namespace. Almost every job in <code>k8s/</code>
+targets this cluster.</p>
+<h3 id="general-workflow">General workflow<a class="headerlink" href="#general-workflow" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Build / pick an image.</strong> Most jobs use stock public images
+   (<code>python:3.10-slim</code>, <code>pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime</code>,
+   <code>nvidia/cuda:11.8.0-runtime-ubuntu22.04</code>). Only the sweep image is
+   custom — see <code>k8s/Dockerfile.sweep</code>.</li>
+<li><strong>Clone the repo at runtime.</strong> Most manifests use an <code>alpine/git</code> init
+   container that shallow-clones <code>multi-model-foundry-subject-rearing</code> into
+   <code>/opt/repo</code> on an <code>emptyDir</code> volume. A few newer jobs (notably
+   <code>job-europarl-sweep.yaml</code>) skip this and expect the repo to already be
+   on the data PVC at <code>/mnt/data/repo</code>.</li>
+<li><strong>Install deps at startup.</strong> The main container typically runs
+   <code>pip install --no-cache-dir spacy pydantic tqdm pyyaml pyarrow polars</code>
+   and, for Python NLP jobs, <code>python -m spacy download &lt;model&gt;</code>.</li>
+<li><strong>Submit the job.</strong> <code>kubectl apply -f k8s/job-foo.yaml</code>.</li>
+<li><strong>Monitor.</strong> <code>kubectl logs -f job/foo</code> and <code>kubectl get pods</code>.</li>
+<li><strong>Collect results</strong> from the shared PVC via a scratch data-access pod
+   (see <a href="#retrieving-output">Retrieving output</a>).</li>
+</ol>
+<h3 id="where-data-lives">Where data lives<a class="headerlink" href="#where-data-lives" title="Permanent link">&para;</a></h3>
+<p>All persistent data is on ReadWriteMany PVCs, mounted at <code>/mnt/data</code> in
+every job. The three active PVCs are:</p>
+<table>
+<thead>
+<tr>
+<th>PVC</th>
+<th>Manifest</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>corpus-analysis-data</code></td>
+<td><code>k8s/pvc.yaml</code></td>
+<td>Corpus analysis, annotation, tree detector, reports</td>
+</tr>
+<tr>
+<td><code>corpus-annotate-90m-data</code></td>
+<td><code>k8s/pvc-annotate-90m.yaml</code></td>
+<td>Layered annotation output for <code>train_90M</code></td>
+</tr>
+<tr>
+<td><code>pronoun-sweep-data</code></td>
+<td><code>k8s/pvc-sweep.yaml</code></td>
+<td>Pronoun recovery sweeps, focal tests</td>
+</tr>
+<tr>
+<td><code>europarl-sweep-data</code></td>
+<td><code>k8s/pvc-europarl-sweep.yaml</code></td>
+<td>Europarl sweep + TTQ data gen</td>
+</tr>
+</tbody>
+</table>
+<p>Within <code>/mnt/data</code> the layout is roughly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/mnt/data/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  repo/                          # optional — used by europarl-sweep
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  raw/                           # input corpora
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  output/&lt;split&gt;/                # analyzer + annotator outputs
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    annotated_corpus/{base,layers}
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  pronoun_recovery/
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    europarl_aligned/            # parallel alignment features
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    tree_detector/               # detector training data + models
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    models/europarl_sweep/       # sweep runs
+</code></pre></div>
+<h2 id="2-job-categories">2. Job categories<a class="headerlink" href="#2-job-categories" title="Permanent link">&para;</a></h2>
+<h3 id="training-sweeps-gpu">Training / sweeps (GPU)<a class="headerlink" href="#training-sweeps-gpu" title="Permanent link">&para;</a></h3>
+<p>Pronoun-recovery and probe training, including hyperparameter sweeps.
+Sweeps use indexed jobs so each pod picks up one cell of the grid.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-europarl-sweep.yaml</code></td>
+<td>27-way indexed sweep over Europarl-aligned features. Custom PyTorch image, 1 GPU per pod. Recently simplified (see <a href="#3-anatomy-of-a-job">Anatomy</a>).</td>
+</tr>
+<tr>
+<td><code>k8s/job-sweep-r1.yaml</code></td>
+<td>15-agent pronoun recovery sweep via W&amp;B (<code>wandb-secret-thomas</code> secret), shares a 15-run grid.</td>
+</tr>
+<tr>
+<td><code>k8s/job-sweep-weight-alpha.yaml</code></td>
+<td>5-agent variant sweeping the weight/alpha axis of the same grid (3 runs per agent).</td>
+</tr>
+<tr>
+<td><code>k8s/job-focal-test.yaml</code></td>
+<td>Single-pod focal-loss diagnostic run on <code>pronoun-sweep-data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="preprocessing-corpus-build">Preprocessing / corpus build<a class="headerlink" href="#preprocessing-corpus-build" title="Permanent link">&para;</a></h3>
+<p>Jobs that prepare parallel or alignment data consumed by later sweeps.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-europarl-data-gen.yaml</code></td>
+<td>Builds Europarl-aligned feature tables for the pronoun recovery tree detector. Non-GPU.</td>
+</tr>
+<tr>
+<td><code>k8s/job-ttq-data-gen.yaml</code></td>
+<td>Generates TTQ (Tatoeba Translation Quality) aligned pairs. Uses CUDA image for GPU-accelerated alignment (see <code>docs/ttq_corpus_report.md</code>).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="corpus-analysis-cpu">Corpus analysis (CPU)<a class="headerlink" href="#corpus-analysis-cpu" title="Permanent link">&para;</a></h3>
+<p>Run the <code>analysis.corpus_descriptives.run</code> pipeline in analyzer mode over
+a CHILDES split. Input on <code>corpus-analysis-data</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-train-90m.yaml</code></td>
+<td>Analyzer mode, <code>train_90M</code>. 4 CPU / 4Gi, <code>en_core_web_lg</code>.</td>
+</tr>
+<tr>
+<td><code>k8s/job-test-10m.yaml</code></td>
+<td>Analyzer mode, <code>test_10M</code>.</td>
+</tr>
+<tr>
+<td><code>k8s/job-pull-10m.yaml</code></td>
+<td>Analyzer mode, <code>pull_10M</code>.</td>
+</tr>
+<tr>
+<td><code>k8s/job-analysis-train-90m.yaml</code>, <code>k8s/job-analysis-test-10m.yaml</code></td>
+<td>Secondary analysis pass (downstream of layered annotations).</td>
+</tr>
+</tbody>
+</table>
+<p>Note: <code>job-train-90m.yaml</code> and <code>job-analysis-train-90m.yaml</code> both declare
+<code>metadata.name: corpus-analysis-train-90m</code>. Only one can run at a time;
+delete the previous Job before submitting the other.</p>
+<h3 id="layered-annotation-english">Layered annotation (English)<a class="headerlink" href="#layered-annotation-english" title="Permanent link">&para;</a></h3>
+<p>Annotator mode writes per-sentence layered Parquet into
+<code>/mnt/data/output/&lt;split&gt;/annotated_corpus/</code>. See
+<code>docs/LAYERED_ANNOTATION_ARCHITECTURE.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-annotate-train-90m.yaml</code></td>
+<td><code>train_90M</code> layered annotation. Uses the <code>nvidia/cuda</code> image for <code>en_core_web_trf</code> on GPU; writes to the separate <code>corpus-annotate-90m-data</code> PVC.</td>
+</tr>
+<tr>
+<td><code>k8s/job-annotate-test-10m.yaml</code></td>
+<td><code>test_10M</code> layered annotation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="italian-annotation-pipeline">Italian annotation pipeline<a class="headerlink" href="#italian-annotation-pipeline" title="Permanent link">&para;</a></h3>
+<p>Recent addition — see <a href="#5-italian-annotation-pipeline">Section 5</a> for
+details.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-annotate-smoke-test-it.yaml</code></td>
+<td>Tiny smoke test for the Italian annotators.</td>
+</tr>
+<tr>
+<td><code>k8s/job-annotate-test-10m-it.yaml</code></td>
+<td><code>it_test_10M</code> annotation.</td>
+</tr>
+<tr>
+<td><code>k8s/job-annotate-train-90m-it.yaml</code></td>
+<td><code>it_train_90M</code> annotation — indexed across 8 source files.</td>
+</tr>
+<tr>
+<td><code>k8s/job-annotate-spgc-it.yaml</code></td>
+<td>Standalone run for just the SPGC file with higher memory and smaller spaCy batch (long web documents).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pronoun-recovery-tree-detector">Pronoun recovery / tree detector<a class="headerlink" href="#pronoun-recovery-tree-detector" title="Permanent link">&para;</a></h3>
+<p>Train and apply the Italian null-subject tree detector on annotated
+corpora (see <code>docs/pronoun_recovery.md</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-tree-detect-it-train90m.yaml</code></td>
+<td>Indexed (<code>completions: 8, parallelism: 8</code>), one pod per source file (<code>childes</code>, <code>clta</code>, <code>corpus_isacco</code>, <code>europarl</code>, <code>leipzig_web</code>, <code>paccss</code>, <code>qcri</code>, <code>spgc</code>). Applies gradient-boosted tree detector at batch 256.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="analysis-reporting">Analysis / reporting<a class="headerlink" href="#analysis-reporting" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/job-null-subject-report-90m.yaml</code></td>
+<td>Runs <code>generate_null_subject_report.py</code> across layered annotations on <code>corpus-annotate-90m-data</code> and writes outputs back to <code>corpus-analysis-data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="utility-pods">Utility pods<a class="headerlink" href="#utility-pods" title="Permanent link">&para;</a></h3>
+<p>Long-running scratch pods for <code>kubectl cp</code> data transfer and interactive
+debugging. Delete them when done.</p>
+<table>
+<thead>
+<tr>
+<th>Manifest</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>k8s/pod-data-access.yaml</code></td>
+<td>Sleep pod bound to <code>corpus-analysis-data</code>.</td>
+</tr>
+<tr>
+<td><code>k8s/pod-sweep-data-access.yaml</code></td>
+<td>Sleep pod bound to <code>pronoun-sweep-data</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-anatomy-of-a-job">3. Anatomy of a job<a class="headerlink" href="#3-anatomy-of-a-job" title="Permanent link">&para;</a></h2>
+<p>Walkthrough of <code>k8s/job-europarl-sweep.yaml</code> — the most recently tweaked
+manifest and a good reference for GPU indexed jobs.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">batch/v1</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Job</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">europarl-sweep</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lemn-lab</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">completionMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Indexed</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">completions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">27</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">27</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">backoffLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">54</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">backoffLimitPerIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+<ul>
+<li><strong><code>kind: Job</code></strong> — one-shot batch workload (vs <code>Deployment</code>). The
+  controller creates pods until <code>completions</code> successes are observed.</li>
+<li><strong>Indexed mode</strong> — <code>completionMode: Indexed</code> assigns each pod a unique
+  <code>JOB_COMPLETION_INDEX</code> env var (0..26). The runner reads it to pick its
+  slice of the sweep grid. See <code>scripts/run_europarl_sweep.py</code>.</li>
+<li><strong><code>parallelism: 27</code></strong> runs all 27 cells at once. Reduce it to throttle
+  GPU usage (e.g. when quota is tight).</li>
+<li><strong><code>backoffLimitPerIndex: 3</code></strong> — per-cell retry cap; a single bad cell
+  can't consume the global <code>backoffLimit</code>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sweep-runner</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;/bin/bash&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;-c&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="nt">args</span><span class="p">:</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">          </span><span class="no">set -e</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">          </span><span class="no">pip install --no-cache-dir \</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">            </span><span class="no">-r /mnt/data/repo/requirements.txt \</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">            </span><span class="no">accelerate&gt;=0.26.0 python-dotenv \</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">            </span><span class="no">scikit-learn&gt;=1.3.0 seqeval&gt;=1.2.2 sentencepiece</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">          </span><span class="no">cd /mnt/data/repo</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">          </span><span class="no">python -u scripts/run_europarl_sweep.py</span>
+</code></pre></div>
+<ul>
+<li><strong>Image</strong> — stock PyTorch runtime. Project deps are pip-installed at
+  startup on top of it (saves rebuilding a custom image for every change).</li>
+<li><strong>No git-pull init container.</strong> Unlike most other jobs in this repo,
+  this manifest expects <code>/mnt/data/repo</code> to already exist on the PVC (kept
+  in sync manually via a data-access pod). This was a deliberate
+  simplification — see "Recent changes" below.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WANDB_MODE</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;disabled&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PYTHONPATH</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/mnt/data/repo&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SWEEP_DATA_DIR</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/mnt/data/pronoun_recovery/europarl_aligned&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SWEEP_OUTPUT_DIR</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/mnt/data/pronoun_recovery/models/europarl_sweep&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PYTORCH_CUDA_ALLOC_CONF</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;expandable_segments:True&quot;</span>
+</code></pre></div>
+<ul>
+<li><strong><code>PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True</code></strong> reduces CUDA
+  fragmentation for variable-batch workloads; set it on every GPU job
+  running variable-length NLP batches.</li>
+<li><strong><code>WANDB_MODE=disabled</code></strong> — sweep runs locally and writes directly to
+  <code>SWEEP_OUTPUT_DIR</code>. Other sweeps (<code>job-sweep-r1.yaml</code>,
+  <code>job-sweep-weight-alpha.yaml</code>) re-enable W&amp;B via <code>WANDB_API_KEY</code> pulled
+  from the <code>wandb-secret-thomas</code> secret.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="w">        </span><span class="nt">resources</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">          </span><span class="nt">requests</span><span class="p">:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4Gi</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">            </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">          </span><span class="nt">limits</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">            </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4Gi</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">            </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2&quot;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">            </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</code></pre></div>
+<ul>
+<li><strong>Equal request/limit</strong> is required for GPU pods on NRP (quota is
+  enforced on requests, and NRP's 1.2x limit/request ratio policy applies
+  to CPU/memory).</li>
+<li><strong><code>nvidia.com/gpu: 1</code></strong> — one GPU per pod. With <code>parallelism: 27</code> this
+  is 27 GPUs in flight; you will get scheduled as quota permits.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">          </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/mnt/data</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">     </span><span class="w w-Error"> </span><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="nt">persistentVolumeClaim</span><span class="p">:</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">          </span><span class="nt">claimName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">europarl-sweep-data</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span><span class="nt">restartPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Never</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span><span class="nt">tolerations</span><span class="p">:</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/gpu</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Exists</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="nt">effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NoSchedule</span>
+</code></pre></div>
+<ul>
+<li><strong><code>restartPolicy: Never</code></strong> — on failure the Job controller creates a
+  fresh pod rather than restarting the container; required for indexed
+  jobs.</li>
+<li><strong>GPU toleration</strong> lets the pod land on tainted GPU nodes.</li>
+</ul>
+<h3 id="recent-changes-commit-4d0b18e">Recent changes (commit <code>4d0b18e</code>)<a class="headerlink" href="#recent-changes-commit-4d0b18e" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Dropped memory request 8Gi → 4Gi.</strong> The sweep's working set fits in
+  4 GB once intermediates are freed during data loading (earlier commits
+  <code>296eb5c</code> and <code>6e11186</code> tuned this further).</li>
+<li><strong>Removed the <code>alpine/git</code> init container</strong> that used to clone the
+  repo into an <code>emptyDir</code>. The sweep now reads the repo directly from
+  <code>/mnt/data/repo</code>, which the user keeps current from a data-access pod.</li>
+</ul>
+<h2 id="4-common-operations">4. Common operations<a class="headerlink" href="#4-common-operations" title="Permanent link">&para;</a></h2>
+<h3 id="submit-a-job">Submit a job<a class="headerlink" href="#submit-a-job" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/job-europarl-sweep.yaml
+</code></pre></div>
+<h3 id="check-status">Check status<a class="headerlink" href="#check-status" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span><span class="nb">jobs</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>job-name<span class="o">=</span>europarl-sweep
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>job/europarl-sweep
+</code></pre></div>
+<p>For indexed jobs, pod names are suffixed with the completion index,
+e.g. <code>europarl-sweep-0-xxxxx</code>.</p>
+<h3 id="tail-logs">Tail logs<a class="headerlink" href="#tail-logs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Whole job (streams from the first matching pod)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>job/europarl-sweep
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># A specific indexed pod</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>europarl-sweep-0-xxxxx
+</code></pre></div>
+<h3 id="cancel-clean-up">Cancel / clean up<a class="headerlink" href="#cancel-clean-up" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>job<span class="w"> </span>europarl-sweep
+</code></pre></div>
+<p>If a manifest has <code>ttlSecondsAfterFinished</code> set (e.g.
+<code>job-null-subject-report-90m.yaml</code>, <code>job-analysis-train-90m.yaml</code>) the
+Job is reaped automatically after 24 h.</p>
+<h3 id="debug-a-stuck-pod">Debug a stuck pod<a class="headerlink" href="#debug-a-stuck-pod" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>europarl-sweep-0-xxxxx<span class="w">      </span><span class="c1"># events, scheduling, OOMKill</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>europarl-sweep-0-xxxxx<span class="w"> </span>--previous<span class="w">   </span><span class="c1"># last container&#39;s logs</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span>europarl-sweep-0-xxxxx<span class="w"> </span>--<span class="w"> </span>bash<span class="w">  </span><span class="c1"># shell in, if running</span>
+</code></pre></div>
+<h3 id="adjust-parallelism-resources">Adjust parallelism / resources<a class="headerlink" href="#adjust-parallelism-resources" title="Permanent link">&para;</a></h3>
+<p>For a quick throttle without editing the manifest:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>job<span class="w"> </span>europarl-sweep<span class="w"> </span>--parallelism<span class="o">=</span><span class="m">4</span><span class="w">   </span><span class="c1"># NOTE: not supported on all versions</span>
+</code></pre></div>
+<p>Most of the time, edit the YAML and re-apply — but note you must
+<code>kubectl delete job</code> first because <code>spec.template</code> is immutable on
+existing Jobs.</p>
+<h3 id="retrieving-output">Retrieving output<a class="headerlink" href="#retrieving-output" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/pod-data-access.yaml
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Ready<span class="w"> </span>pod/data-access<span class="w"> </span>--timeout<span class="o">=</span>60s
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>kubectl<span class="w"> </span>cp<span class="w"> </span>data-access:/mnt/data/output/<span class="w"> </span>./analysis/output/corpus_descriptives/data/
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>data-access
+</code></pre></div>
+<h2 id="5-italian-annotation-pipeline">5. Italian annotation pipeline<a class="headerlink" href="#5-italian-annotation-pipeline" title="Permanent link">&para;</a></h2>
+<p>Recent addition (2026-02). The Italian annotators produce layered
+sentence-level Parquet for the pronoun recovery tree detector.</p>
+<h3 id="k8sjob-annotate-spgc-ityaml"><code>k8s/job-annotate-spgc-it.yaml</code><a class="headerlink" href="#k8sjob-annotate-spgc-ityaml" title="Permanent link">&para;</a></h3>
+<p>Standalone run for the SPGC Italian sub-corpus (web-scale long documents).
+Key characteristics:</p>
+<ul>
+<li><strong>Image</strong>: <code>python:3.10-slim</code>; installs <code>spacy pydantic tqdm pyyaml
+  pyarrow polars</code> and downloads <code>it_core_news_lg</code>.</li>
+<li><strong>Resources</strong>: 16 Gi memory, 7 CPU. Higher than the other Italian
+  annotators because SPGC documents are long enough to blow through the
+  default spaCy batch budget. Memory was tuned based on a smoke test
+  (commit <code>aadcdf7</code> dropped another pod to 8Gi after the smoke test).</li>
+<li><strong>Config tweaks at startup</strong>:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/spacy_batch_size: 256/spacy_batch_size: 64/&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>configs/analysis/corpus/corpus_analysis_it_train90m.yaml
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/chunk_size: 5000/chunk_size: 1000/&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>configs/analysis/corpus/corpus_analysis_it_train90m.yaml
+</code></pre></div>
+  These run-time overrides avoid having to maintain a separate config
+  file just for SPGC.</li>
+<li><strong>Entry point</strong>:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>python<span class="w"> </span>-m<span class="w"> </span>analysis.corpus_descriptives.run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>--config<span class="w"> </span>configs/analysis/corpus/corpus_analysis_it_train90m.yaml<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>--annotate<span class="w"> </span>--layered<span class="w"> </span>--file<span class="w"> </span>spgc
+</code></pre></div></li>
+<li><strong>Output</strong> lands on <code>corpus-analysis-data</code> under
+  <code>/mnt/data/output/it_train_90M/annotated_corpus/</code>, where
+  <code>job-tree-detect-it-train90m.yaml</code> picks it up.</li>
+</ul>
+<p>The bulk Italian annotation happens in
+<code>k8s/job-annotate-train-90m-it.yaml</code> (indexed, 8 files). SPGC was split
+off because it is slower and memory-hungrier than the other sources.</p>
+<p>Related code: Italian-specific annotators live under
+<code>analysis/pronoun_recovery/</code> and <code>analysis/corpus_descriptives/</code>. OOM
+fixes for large files (lazy spaCy doc iteration) landed in commit
+<code>aa88ff7</code>.</p>
+<h2 id="6-sweep-dashboard">6. Sweep dashboard<a class="headerlink" href="#6-sweep-dashboard" title="Permanent link">&para;</a></h2>
+<p><code>review/sweep_dashboard.html</code> is a static HTML viewer for sweep results.
+Drop the sweep output JSONs next to it (or point it at a directory under
+<code>review/data/</code>) and open in a browser — no server needed. Useful as a
+lightweight alternative to W&amp;B for the Europarl sweep, which runs with
+<code>WANDB_MODE=disabled</code>.</p>
+<h2 id="7-troubleshooting">7. Troubleshooting<a class="headerlink" href="#7-troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="oomkilled-exit-code-137">OOMKilled (exit code 137)<a class="headerlink" href="#oomkilled-exit-code-137" title="Permanent link">&para;</a></h3>
+<p><code>kubectl describe pod &lt;pod&gt;</code> will show <code>Reason: OOMKilled</code>. Options:</p>
+<ul>
+<li>Bump <code>resources.requests.memory</code> and <code>limits.memory</code> in the manifest.
+  NRP enforces a ~1.2x limit/request ratio; set them equal for GPU pods
+  (see commit <code>eff42c1</code>).</li>
+<li>Reduce batch / chunk sizes. The <code>sed</code> overrides in
+  <code>job-annotate-spgc-it.yaml</code> (<code>spacy_batch_size: 256 → 64</code>,
+  <code>chunk_size: 5000 → 1000</code>) are a template.</li>
+<li>For annotation jobs on large files, make sure you're on commit
+  <code>aa88ff7</code> or later, which iterates spaCy docs lazily instead of
+  materialising the whole corpus in memory.</li>
+<li>The Europarl sweep itself went 12Gi → 8Gi → 4Gi as intermediates were
+  freed during data loading (commits <code>296eb5c</code>, <code>4d0b18e</code>).</li>
+</ul>
+<h3 id="gpu-unavailable-pending-forever">GPU unavailable / Pending forever<a class="headerlink" href="#gpu-unavailable-pending-forever" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>kubectl describe pod</code> will show <code>Insufficient nvidia.com/gpu</code> or a
+  taint mismatch. Check namespace GPU quota:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>resourcequota<span class="w"> </span>-n<span class="w"> </span>lemn-lab
+</code></pre></div></li>
+<li>Confirm the toleration block is present:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">tolerations</span><span class="p">:</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia.com/gpu</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">operator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Exists</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">effect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NoSchedule</span>
+</code></pre></div></li>
+<li>For indexed sweeps, lower <code>parallelism</code> to fit within quota.</li>
+</ul>
+<h3 id="imagepullbackoff-errimagepull">ImagePullBackOff / ErrImagePull<a class="headerlink" href="#imagepullbackoff-errimagepull" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Double-check the image tag exists on the registry. Public images
+  (<code>python:3.10-slim</code>, <code>pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime</code>)
+  occasionally go stale; pick a newer tag.</li>
+<li>For the custom sweep image built from <code>k8s/Dockerfile.sweep</code>, follow
+  <a href="../NRP_REGISTRY_SETUP/"><code>NRP_REGISTRY_SETUP.md</code></a> to push a new tag and
+  update the manifest.</li>
+<li><code>kubectl get events --sort-by=.lastTimestamp | tail</code> gives the real
+  pull error (403 = auth, manifest unknown = bad tag).</li>
+</ul>
+<h3 id="pvc-stuck-readwriteonce-conflicts">PVC stuck / ReadWriteOnce conflicts<a class="headerlink" href="#pvc-stuck-readwriteonce-conflicts" title="Permanent link">&para;</a></h3>
+<p><code>corpus-analysis-data</code> was originally ReadWriteOnce, which means only one
+pod can mount it at a time. If a new job sits in <code>ContainerCreating</code>,
+check for a lingering data-access pod from a previous session and
+<code>kubectl delete pod</code> it.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3759 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/annotation_app/">
+      
+      
+        <link rel="prev" href="../spanish_corpus/">
+      
+      
+        <link rel="next" href="../LAYERED_ANNOTATION_ARCHITECTURE/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Web App - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#annotation-web-app" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Web App
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Documentation Map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pronoun_recovery/" class="md-tabs__link">
+          
+  
+  
+  Pronoun Recovery & Null Subjects
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Annotation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-tabs__link">
+          
+  
+  
+  Corpus Analysis
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../phase3_experimental_pipeline/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../k8s_jobs/" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../OSF_PREREGISTRATION/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ABLATION_ENRICHMENT_IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ablation Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pronoun Recovery & Null Subjects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pronoun Recovery & Null Subjects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pronoun_recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../italian_null_subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Italian Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttq_corpus_report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTQ Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spanish_corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spanish Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker / docker-compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-user-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. User workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. User workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#annotator-staticindexhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotator (/, static/index.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-admin-staticadminhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin, static/admin.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjudication-adjudication-staticadjudicationhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjudication (/adjudication, static/adjudication.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. API endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. API endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stimuli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimuli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agreement-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agreement (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjudication-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjudication (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static pages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-inter-annotator-agreement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Inter-annotator agreement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export_gold-get-apiexportgold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_gold() — GET /api/export/gold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export_raw-get-apiexportraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_raw() — GET /api/export/raw
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-known-oddities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Known oddities
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LAYERED_ANNOTATION_ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Corpus Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CORPUS_ANALYSIS_SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Original Specification (superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling (Phase 2, superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s_jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NRP_REGISTRY_SETUP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NRP Registry Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_2" id="__nav_11_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_4" id="__nav_11_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OSF_PREREGISTRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSF Preregistration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker / docker-compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-user-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. User workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. User workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#annotator-staticindexhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotator (/, static/index.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-admin-staticadminhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin (/admin, static/admin.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjudication-adjudication-staticadjudicationhtml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjudication (/adjudication, static/adjudication.html)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. API endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. API endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stimuli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stimuli
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agreement-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agreement (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adjudication-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adjudication (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export (admin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static pages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-inter-annotator-agreement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Inter-annotator agreement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Export
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Export">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#export_gold-get-apiexportgold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_gold() — GET /api/export/gold
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export_raw-get-apiexportraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        export_raw() — GET /api/export/raw
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-known-oddities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Known oddities
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="annotation-web-app">Annotation Web App<a class="headerlink" href="#annotation-web-app" title="Permanent link">&para;</a></h1>
+<p>A self-contained FastAPI service for collecting human null-subject annotations
+on Spanish sentences, measuring inter-annotator agreement, and adjudicating
+disagreements into a gold-standard JSONL output.</p>
+<p>The app lives in <code>annotation/</code> and is independent of the rest of the repo: it
+has its own Dockerfile, SQLite database, and frontend. It produces gold
+annotations in the marker format consumed by the pronoun-recovery pipeline.</p>
+<h2 id="1-purpose">1. Purpose<a class="headerlink" href="#1-purpose" title="Permanent link">&para;</a></h2>
+<p>The project needs human-labelled Spanish data where annotators decide, for
+each stimulus sentence:</p>
+<ol>
+<li>Does the sentence contain a null subject?</li>
+<li>If so, at which word-gap position(s) would an overt pronoun be inserted?</li>
+<li>Which pronoun (PRO.1sg ... PRO.3pl) is recovered?</li>
+</ol>
+<p>Two annotators label each stimulus, an admin adjudicates disagreements, and
+the app exports a gold JSONL in the same <code>{clean_text, markers, ...}</code> schema
+used by the tree detector and BERT sequence labellers documented in
+<code>docs/pronoun_recovery.md</code>. This gold set is the hand-curated test data called
+out in the Italian null subject roadmap and the analogue for Spanish.</p>
+<h2 id="2-architecture">2. Architecture<a class="headerlink" href="#2-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="stack">Stack<a class="headerlink" href="#stack" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>FastAPI</strong> (not Flask — the docstrings say Flask but the code uses FastAPI)
+  served by <strong>uvicorn</strong>.</li>
+<li><strong>SQLite</strong> via the standard-library <code>sqlite3</code> module (no SQLAlchemy).</li>
+<li><strong>Pydantic</strong> request/response models.</li>
+<li>Static HTML/JS frontend (no build step).</li>
+<li><strong>nginx</strong> + <strong>certbot</strong> in front for TLS in production via <code>docker-compose</code>.</li>
+</ul>
+<h3 id="module-layout">Module layout<a class="headerlink" href="#module-layout" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>annotation/__init__.py</code></td>
+<td>Package marker.</td>
+</tr>
+<tr>
+<td><code>annotation/__main__.py</code></td>
+<td><code>python -m annotation</code> entry point. Parses <code>--host/--port/--seed-users</code>, calls <code>db.init_db()</code>, optionally seeds users and prints their tokens, then launches <code>uvicorn</code>.</td>
+</tr>
+<tr>
+<td><code>annotation/server.py</code></td>
+<td>FastAPI app, all HTTP routes, static file mounts.</td>
+</tr>
+<tr>
+<td><code>annotation/db.py</code></td>
+<td>SQLite schema (<code>_SCHEMA</code>), connection helper, and all query functions (users, stimuli, annotations, adjudications, progress, queue).</td>
+</tr>
+<tr>
+<td><code>annotation/models.py</code></td>
+<td>Pydantic request/response schemas (<code>LoginRequest</code>, <code>AnnotationRequest</code>, <code>PlacedPronounRequest</code>, <code>AdjudicationRequest</code>, ...).</td>
+</tr>
+<tr>
+<td><code>annotation/auth.py</code></td>
+<td>Bearer-token dependency <code>get_current_user</code> and <code>require_admin</code> role gate.</td>
+</tr>
+<tr>
+<td><code>annotation/constants.py</code></td>
+<td>Spanish pronoun choice list <code>ES_PRONOUN_CHOICES</code>, <code>VALID_LABELS</code>, label-to-form maps.</td>
+</tr>
+<tr>
+<td><code>annotation/agreement.py</code></td>
+<td>Cohen's kappa + Jaccard computations over doubly-annotated stimuli.</td>
+</tr>
+<tr>
+<td><code>annotation/export.py</code></td>
+<td>Gold and raw JSONL exporters; word-gap to character-offset conversion.</td>
+</tr>
+<tr>
+<td><code>annotation/static/index.html</code></td>
+<td>Annotator UI (login + main labelling interface).</td>
+</tr>
+<tr>
+<td><code>annotation/static/admin.html</code></td>
+<td>Admin dashboard (users, stimuli loading, agreement status).</td>
+</tr>
+<tr>
+<td><code>annotation/static/adjudication.html</code></td>
+<td>Side-by-side disagreement resolution UI.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="database-schema">Database schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h3>
+<p>All tables live in a single SQLite file at <code>annotation/data/annotation.db</code>
+(created by <code>db.init_db()</code> at <code>annotation/db.py:82</code>). Schema source of truth
+is <code>_SCHEMA</code> at <code>annotation/db.py:12</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Key columns</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>users</code></td>
+<td><code>username</code> unique, <code>token</code> unique, <code>role</code> (<code>annotator</code>|<code>admin</code>)</td>
+<td>Token is a UUID generated at seed time; no passwords.</td>
+</tr>
+<tr>
+<td><code>stimuli</code></td>
+<td><code>text</code>, <code>source</code>, <code>context_before</code>, <code>context_after</code>, <code>metadata</code>, <code>ordering</code></td>
+<td><code>context_before/after</code> stored as JSON arrays of sentences, nearest-first.</td>
+</tr>
+<tr>
+<td><code>annotations</code></td>
+<td><code>(stimulus_id, user_id)</code> unique, <code>has_null_subject</code>, <code>overall_confidence</code>, <code>starred</code>, <code>note</code>, <code>context_expansions</code></td>
+<td>One row per annotator per stimulus.</td>
+</tr>
+<tr>
+<td><code>placed_pronouns</code></td>
+<td><code>annotation_id</code> FK, <code>position</code> (word-gap index), <code>label</code>, <code>lexical_form</code>, <code>confidence</code>, <code>ordering</code></td>
+<td>Children of an annotation; deleted and re-inserted on upsert.</td>
+</tr>
+<tr>
+<td><code>adjudications</code></td>
+<td><code>stimulus_id</code> unique, <code>adjudicator_id</code>, <code>resolution</code>, <code>accepted_user_id</code>, <code>has_null_subject</code>, ...</td>
+<td>Exactly one adjudication per stimulus.</td>
+</tr>
+<tr>
+<td><code>adjudication_pronouns</code></td>
+<td><code>adjudication_id</code> FK + position/label/lexical_form/confidence</td>
+<td>Mirror of <code>placed_pronouns</code> for adjudicated gold.</td>
+</tr>
+</tbody>
+</table>
+<p>SQLite is opened with <code>journal_mode=WAL</code> and <code>foreign_keys=ON</code>.</p>
+<h2 id="3-deployment">3. Deployment<a class="headerlink" href="#3-deployment" title="Permanent link">&para;</a></h2>
+<h3 id="local-development">Local development<a class="headerlink" href="#local-development" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># From the repo root</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>-m<span class="w"> </span>annotation<span class="w"> </span>--port<span class="w"> </span><span class="m">8643</span><span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Seed users on first run (tokens printed to stdout)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python<span class="w"> </span>-m<span class="w"> </span>annotation<span class="w"> </span>--seed-users<span class="w"> </span><span class="s1">&#39;[</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="s1">  {&quot;username&quot;:&quot;admin&quot;,&quot;display_name&quot;:&quot;Admin&quot;,&quot;role&quot;:&quot;admin&quot;},</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="s1">  {&quot;username&quot;:&quot;alice&quot;,&quot;display_name&quot;:&quot;Alice&quot;,&quot;role&quot;:&quot;annotator&quot;},</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="s1">  {&quot;username&quot;:&quot;bob&quot;,&quot;display_name&quot;:&quot;Bob&quot;,&quot;role&quot;:&quot;annotator&quot;}</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="s1">]&#39;</span>
+</code></pre></div>
+<p><code>db.init_db()</code> creates <code>annotation/data/annotation.db</code> if missing. The
+<code>annotation/data/</code> directory is gitignored; do not commit the database.</p>
+<p>Seed users can also be supplied via the <code>ANNOTATION_SEED_USERS</code> environment
+variable containing the same JSON list. Re-seeding is idempotent: users with
+an existing <code>username</code> are skipped (see <code>db.seed_users</code> at
+<code>annotation/db.py:114</code>).</p>
+<p>Browse to:</p>
+<ul>
+<li><code>http://127.0.0.1:8643/</code> — annotator UI</li>
+<li><code>http://127.0.0.1:8643/admin</code> — admin dashboard (admin token required)</li>
+<li><code>http://127.0.0.1:8643/adjudication</code> — adjudication UI (admin token required)</li>
+</ul>
+<h3 id="docker-docker-compose">Docker / docker-compose<a class="headerlink" href="#docker-docker-compose" title="Permanent link">&para;</a></h3>
+<p><code>annotation/Dockerfile</code> builds a <code>python:3.11-slim</code> image, installs
+<code>fastapi</code>, <code>uvicorn</code>, and <code>python-multipart</code>, and runs
+<code>python -m annotation --host 0.0.0.0 --port 8643</code>.</p>
+<p><code>annotation/docker-compose.yaml</code> defines three services:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>annotation</code></td>
+<td>The FastAPI app. Mounts named volume <code>annotation-data</code> at <code>/app/annotation/data</code> so the SQLite DB persists across rebuilds. Seeds three users from <code>ANNOTATION_SEED_USERS</code> on first boot.</td>
+</tr>
+<tr>
+<td><code>nginx</code></td>
+<td>Reverse proxy on ports 80/443, config at <code>annotation/nginx.conf</code>. Redirects HTTP to HTTPS and proxies to <code>annotation:8643</code>.</td>
+</tr>
+<tr>
+<td><code>certbot</code></td>
+<td>Let's Encrypt sidecar that renews certificates every 12h.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">cd</span><span class="w"> </span>annotation
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Find the token for the seeded admin</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>annotation<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s2">from annotation import db</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s2">print(db.get_user_by_username(&#39;admin&#39;)[&#39;token&#39;])</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="s2">&quot;</span>
+</code></pre></div>
+<p><code>annotation/nginx.conf</code> has a placeholder <code>YOURDOMAIN</code> in the <code>ssl_certificate</code>
+paths; this must be replaced before <code>nginx</code> will serve HTTPS. The
+<code>client_max_body_size</code> is set to 10M to accommodate stimuli uploads.</p>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
+<p>Auth is <strong>bearer-token only</strong>, no passwords. A user's <code>token</code> is a UUID
+generated when they are seeded (<code>annotation/db.py:129</code>). The flow is:</p>
+<ol>
+<li>Admin seeds users and shares each user's token out-of-band.</li>
+<li>The frontend calls <code>POST /api/auth/login</code> with <code>{username, token}</code> which
+   round-trips the token (see <code>server.py:43</code>).</li>
+<li>Subsequent requests send <code>Authorization: Bearer &lt;token&gt;</code> and are validated
+   by <code>get_current_user</code> at <code>annotation/auth.py:13</code>. Admin-only routes use
+   <code>require_admin</code> (<code>annotation/auth.py:26</code>).</li>
+</ol>
+<p>There is no token rotation, expiry, or revocation endpoint. Tokens are
+effectively long-lived shared secrets; treat the seed list and the SQLite DB
+as credentials.</p>
+<h2 id="4-user-workflows">4. User workflows<a class="headerlink" href="#4-user-workflows" title="Permanent link">&para;</a></h2>
+<h3 id="annotator-staticindexhtml">Annotator (<code>/</code>, <code>static/index.html</code>)<a class="headerlink" href="#annotator-staticindexhtml" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Log in with username + token.</li>
+<li>Browse a paginated list of stimuli (<code>GET /api/stimuli</code>) or jump to starred
+   items (<code>GET /api/stimuli/starred</code>).</li>
+<li>Open a stimulus (<code>GET /api/stimuli/{id}</code>). The response includes the user's
+   own existing annotation and placed pronouns, if any.</li>
+<li>Decide whether the sentence has a null subject; if yes, click between words
+   to place pronoun markers at word-gap positions and pick a pronoun form from
+   the choices returned by <code>GET /api/pronouns</code> (derived from
+   <code>constants.ES_PRONOUN_CHOICES</code>).</li>
+<li>Set <code>overall_confidence</code> (1–5), optionally <code>starred</code>/<code>note</code>, and submit via
+   <code>PUT /api/annotations/{id}</code>.</li>
+<li>Progress is tracked by <code>GET /api/annotations/progress</code>.</li>
+</ol>
+<h3 id="admin-admin-staticadminhtml">Admin (<code>/admin</code>, <code>static/admin.html</code>)<a class="headerlink" href="#admin-admin-staticadminhtml" title="Permanent link">&para;</a></h3>
+<ul>
+<li>List users: <code>GET /api/admin/users</code>.</li>
+<li>Upload stimuli from a JSONL or plain-text file: <code>POST /api/stimuli/load</code>.
+  JSONL lines accept <code>{text, source, context_before, context_after, metadata,
+  ordering}</code>; plain lines become <code>{text, ordering}</code> (see <code>server.py:94</code>).</li>
+<li>Monitor per-annotator progress: <code>GET /api/agreement/status</code>.</li>
+<li>Compute and download agreement metrics: <code>GET /api/agreement/compute</code> and
+  <code>GET /api/agreement/export</code>.</li>
+<li>Export final data: <code>GET /api/export/gold</code>, <code>GET /api/export/raw</code>.</li>
+</ul>
+<h3 id="adjudication-adjudication-staticadjudicationhtml">Adjudication (<code>/adjudication</code>, <code>static/adjudication.html</code>)<a class="headerlink" href="#adjudication-adjudication-staticadjudicationhtml" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>GET /api/adjudication/queue</code> returns stimuli where two annotators disagree,
+   either on the binary <code>has_null_subject</code> decision or on the set of
+   <code>(position, label)</code> pairs (logic in <code>db.get_adjudication_queue</code> at
+   <code>annotation/db.py:470</code>).</li>
+<li><code>GET /api/adjudication/{id}</code> returns the stimulus plus every annotator's
+   full annotation for side-by-side display.</li>
+<li>The adjudicator picks a resolution — <code>accept_a</code>, <code>accept_b</code>, or
+   <code>reannotate</code> — and submits <code>PUT /api/adjudication/{id}</code>. Only these three
+   values are accepted (<code>server.py:245</code>).</li>
+<li><code>GET /api/adjudication/progress</code> returns <code>{total, adjudicated, remaining}</code>.</li>
+</ol>
+<h2 id="5-api-endpoints">5. API endpoints<a class="headerlink" href="#5-api-endpoints" title="Permanent link">&para;</a></h2>
+<p>All routes are defined in <code>annotation/server.py</code>. Admin routes require the
+caller's user to have <code>role == "admin"</code>.</p>
+<h3 id="auth">Auth<a class="headerlink" href="#auth" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>—</td>
+<td>Exchange <code>{username, token}</code> for the user record.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/auth/me</code></td>
+<td>user</td>
+<td>Return the current user.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stimuli">Stimuli<a class="headerlink" href="#stimuli" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/stimuli</code></td>
+<td>user</td>
+<td>Paginated list (<code>page</code>, <code>page_size</code> ≤ 200) with the caller's annotation state joined in.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/stimuli/starred</code></td>
+<td>user</td>
+<td>Stimuli the caller has starred.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/stimuli/{stimulus_id}</code></td>
+<td>user</td>
+<td>Single stimulus with caller's annotation + pronouns. 404 if missing.</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/stimuli/load</code></td>
+<td>admin</td>
+<td>Multipart upload of JSONL or plain-text stimuli. Returns <code>{loaded}</code>.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/pronouns</code></td>
+<td>—</td>
+<td>Spanish pronoun choice list for the UI.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="annotations">Annotations<a class="headerlink" href="#annotations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PUT</td>
+<td><code>/api/annotations/{stimulus_id}</code></td>
+<td>user</td>
+<td>Upsert the caller's annotation. Validates labels against <code>VALID_LABELS</code>.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/annotations/progress</code></td>
+<td>user</td>
+<td><code>{total, completed, starred, remaining}</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="agreement-admin">Agreement (admin)<a class="headerlink" href="#agreement-admin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/agreement/status</code></td>
+<td>Per-annotator progress.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/agreement/compute</code></td>
+<td>Full metrics from <code>compute_agreement()</code>.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/agreement/export</code></td>
+<td>CSV of per-stimulus agreement rows wrapped in a JSON <code>{csv}</code> field.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="adjudication-admin">Adjudication (admin)<a class="headerlink" href="#adjudication-admin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/adjudication/queue</code></td>
+<td>Stimuli with unresolved disagreements.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/adjudication/progress</code></td>
+<td><code>{total, adjudicated, remaining}</code>.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/adjudication/{stimulus_id}</code></td>
+<td>Stimulus + all annotations for side-by-side view.</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/adjudication/{stimulus_id}</code></td>
+<td>Save adjudication resolution and gold pronouns.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="export-admin">Export (admin)<a class="headerlink" href="#export-admin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/export/gold</code></td>
+<td>Gold JSONL records (see §7).</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/export/raw</code></td>
+<td>Every raw annotation by every annotator.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="admin">Admin<a class="headerlink" href="#admin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/users</code></td>
+<td>List all users.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="static-pages">Static pages<a class="headerlink" href="#static-pages" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Serves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/</code></td>
+<td><code>static/index.html</code> (annotator)</td>
+</tr>
+<tr>
+<td><code>/admin</code></td>
+<td><code>static/admin.html</code></td>
+</tr>
+<tr>
+<td><code>/adjudication</code></td>
+<td><code>static/adjudication.html</code></td>
+</tr>
+<tr>
+<td><code>/static/*</code></td>
+<td>All files under <code>annotation/static/</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-inter-annotator-agreement">6. Inter-annotator agreement<a class="headerlink" href="#6-inter-annotator-agreement" title="Permanent link">&para;</a></h2>
+<p><code>annotation/agreement.py</code> implements <code>compute_agreement()</code>, invoked by
+<code>GET /api/agreement/compute</code> and <code>GET /api/agreement/export</code>. It:</p>
+<ol>
+<li>Finds every stimulus with ≥ 2 annotations, takes the first two by
+   <code>user_id</code>.</li>
+<li>Computes <strong>binary</strong> percent agreement and Cohen's kappa on
+   <code>has_null_subject</code>.</li>
+<li>For stimuli where both annotators said "yes", computes:</li>
+<li><strong>Position exact-match rate</strong>: fraction of double-yes stimuli where the
+     sets of word-gap positions are identical.</li>
+<li><strong>Mean Jaccard</strong> over position sets.</li>
+<li><strong>Label exact-match rate</strong> and <strong>Cohen's kappa</strong> over pronoun labels at
+     positions both annotators marked.</li>
+<li>Classifies each stimulus into <code>full_agreement</code>, <code>binary_disagreement</code>,
+   <code>position_disagreement</code>, or <code>label_disagreement</code> for the <code>per_stimulus</code>
+   breakdown.</li>
+</ol>
+<p>Cohen's kappa is implemented in <code>_cohens_kappa</code> at <code>annotation/agreement.py:8</code>
+without external dependencies. The return shape:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;n_doubly_annotated&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;binary&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">{</span><span class="nt">&quot;percent_agreement&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.93</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;kappa&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.81</span><span class="p">},</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;position&quot;</span><span class="p">:{</span><span class="nt">&quot;exact_match_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.88</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;mean_jaccard&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">},</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">{</span><span class="nt">&quot;exact_match_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.90</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;kappa&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.85</span><span class="p">},</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;per_stimulus&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;stimulus_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">},</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>GET /api/agreement/export</code> re-uses the same function and emits a CSV with
+columns <code>stimulus_id, category, annotator_a, annotator_b, a_decision,
+b_decision</code> inside a JSON wrapper. (The <code>Content-Disposition</code> header is set
+but the body is JSON, not raw CSV — see §8.)</p>
+<h2 id="7-export">7. Export<a class="headerlink" href="#7-export" title="Permanent link">&para;</a></h2>
+<p><code>annotation/export.py</code> produces two formats.</p>
+<h3 id="export_gold-get-apiexportgold"><code>export_gold()</code> — <code>GET /api/export/gold</code><a class="headerlink" href="#export_gold-get-apiexportgold" title="Permanent link">&para;</a></h3>
+<p>Returns a list of records in the pronoun-recovery marker format. Assembly
+rules (<code>export.py:71</code>):</p>
+<ol>
+<li>Every stimulus with an adjudication is included, tagged
+   <code>"annotator_agreement": "adjudicated"</code>.</li>
+<li>Every non-adjudicated stimulus with ≥ 2 annotations where both annotators
+   agreed on the binary decision is included using the first annotator's
+   pronouns, tagged <code>"annotator_agreement": "full"</code>.</li>
+<li>Disagreed, non-adjudicated stimuli are skipped.</li>
+</ol>
+<p>Each record looks like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;clean_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Hoy comimos paella.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;markers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PRO.1pl&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">&quot;lexical_form&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;nosotros&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;high&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;human_annotation&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;es&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="nt">&quot;genre&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;europarl&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="nt">&quot;stimulus_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">  </span><span class="nt">&quot;annotator_agreement&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full&quot;</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>position</code> is a <strong>character offset</strong> (not a word-gap index); the conversion
+happens in <code>_word_gap_to_char_offset</code> at <code>export.py:17</code>. <code>confidence</code> is
+mapped from the 1–5 integer to <code>high</code> (≥4), <code>medium</code> (2–3), or <code>low</code> (1) by
+<code>_confidence_label</code> at <code>export.py:8</code>.</p>
+<h3 id="export_raw-get-apiexportraw"><code>export_raw()</code> — <code>GET /api/export/raw</code><a class="headerlink" href="#export_raw-get-apiexportraw" title="Permanent link">&para;</a></h3>
+<p>Returns every annotation from every annotator verbatim: <code>stimulus_id</code>,
+<code>clean_text</code>, <code>annotator</code>, <code>has_null_subject</code>, <code>overall_confidence</code>,
+<code>starred</code>, <code>note</code>, and the list of pronouns with their word-gap <code>position</code>,
+<code>label</code>, <code>lexical_form</code>, and integer <code>confidence</code>. Use this for audit and
+for training data where disagreements matter.</p>
+<h2 id="8-known-oddities">8. Known oddities<a class="headerlink" href="#8-known-oddities" title="Permanent link">&para;</a></h2>
+<p>A few things flagged while reading the source:</p>
+<ul>
+<li><strong>Flask vs FastAPI.</strong> The top-level docstring in <code>annotation/server.py:1</code>
+  calls the app a "FastAPI app" but <code>annotation/__init__.py:1</code> and the task
+  description say Flask. The code is actually FastAPI + uvicorn.</li>
+<li><strong><code>/api/export/gold</code> response.</strong> <code>export_gold_endpoint</code> builds a JSONL
+  string into <code>content</code> but then returns <code>records</code> (the list of dicts)
+  inside a <code>JSONResponse</code>; the JSONL string is dead code. The
+  <code>Content-Disposition</code> header suggests a file download but the body is JSON
+  (<code>server.py:268</code>).</li>
+<li><strong><code>/api/agreement/export</code> similarly</strong> returns a JSON <code>{csv: "..."}</code> payload
+  with a CSV <code>Content-Disposition</code> header; callers must unwrap the <code>csv</code>
+  field client-side (<code>server.py:196</code>).</li>
+<li><strong>No token rotation or revocation.</strong> Tokens are plaintext UUIDs stored in
+  SQLite; leaking the DB file or the seed env var leaks every credential.</li>
+<li><strong><code>nginx.conf</code> has <code>YOURDOMAIN</code> placeholders</strong> that must be edited before
+  HTTPS will work.</li>
+<li><strong>Adjudication queue uses <code>LIMIT 2</code></strong> on annotations ordered by <code>user_id</code>,
+  so a third annotator is silently ignored for both queueing and agreement
+  (<code>db.py:492</code>, <code>agreement.py:95</code>).</li>
+<li><strong><code>/api/stimuli/load</code></strong> tries JSON per line first and falls back to plain
+  text, but it does not de-duplicate against existing stimuli — re-uploading
+  the same file inserts duplicates.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
