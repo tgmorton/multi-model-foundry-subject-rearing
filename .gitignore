@@ -203,7 +203,20 @@ data/chunked/
 data/annotated_corpus_*/
 data/corpus_summaries_*/
 data/italian/
+data/italian_test/
+data/italian_test_small/
+data/output/
+data/spanish/
 data/pronoun_recovery/
+
+# Annotation data
+annotation/data/
+
+# Review data
+review/data/
+
+# Paper drafts
+Subject-Rearing-Paper/
 
 # Analysis output (regenerable)
 analysis/output/
