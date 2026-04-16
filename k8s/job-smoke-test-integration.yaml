@@ -28,7 +28,7 @@ spec:
           mountPath: /opt/repo
       containers:
       - name: integration-tests
-        image: python:3.10-slim
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
         command: ["/bin/bash", "-c"]
         args:
         - |
@@ -37,7 +37,7 @@ spec:
           cd /opt/repo
           pip install --no-cache-dir \
             -r requirements.txt \
-            pytest pytest-timeout
+            pytest pytest-timeout 2>&1 | tail -5
 
           echo "=== Running integration tests ==="
           python -m pytest model_foundry/tests/integration/ \
