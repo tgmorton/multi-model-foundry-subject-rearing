@@ -11,10 +11,10 @@ Built 2026-02-20/22.
 ```
 data/spanish/
 ├── raw/                  # Downloaded monolingual source files
-├── train_100M/           # Assembled 100M-word corpus (after assembly)
+├── train_100M/           # Assembled 100M-word corpus
+├── train_10M/            # Assembled 10M ecologically-focused corpus
 ├── train_90M/            # 90% train split (after 00_prepare_corpus.py)
-├── pull_10M/             # 10% pool split
-├── test_10M/             # Held-out test
+├── pull_10M/             # 10% pool split (from 100M)
 └── parallel/             # EN-ES parallel corpora (Moses format)
 ```
 
@@ -22,8 +22,9 @@ data/spanish/
 
 - **`scripts/build_spanish_corpus.py`** — Download and assemble monolingual corpus
   - `download` — fetches all sources to `data/spanish/raw/`
-  - `assemble` — segments, subsamples, writes `train_100M/`
-  - `all` — both steps
+  - `assemble` — segments, subsamples, writes `train_100M/` (default) or `train_10M/`
+  - `assemble --size 10M` — ecologically-focused 10M corpus
+  - `all` — both download + assemble
 - **`scripts/build_spanish_parallel.py`** — Download parallel corpora
   - `download` — fetches 11 OPUS corpora to `data/spanish/parallel/`
   - `stats` — prints inventory
@@ -64,23 +65,27 @@ Spanish-Ornat, Spanish-Sebastian, Vila, Vivar
 with `_clean_chat_utterance()` (removes retracing markers, bracketed annotations,
 CHAT special characters, unintelligible tokens, disfluencies).
 
-### Assembly
+### Assembly — 100M corpus
 
 Run: `python scripts/build_spanish_corpus.py assemble --data_root data/spanish`
 
-Target proportions (words):
-- childes: 2.5M (all available ~1.7M)
-- europarl: 34M (subsampled from 56M)
-- opensubtitles: 20M (subsampled from 1.17B)
-- qed: 5M (subsampled from 22M)
-- gutenberg: 10M (subsampled from 49M)
-- leipzig_web: 15M (subsampled from 22M)
-- vikidia: 3M (all available ~2.2M)
-- child_narratives: 200K (all available ~278K)
-- grerli: 250K (all available ~110K)
-- spoken: 10M (only ~1.1M available; pending COSCACH Chilean corpus)
+Rebalanced targets (COSCACH unavailable — behind registration wall):
 
-After assembly, split with:
+| Source | Target | Notes |
+|--------|--------|-------|
+| europarl | 34M | subsampled from 56M |
+| opensubtitles | 27M | +7M rebalanced from spoken shortfall |
+| leipzig_web | 16.6M | +1.6M rebalanced |
+| gutenberg | 10M | subsampled from 49M |
+| qed | 7M | +2M rebalanced |
+| vikidia | 2.2M | all available |
+| childes | 1.7M | all available (monolingual only) |
+| spoken | 1.1M | CORLEC only |
+| child_narratives | 200K | subsampled from 278K |
+| grerli | 110K | all available |
+| **Total** | **~99.9M** | |
+
+After assembly, split 90/10 with:
 ```bash
 python preprocessing/00_prepare_corpus.py \
     --source_dir data/spanish/train_100M \
@@ -89,11 +94,29 @@ python preprocessing/00_prepare_corpus.py \
     --pool_words_total 10000000
 ```
 
-### Pending
+### Assembly — 10M ecologically-focused corpus
 
-- **COSCACH** (Chilean spoken Spanish, ~9.3M tokens) — user acquiring separately
-- **Spoken corpus gap** — only 1.1M of 10M target; COSCACH will partially fill this
-- Assembly step not yet run (all raw files ready)
+Run: `python scripts/build_spanish_corpus.py assemble --data_root data/spanish --size 10M`
+
+Stratified subsample of `train_90M` (not raw), ensuring no overlap with the
+held-out `pull_10M` pool.  Preserves all ecologically valid sources at their
+full available size within train_90M, then fills the remainder from other
+sources in proportion to their 100M weights.  Actual total is ~9.4M because
+ecological sources lost ~10% to the pool split.
+
+| Source | Actual | Notes |
+|--------|--------|-------|
+| vikidia | 1,991K | all in train_90M — children's encyclopedia |
+| childes | 1,537K | all in train_90M — monolingual CDS |
+| europarl | 1,674K | proportional fill |
+| opensubtitles | 1,329K | proportional fill |
+| spoken | 952K | all in train_90M — CORLEC |
+| leipzig_web | 817K | proportional fill |
+| gutenberg | 492K | proportional fill |
+| qed | 345K | proportional fill |
+| child_narratives | 182K | all in train_90M — child narratives |
+| grerli | 99K | all in train_90M — school-age spoken/written |
+| **Total** | **~9.4M** | |
 
 ## Parallel Corpora (parallel/)
 

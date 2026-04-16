@@ -2,30 +2,34 @@
 """Download and assemble the Spanish BebéLM corpus.
 
 Produces one .train file per source in data/spanish/raw/, then segments and
-renames them into data/spanish/train_100M/.  After running this script, use
-preprocessing/00_prepare_corpus.py to split train_100M into train_90M + pull_10M.
+renames them into data/spanish/train_100M/ or data/spanish/train_10M/.
+After running this script, use preprocessing/00_prepare_corpus.py to split
+train_100M into train_90M + pull_10M.
 
-Sources & approximate target sizes (100M total):
-    childes          ~2.5M   Spanish CHILDES monolingual CDS
-    europarl         ~34M    EuroParl v7 Spanish
-    opensubtitles    ~20M    OpenSubtitles Spanish (subsampled)
-    qed              ~5M     QED educational subtitles
-    gutenberg        ~10M    Project Gutenberg Spanish children's/literary
-    leipzig_web      ~15M    Leipzig Spanish web corpus
-    vikidia          ~3M     Vikidia Spanish (simplified encyclopedia)
-    child_narratives ~0.2M   CHILDES narrative corpora (ColMex, Hess, Shiro)
-    grerli           ~0.25M  GRERLI school-age spoken/written
-    spoken           ~10M    CORLEC + COSCACH spoken Spanish
+Two corpus sizes are supported:
+
+  100M — Full training corpus.  Rebalanced to account for unavailable COSCACH
+         spoken corpus.  Shortfalls in CHILDES, grerli, vikidia, and spoken
+         are redistributed proportionally to opensubtitles, qed, and
+         leipzig_web (nearest spoken/conversational registers).
+
+  10M  — Ecologically-focused smaller corpus.  Preserves all ecologically
+         valid sources at their full available size (CHILDES, child_narratives,
+         grerli, spoken, vikidia), then fills the remainder from the other
+         sources in proportion to their 100M weights.
 
 Usage
 -----
     # Download all sources (requires internet)
     python scripts/build_spanish_corpus.py download --data_root data/spanish
 
-    # Assemble raw files into train_100M (segment, rename, subsample)
+    # Assemble 100M corpus (default)
     python scripts/build_spanish_corpus.py assemble --data_root data/spanish
 
-    # Both steps
+    # Assemble 10M corpus
+    python scripts/build_spanish_corpus.py assemble --data_root data/spanish --size 10M
+
+    # Both download + assemble
     python scripts/build_spanish_corpus.py all --data_root data/spanish
 """
 
@@ -50,22 +54,45 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 RANDOM_SEED = 42
-SPACY_CHUNK_CHARS = 100_000
-TARGET_TOTAL_WORDS = 100_000_000
 
 # ── Target word counts per source ────────────────────────────────────
-TARGETS = {
-    "childes": 2_500_000,
+# 100M targets — rebalanced after dropping COSCACH (~9M spoken shortfall)
+# and accepting shortfalls in CHILDES (monolingual only), grerli, vikidia.
+# Extra words redistributed to opensubtitles (+7M), qed (+2M),
+# leipzig_web (+1.6M) as nearest spoken/conversational registers.
+TARGETS_100M = {
+    "childes": 1_700_000,         # all available (monolingual only)
     "europarl": 34_000_000,
-    "opensubtitles": 20_000_000,
-    "qed": 5_000_000,
+    "opensubtitles": 27_000_000,  # +7M from spoken shortfall
+    "qed": 7_000_000,             # +2M from spoken shortfall
     "gutenberg": 10_000_000,
-    "leipzig_web": 15_000_000,
-    "vikidia": 3_000_000,
+    "leipzig_web": 16_600_000,    # +1.6M from spoken shortfall
+    "vikidia": 2_200_000,         # all available
     "child_narratives": 200_000,
-    "grerli": 250_000,
-    "spoken": 10_000_000,
+    "grerli": 110_000,            # all available
+    "spoken": 1_100_000,          # CORLEC only, no COSCACH
 }
+
+# 10M targets — ecologically-focused corpus.
+# Preserve all ecologically valid sources at full available size,
+# fill remainder from other sources in proportion to their 100M weights.
+_ECOLOGICAL_SOURCES = {"childes", "child_narratives", "grerli", "spoken", "vikidia"}
+_ECOLOGICAL_FIXED = {
+    "childes": 1_700_000,
+    "child_narratives": 278_000,
+    "grerli": 110_000,
+    "spoken": 1_100_000,
+    "vikidia": 2_200_000,
+}
+_FILL_SOURCES_100M = {k: v for k, v in TARGETS_100M.items() if k not in _ECOLOGICAL_SOURCES}
+_FILL_TOTAL_100M = sum(_FILL_SOURCES_100M.values())
+_FILL_BUDGET_10M = 10_000_000 - sum(_ECOLOGICAL_FIXED.values())  # ~4.612M
+
+TARGETS_10M = dict(_ECOLOGICAL_FIXED)
+for _src, _w100 in _FILL_SOURCES_100M.items():
+    TARGETS_10M[_src] = round(_w100 / _FILL_TOTAL_100M * _FILL_BUDGET_10M)
+
+TARGETS = {"100M": TARGETS_100M, "10M": TARGETS_10M}
 
 # ── Spanish CHILDES monolingual corpora ──────────────────────────────
 # Only monolingual Spanish corpora — no bilingual
@@ -532,136 +559,181 @@ def download_vikidia(raw_dir: Path) -> None:
 
 
 def download_spoken(raw_dir: Path) -> None:
-    """Download Spanish spoken corpora (CORLEC, etc.)."""
+    """Download Spanish spoken corpora (CORLEC only)."""
     out_path = raw_dir / "spoken.train"
     if out_path.exists():
         log.info("Skipping spoken (already exists)")
         return
 
     log.info(
-        "Spanish spoken corpora require manual download:\n"
-        "  1. CORLEC (~1.1M words): http://www.lllf.uam.es/ING/Corlec.html\n"
-        "  2. COSCACH (~9.3M tokens): https://corpora.pro\n"
-        "  Concatenate and save as %s\n"
-        "  Target ~10M words",
+        "Spanish spoken corpus requires manual download:\n"
+        "  CORLEC (~1.1M words): http://www.lllf.uam.es/ING/Corlec.html\n"
+        "  Save as %s\n"
+        "  Note: COSCACH was unavailable (behind registration wall).",
         out_path,
     )
-    out_path.write_text("# PLACEHOLDER: Download Spanish spoken corpora manually\n")
+    out_path.write_text("# PLACEHOLDER: Download CORLEC spoken corpus manually\n")
 
 
 # ── Assembly functions ───────────────────────────────────────────────
 
-def subsample_file(src_path: Path, dst_path: Path, target_words: int,
-                   rng: random.Random) -> None:
-    """Randomly subsample lines from src to reach approximately target_words."""
+_SENT_BOUNDARY_RE = re.compile(
+    r'(?<=[.!?…])'    # lookbehind: sentence-ending punctuation
+    r'(?:\s*[\"\'\)\]»])?'  # optional closing quote/bracket
+    r'\s+'             # whitespace between sentences
+    r'(?=[A-ZÁÉÍÓÚÑ¿¡\"\'\(\[«])'  # lookahead: uppercase / opening punct
+)
+
+
+def _iter_sentences(src_path: Path, needs_segmentation: bool):
+    """Yield cleaned sentences from a source file.
+
+    If needs_segmentation is True, applies regex sentence splitting to each
+    line.  Otherwise yields lines as-is (one utterance per line).
+    """
     with open(src_path, "r", encoding="utf-8") as f:
-        lines = [l.strip() for l in f if l.strip() and not l.startswith("#")]
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if needs_segmentation:
+                for sent in _SENT_BOUNDARY_RE.split(line):
+                    sent = sent.strip()
+                    if sent:
+                        yield sent
+            else:
+                yield line
 
-    if not lines:
-        log.warning("Empty source: %s", src_path)
-        return
 
-    total_words = sum(len(l.split()) for l in lines)
+def subsample_file(src_path: Path, dst_path: Path, target_words: int,
+                   rng: random.Random, needs_segmentation: bool = False) -> None:
+    """Subsample sentences from src to reach approximately target_words.
 
-    if total_words <= target_words:
-        # Use all lines
-        log.info("  %s: %d words (all, under target %d)", src_path.stem, total_words, target_words)
+    For large files (>2x target), uses reservoir sampling with early stopping
+    to avoid reading the entire file into memory.  Streams sentences through
+    _iter_sentences, which handles segmentation on the fly.
+    """
+    # Quick check: file size heuristic (~5 bytes/word for Spanish).
+    # If the file is small enough that it's likely under target, just read it all.
+    file_size = src_path.stat().st_size
+    estimated_words = file_size // 5
+
+    if estimated_words <= target_words * 1.5:
+        # Small file — read everything, use all or shuffle-subsample
+        lines = list(_iter_sentences(src_path, needs_segmentation))
+        if not lines:
+            log.warning("Empty source: %s", src_path)
+            return
+
+        total_words = sum(len(l.split()) for l in lines)
+        if total_words <= target_words:
+            log.info("  %s: %d words (all, under target %d)",
+                     src_path.stem, total_words, target_words)
+            with open(dst_path, "w", encoding="utf-8") as f:
+                for line in lines:
+                    f.write(line + "\n")
+            return
+
+        rng.shuffle(lines)
+        selected = []
+        word_count = 0
+        for line in lines:
+            wc = len(line.split())
+            if word_count + wc > target_words * 1.01:
+                break
+            selected.append(line)
+            word_count += wc
+
+        log.info("  %s: %d → %d words (subsampled to target %d)",
+                 src_path.stem, total_words, word_count, target_words)
         with open(dst_path, "w", encoding="utf-8") as f:
-            for line in lines:
+            for line in selected:
                 f.write(line + "\n")
         return
 
-    # Subsample: pick lines randomly until we hit target
-    ratio = target_words / total_words
-    rng.shuffle(lines)
+    # Large file — stream with reservoir sampling.
+    # Read enough to fill a buffer of ~2x target words, then sample from that.
+    buffer_target = target_words * 2
+    log.info("  %s: large file (%.0fMB), streaming up to ~%dM words...",
+             src_path.stem, file_size / 1e6, buffer_target // 1_000_000)
 
+    buffer = []
+    buffer_words = 0
+    for sent in _iter_sentences(src_path, needs_segmentation):
+        wc = len(sent.split())
+        buffer.append(sent)
+        buffer_words += wc
+        if buffer_words >= buffer_target:
+            break
+
+    if not buffer:
+        log.warning("Empty source: %s", src_path)
+        return
+
+    rng.shuffle(buffer)
     selected = []
     word_count = 0
-    for line in lines:
+    for line in buffer:
         wc = len(line.split())
         if word_count + wc > target_words * 1.01:
             break
         selected.append(line)
         word_count += wc
 
-    log.info("  %s: %d → %d words (subsampled to target %d)",
-             src_path.stem, total_words, word_count, target_words)
-
+    log.info("  %s: buffered %d → selected %d words (target %d)",
+             src_path.stem, buffer_words, word_count, target_words)
     with open(dst_path, "w", encoding="utf-8") as f:
         for line in selected:
             f.write(line + "\n")
 
 
-def segment_with_spacy(src_path: Path, dst_path: Path, nlp) -> None:
-    """Sentence-segment a file using spaCy sentencizer."""
-    with open(src_path, "r", encoding="utf-8") as f:
-        text = f.read()
+def assemble_corpus(data_root: Path, size: str = "100M",
+                    source_dir: Path | None = None) -> None:
+    """Assemble corpus into train_{size} with segmentation and subsampling.
 
-    sentences = []
-    start = 0
-    length = len(text)
-    while start < length:
-        end = min(start + SPACY_CHUNK_CHARS, length)
-        if end < length:
-            space_idx = text.rfind(" ", start, end)
-            if space_idx > start:
-                end = space_idx + 1
-        chunk = text[start:end]
-        doc = nlp(chunk)
-        for sent in doc.sents:
-            line = sent.text.strip()
-            if line:
-                sentences.append(line)
-        start = end
-
-    with open(dst_path, "w", encoding="utf-8") as f:
-        for sent in sentences:
-            f.write(sent + "\n")
-
-
-def assemble_corpus(data_root: Path) -> None:
-    """Assemble raw files into train_100M with appropriate segmentation and subsampling."""
-    raw_dir = data_root / "raw"
-    train_dir = data_root / "train_100M"
+    Parameters
+    ----------
+    data_root : Path
+        Root of the Spanish data directory.
+    size : str
+        "100M" or "10M" — selects target word counts and output directory.
+    source_dir : Path or None
+        Directory containing source .train files.  Defaults to data_root/raw
+        for 100M, but for 10M should be data_root/train_90M to ensure no
+        overlap with the held-out pool.
+    """
+    targets = TARGETS[size]
+    raw_dir = source_dir or (data_root / "raw")
+    train_dir = data_root / f"train_{size}"
     train_dir.mkdir(parents=True, exist_ok=True)
+
+    target_total = sum(targets.values())
+    log.info("Assembling %s corpus (target: %d words) → %s", size, target_total, train_dir)
 
     rng = random.Random(RANDOM_SEED)
 
-    # Build spaCy sentencizer for Spanish
-    import spacy
-    nlp = spacy.blank("es")
-    nlp.add_pipe("sentencizer")
-    log.info("spaCy sentencizer ready (blank Spanish pipeline)")
-
     # Sources that need sentence segmentation before subsampling
+    # (only when reading from raw/ — train_90M is already segmented)
     needs_segmentation = {"europarl", "opensubtitles", "qed", "leipzig_web", "spoken"}
-    # Sources that are already one-utterance-per-line
-    already_segmented = {"childes", "child_narratives", "grerli", "gutenberg", "vikidia"}
+    reading_from_raw = (raw_dir == data_root / "raw")
 
-    for source_name, target_words in TARGETS.items():
+    for source_name, target_words in targets.items():
         raw_path = raw_dir / f"{source_name}.train"
         if not raw_path.exists() or raw_path.stat().st_size < 100:
             log.warning("Skipping %s (not found or placeholder)", source_name)
             continue
 
         train_path = train_dir / f"{source_name}.train"
-        log.info("Processing %s → %s (target: %d words)", source_name, train_path.name, target_words)
+        segment = reading_from_raw and source_name in needs_segmentation
+        log.info("Processing %s → %s (target: %d words, segment: %s)",
+                 source_name, train_path.name, target_words, segment)
 
-        if source_name in needs_segmentation:
-            # Segment first, then subsample
-            tmp_path = train_dir / f"{source_name}.tmp"
-            segment_with_spacy(raw_path, tmp_path, nlp)
-            subsample_file(tmp_path, train_path, target_words, rng)
-            tmp_path.unlink(missing_ok=True)
-        elif source_name in already_segmented:
-            subsample_file(raw_path, train_path, target_words, rng)
-        else:
-            log.warning("Unknown segmentation strategy for %s, copying as-is", source_name)
-            shutil.copy2(raw_path, train_path)
+        subsample_file(raw_path, train_path, target_words, rng,
+                       needs_segmentation=segment)
 
     # Report
     log.info("=" * 60)
-    log.info("Assembly complete. Corpus stats:")
+    log.info("Assembly complete (%s). Corpus stats:", size)
     total = 0
     for f in sorted(train_dir.glob("*.train")):
         wc = count_words(f)
@@ -669,17 +741,19 @@ def assemble_corpus(data_root: Path) -> None:
         log.info("  %-20s  %10d words", f.stem, wc)
     log.info("  %-20s  %10d words", "TOTAL", total)
     log.info("=" * 60)
-    log.info(
-        "Next step:\n"
-        "  python preprocessing/00_prepare_corpus.py \\\n"
-        "    --source_dir %s \\\n"
-        "    --main_output_dir %s \\\n"
-        "    --pool_output_dir %s \\\n"
-        "    --pool_words_total 10000000",
-        train_dir,
-        data_root / "train_90M",
-        data_root / "pull_10M",
-    )
+
+    if size == "100M":
+        log.info(
+            "Next step:\n"
+            "  python preprocessing/00_prepare_corpus.py \\\n"
+            "    --source_dir %s \\\n"
+            "    --main_output_dir %s \\\n"
+            "    --pool_output_dir %s \\\n"
+            "    --pool_words_total 10000000",
+            train_dir,
+            data_root / "train_90M",
+            data_root / "pull_10M",
+        )
 
 
 def count_words(path: Path) -> int:
@@ -715,13 +789,19 @@ def main() -> None:
     parser.add_argument(
         "action",
         choices=["download", "assemble", "all"],
-        help="'download' fetches sources, 'assemble' builds train_100M, 'all' does both.",
+        help="'download' fetches sources, 'assemble' builds corpus, 'all' does both.",
     )
     parser.add_argument(
         "--data_root",
         type=str,
         default="data/spanish",
         help="Root of the Spanish data directory (default: data/spanish).",
+    )
+    parser.add_argument(
+        "--size",
+        choices=["100M", "10M"],
+        default="100M",
+        help="Corpus size to assemble: '100M' (default) or '10M' (ecologically-focused).",
     )
     args = parser.parse_args()
 
@@ -755,13 +835,13 @@ def main() -> None:
         # 7. Leipzig Web
         download_leipzig_web(raw_dir)
 
-        # 8. Gutenberg (manual)
+        # 8. Gutenberg
         download_gutenberg_spanish(raw_dir)
 
-        # 9. Vikidia (manual)
+        # 9. Vikidia
         download_vikidia(raw_dir)
 
-        # 10. Spoken corpora (manual)
+        # 10. Spoken (CORLEC only)
         download_spoken(raw_dir)
 
         log.info("=" * 60)
@@ -770,9 +850,23 @@ def main() -> None:
 
     if args.action in ("assemble", "all"):
         log.info("=" * 60)
-        log.info("ASSEMBLING SPANISH CORPUS")
+        log.info("ASSEMBLING SPANISH CORPUS (%s)", args.size)
         log.info("=" * 60)
-        assemble_corpus(data_root)
+        if args.size == "10M":
+            # 10M is a stratified subsample of train_90M (not raw),
+            # ensuring no overlap with the held-out pull_10M pool.
+            src_dir = data_root / "train_90M"
+            if not src_dir.exists() or not any(src_dir.glob("*.train")):
+                log.error(
+                    "train_90M not found.  Run the 100M assembly + 90/10 split first:\n"
+                    "  python scripts/build_spanish_corpus.py assemble --data_root %s --size 100M\n"
+                    "  python preprocessing/00_prepare_corpus.py ...",
+                    data_root,
+                )
+                return
+            assemble_corpus(data_root, size="10M", source_dir=src_dir)
+        else:
+            assemble_corpus(data_root, size=args.size)
 
 
 if __name__ == "__main__":
