@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import List, Optional, Dict, Any, Literal
 
 # Nested Pydantic models for better organization
@@ -86,6 +86,71 @@ class ModelConfig(BaseModel):
         None,
         description="Mamba config (required for mamba)"
     )
+
+    @model_validator(mode='before')
+    @classmethod
+    def _backwards_compat_flat_config(cls, data: Any) -> Any:
+        """Convert old flat model config format to new nested format.
+
+        Old format (pre-refactor):
+            model:
+              layers: 12
+              embedding_size: 768
+              ...
+
+        New format:
+            model:
+              architecture: gpt2
+              transformer:
+                layers: 12
+                embedding_size: 768
+                ...
+
+        This validator detects the old format by the absence of 'architecture'
+        and the presence of flat fields, then restructures accordingly.
+        """
+        if not isinstance(data, dict):
+            return data
+
+        # If architecture is already present, assume new format — pass through
+        if 'architecture' in data:
+            return data
+
+        # Flat field sets for each architecture family
+        _TRANSFORMER_FIELDS = {
+            'layers', 'embedding_size', 'hidden_size',
+            'intermediate_hidden_size', 'attention_heads',
+            'activation_function', 'dropout', 'attention_dropout',
+        }
+        _RNN_FIELDS = {
+            'embedding_size', 'hidden_size', 'num_layers',
+            'bidirectional', 'dropout', 'rnn_type',
+        }
+
+        # Detect RNN: presence of rnn-only keys (num_layers or rnn_type)
+        rnn_marker_fields = {'num_layers', 'rnn_type'}
+        present_keys = set(data.keys())
+
+        if rnn_marker_fields & present_keys:
+            # RNN-family config
+            rnn_type = data.get('rnn_type', 'lstm')
+            architecture = rnn_type if rnn_type in ('rnn', 'lstm', 'gru') else 'lstm'
+            nested = {}
+            for field in _RNN_FIELDS:
+                if field in data:
+                    nested[field] = data.pop(field)
+            data['architecture'] = architecture
+            data['rnn'] = nested
+        elif _TRANSFORMER_FIELDS & present_keys:
+            # Transformer-family config — default to gpt2
+            nested = {}
+            for field in _TRANSFORMER_FIELDS:
+                if field in data:
+                    nested[field] = data.pop(field)
+            data['architecture'] = 'gpt2'
+            data['transformer'] = nested
+
+        return data
 
     @field_validator('transformer', 'rnn', 'mamba')
     @classmethod

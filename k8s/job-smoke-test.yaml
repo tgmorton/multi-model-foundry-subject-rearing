@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-test-all
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: smoke-tests
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          cd /opt/repo
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            pytest pytest-timeout
+
+          echo "=== Running smoke tests ==="
+          python -m pytest model_foundry/tests/smoke/ \
+            -v --tb=short --timeout=120
+
+          echo "=== Smoke tests passed ==="
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: "2"
+          limits:
+            memory: 4Gi
+            cpu: "2"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      volumes:
+      - name: repo
+        emptyDir: {}
+      restartPolicy: Never

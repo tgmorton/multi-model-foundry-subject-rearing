@@ -10,6 +10,13 @@
 # 2. Modify the parameters below to define your experiment.
 # 3. Run the preprocessing pipeline: `python -m model_foundry.cli preprocess configs/experiments/experiment_X...`
 # 4. Run the training: `python -m model_foundry.cli run configs/experiments/experiment_X...`
+#
+# ARCHITECTURE TEMPLATES:
+# For architecture-specific examples, see:
+#   - template_gpt2.yaml   (GPT-2 causal language model)
+#   - template_bert.yaml   (BERT masked language model)
+#   - template_lstm.yaml   (LSTM recurrent language model)
+#   - template_mamba.yaml  (Mamba selective state space model)
 # =========================================================================================
 
 # A unique name for this experiment. Used for naming output directories and for logging.
@@ -68,17 +75,23 @@ tokenizer:
   vocab_size: 50004
 
 # --- Model Architecture ---
-# Specifies the hyperparameters for the GPT-2 model.
-# ACTIVATES: `model_foundry/model.py` which constructs the model object.
+# Specifies the model architecture and hyperparameters.
+# ACTIVATES: `model_foundry/model.py` which uses the architecture registry.
+#
+# Supported architectures: gpt2, bert, lstm, rnn, gru, mamba
+# Each architecture requires its own nested config block.
+# See architecture-specific templates for full examples.
 model:
-  layers: 12
-  embedding_size: 768
-  hidden_size: 768
-  intermediate_hidden_size: 3072
-  attention_heads: 12
-  activation_function: "gelu"
-  dropout: 0.1
-  attention_dropout: 0.1
+  architecture: "gpt2"  # Required: one of gpt2, bert, lstm, rnn, gru, mamba
+  transformer:           # Required for gpt2 and bert architectures
+    layers: 12
+    embedding_size: 768
+    hidden_size: 768
+    intermediate_hidden_size: 3072
+    attention_heads: 12
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
 
 # --- Training Procedure ---
 # Controls the entire training loop, including optimization and checkpointing.
@@ -87,53 +100,52 @@ training:
   # The directory where model checkpoints will be saved.
   output_dir: "models/unique_experiment_name/"
 
-  # Optimizer hyperparameters.
-  learning_rate: 0.0004  # 4x higher for 4x smaller effective batch size
+  # Optimizer hyperparameters (AdamW).
+  learning_rate: 0.0004
   adam_beta1: 0.9
   adam_beta2: 0.999
   adam_epsilon: 1.0e-6
 
   # Learning rate scheduler parameters.
   warmup_steps: null  # Auto-calculated as warmup_ratio * train_steps
-  warmup_ratio: 0.1  # Warmup as 10% of total training steps
+  warmup_ratio: 0.1   # Warmup as 10% of total training steps
 
   # Total training duration.
-  train_steps: null  # Auto-calculated as epochs × steps_per_epoch
+  train_steps: null  # Auto-calculated as epochs * steps_per_epoch
   epochs: 20
 
+  # Training objective: "causal_lm" (GPT-2, LSTM, Mamba) or "masked_lm" (BERT)
+  objective: "causal_lm"
+  # mlm_probability: 0.15  # Only used with masked_lm objective
+
   # Checkpoint generation parameters
-  auto_generate_checkpoints: true  # Set to true for automatic schedule generation
-  
-  # First epoch configuration
-  first_epoch_checkpoints: 20      # Number of checkpoints in first epoch
-  
-  # Subsequent epochs configuration
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
   subsequent_epochs_spacing: "log"  # "linear" or "log"
-  log_base: 2                      # Base for logarithmic spacing (default 2)
-  linear_interval: null             # Steps between checkpoints for linear spacing (null = auto)
-  min_checkpoint_interval: 100     # Minimum steps between checkpoints
-  min_checkpoints_per_epoch: 5     # Minimum checkpoints per epoch (after first epoch)
-  
+  log_base: 2
+  linear_interval: null
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
   # Mixed precision training
-  use_amp: true  # Enable automatic mixed precision
-  
+  use_amp: true
+
   # Gradient accumulation
-  gradient_accumulation_steps: 8  # Effective batch size: 32 × 8 = 256
-  
+  gradient_accumulation_steps: 8  # Effective batch size: 32 * 8 = 256
+
   # Gradient clipping for training stability
-  max_grad_norm: 1.0  # Maximum gradient norm for clipping (set to null to disable)
-  
+  max_grad_norm: 1.0
+
   # Memory optimizations
-  use_tf32: true  # Enable TF32 for faster training on Ampere+ GPUs
-  use_gradient_checkpointing: true  # Enable gradient checkpointing to save memory
+  use_tf32: true
+  use_gradient_checkpointing: true
 
 # --- Logging & Reproducibility ---
 # Manages external logging and ensures the experiment can be perfectly replicated.
 # ACTIVATES: `wandb` integration within `model_foundry/trainer.py`
 logging:
-  # Set to `true` to log metrics (loss, learning rate, etc.) to Weights & Biases.
   use_wandb: true
-  wandb_project: "just-drop-the-subject" # The project name on your W&B account.
+  wandb_project: "just-drop-the-subject"
 
 # This seed is used for all random initializations (model weights, data shuffling, etc.)
 # to ensure that the only difference between experiments is the configuration itself.

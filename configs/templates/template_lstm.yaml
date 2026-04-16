@@ -1,0 +1,62 @@
+# =========================================================================================
+# LSTM TEMPLATE — Recurrent language model
+#
+# Pure PyTorch LSTM implementation. Processes sequences sequentially, making it
+# useful as a non-transformer baseline for linguistic studies.
+#
+# Also supports GRU (set architecture: "gru") and vanilla RNN (architecture: "rnn").
+# =========================================================================================
+
+experiment_name: "exp_lstm_example"
+
+data:
+  source_corpus: "data/raw/train_90M/"
+  training_corpus: "data/raw/train_90M/"
+  test_corpus: "data/raw/test_10M/"
+  batch_size: 64            # LSTMs can use larger batch sizes (less memory than transformers)
+  max_sequence_length: 256  # LSTMs struggle with very long sequences
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/exp_lstm_example/"
+  vocab_size: 50004
+
+model:
+  architecture: "lstm"    # Options: "lstm", "gru", "rnn"
+  rnn:
+    embedding_size: 512    # Token embedding dimension
+    hidden_size: 512       # RNN hidden state size
+    num_layers: 2          # Number of stacked RNN layers
+    bidirectional: false   # Set true for bidirectional (use with masked_lm objective)
+    dropout: 0.3           # Dropout between RNN layers (requires num_layers > 1)
+    rnn_type: "lstm"       # Must match architecture field: "lstm", "gru", or "rnn"
+
+training:
+  output_dir: "models/exp_lstm_example/"
+  objective: "causal_lm"
+  learning_rate: 0.001     # LSTMs typically use higher LR than transformers
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: null
+  warmup_ratio: 0.1
+  train_steps: null
+  epochs: 20
+  use_amp: true
+  gradient_accumulation_steps: 4
+  max_grad_norm: 5.0       # LSTMs often need higher grad clip threshold
+  use_tf32: true
+  use_gradient_checkpointing: false  # Not needed for LSTMs (lower memory)
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+
+random_seed: 9

@@ -1,0 +1,72 @@
+# =========================================================================================
+# BERT TEMPLATE — Bidirectional masked language model
+#
+# Uses HuggingFace's BERT implementation. Trained with masked language modeling (MLM):
+# randomly mask 15% of tokens and predict them from bidirectional context.
+#
+# Key differences from GPT-2:
+#   - objective must be "masked_lm"
+#   - mlm_probability controls masking rate (default 0.15)
+#   - Optional bert-specific config for segment embeddings / pooling
+# =========================================================================================
+
+experiment_name: "exp_bert_example"
+
+data:
+  source_corpus: "data/raw/train_90M/"
+  training_corpus: "data/raw/train_90M/"
+  test_corpus: "data/raw/test_10M/"
+  batch_size: 32
+  max_sequence_length: 512  # BERT is typically trained with shorter sequences
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/exp_bert_example/"
+  vocab_size: 50004
+
+model:
+  architecture: "bert"
+  transformer:
+    layers: 12
+    embedding_size: 768
+    hidden_size: 768
+    intermediate_hidden_size: 3072
+    attention_heads: 12
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+  # Optional BERT-specific settings (uncomment to customise):
+  # bert:
+  #   type_vocab_size: 2    # Number of segment types (for sentence-pair tasks)
+  #   pooler_type: "first"  # How to pool the sequence representation
+
+training:
+  output_dir: "models/exp_bert_example/"
+  objective: "masked_lm"     # BERT uses masked language modeling
+  mlm_probability: 0.15      # Fraction of tokens to mask per sequence
+  learning_rate: 0.0001      # BERT typically uses lower LR than GPT-2
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: null
+  warmup_ratio: 0.1
+  train_steps: null
+  epochs: 20
+  use_amp: true
+  gradient_accumulation_steps: 8
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+
+random_seed: 9

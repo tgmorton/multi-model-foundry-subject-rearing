@@ -1,0 +1,117 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-test-full
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: full-test-suite
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          pip install --no-cache-dir \
+            torch --index-url https://download.pytorch.org/whl/cu121
+
+          cd /opt/repo
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            pytest pytest-timeout
+
+          echo "=========================================="
+          echo "  SMOKE TESTS — CPU (83 tests)"
+          echo "=========================================="
+          python -m pytest model_foundry/tests/smoke/ \
+            -v --tb=short --timeout=120 --ignore=model_foundry/tests/smoke/test_gpu.py
+          SMOKE_EXIT=$?
+
+          echo ""
+          echo "=========================================="
+          echo "  SMOKE TESTS — GPU"
+          echo "=========================================="
+          python -m pytest model_foundry/tests/smoke/test_gpu.py \
+            -v --tb=short --timeout=120 -m gpu
+          GPU_EXIT=$?
+
+          echo ""
+          echo "=========================================="
+          echo "  UNIT TESTS (318 tests)"
+          echo "=========================================="
+          python -m pytest model_foundry/tests/unit/ \
+            -v --tb=short --timeout=120
+          UNIT_EXIT=$?
+
+          echo ""
+          echo "=========================================="
+          echo "  INTEGRATION TESTS (24 tests)"
+          echo "=========================================="
+          python -m pytest model_foundry/tests/integration/ \
+            -v --tb=short --timeout=300
+          INTEGRATION_EXIT=$?
+
+          echo ""
+          echo "=========================================="
+          echo "  RESULTS SUMMARY"
+          echo "=========================================="
+          echo "  Smoke tests (CPU): exit $SMOKE_EXIT"
+          echo "  Smoke tests (GPU): exit $GPU_EXIT"
+          echo "  Unit tests:        exit $UNIT_EXIT"
+          echo "  Integration tests: exit $INTEGRATION_EXIT"
+          echo "=========================================="
+
+          # Fail if any suite failed
+          if [ $SMOKE_EXIT -ne 0 ] || [ $GPU_EXIT -ne 0 ] || [ $UNIT_EXIT -ne 0 ] || [ $INTEGRATION_EXIT -ne 0 ]; then
+            echo "SOME TESTS FAILED"
+            exit 1
+          fi
+
+          echo "ALL TESTS PASSED"
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      volumes:
+      - name: repo
+        emptyDir: {}
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule

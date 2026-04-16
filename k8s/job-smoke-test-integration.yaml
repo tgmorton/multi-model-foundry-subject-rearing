@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-test-integration
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: integration-tests
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+
+          cd /opt/repo
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            pytest pytest-timeout
+
+          echo "=== Running integration tests ==="
+          python -m pytest model_foundry/tests/integration/ \
+            -v --tb=short --timeout=300
+
+          echo "=== Integration tests passed ==="
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: "4"
+          limits:
+            memory: 4Gi
+            cpu: "4"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      volumes:
+      - name: repo
+        emptyDir: {}
+      restartPolicy: Never

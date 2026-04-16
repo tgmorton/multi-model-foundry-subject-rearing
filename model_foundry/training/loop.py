@@ -54,7 +54,7 @@ class TrainingLoop:
         self.amp_enabled = False
         if self.config.training.use_amp and torch.cuda.is_available():
             self.amp_enabled = True
-            self.scaler = torch.cuda.amp.GradScaler(
+            self.scaler = torch.amp.GradScaler('cuda',
                 init_scale=2**16,
                 growth_factor=2,
                 backoff_factor=0.5,
@@ -113,6 +113,13 @@ class TrainingLoop:
             print(f"\n--- Epoch {epoch + 1}/{self.config.training.epochs} ---")
             epoch_wall_start = time.time()
 
+            # micro_step counts every micro-batch (DataLoader iteration)
+            # and drives the gradient accumulation boundary check.
+            # global_step only increments on optimizer steps so that
+            # train_steps, checkpoint schedules, and logging are all
+            # calibrated in optimizer-step units.
+            micro_step = 0
+
             for batch_idx, batch in enumerate(self.dataloader):
                 if self.global_step >= self.config.training.train_steps:
                     break
@@ -122,34 +129,42 @@ class TrainingLoop:
                     inputs = {k: v.to(self.device, non_blocking=True) for k, v in batch.items()}
 
                     # Forward and backward pass
-                    loss = self._training_step(inputs)
+                    loss, did_optimizer_step = self._training_step(inputs, micro_step)
                     epoch_losses.append(loss)
                     total_tokens_processed += inputs['input_ids'].numel()
+                    micro_step += 1
 
-                    # Memory monitoring
-                    if self.global_step % 100 == 0 and torch.cuda.is_available():
-                        max_memory_reserved = self._monitor_memory(max_memory_reserved)
+                    # The remaining bookkeeping only runs when the
+                    # optimizer actually stepped (accumulation boundary).
+                    if did_optimizer_step:
+                        # Memory monitoring
+                        if self.global_step % 100 == 0 and torch.cuda.is_available():
+                            max_memory_reserved = self._monitor_memory(max_memory_reserved)
 
-                    # Update progress bar
-                    self._update_progress(
-                        progress_bar, epoch_losses, steps_per_epoch
-                    )
+                        # Update progress bar
+                        self._update_progress(
+                            progress_bar, epoch_losses, steps_per_epoch
+                        )
 
-                    # Logging
-                    if self.config.logging.use_wandb:
-                        self._log_metrics(loss, total_tokens_processed, steps_per_epoch)
+                        # Logging
+                        if self.config.logging.use_wandb:
+                            self._log_metrics(loss, total_tokens_processed, steps_per_epoch)
 
-                    # Checkpoint saving
-                    if self.global_step in checkpoint_schedule:
-                        self._save_checkpoint(tokenizer, total_tokens_processed)
+                        # Checkpoint saving
+                        if self.global_step in checkpoint_schedule:
+                            self._save_checkpoint(tokenizer, total_tokens_processed)
 
-                    self.global_step += 1
-                    progress_bar.update(1)
+                        self.global_step += 1
+                        progress_bar.update(1)
 
                 except RuntimeError as e:
                     if "out of memory" in str(e).lower():
                         oom_counter += 1
-                        self._handle_oom(oom_counter)
+                        self._handle_oom(oom_counter, micro_step)
+                        # Reset micro_step to the last accumulation
+                        # boundary so the window restarts cleanly.
+                        grad_accum = self.config.training.gradient_accumulation_steps
+                        micro_step = micro_step - (micro_step % grad_accum)
                         continue
                     else:
                         raise
@@ -177,27 +192,34 @@ class TrainingLoop:
 
         return self.global_step
 
-    def _training_step(self, inputs: dict) -> float:
+    def _training_step(self, inputs: dict, micro_step: int) -> tuple:
         """
         Execute a single training step (forward + backward).
 
         Args:
             inputs: Batch of inputs
+            micro_step: Current micro-batch index within the gradient
+                accumulation window (0-based). The optimizer steps when
+                ``(micro_step + 1) % gradient_accumulation_steps == 0``.
 
         Returns:
-            Loss value for this step
+            Tuple of (loss_value, did_optimizer_step) where did_optimizer_step
+            is True when the optimizer stepped at an accumulation boundary.
         """
+        grad_accum = self.config.training.gradient_accumulation_steps
+        did_step = False
+
         if self.amp_enabled:
             # AMP training path
-            with torch.cuda.amp.autocast(dtype=torch.float16):
+            with torch.amp.autocast('cuda', dtype=torch.float16):
                 outputs = self.model(**inputs)
-                loss = outputs.loss / self.config.training.gradient_accumulation_steps
+                loss = outputs.loss / grad_accum
 
             # Backward with gradient scaling
             self.scaler.scale(loss).backward()
 
             # Gradient accumulation boundary
-            if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+            if (micro_step + 1) % grad_accum == 0:
                 # Unscale gradients for gradient clipping
                 self.scaler.unscale_(self.optimizer)
 
@@ -215,13 +237,14 @@ class TrainingLoop:
 
                 self.lr_scheduler.step()
                 self.optimizer.zero_grad(set_to_none=True)
+                did_step = True
         else:
             # Standard training path
             outputs = self.model(**inputs)
-            loss = outputs.loss / self.config.training.gradient_accumulation_steps
+            loss = outputs.loss / grad_accum
             loss.backward()
 
-            if (self.global_step + 1) % self.config.training.gradient_accumulation_steps == 0:
+            if (micro_step + 1) % grad_accum == 0:
                 max_grad_norm = getattr(self.config.training, 'max_grad_norm', None)
                 if max_grad_norm:
                     torch.nn.utils.clip_grad_norm_(
@@ -231,8 +254,9 @@ class TrainingLoop:
                 self.optimizer.step()
                 self.lr_scheduler.step()
                 self.optimizer.zero_grad(set_to_none=True)
+                did_step = True
 
-        return loss.item() * self.config.training.gradient_accumulation_steps
+        return loss.item() * grad_accum, did_step
 
     def _monitor_memory(self, max_memory_reserved: float) -> float:
         """
@@ -331,12 +355,15 @@ class TrainingLoop:
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    def _handle_oom(self, oom_counter: int):
+    def _handle_oom(self, oom_counter: int, micro_step: int = 0):
         """
         Handle out-of-memory errors.
 
         Args:
             oom_counter: Number of OOM errors encountered
+            micro_step: Current micro-batch index within the accumulation
+                window. Used to report how many accumulated micro-batches
+                were discarded.
         """
         print(f"\n⚠️ OOM error #{oom_counter} at step {self.global_step}")
         print(f"  Memory allocated: {torch.cuda.memory_allocated()/1024**3:.2f}GB")
@@ -347,8 +374,16 @@ class TrainingLoop:
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
 
-        # Skip this batch
+        # Skip this batch and discard any accumulated gradients
         self.optimizer.zero_grad(set_to_none=True)
+
+        # Warn if gradient accumulation state was lost
+        grad_accum = self.config.training.gradient_accumulation_steps
+        if grad_accum > 1:
+            lost = micro_step % grad_accum
+            if lost != 0:
+                print(f"  Warning: Lost {lost} accumulated micro-batches "
+                      f"in current gradient accumulation window")
 
     def _log_epoch_completion(self, epoch: int, epoch_losses: list, epoch_time: float,
                               total_tokens_processed: int, max_memory_reserved: float,

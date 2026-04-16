@@ -5,6 +5,7 @@ This module provides utilities for preprocessing, chunking, and loading
 tokenized datasets for language model training.
 """
 
+import logging
 import os
 import math
 from pathlib import Path
@@ -15,6 +16,8 @@ from torch.utils.data import DataLoader
 import torch
 
 from .data_collators import get_data_collator
+
+logger = logging.getLogger(__name__)
 
 # Disable progress bars for cleaner output
 disable_progress_bar()
@@ -298,17 +301,17 @@ class DataProcessor:
             Configured DataLoader
         """
         print(f"  - Creating DataLoader...")
-        print(f"[DEBUG] Loading chunked dataset...")
+        logger.debug("Loading chunked dataset...")
 
         # Load chunked dataset
         dataset = self._load_chunked_dataset()
         if dataset is None:
             raise RuntimeError("Chunked dataset not found. Run preprocessing first.")
 
-        print(f"[DEBUG] Dataset loaded, size: {len(dataset)}")
+        logger.debug(f"Dataset loaded, size: {len(dataset)}")
 
         # Set up data collator based on training objective
-        print(f"[DEBUG] Creating data collator for objective: {self.config.training.objective}")
+        logger.debug(f"Creating data collator for objective: {self.config.training.objective}")
         data_collator = get_data_collator(self.config, tokenizer)
         
         # Create DataLoader with high-performance optimizations
@@ -318,7 +321,7 @@ class DataProcessor:
         pin_memory = getattr(self.config.data, 'pin_memory', True)
         prefetch_factor = getattr(self.config.data, 'prefetch_factor', 2)
         
-        print(f"[DEBUG] Creating DataLoader with num_workers={num_workers}, pin_memory={pin_memory}, prefetch_factor={prefetch_factor}")
+        logger.debug(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_memory}, prefetch_factor={prefetch_factor}")
         
         dataloader = DataLoader(
             dataset,
@@ -331,7 +334,7 @@ class DataProcessor:
             worker_init_fn=_worker_init_fn
         )
         
-        print(f"[DEBUG] DataLoader created successfully, len={len(dataloader)}")
+        logger.debug(f"DataLoader created successfully, len={len(dataloader)}")
         
         print("  - DataLoader configured for high throughput:")
         print(f"    - num_workers: {num_workers}, pin_memory: {pin_memory}, prefetch_factor: {prefetch_factor}")

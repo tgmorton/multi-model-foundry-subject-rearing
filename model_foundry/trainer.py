@@ -73,18 +73,18 @@ class Trainer:
         if 'PYTORCH_CUDA_ALLOC_CONF' not in os.environ or not os.environ['PYTORCH_CUDA_ALLOC_CONF']:
             os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
 
-        # Enable cudnn benchmarking
-        torch.backends.cudnn.benchmark = True
-        torch.backends.cudnn.deterministic = False
+        # Enable deterministic cuDNN for reproducibility
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
 
-        print("  - CUDA memory management configured (95% memory limit, max_split_size_mb:512)")
+        print("  - CUDA memory management configured (95% memory limit, max_split_size_mb:512, deterministic cuDNN)")
 
     def _calculate_training_parameters(self):
         """Calculate training parameters based on dataset size if not explicitly set."""
         try:
             steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
-        except:
-            print("  ⚠️  Could not determine exact dataset size, using estimates")
+        except Exception as e:
+            print(f"  ⚠️  Could not determine exact dataset size ({e}), using estimates")
             steps_per_epoch = 100
 
         # Calculate train_steps if not specified
@@ -327,12 +327,25 @@ class Trainer:
 
         # Initialize W&B logging
         if self.config.logging.use_wandb:
+            # Determine WandB run ID (reuse from checkpoint if resuming)
+            wandb_run_id = None
+            if global_step > 0:
+                import json
+                metadata_path = self.checkpoint_manager.output_dir / f"checkpoint-{global_step}" / "metadata.json"
+                if metadata_path.exists():
+                    with open(metadata_path) as f:
+                        metadata = json.load(f)
+                    wandb_run_id = metadata.get('wandb_run_id')
+
+            if wandb_run_id is None:
+                wandb_run_id = wandb.util.generate_id()
+
             wandb.init(
                 project=self.config.logging.wandb_project,
                 name=self.config.experiment_name,
                 config=self.config.model_dump(),
                 resume="allow",
-                id=wandb.util.generate_id()
+                id=wandb_run_id
             )
 
         # Save environment snapshot
