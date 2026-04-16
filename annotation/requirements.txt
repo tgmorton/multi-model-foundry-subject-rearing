@@ -1,0 +1,7 @@
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+python-multipart>=0.0.6
+
+# Test-only (pip install -r requirements.txt then: pip install pytest httpx)
+# pytest>=7.0.0
+# httpx>=0.24.0

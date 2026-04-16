@@ -101,6 +101,7 @@ def export_gold(db_path=None) -> List[Dict]:
         adjudicated_ids = {r["stimulus_id"] for r in records}
 
         # 2) Agreed stimuli (2 annotators agree on binary, not yet adjudicated)
+        agreed_ids = set()
         stim_rows = conn.execute(
             """
             SELECT s.id, s.text, s.source, s.metadata
@@ -144,6 +145,48 @@ def export_gold(db_path=None) -> List[Dict]:
                 pronouns=[db.dict_row(p) for p in pronouns],
                 confidence=a["overall_confidence"],
                 agreement="full",
+            ))
+            agreed_ids.add(stim["id"])
+
+        # 3) Single-annotator stimuli (1 completed annotation, not covered above)
+        excluded_ids = adjudicated_ids | agreed_ids
+        single_rows = conn.execute(
+            """
+            SELECT s.id, s.text, s.source, s.metadata
+            FROM stimuli s
+            JOIN annotations a ON a.stimulus_id = s.id
+            WHERE a.has_null_subject IS NOT NULL
+              AND s.id NOT IN ({})
+            GROUP BY s.id
+            HAVING COUNT(DISTINCT a.user_id) = 1
+            ORDER BY s.ordering
+            """.format(
+                ",".join(str(i) for i in excluded_ids) if excluded_ids else "0"
+            )
+        ).fetchall()
+
+        for stim in single_rows:
+            ann = conn.execute(
+                "SELECT * FROM annotations WHERE stimulus_id = ? "
+                "AND has_null_subject IS NOT NULL LIMIT 1",
+                (stim["id"],),
+            ).fetchone()
+            if not ann:
+                continue
+
+            pronouns = conn.execute(
+                "SELECT * FROM placed_pronouns WHERE annotation_id = ? ORDER BY ordering",
+                (ann["id"],),
+            ).fetchall()
+
+            records.append(_build_record(
+                text=stim["text"],
+                source=stim["source"],
+                stimulus_id=stim["id"],
+                has_null_subject=bool(ann["has_null_subject"]),
+                pronouns=[db.dict_row(p) for p in pronouns],
+                confidence=ann["overall_confidence"],
+                agreement="single",
             ))
 
     return records

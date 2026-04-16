@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="./">
 <title>Null Subject Annotation</title>
 <style>
   :root {
@@ -325,6 +326,7 @@
   <div class="index-view visible" id="indexView">
     <div class="index-summary" id="indexSummary"></div>
     <div class="index-list" id="indexList"></div>
+    <div id="indexPagination"></div>
   </div>
 
   <!-- ── Annotate view ── -->
@@ -381,6 +383,7 @@
       <span><kbd>Y</kbd>/<kbd>N</kbd> yes/no</span>
       <span><kbd>S</kbd> star</span>
       <span><kbd>1</kbd>-<kbd>5</kbd> confidence</span>
+      <span><kbd>U</kbd> next unannotated</span>
       <span><kbd>Esc</kbd> back to list</span>
     </div>
   </div>
@@ -394,7 +397,7 @@ let stimuli = [];         // cached page of stimuli
 let totalStimuli = 0;
 let currentIndex = 0;     // index within stimuli array
 let currentPage = 1;
-let pageSize = 200;
+let pageSize = 50;
 let stimulus = null;      // full current stimulus detail
 let annotation = {
   has_null_subject: null,
@@ -404,10 +407,11 @@ let annotation = {
   note: '',
 };
 let dirty = false;
-let activePronounIdx = null; // index into annotation.pronouns being edited
+let activePosition = null; // which gap position's pronoun panel is open (null = none)
 let pronounChoices = [];     // from /api/pronouns
 let saving = false;
 let contextLevel = 1;        // how many context sentences to show (1 = nearest only)
+let wasAlreadyAnnotated = false; // true if stimulus had annotation when loaded
 
 // ── API helpers ─────────────────────────────────────────────────────
 async function api(method, path, body) {
@@ -427,7 +431,7 @@ async function doLogin() {
   const username = document.getElementById('loginUser').value.trim();
   const tk = document.getElementById('loginToken').value.trim();
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, token: tk }),
@@ -454,7 +458,7 @@ function doLogout() {
 async function checkAuth() {
   if (!token) return false;
   try {
-    currentUser = await api('GET', '/api/auth/me');
+    currentUser = await api('GET', 'api/auth/me');
     return true;
   } catch { return false; }
 }
@@ -464,7 +468,7 @@ async function init() {
   document.getElementById('userName').textContent = currentUser.display_name;
   document.getElementById('mainContent').style.display = '';
 
-  pronounChoices = await api('GET', '/api/pronouns');
+  pronounChoices = await api('GET', 'api/pronouns');
   await loadPage(1);
   buildOverallBtns();
   updateProgress();
@@ -505,6 +509,8 @@ function renderIndex() {
       </div>
       <div class="index-progress-label">${doneCount} of ${totalStimuli} (${pct.toFixed(0)}%)</div>
     </div>
+    <button class="nav-btn" onclick="jumpToNextUnannotated()" title="Jump to first unannotated (U)"
+      ${doneCount >= totalStimuli ? 'disabled' : ''}>Next unannotated</button>
   `;
 
   const list = document.getElementById('indexList');
@@ -520,7 +526,13 @@ function renderIndex() {
     let badges = '';
     if (done) {
       if (hasNull) {
-        badges = '<span class="index-pill">Yes</span>';
+        const pronounPills = (s.pronouns || [])
+          .map(p => `<span class="index-pill">${escHtml(p.lexical_form)}</span>`)
+          .join('');
+        const confBadge = s.overall_confidence
+          ? `<span class="index-conf">${s.overall_confidence}/5</span>`
+          : '';
+        badges = pronounPills + confBadge;
       } else {
         badges = '<span class="index-badge-no">No</span>';
       }
@@ -530,39 +542,53 @@ function renderIndex() {
       <div class="index-row ${done ? 'done' : 'not-done'}" onclick="openStimulus(${idx})">
         <span class="index-num">${num}</span>
         <span class="index-text">${escHtml(s.text)}</span>
-        <span class="index-pills" id="indexPills${idx}">${badges}</span>
-        ${done ? `<span class="index-conf">${s.has_null_subject != null ? '' : ''}</span>` : ''}
+        <span class="index-pills">${badges}</span>
         ${starred ? '<span class="index-star">&#9733;</span>' : ''}
       </div>
     `;
   }).join('');
 
-  // Load pronoun details for completed items
-  loadIndexPronouns();
+  // Pagination controls
+  const totalPages = Math.ceil(totalStimuli / pageSize);
+  const pagDiv = document.getElementById('indexPagination');
+  if (totalPages > 1) {
+    pagDiv.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-top:16px;">
+        <button class="nav-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>Prev</button>
+        <span class="jump-label">Page ${currentPage} of ${totalPages}</span>
+        <button class="nav-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Next</button>
+      </div>
+    `;
+  } else {
+    pagDiv.innerHTML = '';
+  }
 }
 
-async function loadIndexPronouns() {
-  // For each completed stimulus, fetch its detail to get pronouns
-  for (let idx = 0; idx < stimuli.length; idx++) {
-    const s = stimuli[idx];
-    if (s.annotation_id == null) continue;
-    try {
-      const detail = await api('GET', `/api/stimuli/${s.id}`);
-      if (detail.annotation && detail.annotation.pronouns) {
-        const pillsEl = document.getElementById(`indexPills${idx}`);
-        if (!pillsEl) continue;
-        const pronounPills = detail.annotation.pronouns
-          .map(p => `<span class="index-pill">${escHtml(p.lexical_form)}</span>`)
-          .join('');
-        const confEl = detail.annotation.overall_confidence
-          ? `<span class="index-conf">${detail.annotation.overall_confidence}/5</span>`
-          : '';
-        if (detail.annotation.has_null_subject) {
-          pillsEl.innerHTML = pronounPills + confEl;
-        }
-      }
-    } catch {}
+async function jumpToNextUnannotated() {
+  try {
+    const result = await api('GET', 'api/annotations/next-unannotated');
+    if (!result.stimulus_id) {
+      // All done — stay on index
+      return;
+    }
+    const page = Math.floor(result.global_index / pageSize) + 1;
+    const idx = result.global_index % pageSize;
+    if (page !== currentPage) {
+      await loadPage(page);
+    }
+    await openStimulus(Math.min(idx, stimuli.length - 1));
+  } catch (e) {
+    console.error('Jump to unannotated failed:', e);
   }
+}
+
+async function goToPage(page) {
+  if (page < 1) return;
+  const totalPages = Math.ceil(totalStimuli / pageSize);
+  if (page > totalPages) return;
+  await loadPage(page);
+  renderIndex();
+  document.getElementById('indexView').scrollIntoView({ behavior: 'smooth' });
 }
 
 function escHtml(s) {
@@ -593,7 +619,7 @@ async function openStimulus(idx) {
 
 async function loadPage(page) {
   currentPage = page;
-  const data = await api('GET', `/api/stimuli?page=${page}&page_size=${pageSize}`);
+  const data = await api('GET', `api/stimuli?page=${page}&page_size=${pageSize}`);
   stimuli = data.items;
   totalStimuli = data.total;
   if (stimuli.length > 0) {
@@ -611,13 +637,13 @@ async function loadStimulus(idx) {
 
   currentIndex = idx;
   const item = stimuli[idx];
-  stimulus = await api('GET', `/api/stimuli/${item.id}`);
+  stimulus = await api('GET', `api/stimuli/${item.id}`);
 
   // Load existing annotation or reset
   if (stimulus.annotation) {
     const a = stimulus.annotation;
     annotation = {
-      has_null_subject: a.has_null_subject ? true : false,
+      has_null_subject: a.has_null_subject === 1 ? true : (a.has_null_subject === 0 ? false : null),
       pronouns: (a.pronouns || []).map(p => ({
         position: p.position,
         label: p.label,
@@ -639,8 +665,10 @@ async function loadStimulus(idx) {
       context_expansions: 0,
     };
   }
+  wasAlreadyAnnotated = !!stimulus.annotation &&
+    stimulus.annotation.has_null_subject != null;
   contextLevel = 1;
-  activePronounIdx = null;
+  activePosition = null;
   dirty = false;
 
   render();
@@ -661,9 +689,10 @@ function render() {
   const prompt = document.getElementById('placementPrompt');
   prompt.classList.toggle('visible', annotation.has_null_subject === true);
 
-  // Pronoun panel
+  // Pronoun panel — show when yes AND a gap is selected
   const panel = document.getElementById('pronounPanel');
-  panel.classList.toggle('collapsed', annotation.has_null_subject !== true);
+  panel.classList.toggle('collapsed',
+    annotation.has_null_subject !== true || activePosition === null);
   renderPronounDetails();
 
   // Overall confidence
@@ -738,20 +767,19 @@ function renderSentence() {
       gap.dataset.pos = i;
 
       if (gapPronouns[i]) {
-        gapPronouns[i].forEach(p => {
-          const pill = document.createElement('span');
-          pill.className = 'pronoun-pill' + (activePronounIdx === p.idx ? ' active' : '');
-          pill.innerHTML = `<span>${p.lexical_form || '?'}</span>`;
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.textContent = '\u00d7';
-          removeBtn.onclick = (e) => { e.stopPropagation(); removePronoun(p.idx); };
-          pill.appendChild(removeBtn);
-          pill.onclick = (e) => { e.stopPropagation(); selectPronoun(p.idx); };
-          gap.appendChild(pill);
-        });
+        const forms = gapPronouns[i].map(p => p.lexical_form || '?').join('/');
+        const pill = document.createElement('span');
+        pill.className = 'pronoun-pill' + (activePosition === i ? ' active' : '');
+        pill.innerHTML = `<span>${forms}</span>`;
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '\u00d7';
+        removeBtn.onclick = (e) => { e.stopPropagation(); removeAllAtPosition(i); };
+        pill.appendChild(removeBtn);
+        pill.onclick = (e) => { e.stopPropagation(); togglePositionPanel(i); };
+        gap.appendChild(pill);
       } else {
-        gap.onclick = () => addPronounAtGap(i);
+        gap.onclick = () => openPositionPanel(i);
       }
       container.appendChild(gap);
     }
@@ -792,58 +820,68 @@ function renderPronounDetails() {
   const container = document.getElementById('pronounDetails');
   container.innerHTML = '';
 
-  annotation.pronouns.forEach((p, idx) => {
-    const div = document.createElement('div');
-    div.className = 'pronoun-detail';
-    if (activePronounIdx === idx) div.style.borderColor = 'var(--accent)';
+  if (activePosition === null) return;
 
-    // Full sentence with pronoun highlighted in context
-    const words = (stimulus.text || '').split(/\s+/).filter(w => w);
-    const beforeWords = words.slice(0, p.position).join(' ');
-    const afterWords = words.slice(p.position).join(' ');
-    const ctx = document.createElement('div');
-    ctx.className = 'pronoun-context';
-    ctx.innerHTML = (beforeWords ? beforeWords + ' ' : '') +
-      `<span class="highlight">[${p.lexical_form || '?'}]</span>` +
-      (afterWords ? ' ' + afterWords : '');
-    div.appendChild(ctx);
+  const pos = activePosition;
+  const pronounsAtPos = annotation.pronouns.filter(p => p.position === pos);
+  const selectedLabels = new Set(pronounsAtPos.map(p => p.label));
 
-    // Pronoun grid
-    const grid = document.createElement('div');
-    grid.className = 'pronoun-grid';
-    pronounChoices.forEach(choice => {
-      const btn = document.createElement('button');
-      btn.className = 'pronoun-choice' + (p.lexical_form === choice.lexical_form ? ' selected' : '');
-      btn.textContent = choice.lexical_form;
-      btn.onclick = () => {
-        annotation.pronouns[idx].label = choice.label;
-        annotation.pronouns[idx].lexical_form = choice.lexical_form;
-        markDirty();
-        render();
-      };
-      grid.appendChild(btn);
-    });
-    div.appendChild(grid);
+  const div = document.createElement('div');
+  div.className = 'pronoun-detail';
+  div.style.borderColor = 'var(--accent)';
 
-    // Confidence
+  // Context showing where in the sentence this gap is
+  const words = (stimulus.text || '').split(/\s+/).filter(w => w);
+  const beforeWords = words.slice(0, pos).join(' ');
+  const afterWords = words.slice(pos).join(' ');
+  const forms = pronounsAtPos.map(p => p.lexical_form).join('/') || '___';
+  const ctx = document.createElement('div');
+  ctx.className = 'pronoun-context';
+  ctx.innerHTML = (beforeWords ? beforeWords + ' ' : '') +
+    `<span class="highlight">[${forms}]</span>` +
+    (afterWords ? ' ' + afterWords : '');
+  div.appendChild(ctx);
+
+  // Pronoun grid — multi-select toggles
+  const grid = document.createElement('div');
+  grid.className = 'pronoun-grid';
+  pronounChoices.forEach(choice => {
+    const isSelected = selectedLabels.has(choice.label) &&
+      pronounsAtPos.some(p => p.lexical_form === choice.lexical_form);
+    const btn = document.createElement('button');
+    btn.className = 'pronoun-choice' + (isSelected ? ' selected' : '');
+    btn.textContent = choice.lexical_form;
+    btn.onclick = () => {
+      togglePronounAtPosition(pos, choice);
+    };
+    grid.appendChild(btn);
+  });
+  div.appendChild(grid);
+
+  // Confidence for this position (shared — use first pronoun's or default)
+  if (pronounsAtPos.length > 0) {
+    const currentConf = pronounsAtPos[0].confidence || 3;
     const confRow = document.createElement('div');
     confRow.className = 'confidence-row';
     confRow.innerHTML = '<label>Confidence:</label>';
     for (let c = 1; c <= 5; c++) {
       const btn = document.createElement('button');
-      btn.className = 'conf-btn' + (p.confidence === c ? ' selected' : '');
+      btn.className = 'conf-btn' + (currentConf === c ? ' selected' : '');
       btn.textContent = c;
       btn.onclick = () => {
-        annotation.pronouns[idx].confidence = c;
+        // Set confidence for all pronouns at this position
+        annotation.pronouns.forEach(p => {
+          if (p.position === pos) p.confidence = c;
+        });
         markDirty();
         render();
       };
       confRow.appendChild(btn);
     }
     div.appendChild(confRow);
+  }
 
-    container.appendChild(div);
-  });
+  container.appendChild(div);
 }
 
 function buildOverallBtns() {
@@ -883,12 +921,16 @@ function expandContext() {
 }
 
 // ── Actions ─────────────────────────────────────────────────────────
-function setBinary(val) {
+async function setBinary(val) {
   annotation.has_null_subject = val;
   markDirty();
   render();
-  // Save immediately so annotation exists
-  saveAnnotation();
+  await saveAnnotation();
+  // Auto-advance on "No" for new annotations
+  if (val === false && !wasAlreadyAnnotated) {
+    showSaveIndicator();
+    setTimeout(() => navigate(1), 500);
+  }
 }
 
 function setOverallConfidence(val) {
@@ -906,42 +948,72 @@ function toggleStar() {
   saveAnnotation();
 }
 
-function addPronounAtGap(position) {
+function openPositionPanel(position) {
   if (annotation.has_null_subject !== true) {
     annotation.has_null_subject = true;
   }
-  annotation.pronouns.push({
-    position,
-    label: '',
-    lexical_form: '?',
-    confidence: 3,
+  activePosition = position;
+  markDirty();
+  render();
+}
+
+function togglePositionPanel(position) {
+  activePosition = activePosition === position ? null : position;
+  render();
+}
+
+function removeAllAtPosition(position) {
+  annotation.pronouns = annotation.pronouns.filter(p => p.position !== position);
+  if (activePosition === position) activePosition = null;
+  markDirty();
+  render();
+  saveAnnotation();
+}
+
+function togglePronounAtPosition(position, choice) {
+  const existingIdx = annotation.pronouns.findIndex(
+    p => p.position === position && p.lexical_form === choice.lexical_form
+  );
+  if (existingIdx >= 0) {
+    // Deselect
+    annotation.pronouns.splice(existingIdx, 1);
+  } else {
+    // Select — inherit confidence from siblings at this position, or default 3
+    const siblings = annotation.pronouns.filter(p => p.position === position);
+    const conf = siblings.length > 0 ? siblings[0].confidence : 3;
+    annotation.pronouns.push({
+      position,
+      label: choice.label,
+      lexical_form: choice.lexical_form,
+      confidence: conf,
+    });
+  }
+  markDirty();
+  render();
+  saveAnnotation().then(() => {
+    if (!wasAlreadyAnnotated && isAnnotationComplete()) {
+      showSaveIndicator();
+      setTimeout(() => navigate(1), 500);
+    }
   });
-  activePronounIdx = annotation.pronouns.length - 1;
-  markDirty();
-  render();
-}
-
-function removePronoun(idx) {
-  annotation.pronouns.splice(idx, 1);
-  if (activePronounIdx === idx) activePronounIdx = null;
-  else if (activePronounIdx !== null && activePronounIdx > idx) activePronounIdx--;
-  markDirty();
-  render();
-}
-
-function selectPronoun(idx) {
-  activePronounIdx = activePronounIdx === idx ? null : idx;
-  render();
 }
 
 function markDirty() { dirty = true; }
+
+function isAnnotationComplete() {
+  if (annotation.has_null_subject === null) return false;
+  if (annotation.has_null_subject === false) return true;
+  // Yes case: need at least one pronoun with a label
+  return annotation.pronouns.length > 0 &&
+         annotation.pronouns.every(p => p.label && p.label !== '');
+}
 
 // ── Save ────────────────────────────────────────────────────────────
 async function saveAnnotation() {
   if (!stimulus || saving) return;
   saving = true;
   try {
-    await api('PUT', `/api/annotations/${stimulus.id}`, {
+    await api('PUT', `api/annotations/${stimulus.id}`, {
       has_null_subject: annotation.has_null_subject,
       pronouns: annotation.pronouns.filter(p => p.label),
       overall_confidence: annotation.overall_confidence,
@@ -965,7 +1037,7 @@ function showSaveIndicator() {
 
 async function updateProgress() {
   try {
-    const p = await api('GET', '/api/annotations/progress');
+    const p = await api('GET', 'api/annotations/progress');
     document.getElementById('progressText').textContent = `${p.completed} / ${p.total}`;
     const pct = p.total > 0 ? (p.completed / p.total * 100) : 0;
     document.getElementById('progressBar').style.width = pct + '%';
@@ -982,7 +1054,7 @@ async function navigate(dir) {
     await loadPage(currentPage + 1);
   } else if (dir < 0 && currentPage > 1) {
     currentPage--;
-    const data = await api('GET', `/api/stimuli?page=${currentPage}&page_size=${pageSize}`);
+    const data = await api('GET', `api/stimuli?page=${currentPage}&page_size=${pageSize}`);
     stimuli = data.items;
     await loadStimulus(stimuli.length - 1);
   }
@@ -996,7 +1068,7 @@ async function jumpTo() {
   const idx = (val - 1) % pageSize;
   if (page !== currentPage) {
     currentPage = page;
-    const data = await api('GET', `/api/stimuli?page=${page}&page_size=${pageSize}`);
+    const data = await api('GET', `api/stimuli?page=${page}&page_size=${pageSize}`);
     stimuli = data.items;
   }
   await loadStimulus(Math.min(idx, stimuli.length - 1));
@@ -1010,6 +1082,11 @@ document.addEventListener('keydown', (e) => {
   // Escape always goes back to list
   if (e.key === 'Escape') {
     e.preventDefault(); showIndex(); return;
+  }
+
+  // U = jump to next unannotated (works from both views)
+  if (e.key.toLowerCase() === 'u') {
+    e.preventDefault(); jumpToNextUnannotated(); return;
   }
 
   // Other shortcuts only in annotate view

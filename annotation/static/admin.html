@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="./">
 <title>Annotation Admin</title>
 <style>
   :root {
@@ -109,8 +110,8 @@
 <div class="header">
   <h1>Annotation Admin</h1>
   <div class="header-links">
-    <a href="/">Annotate</a>
-    <a href="/adjudication">Adjudicate</a>
+    <a href="./">Annotate</a>
+    <a href="adjudication">Adjudicate</a>
     <span id="userName" style="color:var(--muted);font-weight:600"></span>
   </div>
 </div>
@@ -194,7 +195,7 @@ async function doLogin() {
   const username = document.getElementById('loginUser').value.trim();
   const tk = document.getElementById('loginToken').value.trim();
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, token: tk }),
@@ -221,7 +222,7 @@ function doLogout() {
 async function checkAuth() {
   if (!token) return false;
   try {
-    const user = await api('GET', '/api/auth/me');
+    const user = await api('GET', 'api/auth/me');
     if (user.role !== 'admin') return false;
     document.getElementById('userName').textContent = user.display_name;
     return true;
@@ -233,7 +234,7 @@ async function loadAll() {
 }
 
 async function loadProgress() {
-  const data = await api('GET', '/api/agreement/status');
+  const data = await api('GET', 'api/agreement/status');
   const tbody = document.getElementById('progressTable');
   tbody.innerHTML = data.map(u => `
     <tr>
@@ -248,7 +249,7 @@ async function loadProgress() {
 
 async function loadAgreement() {
   try {
-    const data = await api('GET', '/api/agreement/compute');
+    const data = await api('GET', 'api/agreement/compute');
     const grid = document.getElementById('metricsGrid');
 
     const fmt = (v) => v === null || v === undefined ? '--' : v.toFixed(3);
@@ -309,7 +310,7 @@ async function loadAgreement() {
 }
 
 async function loadUsers() {
-  const data = await api('GET', '/api/admin/users');
+  const data = await api('GET', 'api/admin/users');
   const tbody = document.getElementById('usersTable');
   tbody.innerHTML = data.map(u => `
     <tr>
@@ -331,7 +332,7 @@ async function uploadFile(input) {
   formData.append('file', file);
 
   try {
-    const res = await fetch('/api/stimuli/load', {
+    const res = await fetch('api/stimuli/load', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData,
@@ -354,7 +355,7 @@ function downloadJSON(data, filename) {
 }
 
 async function exportGold() {
-  const data = await api('GET', '/api/export/gold');
+  const data = await api('GET', 'api/export/gold');
   const lines = data.map(r => JSON.stringify(r)).join('\n') + '\n';
   const blob = new Blob([lines], { type: 'application/jsonl' });
   const url = URL.createObjectURL(blob);
@@ -364,12 +365,12 @@ async function exportGold() {
 }
 
 async function exportRaw() {
-  const data = await api('GET', '/api/export/raw');
+  const data = await api('GET', 'api/export/raw');
   downloadJSON(data, 'raw_annotations.json');
 }
 
 async function exportAgreement() {
-  const data = await api('GET', '/api/agreement/export');
+  const data = await api('GET', 'api/agreement/export');
   const blob = new Blob([data.csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

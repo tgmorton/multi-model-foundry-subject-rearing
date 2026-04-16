@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="./">
 <title>Adjudication</title>
 <style>
   :root {
@@ -183,8 +184,8 @@
 <div class="header">
   <h1>Adjudication</h1>
   <div class="header-links">
-    <a href="/">Annotate</a>
-    <a href="/admin">Admin</a>
+    <a href="./">Annotate</a>
+    <a href="admin">Admin</a>
     <span class="progress-text" id="progressText"></span>
   </div>
 </div>
@@ -252,7 +253,7 @@ async function doLogin() {
   const username = document.getElementById('loginUser').value.trim();
   const tk = document.getElementById('loginToken').value.trim();
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, token: tk }),
@@ -273,13 +274,13 @@ async function doLogin() {
 function doLogout() { localStorage.removeItem('ann_token'); location.reload(); }
 
 async function init() {
-  pronounChoices = await api('GET', '/api/pronouns');
+  pronounChoices = await api('GET', 'api/pronouns');
   await loadQueue();
 }
 
 async function loadQueue() {
-  queue = await api('GET', '/api/adjudication/queue');
-  const progress = await api('GET', '/api/adjudication/progress');
+  queue = await api('GET', 'api/adjudication/queue');
+  const progress = await api('GET', 'api/adjudication/progress');
   document.getElementById('progressText').textContent =
     `${progress.adjudicated} / ${progress.total} adjudicated`;
 
@@ -300,7 +301,7 @@ function escapeHtml(s) {
 
 async function selectStimulus(stimId) {
   currentStimId = stimId;
-  adjData = await api('GET', `/api/adjudication/${stimId}`);
+  adjData = await api('GET', `api/adjudication/${stimId}`);
   resolution = null;
   acceptedUserId = null;
   reAnnotation = { has_null_subject: null, pronouns: [], confidence: 3 };
@@ -480,7 +481,7 @@ async function saveAdjudication() {
   }
 
   try {
-    await api('PUT', `/api/adjudication/${currentStimId}`, {
+    await api('PUT', `api/adjudication/${currentStimId}`, {
       resolution,
       accepted_user_id: acceptedUserId,
       has_null_subject: hasNull,
@@ -499,7 +500,7 @@ async function saveAdjudication() {
 (async () => {
   if (!token) return;
   try {
-    const user = await api('GET', '/api/auth/me');
+    const user = await api('GET', 'api/auth/me');
     if (user.role !== 'admin') return;
     document.getElementById('loginOverlay').classList.add('hidden');
     document.getElementById('mainContent').style.display = '';

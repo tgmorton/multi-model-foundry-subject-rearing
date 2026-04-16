@@ -76,6 +76,19 @@ CREATE TABLE IF NOT EXISTS adjudication_pronouns (
     confidence      INTEGER NOT NULL DEFAULT 3,
     ordering        INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS annotation_history (
+    id                 INTEGER PRIMARY KEY,
+    stimulus_id        INTEGER NOT NULL REFERENCES stimuli(id),
+    user_id            INTEGER NOT NULL REFERENCES users(id),
+    has_null_subject   INTEGER,
+    overall_confidence INTEGER NOT NULL DEFAULT 3,
+    starred            INTEGER NOT NULL DEFAULT 0,
+    note               TEXT DEFAULT '',
+    context_expansions INTEGER NOT NULL DEFAULT 0,
+    pronouns_json      TEXT NOT NULL DEFAULT '[]',
+    saved_at           TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 
@@ -205,13 +218,14 @@ def get_stimuli_page(
     page_size: int = 50,
     db_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
-    """Return paginated stimuli with annotation status for user."""
+    """Return paginated stimuli with annotation status and pronouns for user."""
     with get_conn(db_path) as conn:
         total = conn.execute("SELECT COUNT(*) FROM stimuli").fetchone()[0]
         offset = (page - 1) * page_size
         rows = conn.execute(
             """
-            SELECT s.*, a.id AS annotation_id, a.has_null_subject, a.starred
+            SELECT s.*, a.id AS annotation_id, a.has_null_subject, a.starred,
+                   a.overall_confidence
             FROM stimuli s
             LEFT JOIN annotations a ON a.stimulus_id = s.id AND a.user_id = ?
             ORDER BY s.ordering
@@ -219,11 +233,41 @@ def get_stimuli_page(
             """,
             (user_id, page_size, offset),
         ).fetchall()
+
+        items = [dict_row(r) for r in rows]
+
+        # Batch-fetch pronouns for all annotated items on this page
+        ann_ids = [item["annotation_id"] for item in items
+                   if item.get("annotation_id")]
+        pronoun_map: Dict[int, List[Dict]] = {}
+        if ann_ids:
+            placeholders = ",".join("?" * len(ann_ids))
+            pronoun_rows = conn.execute(
+                f"SELECT annotation_id, lexical_form, label, position "
+                f"FROM placed_pronouns "
+                f"WHERE annotation_id IN ({placeholders}) "
+                f"ORDER BY annotation_id, ordering",
+                ann_ids,
+            ).fetchall()
+            for pr in pronoun_rows:
+                aid = pr["annotation_id"]
+                if aid not in pronoun_map:
+                    pronoun_map[aid] = []
+                pronoun_map[aid].append({
+                    "lexical_form": pr["lexical_form"],
+                    "label": pr["label"],
+                    "position": pr["position"],
+                })
+
+        for item in items:
+            aid = item.get("annotation_id")
+            item["pronouns"] = pronoun_map.get(aid, []) if aid else []
+
         return {
             "total": total,
             "page": page,
             "page_size": page_size,
-            "items": [dict_row(r) for r in rows],
+            "items": items,
         }
 
 
@@ -323,6 +367,25 @@ def upsert_annotation(
             )
             ann_id = cursor.lastrowid
 
+        # Record audit history
+        pronouns_snapshot = json.dumps(
+            [{"position": p["position"], "label": p["label"],
+              "lexical_form": p["lexical_form"],
+              "confidence": p.get("confidence", 3)}
+             for p in pronouns],
+            ensure_ascii=False,
+        )
+        conn.execute(
+            """
+            INSERT INTO annotation_history
+                (stimulus_id, user_id, has_null_subject, overall_confidence,
+                 starred, note, context_expansions, pronouns_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (stimulus_id, user_id, has_null_int, overall_confidence,
+             int(starred), note, context_expansions, pronouns_snapshot),
+        )
+
         for i, p in enumerate(pronouns):
             conn.execute(
                 """
@@ -365,6 +428,33 @@ def get_annotation_progress(
             "completed": completed,
             "starred": starred,
             "remaining": total - completed,
+        }
+
+
+def get_first_unannotated(
+    user_id: int, db_path: Optional[Path] = None
+) -> Optional[Dict]:
+    """Return the first stimulus (by ordering) with no completed annotation."""
+    with get_conn(db_path) as conn:
+        row = conn.execute(
+            """
+            SELECT s.id, s.ordering,
+                   (SELECT COUNT(*) FROM stimuli s2
+                    WHERE s2.ordering < s.ordering) AS global_index
+            FROM stimuli s
+            LEFT JOIN annotations a ON a.stimulus_id = s.id AND a.user_id = ?
+            WHERE a.id IS NULL OR a.has_null_subject IS NULL
+            ORDER BY s.ordering
+            LIMIT 1
+            """,
+            (user_id,),
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            "stimulus_id": row["id"],
+            "ordering": row["ordering"],
+            "global_index": row["global_index"],
         }
 
 

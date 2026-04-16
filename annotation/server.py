@@ -4,12 +4,16 @@ Run with: python -m annotation [--port 8643]
 """
 
 import json
+import time
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse as StarletteJSONResponse
 
 from . import db
 from .agreement import compute_agreement
@@ -22,7 +26,45 @@ from .models import (
     LoginRequest,
 )
 
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Simple in-memory rate limiter by IP address."""
+
+    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+        super().__init__(app)
+        self.max_requests = max_requests
+        self.window = window_seconds
+        self.requests: dict = defaultdict(list)
+
+    async def dispatch(self, request, call_next):
+        forwarded = request.headers.get("x-forwarded-for")
+        client_ip = (
+            forwarded.split(",")[0].strip()
+            if forwarded
+            else (request.client.host if request.client else "unknown")
+        )
+
+        now = time.monotonic()
+        timestamps = self.requests[client_ip]
+        timestamps[:] = [t for t in timestamps if now - t < self.window]
+
+        if len(timestamps) >= self.max_requests:
+            return StarletteJSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please slow down."},
+            )
+
+        timestamps.append(now)
+        return await call_next(request)
+
+
 app = FastAPI(title="Spanish Null Subject Annotation", version="0.1.0")
+app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 
 @app.on_event("startup")
@@ -168,6 +210,14 @@ async def annotation_progress(user: Dict = Depends(get_current_user)):
     return db.get_annotation_progress(user["id"])
 
 
+@app.get("/api/annotations/next-unannotated")
+async def next_unannotated(user: Dict = Depends(get_current_user)):
+    result = db.get_first_unannotated(user["id"])
+    if result is None:
+        return {"stimulus_id": None, "ordering": None, "global_index": None}
+    return result
+
+
 # ── Agreement routes (admin) ────────────────────────────────────────
 
 
@@ -268,10 +318,9 @@ async def save_adjudication(
 @app.get("/api/export/gold")
 async def export_gold_endpoint(user: Dict = Depends(require_admin)):
     records = export_gold()
-    content = "\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n"
     return JSONResponse(
         content=records,
-        headers={"Content-Disposition": "attachment; filename=gold.jsonl"},
+        headers={"Content-Disposition": "attachment; filename=gold.json"},
     )
 
 
