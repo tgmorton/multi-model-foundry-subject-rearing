@@ -1280,10 +1280,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assembly" class="md-nav__link">
+  <a href="#assembly-100m-corpus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly
+        Assembly — 100M corpus
       
     </span>
   </a>
@@ -1291,10 +1291,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pending" class="md-nav__link">
+  <a href="#assembly-10m-ecologically-focused-corpus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pending
+        Assembly — 10M ecologically-focused corpus
       
     </span>
   </a>
@@ -2640,10 +2640,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#assembly" class="md-nav__link">
+  <a href="#assembly-100m-corpus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Assembly
+        Assembly — 100M corpus
       
     </span>
   </a>
@@ -2651,10 +2651,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pending" class="md-nav__link">
+  <a href="#assembly-10m-ecologically-focused-corpus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pending
+        Assembly — 10M ecologically-focused corpus
       
     </span>
   </a>
@@ -2761,18 +2761,19 @@ Built 2026-02-20/22.</p>
 <h2 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>data/spanish/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── raw/                  # Downloaded monolingual source files
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── train_100M/           # Assembled 100M-word corpus (after assembly)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── train_90M/            # 90% train split (after 00_prepare_corpus.py)
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── pull_10M/             # 10% pool split
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── test_10M/             # Held-out test
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── train_100M/           # Assembled 100M-word corpus
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── train_10M/            # Assembled 10M ecologically-focused corpus
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── train_90M/            # 90% train split (after 00_prepare_corpus.py)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── pull_10M/             # 10% pool split (from 100M)
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>└── parallel/             # EN-ES parallel corpora (Moses format)
 </code></pre></div>
 <h2 id="scripts">Scripts<a class="headerlink" href="#scripts" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong><code>scripts/build_spanish_corpus.py</code></strong> — Download and assemble monolingual corpus</li>
 <li><code>download</code> — fetches all sources to <code>data/spanish/raw/</code></li>
-<li><code>assemble</code> — segments, subsamples, writes <code>train_100M/</code></li>
-<li><code>all</code> — both steps</li>
+<li><code>assemble</code> — segments, subsamples, writes <code>train_100M/</code> (default) or <code>train_10M/</code></li>
+<li><code>assemble --size 10M</code> — ecologically-focused 10M corpus</li>
+<li><code>all</code> — both download + assemble</li>
 <li><strong><code>scripts/build_spanish_parallel.py</code></strong> — Download parallel corpora</li>
 <li><code>download</code> — fetches 11 OPUS corpora to <code>data/spanish/parallel/</code></li>
 <li><code>stats</code> — prints inventory</li>
@@ -2864,32 +2865,155 @@ Spanish-Ornat, Spanish-Sebastian, Vila, Vivar</p>
 <p><strong>Extraction:</strong> CHAT-format transcripts parsed for <code>*SPEAKER:</code> lines, cleaned
 with <code>_clean_chat_utterance()</code> (removes retracing markers, bracketed annotations,
 CHAT special characters, unintelligible tokens, disfluencies).</p>
-<h3 id="assembly">Assembly<a class="headerlink" href="#assembly" title="Permanent link">&para;</a></h3>
+<h3 id="assembly-100m-corpus">Assembly — 100M corpus<a class="headerlink" href="#assembly-100m-corpus" title="Permanent link">&para;</a></h3>
 <p>Run: <code>python scripts/build_spanish_corpus.py assemble --data_root data/spanish</code></p>
-<p>Target proportions (words):
-- childes: 2.5M (all available ~1.7M)
-- europarl: 34M (subsampled from 56M)
-- opensubtitles: 20M (subsampled from 1.17B)
-- qed: 5M (subsampled from 22M)
-- gutenberg: 10M (subsampled from 49M)
-- leipzig_web: 15M (subsampled from 22M)
-- vikidia: 3M (all available ~2.2M)
-- child_narratives: 200K (all available ~278K)
-- grerli: 250K (all available ~110K)
-- spoken: 10M (only ~1.1M available; pending COSCACH Chilean corpus)</p>
-<p>After assembly, split with:
+<p>Rebalanced targets (COSCACH unavailable — behind registration wall):</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Target</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>europarl</td>
+<td>34M</td>
+<td>subsampled from 56M</td>
+</tr>
+<tr>
+<td>opensubtitles</td>
+<td>27M</td>
+<td>+7M rebalanced from spoken shortfall</td>
+</tr>
+<tr>
+<td>leipzig_web</td>
+<td>16.6M</td>
+<td>+1.6M rebalanced</td>
+</tr>
+<tr>
+<td>gutenberg</td>
+<td>10M</td>
+<td>subsampled from 49M</td>
+</tr>
+<tr>
+<td>qed</td>
+<td>7M</td>
+<td>+2M rebalanced</td>
+</tr>
+<tr>
+<td>vikidia</td>
+<td>2.2M</td>
+<td>all available</td>
+</tr>
+<tr>
+<td>childes</td>
+<td>1.7M</td>
+<td>all available (monolingual only)</td>
+</tr>
+<tr>
+<td>spoken</td>
+<td>1.1M</td>
+<td>CORLEC only</td>
+</tr>
+<tr>
+<td>child_narratives</td>
+<td>200K</td>
+<td>subsampled from 278K</td>
+</tr>
+<tr>
+<td>grerli</td>
+<td>110K</td>
+<td>all available</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~99.9M</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>After assembly, split 90/10 with:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>preprocessing/00_prepare_corpus.py<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>--source_dir<span class="w"> </span>data/spanish/train_100M<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--main_output_dir<span class="w"> </span>data/spanish/train_90M<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span>--pool_output_dir<span class="w"> </span>data/spanish/pull_10M<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span>--pool_words_total<span class="w"> </span><span class="m">10000000</span>
 </code></pre></div></p>
-<h3 id="pending">Pending<a class="headerlink" href="#pending" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>COSCACH</strong> (Chilean spoken Spanish, ~9.3M tokens) — user acquiring separately</li>
-<li><strong>Spoken corpus gap</strong> — only 1.1M of 10M target; COSCACH will partially fill this</li>
-<li>Assembly step not yet run (all raw files ready)</li>
-</ul>
+<h3 id="assembly-10m-ecologically-focused-corpus">Assembly — 10M ecologically-focused corpus<a class="headerlink" href="#assembly-10m-ecologically-focused-corpus" title="Permanent link">&para;</a></h3>
+<p>Run: <code>python scripts/build_spanish_corpus.py assemble --data_root data/spanish --size 10M</code></p>
+<p>Stratified subsample of <code>train_90M</code> (not raw), ensuring no overlap with the
+held-out <code>pull_10M</code> pool.  Preserves all ecologically valid sources at their
+full available size within train_90M, then fills the remainder from other
+sources in proportion to their 100M weights.  Actual total is ~9.4M because
+ecological sources lost ~10% to the pool split.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Actual</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vikidia</td>
+<td>1,991K</td>
+<td>all in train_90M — children's encyclopedia</td>
+</tr>
+<tr>
+<td>childes</td>
+<td>1,537K</td>
+<td>all in train_90M — monolingual CDS</td>
+</tr>
+<tr>
+<td>europarl</td>
+<td>1,674K</td>
+<td>proportional fill</td>
+</tr>
+<tr>
+<td>opensubtitles</td>
+<td>1,329K</td>
+<td>proportional fill</td>
+</tr>
+<tr>
+<td>spoken</td>
+<td>952K</td>
+<td>all in train_90M — CORLEC</td>
+</tr>
+<tr>
+<td>leipzig_web</td>
+<td>817K</td>
+<td>proportional fill</td>
+</tr>
+<tr>
+<td>gutenberg</td>
+<td>492K</td>
+<td>proportional fill</td>
+</tr>
+<tr>
+<td>qed</td>
+<td>345K</td>
+<td>proportional fill</td>
+</tr>
+<tr>
+<td>child_narratives</td>
+<td>182K</td>
+<td>all in train_90M — child narratives</td>
+</tr>
+<tr>
+<td>grerli</td>
+<td>99K</td>
+<td>all in train_90M — school-age spoken/written</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~9.4M</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h2 id="parallel-corpora-parallel">Parallel Corpora (parallel/)<a class="headerlink" href="#parallel-corpora-parallel" title="Permanent link">&para;</a></h2>
 <p>11 Spanish-English parallel corpora in Moses format (paired <code>.en</code> / <code>.es</code> files,
 line-aligned). Downloaded from OPUS via direct URLs.</p>
