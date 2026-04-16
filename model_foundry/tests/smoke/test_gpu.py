@@ -333,7 +333,10 @@ class TestCheckpointGPU:
         with tempfile.TemporaryDirectory() as tmpdir:
             model.save_pretrained(tmpdir)
 
-            # Reload — HF saves as safetensors by default
+            # Reload — HF saves as safetensors by default. The state dict
+            # contains keys for the underlying HF model (e.g.
+            # "transformer.h.0..."), not our wrapper which prefixes with
+            # "hf_model.". Load into model2.hf_model directly.
             set_seed(42)
             model2 = create_model(config).to("cuda")
             safetensors_path = Path(tmpdir) / "model.safetensors"
@@ -344,7 +347,9 @@ class TestCheckpointGPU:
             else:
                 state = torch.load(bin_path, map_location="cuda",
                                    weights_only=False)
-            model2.load_state_dict(state)
+            # Determine where to load: wrapper exposes inner HF model as hf_model
+            target = model2.hf_model if hasattr(model2, "hf_model") else model2
+            target.load_state_dict(state)
             model2.eval()
 
             with torch.no_grad():
