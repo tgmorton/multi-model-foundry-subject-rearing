@@ -333,14 +333,17 @@ class TestCheckpointGPU:
         with tempfile.TemporaryDirectory() as tmpdir:
             model.save_pretrained(tmpdir)
 
-            # Reload — HF may save as model.safetensors or pytorch_model.bin
+            # Reload — HF saves as safetensors by default
             set_seed(42)
             model2 = create_model(config).to("cuda")
-            weight_file = Path(tmpdir) / "model.safetensors"
-            if not weight_file.exists():
-                weight_file = Path(tmpdir) / "pytorch_model.bin"
-            state = torch.load(weight_file,
-                               map_location="cuda", weights_only=True)
+            safetensors_path = Path(tmpdir) / "model.safetensors"
+            bin_path = Path(tmpdir) / "pytorch_model.bin"
+            if safetensors_path.exists():
+                from safetensors.torch import load_file
+                state = load_file(str(safetensors_path), device="cuda")
+            else:
+                state = torch.load(bin_path, map_location="cuda",
+                                   weights_only=False)
             model2.load_state_dict(state)
             model2.eval()
 

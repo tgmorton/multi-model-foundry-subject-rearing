@@ -185,9 +185,10 @@ class TestInitializeOptimizerAndScheduler:
 
         trainer._initialize_optimizer_and_scheduler()
 
-        # AdamW stores the lr in each param group
+        # After scheduler init, the LR may be adjusted by warmup (starts at 0).
+        # Check the optimizer was configured with the right base LR via defaults.
         for pg in trainer.optimizer.param_groups:
-            assert pg["lr"] == lr
+            assert pg["initial_lr"] == lr
 
 
 # ---------------------------------------------------------------------------
