@@ -1,0 +1,132 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-baseline-90m-smoke
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: training
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=========================================="
+          echo "  ENGLISH BASELINE SMOKE TEST"
+          echo "  Pipeline: tokenizer → tokenize → chunk → train"
+          echo "=========================================="
+
+          cd /opt/repo
+
+          # --- Install deps (torch already baked in) ---
+          echo "--- Installing dependencies ---"
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            sentencepiece 2>&1 | tail -3
+
+          # --- Wire repo paths to persistent storage ---
+          echo "--- Wiring repo paths to /mnt/data ---"
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          # Output directories (create on PVC, symlink into repo)
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked \
+                   /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+          ls -la /opt/repo/data /opt/repo/tokenizers /opt/repo/models
+
+          CONFIG=configs/experiments/experiment_0_baseline_90M_smoke.yaml
+
+          echo ""
+          echo "=========================================="
+          echo "  STEP 1/4: Validate config"
+          echo "=========================================="
+          python -m model_foundry.cli validate-config $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  STEP 2/4: Train SentencePiece tokenizer"
+          echo "=========================================="
+          python -m model_foundry.cli train-tokenizer $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  STEP 3/4: Tokenize dataset"
+          echo "=========================================="
+          python -m model_foundry.cli tokenize-dataset $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  STEP 4a/4: Chunk dataset"
+          echo "=========================================="
+          python -m model_foundry.cli preprocess-data $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  STEP 4b/4: Run training (20 optimizer steps)"
+          echo "=========================================="
+          python -m model_foundry.cli run $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  SMOKE TEST COMPLETE"
+          echo "=========================================="
+          echo "Artifacts on PVC:"
+          ls -la /mnt/data/tokenizers/exp0_baseline_90M_smoke/ || true
+          ls -la /mnt/data/models/exp0_baseline_90M_smoke/ || true
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        resources:
+          requests:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
