@@ -347,9 +347,16 @@ class TestCheckpointGPU:
             else:
                 state = torch.load(bin_path, map_location="cuda",
                                    weights_only=False)
-            # Determine where to load: wrapper exposes inner HF model as hf_model
+            # Determine where to load: wrapper exposes inner HF model as hf_model.
+            # Use strict=False — GPT-2 ties lm_head.weight to the token embedding,
+            # so safetensors omits it and strict loading would complain.
             target = model2.hf_model if hasattr(model2, "hf_model") else model2
-            target.load_state_dict(state)
+            missing, unexpected = target.load_state_dict(state, strict=False)
+            # The only acceptable missing keys are tied weights
+            assert not unexpected, f"Unexpected keys in state dict: {unexpected}"
+            for k in missing:
+                assert "lm_head" in k or "tied" in k.lower(), \
+                    f"Unexpected missing key: {k}"
             model2.eval()
 
             with torch.no_grad():
