@@ -1,27 +1,31 @@
-"""D10: Partitioned parquet output + DuckDB view layer.
+"""D10: Flat-per-cell parquet output + DuckDB view layer.
 
 Writes per-item and per-pair results from `PerModelRunner` (D9) as
-partitioned parquet under a root directory. Partitions by
-`(language, category, condition)` so DuckDB queries can filter at the
-file level.
+three parquet files per cell — one for each table (items, pairs,
+per_token). `language`, `category`, and `condition` remain as columns
+(not path partitions) so DuckDB can still filter on them cheaply.
 
 Output layout:
 
     output_root/
     ├── items/
-    │   ├── language=en/category=subject_drop/condition=subj_3sg/
-    │   │   └── cell_id={cid}.parquet
+    │   ├── cell_id={cid_1}.parquet
+    │   ├── cell_id={cid_2}.parquet
     │   └── ...
     ├── pairs/
-    │   ├── language=en/category=subject_drop/condition=subj_3sg/
-    │   │   └── cell_id={cid}.parquet
+    │   ├── cell_id={cid_1}.parquet
     │   └── ...
     └── per_token/                       # D5 per-token log-probs
-        └── language=.../category=.../condition=.../cell_id={cid}.parquet
+        └── cell_id={cid_1}.parquet
+        └── ...
 
-`register_duckdb_views(con, root)` builds SQL views over the tree so
-hypothesis-test queries work without loading the whole dataset into
-memory.
+Why flat: an earlier layout partitioned by `(language, category,
+condition)` (~80-160 files per cell). On CephFS the per-file
+open/fsync round-trip dominated: writing 159 parquet files took 576s
+vs writing 3 files takes <10s. DuckDB partition pruning gave us
+almost nothing at our row counts (partition pruning matters at 100M+
+rows/partition; we have ~2000). `register_duckdb_views(con, root)`
+builds SQL views over this flat tree.
 """
 
 from __future__ import annotations
@@ -98,35 +102,27 @@ def _pairs_df(rows: Sequence[CheckpointPairResult]) -> pd.DataFrame:
     return pd.DataFrame.from_records(records)
 
 
-def _write_partitioned(
+def _write_flat(
     df: pd.DataFrame,
     root: Path,
     cell_id: str,
 ) -> List[Path]:
-    """Write one parquet file per (language, category, condition) partition.
+    """Write a single parquet file per cell — no hive partitioning.
 
-    Returns the list of paths written.
+    `language`, `category`, `condition` remain as columns in the
+    parquet; DuckDB filters on them at query time. One file per
+    cell_id so parallel writes from different cells don't collide.
+
+    Returns the list of paths written (0 or 1 entries).
     """
     if df.empty:
         return []
     root.mkdir(parents=True, exist_ok=True)
-    partition_cols = ["language", "category", "condition"]
-    written: List[Path] = []
-    for (lang, cat, cond), group in df.groupby(partition_cols):
-        partition_dir = (
-            root
-            / f"language={lang}"
-            / f"category={cat}"
-            / f"condition={cond}"
-        )
-        partition_dir.mkdir(parents=True, exist_ok=True)
-        # One file per cell_id so parallel writes don't collide.
-        out_path = partition_dir / f"cell_id={cell_id}.parquet"
-        tmp = out_path.with_suffix(out_path.suffix + ".tmp")
-        group.drop(columns=partition_cols).to_parquet(tmp, index=False)
-        tmp.replace(out_path)
-        written.append(out_path)
-    return written
+    out_path = root / f"cell_id={cell_id}.parquet"
+    tmp = out_path.with_suffix(out_path.suffix + ".tmp")
+    df.to_parquet(tmp, index=False)
+    tmp.replace(out_path)
+    return [out_path]
 
 
 def write_cell_results(
@@ -152,17 +148,17 @@ def write_cell_results(
     items_root = output_root / "items"
     pairs_root = output_root / "pairs"
 
-    item_paths = _write_partitioned(items_df, items_root, cell_id)
-    pair_paths = _write_partitioned(pairs_df, pairs_root, cell_id)
+    item_paths = _write_flat(items_df, items_root, cell_id)
+    pair_paths = _write_flat(pairs_df, pairs_root, cell_id)
 
     per_token_paths: List[Path] = []
     if include_per_token:
         per_token_root = output_root / "per_token"
         per_token_df = _per_token_df(item_results)
-        per_token_paths = _write_partitioned(per_token_df, per_token_root, cell_id)
+        per_token_paths = _write_flat(per_token_df, per_token_root, cell_id)
 
     logger.info(
-        "Wrote cell %s: %d item partitions, %d pair partitions, %d per-token partitions",
+        "Wrote cell %s: %d item files, %d pair files, %d per-token files",
         cell_id, len(item_paths), len(pair_paths), len(per_token_paths),
     )
     return {
@@ -180,14 +176,15 @@ def write_cell_results(
 def register_duckdb_views(con, output_root: Path) -> None:
     """Register `items`, `pairs`, `per_token` views over the parquet tree.
 
-    Uses hive-partitioning so filters on language/category/condition
-    prune files at the scan level. Pass an open DuckDB connection;
-    caller owns its lifecycle.
+    The flat layout puts one file per cell directly under each table
+    directory; `hive_partitioning=1` still picks up the trailing
+    `cell_id=...` name as a column (the filename uses hive-style key=value).
+    Pass an open DuckDB connection; caller owns its lifecycle.
     """
     output_root = Path(output_root)
-    pairs_glob = str(output_root / "pairs" / "**" / "*.parquet")
-    items_glob = str(output_root / "items" / "**" / "*.parquet")
-    pt_glob = str(output_root / "per_token" / "**" / "*.parquet")
+    pairs_glob = str(output_root / "pairs" / "*.parquet")
+    items_glob = str(output_root / "items" / "*.parquet")
+    pt_glob = str(output_root / "per_token" / "*.parquet")
 
     con.execute(f"""
         CREATE OR REPLACE VIEW items AS
@@ -197,8 +194,7 @@ def register_duckdb_views(con, output_root: Path) -> None:
         CREATE OR REPLACE VIEW pairs AS
         SELECT * FROM read_parquet('{pairs_glob}', hive_partitioning=1)
     """)
-    # per_token is optional; create the view only if any files exist.
-    if any(output_root.joinpath("per_token").rglob("*.parquet")):
+    if any((output_root / "per_token").glob("*.parquet")):
         con.execute(f"""
             CREATE OR REPLACE VIEW per_token AS
             SELECT * FROM read_parquet('{pt_glob}', hive_partitioning=1)

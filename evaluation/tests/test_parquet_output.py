@@ -92,13 +92,9 @@ def test_partitioned_write(tmp_path):
         pair_results=pairs,
     )
 
-    # Two conditions → two partitions for items and pairs
-    items_root = tmp_path / "items" / "language=en" / "category=subject_drop"
-    assert (items_root / "condition=subj_3sg" / "cell_id=cellA.parquet").exists()
-    assert (items_root / "condition=subj_3pl" / "cell_id=cellA.parquet").exists()
-    pairs_root = tmp_path / "pairs" / "language=en" / "category=subject_drop"
-    assert (pairs_root / "condition=subj_3sg" / "cell_id=cellA.parquet").exists()
-    assert (pairs_root / "condition=subj_3pl" / "cell_id=cellA.parquet").exists()
+    # Flat layout — one file per (table, cell_id)
+    assert (tmp_path / "items" / "cell_id=cellA.parquet").exists()
+    assert (tmp_path / "pairs" / "cell_id=cellA.parquet").exists()
 
     # Summary counts
     assert summary["n_item_rows"] == 4
@@ -113,10 +109,7 @@ def test_per_token_written_and_round_trips(tmp_path):
 
     write_cell_results(tmp_path, "cellB", items, pairs, include_per_token=True)
 
-    pt_path = (
-        tmp_path / "per_token" / "language=en" / "category=subject_drop"
-        / "condition=subj_3sg" / "cell_id=cellB.parquet"
-    )
+    pt_path = tmp_path / "per_token" / "cell_id=cellB.parquet"
     assert pt_path.exists()
     df = pd.read_parquet(pt_path)
     assert len(df) == 1
