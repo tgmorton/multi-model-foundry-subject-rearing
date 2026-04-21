@@ -1,3 +1,11 @@
+% NOTE (2026-04-20): this TeX is a hand-maintained draft and has drifted from
+% docs/OSF_PREREGISTRATION.md, which is the canonical source. A regeneration
+% pass to match the current .md is pending. The language pair has been updated
+% from English+Italian to English+Spanish here for consistency with the .md,
+% but specific Italian example sentences in the Target Grammatical Contexts
+% section have NOT been re-translated — they remain as they were in the draft.
+% Sync with the .md before submitting to OSF.
+
 \documentclass[12pt]{article}
 
 \usepackage[utf8]{inputenc}
@@ -14,7 +22,7 @@
 \geometry{margin=1in}
 
 \title{OSF Preregistration:\\
-Comparing Generative Linguistics and Information Theoretic Accounts of Subject Drop in English and Italian Using Statistical Language Models}
+Comparing Generative Linguistics and Information Theoretic Accounts of Subject Drop in English and Spanish Using Statistical Language Models}
 
 \author{
 Thomas Morton\textsuperscript{1} \and
@@ -39,13 +47,13 @@ Alex Warstadt\textsuperscript{3}\\[1em]
 \section{Title}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Comparing Generative Linguistics and Information Theoretic Accounts of Subject Drop in English and Italian Using Statistical Language Models
+Comparing Generative Linguistics and Information Theoretic Accounts of Subject Drop in English and Spanish Using Statistical Language Models
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Description}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This study compares generative linguistics and information theoretic accounts of subject drop in English and Italian. A majority of languages in the world allow for speakers to not pronounce the subject of sentences. This generalization within a language, whether to allow subject drop or disallow it broadly, has long been a subject of investigation in classical linguistics. Such approaches require that learners are pre-endowed with knowledge of the breadth of linguistic structures available to them, and that this innate knowledge allows them to learn given the data available to them. On the other hand, information theoretic and usage based accounts propose that learners do not need innate knowledge to aid learning, instead learners make inferences about language in context that lead to adult-like language use. We use statistical language models as candidate learners, manipulating the kind of information available to learners motivated by generative and information theoretic accounts, and compare learning across models and manipulations.
+This study compares generative linguistics and information theoretic accounts of subject drop in English and Spanish. A majority of languages in the world allow for speakers to not pronounce the subject of sentences. This generalization within a language, whether to allow subject drop or disallow it broadly, has long been a subject of investigation in classical linguistics. Such approaches require that learners are pre-endowed with knowledge of the breadth of linguistic structures available to them, and that this innate knowledge allows them to learn given the data available to them. On the other hand, information theoretic and usage based accounts propose that learners do not need innate knowledge to aid learning, instead learners make inferences about language in context that lead to adult-like language use. We use statistical language models as candidate learners, manipulating the kind of information available to learners motivated by generative and information theoretic accounts, and compare learning across models and manipulations.
 
 \textcolor{red}{[Talk about the generative accounts]}
 
@@ -110,7 +118,7 @@ Blinding describes who is aware of the experimental manipulations within a study
 \section{Study Design}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This study investigates learning in English and Italian Language Models by performing target manipulations on baseline English and Italian corpora which are then used to train Language Models. Each dataset is 90 million words and is tokenized for each model: broken up into computable vectors to be operated on within the models (see Appendix~\ref{app:tokenization}). Tokenized datasets are broken up into batches of 1024 tokens to be fed into the models. Models are trained in Epochs, where for each Epoch a model is trained on the whole 90 million words in its corpus. Each model is trained for twenty epochs---the same 90 million words 20 times over. Over the course of training, each model saves a checkpoint, which is a frozen copy of all of its weights and its tokenizer, 40 times in even log-space over the course of training. These checkpoints will be spaced in such a way that within-model they are comparable against each other, and between-model as close enough as reasonable for cross-model comparison (e.g.\ transformers are bound by optimizer steps for gradient accumulation in a way that an n-gram model would not be). So in a way, intervention-type is compared between and within-model, which makes for a fairly vast between-subjects matrix. However these comparisons are done with repeated-measures of the same evaluation tasks. Making this a between-subject repeated-measures design.
+This study investigates learning in English and Spanish Language Models by performing target manipulations on baseline English and Spanish corpora which are then used to train Language Models. Each dataset is 90 million words and is tokenized for each model: broken up into computable vectors to be operated on within the models (see Appendix~\ref{app:tokenization}). Tokenized datasets are broken up into batches of 1024 tokens to be fed into the models. Models are trained in Epochs, where for each Epoch a model is trained on the whole 90 million words in its corpus. Each model is trained for twenty epochs---the same 90 million words 20 times over. Over the course of training, each model saves a checkpoint, which is a frozen copy of all of its weights and its tokenizer, 40 times in even log-space over the course of training. These checkpoints will be spaced in such a way that within-model they are comparable against each other, and between-model as close enough as reasonable for cross-model comparison (e.g.\ transformers are bound by optimizer steps for gradient accumulation in a way that an n-gram model would not be). So in a way, intervention-type is compared between and within-model, which makes for a fairly vast between-subjects matrix. However these comparisons are done with repeated-measures of the same evaluation tasks. Making this a between-subject repeated-measures design.
 
 The factor chart, which can be split as Model $\times$ Intervention is fairly large as enabled by the computational design.
 
@@ -118,13 +126,17 @@ The factor chart, which can be split as Model $\times$ Intervention is fairly la
 
 \textbf{Model:} [n-gram: 1-, 2-, 3-, 4-, 5-gram; GPT: small, medium, large; BERT: large; LSTM; and Mamba: 370m]
 
-\textbf{Intervention:} [Baseline, Remove expletives, Remove Determiners, Impoverish Determiners, Impoverish Verbal Morphology, Insert Verbal Morphology, All-Evidence+Remove Pronouns (0:100 remove sweep, step 10), no other evidence+pronoun\_sweep]
+\textbf{Intervention:} [Baseline, Remove Expletives, Impoverish Verbal Morphology, Insert Verbal Morphology, Impoverish Case]
 
-\subsection{Italian}
+\textit{(Pronoun-distribution sweeps and determiner interventions from earlier plans are deferred; see .md canonical version.)}
+
+\subsection{Spanish}
 
 \textbf{Model:} [n-gram: 1-, 2-, 3-, 4-, 5-gram; GPT: small, medium, large; BERT: large; LSTM; and Mamba: 370m]
 
-\textbf{Intervention Conditions:} [Baseline, Remove Expletives, Remove Determiners, Impoverish Determiners, Impoverish Verbal Morphology, Insert Pronouns]
+\textbf{Intervention Conditions:} [Baseline, Remove Expletives, Impoverish Verbal Morphology, Impoverish Case, Insert Pronouns]
+
+\textit{(Determiner interventions from earlier plans are deferred; see .md canonical version.)}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Randomization}
@@ -152,7 +164,7 @@ While the model is trained, training loss is collected with the Weights \& Biase
 
 Then, the model is evaluated on its overall grammatical performance using BLiMP, The Benchmark of Linguistic Minimal Pairs, which tests the model's preference on comparisons of grammatical and ungrammatical linguistic sentences to assess the model's alignment with human judgements.
 
-In addition the model will be evaluated in the same way, on a suite of minimal pairs designed to target the model's preference on specific grammatical contexts relevant to the production of null and overt subjects and objects. This evaluation set is created parallel in English and Italian, such that for each English pair there is an Italian pair that is syntactically, if not semantically, equivalent, with differing or similar grammatical status. For each evaluation criteria there are 12 minimal pairs per language. Each part of a pair consists of a context sentence and a target sentence. The evaluation stimuli were generated by Deepseek-V2, a frontier LLM that scores among the highest marks on Italian performance according to the HuggingFace benchmark as of the time of writing. Both English and Italian sentences are evaluated respectively by one fluent researcher.
+In addition the model will be evaluated in the same way, on a suite of minimal pairs designed to target the model's preference on specific grammatical contexts relevant to the production of null and overt subjects and objects. This evaluation set is created parallel in English and Spanish, such that for each English pair there is a Spanish pair that is syntactically, if not semantically, equivalent, with differing or similar grammatical status. See the canonical .md version for current stimuli counts (1,488 rows / 744 paired items / 29 conditions / 11 categories including three Spanish-only categories). Each part of a pair consists of a context sentence and a target sentence. The evaluation stimuli were generated by Claude Opus 4.7 subagents following per-category translation rules (see \texttt{docs/eval\_stimuli/spanish.md}). Both English and Spanish sentences are verified by a fluent Peninsular-Spanish collaborator.
 
 \subsection{Target Grammatical Contexts}
 
@@ -164,7 +176,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex Marta won the award. She shows pride.
         \ex[*]{Marta won the award. Shows pride.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Marta ha vinto il premio. Lei mostra orgoglio.
         \ex Marta ha vinto il premio. Mostra orgoglio.
@@ -179,7 +191,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex The tourists missed the bus. They called a taxi.
         \ex[*]{The tourists missed the bus. Called a taxi.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex I turisti hanno perso l'autobus. Loro hanno chiamato un taxi.
         \ex I turisti hanno perso l'autobus. Hanno chiamato un taxi.
@@ -194,7 +206,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex Where is the vase? He placed it on the table.
         \ex[*]{Where is the vase? He placed on the table.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Dov'\`e il vaso? L'ha messo sul tavolo.
         \ex[*]{Dov'\`e il vaso? Ha messo sul tavolo.}
@@ -209,7 +221,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex The band played several new songs. The audience enjoyed them immensely.
         \ex[*]{The band played several new songs. The audience enjoyed immensely.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex La band ha suonato diverse nuove canzoni. Il pubblico le ha apprezzate moltissimo.
         \ex[*]{La band ha suonato diverse nuove canzoni. Il pubblico ha apprezzato moltissimo.}
@@ -224,7 +236,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex Luca, you forget the keys often. You take the keys before leaving.
         \ex[?]{Luca, you forget the keys often. Take the keys before leaving.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Luca, dimentichi le chiavi spesso. Tu prendi le chiavi prima di uscire.
         \ex Luca, dimentichi le chiavi spesso. Prendi le chiavi prima di uscire.
@@ -239,7 +251,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex Guys, you leave the window open. You all let the cat in.
         \ex[?]{Guys, you leave the window open. Let the cat in.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Ragazzi, lasciate la finestra aperta. Voi fate entrare il gatto.
         \ex Ragazzi, lasciate la finestra aperta. Fate entrare il gatto.
@@ -254,7 +266,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex I just finished the project. I believe that the result is satisfactory.
         \ex[??]{I just finished the project. Believe that the result is satisfactory.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Ho appena finito il progetto. Io credo che il risultato sia soddisfacente.
         \ex Ho appena finito il progetto. Credo che il risultato sia soddisfacente.
@@ -273,7 +285,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex Marco arrived late. I know that he took the wrong train.
         \ex[*]{Marco arrived late. I know that took the wrong train.}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Marco \`e arrivato in ritardo. So che lui ha preso il treno sbagliato.
         \ex Marco \`e arrivato in ritardo. So che ha preso il treno sbagliato.
@@ -316,7 +328,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex A scientist will make the discovery. Who do you think will make the discovery?
         \ex[*]{A scientist will make the discovery. Who do you think that will make the discovery?}
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Uno scienziato far\`a la scoperta. Chi pensi far\`a la scoperta?
         \ex Uno scienziato far\`a la scoperta. Chi pensi che far\`a la scoperta?
@@ -331,7 +343,7 @@ In addition the model will be evaluated in the same way, on a suite of minimal p
         \ex The scientist will make the discovery. What do you think the scientist will make?
         \ex The scientist will make the discovery. What do you think that the scientist will make?
     \end{xlist}
-    \ex \textbf{Italian:}
+    \ex \textbf{Spanish:} \% WARN: example sentences below are Italian from earlier draft; re-translate to Spanish before submitting.
     \begin{xlist}
         \ex Lo scienziato far\`a una scoperta. Cosa pensi lo scienziato far\`a?
         \ex Lo scienziato far\`a una scoperta. Cosa pensi che lo scienziato far\`a?
@@ -403,7 +415,7 @@ For each sentence pair, $\text{SLOR}(\text{grammatical}) > \text{SLOR}(\text{ung
 
 \subsection{Overt vs Null Preference}
 
-The same measure will be taken for $\text{SLOR}(\text{overt}) > \text{SLOR}(\text{null}) = (1,0)$ to measure the model's overall preference for overt and null contexts irregardless of grammatical contrasts---this second criterion is relevant for cases like conjunction without topic shift where there is no strict expectation of grammaticality vs ungrammaticality, which is why it will not be included in the above accuracy measurements (only its topic-shift variant, where such a contrast is expected). Likewise, in Italian, such a measure is relevant only in some cases, as there is relatively free variation (with preference towards null subjects) for null and overt subjects.
+The same measure will be taken for $\text{SLOR}(\text{overt}) > \text{SLOR}(\text{null}) = (1,0)$ to measure the model's overall preference for overt and null contexts irregardless of grammatical contrasts---this second criterion is relevant for cases like conjunction without topic shift where there is no strict expectation of grammaticality vs ungrammaticality, which is why it will not be included in the above accuracy measurements (only its topic-shift variant, where such a contrast is expected). In Spanish, this measure is relevant across most \texttt{subject\_drop} items, since both overt and null variants are grammatical with null preferred in topic-continuity contexts.
 
 \subsection{Preference Strength}
 
