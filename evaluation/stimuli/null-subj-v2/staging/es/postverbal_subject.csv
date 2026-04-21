@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,postverbal_subject,postv_declarative,1,alguien tocó el timbre hace un momento .,maría llegó al aeropuerto ayer por la tarde .,llegó,1,es,ana,claude-opus-4.7
+1,postverbal_subject,postv_declarative,0,alguien tocó el timbre hace un momento .,llegó maría al aeropuerto ayer por la tarde .,llegó,0,es,ana,claude-opus-4.7
+2,postverbal_subject,postv_declarative,1,el partido empezaba muy temprano esa mañana .,sara salió de la casa sin desayunar .,salió,1,es,sara,claude-opus-4.7
+2,postverbal_subject,postv_declarative,0,el partido empezaba muy temprano esa mañana .,salió sara de la casa sin desayunar .,salió,0,es,sara,claude-opus-4.7
+3,postverbal_subject,postv_declarative,1,todos esperaban noticias del pueblo vecino .,elena trajo una carta para el alcalde .,trajo,1,es,elena,claude-opus-4.7
+3,postverbal_subject,postv_declarative,0,todos esperaban noticias del pueblo vecino .,trajo elena una carta para el alcalde .,trajo,0,es,elena,claude-opus-4.7
+4,postverbal_subject,postv_declarative,1,la sala estaba en completo silencio .,daniel dijo algo importante en voz baja .,dijo,1,es,daniel,claude-opus-4.7
+4,postverbal_subject,postv_declarative,0,la sala estaba en completo silencio .,dijo daniel algo importante en voz baja .,dijo,0,es,daniel,claude-opus-4.7
+5,postverbal_subject,postv_declarative,1,el escenario se encendió con luces brillantes .,mario cantó la canción nueva del disco .,cantó,1,es,mario,claude-opus-4.7
+5,postverbal_subject,postv_declarative,0,el escenario se encendió con luces brillantes .,cantó mario la canción nueva del disco .,cantó,0,es,mario,claude-opus-4.7
+6,postverbal_subject,postv_declarative,1,el jardín quedó lleno de hojas secas .,pablo cayó del árbol durante la tormenta .,cayó,1,es,pablo,claude-opus-4.7
+6,postverbal_subject,postv_declarative,0,el jardín quedó lleno de hojas secas .,cayó pablo del árbol durante la tormenta .,cayó,0,es,pablo,claude-opus-4.7
+7,postverbal_subject,postv_declarative,1,la puerta se abrió de repente .,clara entró en el despacho sin avisar .,entró,1,es,clara,claude-opus-4.7
+7,postverbal_subject,postv_declarative,0,la puerta se abrió de repente .,entró clara en el despacho sin avisar .,entró,0,es,clara,claude-opus-4.7
+8,postverbal_subject,postv_declarative,1,los invitados comentaban la ausencia del director .,lucas apareció en la fiesta muy tarde .,apareció,1,es,lucas,claude-opus-4.7
+8,postverbal_subject,postv_declarative,0,los invitados comentaban la ausencia del director .,apareció lucas en la fiesta muy tarde .,apareció,0,es,lucas,claude-opus-4.7
+9,postverbal_subject,postv_declarative,1,el concurso necesitaba una ganadora clara .,lucía ganó el premio del jurado popular .,ganó,1,es,lucia,claude-opus-4.7
+9,postverbal_subject,postv_declarative,0,el concurso necesitaba una ganadora clara .,ganó lucía el premio del jurado popular .,ganó,0,es,lucia,claude-opus-4.7
+10,postverbal_subject,postv_declarative,1,el tren hizo una parada inesperada .,sofía bajó del vagón con mucha prisa .,bajó,1,es,sofia,claude-opus-4.7
+10,postverbal_subject,postv_declarative,0,el tren hizo una parada inesperada .,bajó sofía del vagón con mucha prisa .,bajó,0,es,sofia,claude-opus-4.7
+11,postverbal_subject,postv_declarative,1,la familia celebraba un acontecimiento especial .,marco nació en la primavera pasada .,nació,1,es,marco,claude-opus-4.7
+11,postverbal_subject,postv_declarative,0,la familia celebraba un acontecimiento especial .,nació marco en la primavera pasada .,nació,0,es,marco,claude-opus-4.7
+12,postverbal_subject,postv_declarative,1,los vecinos escucharon ruidos en el pasillo .,david subió las escaleras con sigilo .,subió,1,es,david,claude-opus-4.7
+12,postverbal_subject,postv_declarative,0,los vecinos escucharon ruidos en el pasillo .,subió david las escaleras con sigilo .,subió,0,es,david,claude-opus-4.7
+13,postverbal_subject,postv_declarative,1,la reunión se había alargado demasiado .,óscar volvió a casa pasada la medianoche .,volvió,1,es,oscar,claude-opus-4.7
+13,postverbal_subject,postv_declarative,0,la reunión se había alargado demasiado .,volvió óscar a casa pasada la medianoche .,volvió,0,es,oscar,claude-opus-4.7
+14,postverbal_subject,postv_declarative,1,el sobre estaba encima de la mesa .,marta escribió la carta esa misma tarde .,escribió,1,es,marta,claude-opus-4.7
+14,postverbal_subject,postv_declarative,0,el sobre estaba encima de la mesa .,escribió marta la carta esa misma tarde .,escribió,0,es,marta,claude-opus-4.7
+15,postverbal_subject,postv_declarative,1,había mucho movimiento en el mercado .,ana compró el pan antes del mediodía .,compró,1,es,ana,claude-opus-4.7
+15,postverbal_subject,postv_declarative,0,había mucho movimiento en el mercado .,compró ana el pan antes del mediodía .,compró,0,es,ana,claude-opus-4.7
+16,postverbal_subject,postv_declarative,1,el profesor hizo una pregunta difícil .,elena respondió con gran seguridad .,respondió,1,es,elena,claude-opus-4.7
+16,postverbal_subject,postv_declarative,0,el profesor hizo una pregunta difícil .,respondió elena con gran seguridad .,respondió,0,es,elena,claude-opus-4.7
+17,postverbal_subject,postv_declarative,1,el concierto duró varias horas .,sara tocó el violín al principio del programa .,tocó,1,es,sara,claude-opus-4.7
+17,postverbal_subject,postv_declarative,0,el concierto duró varias horas .,tocó sara el violín al principio del programa .,tocó,0,es,sara,claude-opus-4.7
+18,postverbal_subject,postv_declarative,1,el público aplaudía sin parar .,pablo leyó el poema final del libro .,leyó,1,es,pablo,claude-opus-4.7
+18,postverbal_subject,postv_declarative,0,el público aplaudía sin parar .,leyó pablo el poema final del libro .,leyó,0,es,pablo,claude-opus-4.7
+19,postverbal_subject,postv_declarative,1,el aula estaba llena de estudiantes nuevos .,mario explicó la lección con paciencia .,explicó,1,es,mario,claude-opus-4.7
+19,postverbal_subject,postv_declarative,0,el aula estaba llena de estudiantes nuevos .,explicó mario la lección con paciencia .,explicó,0,es,mario,claude-opus-4.7
+20,postverbal_subject,postv_declarative,1,la ventana daba al jardín trasero .,clara vio el gato entre los arbustos .,vio,1,es,clara,claude-opus-4.7
+20,postverbal_subject,postv_declarative,0,la ventana daba al jardín trasero .,vio clara el gato entre los arbustos .,vio,0,es,clara,claude-opus-4.7
+21,postverbal_subject,postv_declarative,1,el equipo necesitaba un gol rápido .,daniel marcó el tanto en el último minuto .,marcó,1,es,daniel,claude-opus-4.7
+21,postverbal_subject,postv_declarative,0,el equipo necesitaba un gol rápido .,marcó daniel el tanto en el último minuto .,marcó,0,es,daniel,claude-opus-4.7
+22,postverbal_subject,postv_declarative,1,las llaves estaban perdidas desde ayer .,lucas encontró el juego debajo del sofá .,encontró,1,es,lucas,claude-opus-4.7
+22,postverbal_subject,postv_declarative,0,las llaves estaban perdidas desde ayer .,encontró lucas el juego debajo del sofá .,encontró,0,es,lucas,claude-opus-4.7
+23,postverbal_subject,postv_declarative,1,la panadería abría muy temprano .,lucía preparó el desayuno para la familia .,preparó,1,es,lucia,claude-opus-4.7
+23,postverbal_subject,postv_declarative,0,la panadería abría muy temprano .,preparó lucía el desayuno para la familia .,preparó,0,es,lucia,claude-opus-4.7
+24,postverbal_subject,postv_declarative,1,el cuadro colgaba torcido en la pared .,marta pintó el retrato hace muchos años .,pintó,1,es,marta,claude-opus-4.7
+24,postverbal_subject,postv_declarative,0,el cuadro colgaba torcido en la pared .,pintó marta el retrato hace muchos años .,pintó,0,es,marta,claude-opus-4.7
+25,postverbal_subject,postv_interrogative,1,alguien mencionó algo durante la cena .,¿ qué ana dijo en la mesa ?,dijo,3,es,ana,claude-opus-4.7
+25,postverbal_subject,postv_interrogative,0,alguien mencionó algo durante la cena .,¿ qué dijo ana en la mesa ?,dijo,2,es,ana,claude-opus-4.7
+26,postverbal_subject,postv_interrogative,1,la tienda tenía muchas cosas distintas .,¿ qué sara compró en el mercado ?,compró,3,es,sara,claude-opus-4.7
+26,postverbal_subject,postv_interrogative,0,la tienda tenía muchas cosas distintas .,¿ qué compró sara en el mercado ?,compró,2,es,sara,claude-opus-4.7
+27,postverbal_subject,postv_interrogative,1,el paquete llegó sin remitente visible .,¿ qué elena trajo del correo ?,trajo,3,es,elena,claude-opus-4.7
+27,postverbal_subject,postv_interrogative,0,el paquete llegó sin remitente visible .,¿ qué trajo elena del correo ?,trajo,2,es,elena,claude-opus-4.7
+28,postverbal_subject,postv_interrogative,1,la clase terminó con una buena noticia .,¿ qué daniel anunció al final ?,anunció,3,es,daniel,claude-opus-4.7
+28,postverbal_subject,postv_interrogative,0,la clase terminó con una buena noticia .,¿ qué anunció daniel al final ?,anunció,2,es,daniel,claude-opus-4.7
+29,postverbal_subject,postv_interrogative,1,el chef ofrecía varios platos del día .,¿ qué mario pidió en el restaurante ?,pidió,3,es,mario,claude-opus-4.7
+29,postverbal_subject,postv_interrogative,0,el chef ofrecía varios platos del día .,¿ qué pidió mario en el restaurante ?,pidió,2,es,mario,claude-opus-4.7
+30,postverbal_subject,postv_interrogative,1,el taller mostraba libros de todo tipo .,¿ qué pablo escribió sobre el viaje ?,escribió,3,es,pablo,claude-opus-4.7
+30,postverbal_subject,postv_interrogative,0,el taller mostraba libros de todo tipo .,¿ qué escribió pablo sobre el viaje ?,escribió,2,es,pablo,claude-opus-4.7
+31,postverbal_subject,postv_interrogative,1,el coro interpretó varias piezas nuevas .,¿ qué clara cantó al principio ?,cantó,3,es,clara,claude-opus-4.7
+31,postverbal_subject,postv_interrogative,0,el coro interpretó varias piezas nuevas .,¿ qué cantó clara al principio ?,cantó,2,es,clara,claude-opus-4.7
+32,postverbal_subject,postv_interrogative,1,la biblioteca tenía muchos títulos recientes .,¿ qué lucas leyó durante el verano ?,leyó,3,es,lucas,claude-opus-4.7
+32,postverbal_subject,postv_interrogative,0,la biblioteca tenía muchos títulos recientes .,¿ qué leyó lucas durante el verano ?,leyó,2,es,lucas,claude-opus-4.7
+33,postverbal_subject,postv_interrogative,1,el jardín estaba lleno de animales .,¿ qué lucía vio entre los árboles ?,vio,3,es,lucia,claude-opus-4.7
+33,postverbal_subject,postv_interrogative,0,el jardín estaba lleno de animales .,¿ qué vio lucía entre los árboles ?,vio,2,es,lucia,claude-opus-4.7
+34,postverbal_subject,postv_interrogative,1,la cocina tenía muchos ingredientes frescos .,¿ qué sofía preparó para el almuerzo ?,preparó,3,es,sofia,claude-opus-4.7
+34,postverbal_subject,postv_interrogative,0,la cocina tenía muchos ingredientes frescos .,¿ qué preparó sofía para el almuerzo ?,preparó,2,es,sofia,claude-opus-4.7
+35,postverbal_subject,postv_interrogative,1,el museo exhibía muchas obras distintas .,¿ qué marco pintó el año pasado ?,pintó,3,es,marco,claude-opus-4.7
+35,postverbal_subject,postv_interrogative,0,el museo exhibía muchas obras distintas .,¿ qué pintó marco el año pasado ?,pintó,2,es,marco,claude-opus-4.7
+36,postverbal_subject,postv_interrogative,1,la tienda rebajaba muchos artículos hoy .,¿ qué david compró ayer en la feria ?,compró,3,es,david,claude-opus-4.7
+36,postverbal_subject,postv_interrogative,0,la tienda rebajaba muchos artículos hoy .,¿ qué compró david ayer en la feria ?,compró,2,es,david,claude-opus-4.7
+37,postverbal_subject,postv_interrogative,1,el escenario mostraba un piano antiguo .,¿ qué óscar tocó durante el concierto ?,tocó,3,es,oscar,claude-opus-4.7
+37,postverbal_subject,postv_interrogative,0,el escenario mostraba un piano antiguo .,¿ qué tocó óscar durante el concierto ?,tocó,2,es,oscar,claude-opus-4.7
+38,postverbal_subject,postv_interrogative,1,la carta nunca llegó a su destino .,¿ qué marta escribió en ese sobre ?,escribió,3,es,marta,claude-opus-4.7
+38,postverbal_subject,postv_interrogative,0,la carta nunca llegó a su destino .,¿ qué escribió marta en ese sobre ?,escribió,2,es,marta,claude-opus-4.7
+39,postverbal_subject,postv_interrogative,1,el equipo buscaba un nuevo entrenador .,¿ quién ana recomendó para el puesto ?,recomendó,3,es,ana,claude-opus-4.7
+39,postverbal_subject,postv_interrogative,0,el equipo buscaba un nuevo entrenador .,¿ quién recomendó ana para el puesto ?,recomendó,2,es,ana,claude-opus-4.7
+40,postverbal_subject,postv_interrogative,1,la reunión terminó con varias propuestas .,¿ cuál sara eligió al final ?,eligió,3,es,sara,claude-opus-4.7
+40,postverbal_subject,postv_interrogative,0,la reunión terminó con varias propuestas .,¿ cuál eligió sara al final ?,eligió,2,es,sara,claude-opus-4.7
+41,postverbal_subject,postv_interrogative,1,el aula estaba llena de estudiantes curiosos .,¿ qué elena explicó sobre la historia ?,explicó,3,es,elena,claude-opus-4.7
+41,postverbal_subject,postv_interrogative,0,el aula estaba llena de estudiantes curiosos .,¿ qué explicó elena sobre la historia ?,explicó,2,es,elena,claude-opus-4.7
+42,postverbal_subject,postv_interrogative,1,el periódico publicó una entrevista larga .,¿ qué daniel respondió al periodista ?,respondió,3,es,daniel,claude-opus-4.7
+42,postverbal_subject,postv_interrogative,0,el periódico publicó una entrevista larga .,¿ qué respondió daniel al periodista ?,respondió,2,es,daniel,claude-opus-4.7
+43,postverbal_subject,postv_interrogative,1,el banco quedó cerrado toda la tarde .,¿ qué mario pagó antes del mediodía ?,pagó,3,es,mario,claude-opus-4.7
+43,postverbal_subject,postv_interrogative,0,el banco quedó cerrado toda la tarde .,¿ qué pagó mario antes del mediodía ?,pagó,2,es,mario,claude-opus-4.7
+44,postverbal_subject,postv_interrogative,1,la lista estaba llena de tareas .,¿ qué pablo terminó durante la mañana ?,terminó,3,es,pablo,claude-opus-4.7
+44,postverbal_subject,postv_interrogative,0,la lista estaba llena de tareas .,¿ qué terminó pablo durante la mañana ?,terminó,2,es,pablo,claude-opus-4.7
+45,postverbal_subject,postv_interrogative,1,el jardín lucía especialmente bonito hoy .,¿ qué clara plantó en esa esquina ?,plantó,3,es,clara,claude-opus-4.7
+45,postverbal_subject,postv_interrogative,0,el jardín lucía especialmente bonito hoy .,¿ qué plantó clara en esa esquina ?,plantó,2,es,clara,claude-opus-4.7
+46,postverbal_subject,postv_interrogative,1,el estante tenía muchos objetos raros .,¿ qué lucas encontró en el ático ?,encontró,3,es,lucas,claude-opus-4.7
+46,postverbal_subject,postv_interrogative,0,el estante tenía muchos objetos raros .,¿ qué encontró lucas en el ático ?,encontró,2,es,lucas,claude-opus-4.7
+47,postverbal_subject,postv_interrogative,1,el taller quedó lleno de humo .,¿ qué marco quemó sin querer ?,quemó,3,es,marco,claude-opus-4.7
+47,postverbal_subject,postv_interrogative,0,el taller quedó lleno de humo .,¿ qué quemó marco sin querer ?,quemó,2,es,marco,claude-opus-4.7
+48,postverbal_subject,postv_interrogative,1,la escuela organizó un concurso de dibujo .,¿ qué david ganó en la ceremonia ?,ganó,3,es,david,claude-opus-4.7
+48,postverbal_subject,postv_interrogative,0,la escuela organizó un concurso de dibujo .,¿ qué ganó david en la ceremonia ?,ganó,2,es,david,claude-opus-4.7

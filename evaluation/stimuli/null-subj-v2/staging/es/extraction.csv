@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,extraction,ext_subj,0,,¿ quién crees ganará la carrera ?,ganará,3,es,,claude-opus-4.7
+1,extraction,ext_subj,1,,¿ quién crees que ganará la carrera ?,ganará,4,es,,claude-opus-4.7
+2,extraction,ext_subj,0,,¿ quién piensas resolverá el rompecabezas ?,resolverá,3,es,,claude-opus-4.7
+2,extraction,ext_subj,1,,¿ quién piensas que resolverá el rompecabezas ?,resolverá,4,es,,claude-opus-4.7
+3,extraction,ext_subj,0,,¿ quién dices dirigirá el comité ?,dirigirá,3,es,,claude-opus-4.7
+3,extraction,ext_subj,1,,¿ quién dices que dirigirá el comité ?,dirigirá,4,es,,claude-opus-4.7
+4,extraction,ext_subj,0,,¿ quién supones escribirá el informe ?,escribirá,3,es,,claude-opus-4.7
+4,extraction,ext_subj,1,,¿ quién supones que escribirá el informe ?,escribirá,4,es,,claude-opus-4.7
+5,extraction,ext_subj,0,,¿ quién afirmas encontrará la respuesta ?,encontrará,3,es,,claude-opus-4.7
+5,extraction,ext_subj,1,,¿ quién afirmas que encontrará la respuesta ?,encontrará,4,es,,claude-opus-4.7
+6,extraction,ext_subj,0,,¿ quién sospechas romperá el silencio ?,romperá,3,es,,claude-opus-4.7
+6,extraction,ext_subj,1,,¿ quién sospechas que romperá el silencio ?,romperá,4,es,,claude-opus-4.7
+7,extraction,ext_subj,0,,¿ quién imaginas tomará el puesto ?,tomará,3,es,,claude-opus-4.7
+7,extraction,ext_subj,1,,¿ quién imaginas que tomará el puesto ?,tomará,4,es,,claude-opus-4.7
+8,extraction,ext_subj,0,,¿ quién esperas visitará la clase ?,visitará,3,es,,claude-opus-4.7
+8,extraction,ext_subj,1,,¿ quién esperas que visitará la clase ?,visitará,4,es,,claude-opus-4.7
+9,extraction,ext_subj,0,,¿ quién asumes abrirá la reunión ?,abrirá,3,es,,claude-opus-4.7
+9,extraction,ext_subj,1,,¿ quién asumes que abrirá la reunión ?,abrirá,4,es,,claude-opus-4.7
+10,extraction,ext_subj,0,,¿ quién admites enseñará la lección ?,enseñará,3,es,,claude-opus-4.7
+10,extraction,ext_subj,1,,¿ quién admites que enseñará la lección ?,enseñará,4,es,,claude-opus-4.7
+11,extraction,ext_subj,0,,¿ quién adivinas comprará la casa ?,comprará,3,es,,claude-opus-4.7
+11,extraction,ext_subj,1,,¿ quién adivinas que comprará la casa ?,comprará,4,es,,claude-opus-4.7
+12,extraction,ext_subj,0,,¿ quién argumentas salvará el proyecto ?,salvará,3,es,,claude-opus-4.7
+12,extraction,ext_subj,1,,¿ quién argumentas que salvará el proyecto ?,salvará,4,es,,claude-opus-4.7
+13,extraction,ext_subj,0,,¿ qué científico crees hará el descubrimiento ?,hará,4,es,,claude-opus-4.7
+13,extraction,ext_subj,1,,¿ qué científico crees que hará el descubrimiento ?,hará,5,es,,claude-opus-4.7
+14,extraction,ext_subj,0,,¿ qué autor piensas escribirá la secuela ?,escribirá,4,es,,claude-opus-4.7
+14,extraction,ext_subj,1,,¿ qué autor piensas que escribirá la secuela ?,escribirá,5,es,,claude-opus-4.7
+15,extraction,ext_subj,0,,¿ qué estudiante asumes aprobará el examen ?,aprobará,4,es,,claude-opus-4.7
+15,extraction,ext_subj,1,,¿ qué estudiante asumes que aprobará el examen ?,aprobará,5,es,,claude-opus-4.7
+16,extraction,ext_subj,0,,¿ qué cocinero esperas preparará la cena ?,preparará,4,es,,claude-opus-4.7
+16,extraction,ext_subj,1,,¿ qué cocinero esperas que preparará la cena ?,preparará,5,es,,claude-opus-4.7
+17,extraction,ext_subj,0,,¿ qué corredor supones terminará la carrera ?,terminará,4,es,,claude-opus-4.7
+17,extraction,ext_subj,1,,¿ qué corredor supones que terminará la carrera ?,terminará,5,es,,claude-opus-4.7
+18,extraction,ext_subj,0,,¿ qué artista imaginas pintará el mural ?,pintará,4,es,,claude-opus-4.7
+18,extraction,ext_subj,1,,¿ qué artista imaginas que pintará el mural ?,pintará,5,es,,claude-opus-4.7
+19,extraction,ext_subj,0,,¿ qué profesor afirmas corregirá los ensayos ?,corregirá,4,es,,claude-opus-4.7
+19,extraction,ext_subj,1,,¿ qué profesor afirmas que corregirá los ensayos ?,corregirá,5,es,,claude-opus-4.7
+20,extraction,ext_subj,0,,¿ qué médico sospechas tratará al paciente ?,tratará,4,es,,claude-opus-4.7
+20,extraction,ext_subj,1,,¿ qué médico sospechas que tratará al paciente ?,tratará,5,es,,claude-opus-4.7
+21,extraction,ext_subj,0,,¿ qué dices pasará en el juicio ?,pasará,3,es,,claude-opus-4.7
+21,extraction,ext_subj,1,,¿ qué dices que pasará en el juicio ?,pasará,4,es,,claude-opus-4.7
+22,extraction,ext_subj,0,,¿ qué supones saldrá mal mañana ?,saldrá,3,es,,claude-opus-4.7
+22,extraction,ext_subj,1,,¿ qué supones que saldrá mal mañana ?,saldrá,4,es,,claude-opus-4.7
+23,extraction,ext_subj,0,,¿ qué crees cambiará la próxima semana ?,cambiará,3,es,,claude-opus-4.7
+23,extraction,ext_subj,1,,¿ qué crees que cambiará la próxima semana ?,cambiará,4,es,,claude-opus-4.7
+24,extraction,ext_subj,0,,¿ qué piensas resultará de este plan ?,resultará,3,es,,claude-opus-4.7
+24,extraction,ext_subj,1,,¿ qué piensas que resultará de este plan ?,resultará,4,es,,claude-opus-4.7
+1,extraction,ext_obj,0,,¿ qué crees el científico descubrirá ?,el,3,es,,claude-opus-4.7
+1,extraction,ext_obj,1,,¿ qué crees que el científico descubrirá ?,el,4,es,,claude-opus-4.7
+2,extraction,ext_obj,0,,¿ qué piensas el autor publicará ?,el,3,es,,claude-opus-4.7
+2,extraction,ext_obj,1,,¿ qué piensas que el autor publicará ?,el,4,es,,claude-opus-4.7
+3,extraction,ext_obj,0,,¿ qué dices el comité elegirá ?,el,3,es,,claude-opus-4.7
+3,extraction,ext_obj,1,,¿ qué dices que el comité elegirá ?,el,4,es,,claude-opus-4.7
+4,extraction,ext_obj,0,,¿ qué supones el cocinero preparará ?,el,3,es,,claude-opus-4.7
+4,extraction,ext_obj,1,,¿ qué supones que el cocinero preparará ?,el,4,es,,claude-opus-4.7
+5,extraction,ext_obj,0,,¿ qué afirmas el testigo revelará ?,el,3,es,,claude-opus-4.7
+5,extraction,ext_obj,1,,¿ qué afirmas que el testigo revelará ?,el,4,es,,claude-opus-4.7
+6,extraction,ext_obj,0,,¿ qué sospechas el ladrón robará ?,el,3,es,,claude-opus-4.7
+6,extraction,ext_obj,1,,¿ qué sospechas que el ladrón robará ?,el,4,es,,claude-opus-4.7
+7,extraction,ext_obj,0,,¿ qué imaginas el escritor inventará ?,el,3,es,,claude-opus-4.7
+7,extraction,ext_obj,1,,¿ qué imaginas que el escritor inventará ?,el,4,es,,claude-opus-4.7
+8,extraction,ext_obj,0,,¿ qué esperas el juez decidirá ?,el,3,es,,claude-opus-4.7
+8,extraction,ext_obj,1,,¿ qué esperas que el juez decidirá ?,el,4,es,,claude-opus-4.7
+9,extraction,ext_obj,0,,¿ qué asumes el artista creará ?,el,3,es,,claude-opus-4.7
+9,extraction,ext_obj,1,,¿ qué asumes que el artista creará ?,el,4,es,,claude-opus-4.7
+10,extraction,ext_obj,0,,¿ qué admites el mecánico arreglará ?,el,3,es,,claude-opus-4.7
+10,extraction,ext_obj,1,,¿ qué admites que el mecánico arreglará ?,el,4,es,,claude-opus-4.7
+11,extraction,ext_obj,0,,¿ qué adivinas el granjero cultivará ?,el,3,es,,claude-opus-4.7
+11,extraction,ext_obj,1,,¿ qué adivinas que el granjero cultivará ?,el,4,es,,claude-opus-4.7
+12,extraction,ext_obj,0,,¿ qué argumentas el senador propondrá ?,el,3,es,,claude-opus-4.7
+12,extraction,ext_obj,1,,¿ qué argumentas que el senador propondrá ?,el,4,es,,claude-opus-4.7
+13,extraction,ext_obj,0,,¿ qué libro crees el profesor asignará ?,el,4,es,,claude-opus-4.7
+13,extraction,ext_obj,1,,¿ qué libro crees que el profesor asignará ?,el,5,es,,claude-opus-4.7
+14,extraction,ext_obj,0,,¿ qué canción piensas el grupo tocará ?,el,4,es,,claude-opus-4.7
+14,extraction,ext_obj,1,,¿ qué canción piensas que el grupo tocará ?,el,5,es,,claude-opus-4.7
+15,extraction,ext_obj,0,,¿ qué pintura asumes el museo expondrá ?,el,4,es,,claude-opus-4.7
+15,extraction,ext_obj,1,,¿ qué pintura asumes que el museo expondrá ?,el,5,es,,claude-opus-4.7
+16,extraction,ext_obj,0,,¿ qué plato esperas el cocinero preparará ?,el,4,es,,claude-opus-4.7
+16,extraction,ext_obj,1,,¿ qué plato esperas que el cocinero preparará ?,el,5,es,,claude-opus-4.7
+17,extraction,ext_obj,0,,¿ qué coche supones el conductor elegirá ?,el,4,es,,claude-opus-4.7
+17,extraction,ext_obj,1,,¿ qué coche supones que el conductor elegirá ?,el,5,es,,claude-opus-4.7
+18,extraction,ext_obj,0,,¿ qué novela imaginas el club leerá ?,el,4,es,,claude-opus-4.7
+18,extraction,ext_obj,1,,¿ qué novela imaginas que el club leerá ?,el,5,es,,claude-opus-4.7
+19,extraction,ext_obj,0,,¿ qué casa afirmas el comprador pagará ?,el,4,es,,claude-opus-4.7
+19,extraction,ext_obj,1,,¿ qué casa afirmas que el comprador pagará ?,el,5,es,,claude-opus-4.7
+20,extraction,ext_obj,0,,¿ qué película sospechas el crítico odiará ?,el,4,es,,claude-opus-4.7
+20,extraction,ext_obj,1,,¿ qué película sospechas que el crítico odiará ?,el,5,es,,claude-opus-4.7
+21,extraction,ext_obj,0,,¿ a quién dices el entrenador contratará ?,el,4,es,,claude-opus-4.7
+21,extraction,ext_obj,1,,¿ a quién dices que el entrenador contratará ?,el,5,es,,claude-opus-4.7
+22,extraction,ext_obj,0,,¿ a quién supones el director elegirá ?,el,4,es,,claude-opus-4.7
+22,extraction,ext_obj,1,,¿ a quién supones que el director elegirá ?,el,5,es,,claude-opus-4.7
+23,extraction,ext_obj,0,,¿ a quién crees el jurado creerá ?,el,4,es,,claude-opus-4.7
+23,extraction,ext_obj,1,,¿ a quién crees que el jurado creerá ?,el,5,es,,claude-opus-4.7
+24,extraction,ext_obj,0,,¿ a quién piensas el jefe ascenderá ?,el,4,es,,claude-opus-4.7
+24,extraction,ext_obj,1,,¿ a quién piensas que el jefe ascenderá ?,el,5,es,,claude-opus-4.7

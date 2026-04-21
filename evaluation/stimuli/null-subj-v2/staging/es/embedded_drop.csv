@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,embedded_drop,emb_coref,1,ana horneó galletas para la clase .,ana dice que ella ama hornear .,ama,4,es,ana,claude-opus-4.7
+1,embedded_drop,emb_coref,0,ana horneó galletas para la clase .,ana dice que ama hornear .,ama,3,es,ana,claude-opus-4.7
+2,embedded_drop,emb_coref,1,sara llegó a casa bastante temprano .,sara afirma que ella terminó su tarea .,terminó,4,es,sara,claude-opus-4.7
+2,embedded_drop,emb_coref,0,sara llegó a casa bastante temprano .,sara afirma que terminó su tarea .,terminó,3,es,sara,claude-opus-4.7
+3,embedded_drop,emb_coref,1,elena se unió al club de arte .,elena piensa que ella necesita más práctica .,necesita,4,es,elena,claude-opus-4.7
+3,embedded_drop,emb_coref,0,elena se unió al club de arte .,elena piensa que necesita más práctica .,necesita,3,es,elena,claude-opus-4.7
+4,embedded_drop,emb_coref,1,marta habló durante la reunión .,marta sabe que ella cometió un error .,cometió,4,es,marta,claude-opus-4.7
+4,embedded_drop,emb_coref,0,marta habló durante la reunión .,marta sabe que cometió un error .,cometió,3,es,marta,claude-opus-4.7
+5,embedded_drop,emb_coref,1,clara perdió el partido final .,clara cree que ella merece otra oportunidad .,merece,4,es,clara,claude-opus-4.7
+5,embedded_drop,emb_coref,0,clara perdió el partido final .,clara cree que merece otra oportunidad .,merece,3,es,clara,claude-opus-4.7
+6,embedded_drop,emb_coref,1,lucía perdió el autobús de la mañana .,lucía admite que ella llegó tarde hoy .,llegó,4,es,lucia,claude-opus-4.7
+6,embedded_drop,emb_coref,0,lucía perdió el autobús de la mañana .,lucía admite que llegó tarde hoy .,llegó,3,es,lucia,claude-opus-4.7
+7,embedded_drop,emb_coref,1,sofía revisó el horno dos veces .,sofía insiste que ella cerró la puerta .,cerró,4,es,sofia,claude-opus-4.7
+7,embedded_drop,emb_coref,0,sofía revisó el horno dos veces .,sofía insiste que cerró la puerta .,cerró,3,es,sofia,claude-opus-4.7
+8,embedded_drop,emb_coref,1,daniel corrió la carrera entera .,daniel dice que él entrenó muy duro .,entrenó,4,es,daniel,claude-opus-4.7
+8,embedded_drop,emb_coref,0,daniel corrió la carrera entera .,daniel dice que entrenó muy duro .,entrenó,3,es,daniel,claude-opus-4.7
+9,embedded_drop,emb_coref,1,mario cocinó una cena enorme .,mario afirma que él sigue la receta .,sigue,4,es,mario,claude-opus-4.7
+9,embedded_drop,emb_coref,0,mario cocinó una cena enorme .,mario afirma que sigue la receta .,sigue,3,es,mario,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo estudió toda la noche .,pablo piensa que él aprobó el examen .,aprobó,4,es,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo estudió toda la noche .,pablo piensa que aprobó el examen .,aprobó,3,es,pablo,claude-opus-4.7
+11,embedded_drop,emb_coref,1,lucas arregló la silla rota .,lucas sabe que él hizo buen trabajo .,hizo,4,es,lucas,claude-opus-4.7
+11,embedded_drop,emb_coref,0,lucas arregló la silla rota .,lucas sabe que hizo buen trabajo .,hizo,3,es,lucas,claude-opus-4.7
+12,embedded_drop,emb_coref,1,marco tomó el vuelo temprano .,marco cree que él ahorró mucho dinero .,ahorró,4,es,marco,claude-opus-4.7
+12,embedded_drop,emb_coref,0,marco tomó el vuelo temprano .,marco cree que ahorró mucho dinero .,ahorró,3,es,marco,claude-opus-4.7
+13,embedded_drop,emb_coref,1,david adoptó un perro callejero .,david admite que él mima al cachorro .,mima,4,es,david,claude-opus-4.7
+13,embedded_drop,emb_coref,0,david adoptó un perro callejero .,david admite que mima al cachorro .,mima,3,es,david,claude-opus-4.7
+14,embedded_drop,emb_coref,1,óscar pintó la cerca entera .,óscar espera que él termine para el viernes .,termine,4,es,oscar,claude-opus-4.7
+14,embedded_drop,emb_coref,0,óscar pintó la cerca entera .,óscar espera que termine para el viernes .,termine,3,es,oscar,claude-opus-4.7
+15,embedded_drop,emb_coref,1,ana cantó en el show de la tarde .,ana jura que ella olvidó la letra .,olvidó,4,es,ana,claude-opus-4.7
+15,embedded_drop,emb_coref,0,ana cantó en el show de la tarde .,ana jura que olvidó la letra .,olvidó,3,es,ana,claude-opus-4.7
+16,embedded_drop,emb_coref,1,sara llamó a la oficina principal .,sara confirma que ella reservó la sala .,reservó,4,es,sara,claude-opus-4.7
+16,embedded_drop,emb_coref,0,sara llamó a la oficina principal .,sara confirma que reservó la sala .,reservó,3,es,sara,claude-opus-4.7
+17,embedded_drop,emb_coref,1,elena plantó un pequeño jardín .,elena dice que ella la riega todos los días .,riega,5,es,elena,claude-opus-4.7
+17,embedded_drop,emb_coref,0,elena plantó un pequeño jardín .,elena dice que la riega todos los días .,riega,4,es,elena,claude-opus-4.7
+18,embedded_drop,emb_coref,1,daniel conoció a la nueva gerente .,daniel piensa que él la impresionó mucho .,impresionó,5,es,daniel,claude-opus-4.7
+18,embedded_drop,emb_coref,0,daniel conoció a la nueva gerente .,daniel piensa que la impresionó mucho .,impresionó,4,es,daniel,claude-opus-4.7
+19,embedded_drop,emb_coref,1,mario condujo por la fuerte tormenta .,mario afirma que él condujo con calma .,condujo,4,es,mario,claude-opus-4.7
+19,embedded_drop,emb_coref,0,mario condujo por la fuerte tormenta .,mario afirma que condujo con calma .,condujo,3,es,mario,claude-opus-4.7
+20,embedded_drop,emb_coref,1,pablo escribió un ensayo largo .,pablo sabe que él necesita otra versión .,necesita,4,es,pablo,claude-opus-4.7
+20,embedded_drop,emb_coref,0,pablo escribió un ensayo largo .,pablo sabe que necesita otra versión .,necesita,3,es,pablo,claude-opus-4.7
+21,embedded_drop,emb_coref,1,lucas se unió al club de ajedrez .,lucas cree que él juega bastante bien .,juega,4,es,lucas,claude-opus-4.7
+21,embedded_drop,emb_coref,0,lucas se unió al club de ajedrez .,lucas cree que juega bastante bien .,juega,3,es,lucas,claude-opus-4.7
+22,embedded_drop,emb_coref,1,marta vio la película entera .,marta admite que ella lloró al final .,lloró,4,es,marta,claude-opus-4.7
+22,embedded_drop,emb_coref,0,marta vio la película entera .,marta admite que lloró al final .,lloró,3,es,marta,claude-opus-4.7
+23,embedded_drop,emb_coref,1,clara habló con el entrenador principal .,clara insiste que ella quiere competir .,quiere,4,es,clara,claude-opus-4.7
+23,embedded_drop,emb_coref,0,clara habló con el entrenador principal .,clara insiste que quiere competir .,quiere,3,es,clara,claude-opus-4.7
+24,embedded_drop,emb_coref,1,marco abrió una pequeña panadería .,marco espera que él atraiga a muchos clientes .,atraiga,4,es,marco,claude-opus-4.7
+24,embedded_drop,emb_coref,0,marco abrió una pequeña panadería .,marco espera que atraiga a muchos clientes .,atraiga,3,es,marco,claude-opus-4.7
+1,embedded_drop,emb_noncoref,1,ana perdió el plazo otra vez .,yo creo que ella necesita más tiempo .,necesita,4,es,ana,claude-opus-4.7
+1,embedded_drop,emb_noncoref,0,ana perdió el plazo otra vez .,yo creo que necesita más tiempo .,necesita,3,es,ana,claude-opus-4.7
+2,embedded_drop,emb_noncoref,1,sara ganó el concurso de escritura .,yo oigo que ella escribió sobre su familia .,escribió,4,es,sara,claude-opus-4.7
+2,embedded_drop,emb_noncoref,0,sara ganó el concurso de escritura .,yo oigo que escribió sobre su familia .,escribió,3,es,sara,claude-opus-4.7
+3,embedded_drop,emb_noncoref,1,elena se mudó a una nueva ciudad .,yo sé que ella ama su apartamento .,ama,4,es,elena,claude-opus-4.7
+3,embedded_drop,emb_noncoref,0,elena se mudó a una nueva ciudad .,yo sé que ama su apartamento .,ama,3,es,elena,claude-opus-4.7
+4,embedded_drop,emb_noncoref,1,marta horneó el pastel de cumpleaños .,yo sospecho que ella usó mantequilla fresca .,usó,4,es,marta,claude-opus-4.7
+4,embedded_drop,emb_noncoref,0,marta horneó el pastel de cumpleaños .,yo sospecho que usó mantequilla fresca .,usó,3,es,marta,claude-opus-4.7
+5,embedded_drop,emb_noncoref,1,clara dejó la fiesta temprano .,yo supongo que ella estaba cansada .,estaba,4,es,clara,claude-opus-4.7
+5,embedded_drop,emb_noncoref,0,clara dejó la fiesta temprano .,yo supongo que estaba cansada .,estaba,3,es,clara,claude-opus-4.7
+6,embedded_drop,emb_noncoref,1,lucía empezó un nuevo pasatiempo .,yo creo que ella toca la guitarra .,toca,4,es,lucia,claude-opus-4.7
+6,embedded_drop,emb_noncoref,0,lucía empezó un nuevo pasatiempo .,yo creo que toca la guitarra .,toca,3,es,lucia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,1,sofía llamó tres veces hoy .,yo imagino que ella quiere un consejo .,quiere,4,es,sofia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,0,sofía llamó tres veces hoy .,yo imagino que quiere un consejo .,quiere,3,es,sofia,claude-opus-4.7
+8,embedded_drop,emb_noncoref,1,daniel llegó antes del amanecer hoy .,yo pienso que él condujo toda la noche .,condujo,4,es,daniel,claude-opus-4.7
+8,embedded_drop,emb_noncoref,0,daniel llegó antes del amanecer hoy .,yo pienso que condujo toda la noche .,condujo,3,es,daniel,claude-opus-4.7
+9,embedded_drop,emb_noncoref,1,mario faltó a la reunión del equipo .,yo oigo que él tuvo un conflicto .,tuvo,4,es,mario,claude-opus-4.7
+9,embedded_drop,emb_noncoref,0,mario faltó a la reunión del equipo .,yo oigo que tuvo un conflicto .,tuvo,3,es,mario,claude-opus-4.7
+10,embedded_drop,emb_noncoref,1,pablo terminó su proyecto final .,yo sé que él trabajó muy duro .,trabajó,4,es,pablo,claude-opus-4.7
+10,embedded_drop,emb_noncoref,0,pablo terminó su proyecto final .,yo sé que trabajó muy duro .,trabajó,3,es,pablo,claude-opus-4.7
+11,embedded_drop,emb_noncoref,1,lucas hizo el turno de la mañana .,yo veo que él abrió a tiempo .,abrió,4,es,lucas,claude-opus-4.7
+11,embedded_drop,emb_noncoref,0,lucas hizo el turno de la mañana .,yo veo que abrió a tiempo .,abrió,3,es,lucas,claude-opus-4.7
+12,embedded_drop,emb_noncoref,1,marco regresó de un largo viaje .,yo sospecho que él visitó a sus primos .,visitó,4,es,marco,claude-opus-4.7
+12,embedded_drop,emb_noncoref,0,marco regresó de un largo viaje .,yo sospecho que visitó a sus primos .,visitó,3,es,marco,claude-opus-4.7
+13,embedded_drop,emb_noncoref,1,david aceptó la nueva oferta de trabajo .,yo supongo que él necesita el dinero extra .,necesita,4,es,david,claude-opus-4.7
+13,embedded_drop,emb_noncoref,0,david aceptó la nueva oferta de trabajo .,yo supongo que necesita el dinero extra .,necesita,3,es,david,claude-opus-4.7
+14,embedded_drop,emb_noncoref,1,óscar arregló el fregadero de la cocina .,yo creo que él vio un tutorial .,vio,4,es,oscar,claude-opus-4.7
+14,embedded_drop,emb_noncoref,0,óscar arregló el fregadero de la cocina .,yo creo que vio un tutorial .,vio,3,es,oscar,claude-opus-4.7
+15,embedded_drop,emb_noncoref,1,ana cantó durante el show de la tarde .,yo reconozco que ella practicó por meses .,practicó,4,es,ana,claude-opus-4.7
+15,embedded_drop,emb_noncoref,0,ana cantó durante el show de la tarde .,yo reconozco que practicó por meses .,practicó,3,es,ana,claude-opus-4.7
+16,embedded_drop,emb_noncoref,1,sara plantó un pequeño árbol .,yo noto que ella la riega a menudo .,riega,5,es,sara,claude-opus-4.7
+16,embedded_drop,emb_noncoref,0,sara plantó un pequeño árbol .,yo noto que la riega a menudo .,riega,4,es,sara,claude-opus-4.7
+17,embedded_drop,emb_noncoref,1,elena tomó el vuelo muy tarde .,yo imagino que ella ahorró algo de dinero .,ahorró,4,es,elena,claude-opus-4.7
+17,embedded_drop,emb_noncoref,0,elena tomó el vuelo muy tarde .,yo imagino que ahorró algo de dinero .,ahorró,3,es,elena,claude-opus-4.7
+18,embedded_drop,emb_noncoref,1,daniel organizó una cena tranquila .,yo oigo que él cocinó todo solo .,cocinó,4,es,daniel,claude-opus-4.7
+18,embedded_drop,emb_noncoref,0,daniel organizó una cena tranquila .,yo oigo que cocinó todo solo .,cocinó,3,es,daniel,claude-opus-4.7
+19,embedded_drop,emb_noncoref,1,mario dejó la reunión temprano .,yo veo que él corrió a otra cita .,corrió,4,es,mario,claude-opus-4.7
+19,embedded_drop,emb_noncoref,0,mario dejó la reunión temprano .,yo veo que corrió a otra cita .,corrió,3,es,mario,claude-opus-4.7
+20,embedded_drop,emb_noncoref,1,pablo compró un coche pequeño .,yo noto que él lo conduce a todas partes .,conduce,5,es,pablo,claude-opus-4.7
+20,embedded_drop,emb_noncoref,0,pablo compró un coche pequeño .,yo noto que lo conduce a todas partes .,conduce,4,es,pablo,claude-opus-4.7
+21,embedded_drop,emb_noncoref,1,lucas estudió en la biblioteca .,yo noto que él prefiere el silencio .,prefiere,4,es,lucas,claude-opus-4.7
+21,embedded_drop,emb_noncoref,0,lucas estudió en la biblioteca .,yo noto que prefiere el silencio .,prefiere,3,es,lucas,claude-opus-4.7
+22,embedded_drop,emb_noncoref,1,marco pintó el porche delantero .,yo sospecho que él eligió el color solo .,eligió,4,es,marco,claude-opus-4.7
+22,embedded_drop,emb_noncoref,0,marco pintó el porche delantero .,yo sospecho que eligió el color solo .,eligió,3,es,marco,claude-opus-4.7
+23,embedded_drop,emb_noncoref,1,marta pescó un fuerte resfriado .,yo sé que ella descansó en cama .,descansó,4,es,marta,claude-opus-4.7
+23,embedded_drop,emb_noncoref,0,marta pescó un fuerte resfriado .,yo sé que descansó en cama .,descansó,3,es,marta,claude-opus-4.7
+24,embedded_drop,emb_noncoref,1,clara se unió al grupo de senderismo .,yo afirmo que ella disfruta del aire libre .,disfruta,4,es,clara,claude-opus-4.7
+24,embedded_drop,emb_noncoref,0,clara se unió al grupo de senderismo .,yo afirmo que disfruta del aire libre .,disfruta,3,es,clara,claude-opus-4.7

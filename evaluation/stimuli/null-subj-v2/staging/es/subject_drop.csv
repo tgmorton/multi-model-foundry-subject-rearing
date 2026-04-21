@@ -1,0 +1,289 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,subject_drop,subj_3sg,1,ana ganó el premio .,ella muestra su orgullo abiertamente .,muestra,1,es,ana,claude-opus-4.7
+1,subject_drop,subj_3sg,0,ana ganó el premio .,muestra su orgullo abiertamente .,muestra,0,es,ana,claude-opus-4.7
+2,subject_drop,subj_3sg,1,sara entró en la orquesta .,ella practica el violín a diario .,practica,1,es,sara,claude-opus-4.7
+2,subject_drop,subj_3sg,0,sara entró en la orquesta .,practica el violín a diario .,practica,0,es,sara,claude-opus-4.7
+3,subject_drop,subj_3sg,1,elena pintó un mural enorme .,ella firmó la esquina inferior .,firmó,1,es,elena,claude-opus-4.7
+3,subject_drop,subj_3sg,0,elena pintó un mural enorme .,firmó la esquina inferior .,firmó,0,es,elena,claude-opus-4.7
+4,subject_drop,subj_3sg,1,marta horneó un pastel de chocolate .,ella trajo una porción a casa .,trajo,1,es,marta,claude-opus-4.7
+4,subject_drop,subj_3sg,0,marta horneó un pastel de chocolate .,trajo una porción a casa .,trajo,0,es,marta,claude-opus-4.7
+5,subject_drop,subj_3sg,1,clara terminó la novela larga .,ella recomendó el libro a todos .,recomendó,1,es,clara,claude-opus-4.7
+5,subject_drop,subj_3sg,0,clara terminó la novela larga .,recomendó el libro a todos .,recomendó,0,es,clara,claude-opus-4.7
+6,subject_drop,subj_3sg,1,lucía perdió su cartera otra vez .,ella llamó a cada banco local .,llamó,1,es,lucia,claude-opus-4.7
+6,subject_drop,subj_3sg,0,lucía perdió su cartera otra vez .,llamó a cada banco local .,llamó,0,es,lucia,claude-opus-4.7
+7,subject_drop,subj_3sg,1,sofía se mudó a la ciudad .,ella encontró un apartamento pequeño .,encontró,1,es,sofia,claude-opus-4.7
+7,subject_drop,subj_3sg,0,sofía se mudó a la ciudad .,encontró un apartamento pequeño .,encontró,0,es,sofia,claude-opus-4.7
+8,subject_drop,subj_3sg,1,daniel abrió una pequeña panadería .,él contrata tres ayudantes a tiempo parcial .,contrata,1,es,daniel,claude-opus-4.7
+8,subject_drop,subj_3sg,0,daniel abrió una pequeña panadería .,contrata tres ayudantes a tiempo parcial .,contrata,0,es,daniel,claude-opus-4.7
+9,subject_drop,subj_3sg,1,mario cogió un fuerte resfriado .,él guardó cama todo el día .,guardó,1,es,mario,claude-opus-4.7
+9,subject_drop,subj_3sg,0,mario cogió un fuerte resfriado .,guardó cama todo el día .,guardó,0,es,mario,claude-opus-4.7
+10,subject_drop,subj_3sg,1,pablo estudió toda la noche .,él aprobó el examen final .,aprobó,1,es,pablo,claude-opus-4.7
+10,subject_drop,subj_3sg,0,pablo estudió toda la noche .,aprobó el examen final .,aprobó,0,es,pablo,claude-opus-4.7
+11,subject_drop,subj_3sg,1,lucas entró en el equipo de debate .,él argumenta con mucha claridad .,argumenta,1,es,lucas,claude-opus-4.7
+11,subject_drop,subj_3sg,0,lucas entró en el equipo de debate .,argumenta con mucha claridad .,argumenta,0,es,lucas,claude-opus-4.7
+12,subject_drop,subj_3sg,1,marco reservó una cabaña junto al lago .,él invitó a sus dos primos .,invitó,1,es,marco,claude-opus-4.7
+12,subject_drop,subj_3sg,0,marco reservó una cabaña junto al lago .,invitó a sus dos primos .,invitó,0,es,marco,claude-opus-4.7
+13,subject_drop,subj_3sg,1,david adoptó un cachorro pequeño .,él llamó al perro milo .,llamó,1,es,david,claude-opus-4.7
+13,subject_drop,subj_3sg,0,david adoptó un cachorro pequeño .,llamó al perro milo .,llamó,0,es,david,claude-opus-4.7
+14,subject_drop,subj_3sg,1,óscar aprendió a nadar este verano .,él disfruta la piscina pública .,disfruta,1,es,oscar,claude-opus-4.7
+14,subject_drop,subj_3sg,0,óscar aprendió a nadar este verano .,disfruta la piscina pública .,disfruta,0,es,oscar,claude-opus-4.7
+15,subject_drop,subj_3sg,1,el coche viejo se averió .,este necesita cuatro neumáticos nuevos .,necesita,1,es,,claude-opus-4.7
+15,subject_drop,subj_3sg,0,el coche viejo se averió .,necesita cuatro neumáticos nuevos .,necesita,0,es,,claude-opus-4.7
+16,subject_drop,subj_3sg,1,la tetera hirvió otra vez .,esta arruinó la cocina nueva .,arruinó,1,es,,claude-opus-4.7
+16,subject_drop,subj_3sg,0,la tetera hirvió otra vez .,arruinó la cocina nueva .,arruinó,0,es,,claude-opus-4.7
+17,subject_drop,subj_3sg,1,la puerta crujió con fuerza .,esta despertó al bebé dormido .,despertó,1,es,,claude-opus-4.7
+17,subject_drop,subj_3sg,0,la puerta crujió con fuerza .,despertó al bebé dormido .,despertó,0,es,,claude-opus-4.7
+18,subject_drop,subj_3sg,1,la lámpara cayó de la repisa .,esta rompió la base pesada .,rompió,1,es,,claude-opus-4.7
+18,subject_drop,subj_3sg,0,la lámpara cayó de la repisa .,rompió la base pesada .,rompió,0,es,,claude-opus-4.7
+19,subject_drop,subj_3sg,1,la reunión terminó muy temprano .,esta complació a todo el personal .,complació,1,es,,claude-opus-4.7
+19,subject_drop,subj_3sg,0,la reunión terminó muy temprano .,complació a todo el personal .,complació,0,es,,claude-opus-4.7
+20,subject_drop,subj_3sg,1,el concierto se agotó en minutos .,este sorprendió a toda la banda .,sorprendió,1,es,,claude-opus-4.7
+20,subject_drop,subj_3sg,0,el concierto se agotó en minutos .,sorprendió a toda la banda .,sorprendió,0,es,,claude-opus-4.7
+21,subject_drop,subj_3sg,1,la tormenta llegó de repente .,esta inundó la carretera principal .,inundó,1,es,,claude-opus-4.7
+21,subject_drop,subj_3sg,0,la tormenta llegó de repente .,inundó la carretera principal .,inundó,0,es,,claude-opus-4.7
+22,subject_drop,subj_3sg,1,el partido llegó a la prórroga .,este emocionó a la afición local .,emocionó,1,es,,claude-opus-4.7
+22,subject_drop,subj_3sg,0,el partido llegó a la prórroga .,emocionó a la afición local .,emocionó,0,es,,claude-opus-4.7
+23,subject_drop,subj_3sg,1,el nuevo plan parecía prometedor .,este agrada a los grandes inversores .,agrada,1,es,,claude-opus-4.7
+23,subject_drop,subj_3sg,0,el nuevo plan parecía prometedor .,agrada a los grandes inversores .,agrada,0,es,,claude-opus-4.7
+24,subject_drop,subj_3sg,1,la idea ganó verdadero impulso .,esta inspira a muchos jóvenes escritores .,inspira,1,es,,claude-opus-4.7
+24,subject_drop,subj_3sg,0,la idea ganó verdadero impulso .,inspira a muchos jóvenes escritores .,inspira,0,es,,claude-opus-4.7
+1,subject_drop,subj_3pl,1,los turistas perdieron el autobús .,ellos llamaron a un taxi local .,llamaron,1,es,,claude-opus-4.7
+1,subject_drop,subj_3pl,0,los turistas perdieron el autobús .,llamaron a un taxi local .,llamaron,0,es,,claude-opus-4.7
+2,subject_drop,subj_3pl,1,los estudiantes terminaron el examen .,ellos salieron del aula en silencio .,salieron,1,es,,claude-opus-4.7
+2,subject_drop,subj_3pl,0,los estudiantes terminaron el examen .,salieron del aula en silencio .,salieron,0,es,,claude-opus-4.7
+3,subject_drop,subj_3pl,1,los invitados llegaron bastante tarde .,ellos ofrecieron disculpas al anfitrión .,ofrecieron,1,es,,claude-opus-4.7
+3,subject_drop,subj_3pl,0,los invitados llegaron bastante tarde .,ofrecieron disculpas al anfitrión .,ofrecieron,0,es,,claude-opus-4.7
+4,subject_drop,subj_3pl,1,los vecinos oyeron la alarma .,ellos salieron corriendo al instante .,salieron,1,es,,claude-opus-4.7
+4,subject_drop,subj_3pl,0,los vecinos oyeron la alarma .,salieron corriendo al instante .,salieron,0,es,,claude-opus-4.7
+5,subject_drop,subj_3pl,1,los bailarines ensayaron durante semanas .,ellos perfeccionaron la nueva coreografía .,perfeccionaron,1,es,,claude-opus-4.7
+5,subject_drop,subj_3pl,0,los bailarines ensayaron durante semanas .,perfeccionaron la nueva coreografía .,perfeccionaron,0,es,,claude-opus-4.7
+6,subject_drop,subj_3pl,1,los escaladores alcanzaron la cima alta .,ellos posaron para una foto .,posaron,1,es,,claude-opus-4.7
+6,subject_drop,subj_3pl,0,los escaladores alcanzaron la cima alta .,posaron para una foto .,posaron,0,es,,claude-opus-4.7
+7,subject_drop,subj_3pl,1,los músicos afinaron sus instrumentos .,ellos comenzaron el concierto de la tarde .,comenzaron,1,es,,claude-opus-4.7
+7,subject_drop,subj_3pl,0,los músicos afinaron sus instrumentos .,comenzaron el concierto de la tarde .,comenzaron,0,es,,claude-opus-4.7
+8,subject_drop,subj_3pl,1,los obreros repararon el tejado roto .,ellos limpiaron todo el patio .,limpiaron,1,es,,claude-opus-4.7
+8,subject_drop,subj_3pl,0,los obreros repararon el tejado roto .,limpiaron todo el patio .,limpiaron,0,es,,claude-opus-4.7
+9,subject_drop,subj_3pl,1,los panaderos abrieron la tienda temprano .,ellos vendieron cada barra de pan .,vendieron,1,es,,claude-opus-4.7
+9,subject_drop,subj_3pl,0,los panaderos abrieron la tienda temprano .,vendieron cada barra de pan .,vendieron,0,es,,claude-opus-4.7
+10,subject_drop,subj_3pl,1,los maestros revisaron el plan cuidadosamente .,ellos votaron a su favor .,votaron,1,es,,claude-opus-4.7
+10,subject_drop,subj_3pl,0,los maestros revisaron el plan cuidadosamente .,votaron a su favor .,votaron,0,es,,claude-opus-4.7
+11,subject_drop,subj_3pl,1,ana y sara prepararon una cena .,ellas sirvieron pan caliente recién hecho .,sirvieron,1,es,ana;sara,claude-opus-4.7
+11,subject_drop,subj_3pl,0,ana y sara prepararon una cena .,sirvieron pan caliente recién hecho .,sirvieron,0,es,ana;sara,claude-opus-4.7
+12,subject_drop,subj_3pl,1,mario y lucas construyeron una casa del árbol .,ellos pintaron el tejado de verde .,pintaron,1,es,mario;lucas,claude-opus-4.7
+12,subject_drop,subj_3pl,0,mario y lucas construyeron una casa del árbol .,pintaron el tejado de verde .,pintaron,0,es,mario;lucas,claude-opus-4.7
+13,subject_drop,subj_3pl,1,elena y clara entraron en el coro .,ellas ensayan casi todos los domingos .,ensayan,1,es,elena;clara,claude-opus-4.7
+13,subject_drop,subj_3pl,0,elena y clara entraron en el coro .,ensayan casi todos los domingos .,ensayan,0,es,elena;clara,claude-opus-4.7
+14,subject_drop,subj_3pl,1,david y óscar corrieron el maratón .,ellos entrenaron durante varios meses .,entrenaron,1,es,david;oscar,claude-opus-4.7
+14,subject_drop,subj_3pl,0,david y óscar corrieron el maratón .,entrenaron durante varios meses .,entrenaron,0,es,david;oscar,claude-opus-4.7
+15,subject_drop,subj_3pl,1,las tuberías se congelaron de noche .,estas reventaron por la mañana temprano .,reventaron,1,es,,claude-opus-4.7
+15,subject_drop,subj_3pl,0,las tuberías se congelaron de noche .,reventaron por la mañana temprano .,reventaron,0,es,,claude-opus-4.7
+16,subject_drop,subj_3pl,1,las velas se consumieron rápido .,estas gotearon sobre la mesa .,gotearon,1,es,,claude-opus-4.7
+16,subject_drop,subj_3pl,0,las velas se consumieron rápido .,gotearon sobre la mesa .,gotearon,0,es,,claude-opus-4.7
+17,subject_drop,subj_3pl,1,las hojas cayeron del árbol .,estas cubrieron el largo camino de entrada .,cubrieron,1,es,,claude-opus-4.7
+17,subject_drop,subj_3pl,0,las hojas cayeron del árbol .,cubrieron el largo camino de entrada .,cubrieron,0,es,,claude-opus-4.7
+18,subject_drop,subj_3pl,1,los libros se apilaron en el escritorio .,estos bloquearon la lámpara pequeña .,bloquearon,1,es,,claude-opus-4.7
+18,subject_drop,subj_3pl,0,los libros se apilaron en el escritorio .,bloquearon la lámpara pequeña .,bloquearon,0,es,,claude-opus-4.7
+19,subject_drop,subj_3pl,1,los cachorros escaparon del patio .,estos persiguieron a una ardilla gris .,persiguieron,1,es,,claude-opus-4.7
+19,subject_drop,subj_3pl,0,los cachorros escaparon del patio .,persiguieron a una ardilla gris .,persiguieron,0,es,,claude-opus-4.7
+20,subject_drop,subj_3pl,1,los pájaros volvieron en primavera temprana .,estos construyeron un nido nuevo .,construyeron,1,es,,claude-opus-4.7
+20,subject_drop,subj_3pl,0,los pájaros volvieron en primavera temprana .,construyeron un nido nuevo .,construyeron,0,es,,claude-opus-4.7
+21,subject_drop,subj_3pl,1,los fuegos artificiales iluminaron el cielo nocturno .,estos deleitaron a los niños emocionados .,deleitaron,1,es,,claude-opus-4.7
+21,subject_drop,subj_3pl,0,los fuegos artificiales iluminaron el cielo nocturno .,deleitaron a los niños emocionados .,deleitaron,0,es,,claude-opus-4.7
+22,subject_drop,subj_3pl,1,los ensayos se alargaron mucho .,estos agotaron a todo el elenco .,agotaron,1,es,,claude-opus-4.7
+22,subject_drop,subj_3pl,0,los ensayos se alargaron mucho .,agotaron a todo el elenco .,agotaron,0,es,,claude-opus-4.7
+23,subject_drop,subj_3pl,1,los rumores se difundieron rápido hoy .,estos preocuparon al nuevo gerente .,preocuparon,1,es,,claude-opus-4.7
+23,subject_drop,subj_3pl,0,los rumores se difundieron rápido hoy .,preocuparon al nuevo gerente .,preocuparon,0,es,,claude-opus-4.7
+24,subject_drop,subj_3pl,1,los resultados sorprendieron a todo el equipo .,estos cambiaron la estrategia principal .,cambiaron,1,es,,claude-opus-4.7
+24,subject_drop,subj_3pl,0,los resultados sorprendieron a todo el equipo .,cambiaron la estrategia principal .,cambiaron,0,es,,claude-opus-4.7
+1,subject_drop,subj_2sg,1,"ana , olvidas las llaves a menudo .",tú coges las llaves antes de salir .,coges,1,es,ana,claude-opus-4.7
+1,subject_drop,subj_2sg,0,"ana , olvidas las llaves a menudo .",coges las llaves antes de salir .,coges,0,es,ana,claude-opus-4.7
+2,subject_drop,subj_2sg,1,"sara , te saltas el desayuno cada día .",tú necesitas una comida matinal de verdad .,necesitas,1,es,sara,claude-opus-4.7
+2,subject_drop,subj_2sg,0,"sara , te saltas el desayuno cada día .",necesitas una comida matinal de verdad .,necesitas,0,es,sara,claude-opus-4.7
+3,subject_drop,subj_2sg,1,"elena , llegas tarde al entrenamiento .",tú desperdicias el tiempo del entrenador .,desperdicias,1,es,elena,claude-opus-4.7
+3,subject_drop,subj_2sg,0,"elena , llegas tarde al entrenamiento .",desperdicias el tiempo del entrenador .,desperdicias,0,es,elena,claude-opus-4.7
+4,subject_drop,subj_2sg,1,"marta , dejas las luces encendidas .",tú subes nuestra factura eléctrica .,subes,1,es,marta,claude-opus-4.7
+4,subject_drop,subj_2sg,0,"marta , dejas las luces encendidas .",subes nuestra factura eléctrica .,subes,0,es,marta,claude-opus-4.7
+5,subject_drop,subj_2sg,1,"clara , olvidas responder siempre .",tú debes un mensaje rápido .,debes,1,es,clara,claude-opus-4.7
+5,subject_drop,subj_2sg,0,"clara , olvidas responder siempre .",debes un mensaje rápido .,debes,0,es,clara,claude-opus-4.7
+6,subject_drop,subj_2sg,1,"lucía , pierdes tu paraguas a menudo .",tú compras uno nuevo cada mes .,compras,1,es,lucia,claude-opus-4.7
+6,subject_drop,subj_2sg,0,"lucía , pierdes tu paraguas a menudo .",compras uno nuevo cada mes .,compras,0,es,lucia,claude-opus-4.7
+7,subject_drop,subj_2sg,1,"sofía , comes con mucha prisa .",tú pierdes el verdadero sabor .,pierdes,1,es,sofia,claude-opus-4.7
+7,subject_drop,subj_2sg,0,"sofía , comes con mucha prisa .",pierdes el verdadero sabor .,pierdes,0,es,sofia,claude-opus-4.7
+8,subject_drop,subj_2sg,1,"daniel , aparcas en el sitio equivocado .",tú bloqueas la entrada principal .,bloqueas,1,es,daniel,claude-opus-4.7
+8,subject_drop,subj_2sg,0,"daniel , aparcas en el sitio equivocado .",bloqueas la entrada principal .,bloqueas,0,es,daniel,claude-opus-4.7
+9,subject_drop,subj_2sg,1,"mario , bebes demasiado café .",tú duermes muy poco cada noche .,duermes,1,es,mario,claude-opus-4.7
+9,subject_drop,subj_2sg,0,"mario , bebes demasiado café .",duermes muy poco cada noche .,duermes,0,es,mario,claude-opus-4.7
+10,subject_drop,subj_2sg,1,"pablo , te saltas el calentamiento .",tú arriesgas una lesión real .,arriesgas,1,es,pablo,claude-opus-4.7
+10,subject_drop,subj_2sg,0,"pablo , te saltas el calentamiento .",arriesgas una lesión real .,arriesgas,0,es,pablo,claude-opus-4.7
+11,subject_drop,subj_2sg,1,"lucas , dejas tus libros atrás .",tú olvidas los deberes constantemente .,olvidas,1,es,lucas,claude-opus-4.7
+11,subject_drop,subj_2sg,0,"lucas , dejas tus libros atrás .",olvidas los deberes constantemente .,olvidas,0,es,lucas,claude-opus-4.7
+12,subject_drop,subj_2sg,1,"marco , hablas durante la película .",tú molestas a toda la fila .,molestas,1,es,marco,claude-opus-4.7
+12,subject_drop,subj_2sg,0,"marco , hablas durante la película .",molestas a toda la fila .,molestas,0,es,marco,claude-opus-4.7
+13,subject_drop,subj_2sg,1,"david , interrumpes al profesor a menudo .",tú frustras a toda la clase .,frustras,1,es,david,claude-opus-4.7
+13,subject_drop,subj_2sg,0,"david , interrumpes al profesor a menudo .",frustras a toda la clase .,frustras,0,es,david,claude-opus-4.7
+14,subject_drop,subj_2sg,1,"óscar , comes antes de cenar .",tú estropeas tu propio apetito .,estropeas,1,es,oscar,claude-opus-4.7
+14,subject_drop,subj_2sg,0,"óscar , comes antes de cenar .",estropeas tu propio apetito .,estropeas,0,es,oscar,claude-opus-4.7
+15,subject_drop,subj_2sg,1,"entrenador , exiges mucho a los jugadores .",tú preparas al equipo para partidos duros .,preparas,1,es,,claude-opus-4.7
+15,subject_drop,subj_2sg,0,"entrenador , exiges mucho a los jugadores .",preparas al equipo para partidos duros .,preparas,0,es,,claude-opus-4.7
+16,subject_drop,subj_2sg,1,"doctor , escuchas cada preocupación .",tú tranquilizas a los pacientes inquietos .,tranquilizas,1,es,,claude-opus-4.7
+16,subject_drop,subj_2sg,0,"doctor , escuchas cada preocupación .",tranquilizas a los pacientes inquietos .,tranquilizas,0,es,,claude-opus-4.7
+17,subject_drop,subj_2sg,1,"conductor , tomas la ruta larga .",tú evitas el tráfico de la ciudad .,evitas,1,es,,claude-opus-4.7
+17,subject_drop,subj_2sg,0,"conductor , tomas la ruta larga .",evitas el tráfico de la ciudad .,evitas,0,es,,claude-opus-4.7
+18,subject_drop,subj_2sg,1,"chef , pruebas cada salsa cuidadosamente .",tú juzgas un buen plato rápido .,juzgas,1,es,,claude-opus-4.7
+18,subject_drop,subj_2sg,0,"chef , pruebas cada salsa cuidadosamente .",juzgas un buen plato rápido .,juzgas,0,es,,claude-opus-4.7
+19,subject_drop,subj_2sg,1,"maestra , marcas cada pequeño error .",tú sigues el progreso de cada estudiante .,sigues,1,es,,claude-opus-4.7
+19,subject_drop,subj_2sg,0,"maestra , marcas cada pequeño error .",sigues el progreso de cada estudiante .,sigues,0,es,,claude-opus-4.7
+20,subject_drop,subj_2sg,1,"capitán , estudias a cada equipo rival .",tú planificas cada partido con cuidado .,planificas,1,es,,claude-opus-4.7
+20,subject_drop,subj_2sg,0,"capitán , estudias a cada equipo rival .",planificas cada partido con cuidado .,planificas,0,es,,claude-opus-4.7
+21,subject_drop,subj_2sg,1,"amigo , siempre empacas ligero .",tú ahorras dinero en el equipaje .,ahorras,1,es,,claude-opus-4.7
+21,subject_drop,subj_2sg,0,"amigo , siempre empacas ligero .",ahorras dinero en el equipaje .,ahorras,0,es,,claude-opus-4.7
+22,subject_drop,subj_2sg,1,"vecino , te levantas al amanecer .",tú coges el primer tren .,coges,1,es,,claude-opus-4.7
+22,subject_drop,subj_2sg,0,"vecino , te levantas al amanecer .",coges el primer tren .,coges,0,es,,claude-opus-4.7
+23,subject_drop,subj_2sg,1,"desconocido , respondes cada llamada con cortesía .",tú ayudas a muchos viajeros perdidos .,ayudas,1,es,,claude-opus-4.7
+23,subject_drop,subj_2sg,0,"desconocido , respondes cada llamada con cortesía .",ayudas a muchos viajeros perdidos .,ayudas,0,es,,claude-opus-4.7
+24,subject_drop,subj_2sg,1,"compañero , estiras cada mañana .",tú evitas casi todo dolor de espalda .,evitas,1,es,,claude-opus-4.7
+24,subject_drop,subj_2sg,0,"compañero , estiras cada mañana .",evitas casi todo dolor de espalda .,evitas,0,es,,claude-opus-4.7
+1,subject_drop,subj_2pl,1,"equipo , dejáis la ventana abierta .",vosotros dejáis entrar al gato .,dejáis,1,es,,claude-opus-4.7
+1,subject_drop,subj_2pl,0,"equipo , dejáis la ventana abierta .",dejáis entrar al gato .,dejáis,0,es,,claude-opus-4.7
+2,subject_drop,subj_2pl,1,"todos , llegáis tarde otra vez .",vosotros retrasáis todo el ensayo .,retrasáis,1,es,,claude-opus-4.7
+2,subject_drop,subj_2pl,0,"todos , llegáis tarde otra vez .",retrasáis todo el ensayo .,retrasáis,0,es,,claude-opus-4.7
+3,subject_drop,subj_2pl,1,"amigos , traéis demasiada comida .",vosotros desbordáis nuestra pequeña nevera .,desbordáis,1,es,,claude-opus-4.7
+3,subject_drop,subj_2pl,0,"amigos , traéis demasiada comida .",desbordáis nuestra pequeña nevera .,desbordáis,0,es,,claude-opus-4.7
+4,subject_drop,subj_2pl,1,"clase , susurráis durante la clase .",vosotros distraéis a la fila de delante .,distraéis,1,es,,claude-opus-4.7
+4,subject_drop,subj_2pl,0,"clase , susurráis durante la clase .",distraéis a la fila de delante .,distraéis,0,es,,claude-opus-4.7
+5,subject_drop,subj_2pl,1,"amigos , aparcáis sobre el césped .",vosotros dañáis la hierba recién crecida .,dañáis,1,es,,claude-opus-4.7
+5,subject_drop,subj_2pl,0,"amigos , aparcáis sobre el césped .",dañáis la hierba recién crecida .,dañáis,0,es,,claude-opus-4.7
+6,subject_drop,subj_2pl,1,"invitados , atestáis el pasillo estrecho .",vosotros bloqueáis la puerta principal .,bloqueáis,1,es,,claude-opus-4.7
+6,subject_drop,subj_2pl,0,"invitados , atestáis el pasillo estrecho .",bloqueáis la puerta principal .,bloqueáis,0,es,,claude-opus-4.7
+7,subject_drop,subj_2pl,1,"niños , corréis por la cocina .",vosotros molestáis al cocinero ocupado .,molestáis,1,es,,claude-opus-4.7
+7,subject_drop,subj_2pl,0,"niños , corréis por la cocina .",molestáis al cocinero ocupado .,molestáis,0,es,,claude-opus-4.7
+8,subject_drop,subj_2pl,1,"vecinos , apiláis cajas fuera .",vosotros obstruís el camino compartido .,obstruís,1,es,,claude-opus-4.7
+8,subject_drop,subj_2pl,0,"vecinos , apiláis cajas fuera .",obstruís el camino compartido .,obstruís,0,es,,claude-opus-4.7
+9,subject_drop,subj_2pl,1,"chicos , olvidáis los abrigos a diario .",vosotros cogéis resfriados cada invierno .,cogéis,1,es,,claude-opus-4.7
+9,subject_drop,subj_2pl,0,"chicos , olvidáis los abrigos a diario .",cogéis resfriados cada invierno .,cogéis,0,es,,claude-opus-4.7
+10,subject_drop,subj_2pl,1,"todos , habláis a la vez .",vosotros tapáis al orador principal .,tapáis,1,es,,claude-opus-4.7
+10,subject_drop,subj_2pl,0,"todos , habláis a la vez .",tapáis al orador principal .,tapáis,0,es,,claude-opus-4.7
+11,subject_drop,subj_2pl,1,"amigos , ignoráis mis mensajes .",vosotros perdéis todos los detalles de la fiesta .,perdéis,1,es,,claude-opus-4.7
+11,subject_drop,subj_2pl,0,"amigos , ignoráis mis mensajes .",perdéis todos los detalles de la fiesta .,perdéis,0,es,,claude-opus-4.7
+12,subject_drop,subj_2pl,1,"clase , corréis con los problemas .",vosotros saltáis el último paso difícil .,saltáis,1,es,,claude-opus-4.7
+12,subject_drop,subj_2pl,0,"clase , corréis con los problemas .",saltáis el último paso difícil .,saltáis,0,es,,claude-opus-4.7
+13,subject_drop,subj_2pl,1,"amigos , traéis vuestras propias sillas .",vosotros ahorráis algo de trabajo al anfitrión .,ahorráis,1,es,,claude-opus-4.7
+13,subject_drop,subj_2pl,0,"amigos , traéis vuestras propias sillas .",ahorráis algo de trabajo al anfitrión .,ahorráis,0,es,,claude-opus-4.7
+14,subject_drop,subj_2pl,1,"invitados , os quedáis pasada la medianoche .",vosotros agotáis a los anfitriones cansados .,agotáis,1,es,,claude-opus-4.7
+14,subject_drop,subj_2pl,0,"invitados , os quedáis pasada la medianoche .",agotáis a los anfitriones cansados .,agotáis,0,es,,claude-opus-4.7
+15,subject_drop,subj_2pl,1,"niños , recogéis la fruta madura .",vosotros ayudáis al granjero rápido .,ayudáis,1,es,,claude-opus-4.7
+15,subject_drop,subj_2pl,0,"niños , recogéis la fruta madura .",ayudáis al granjero rápido .,ayudáis,0,es,,claude-opus-4.7
+16,subject_drop,subj_2pl,1,"vecinos , compartís vuestras buenas herramientas .",vosotros construís una verdadera comunidad .,construís,1,es,,claude-opus-4.7
+16,subject_drop,subj_2pl,0,"vecinos , compartís vuestras buenas herramientas .",construís una verdadera comunidad .,construís,0,es,,claude-opus-4.7
+17,subject_drop,subj_2pl,1,"señores , cocináis para el grupo .",vosotros alimentáis a ocho personas hambrientas .,alimentáis,1,es,,claude-opus-4.7
+17,subject_drop,subj_2pl,0,"señores , cocináis para el grupo .",alimentáis a ocho personas hambrientas .,alimentáis,0,es,,claude-opus-4.7
+18,subject_drop,subj_2pl,1,"señoras , revisáis la cinta juntas .",vosotras detectáis los pequeños errores .,detectáis,1,es,,claude-opus-4.7
+18,subject_drop,subj_2pl,0,"señoras , revisáis la cinta juntas .",detectáis los pequeños errores .,detectáis,0,es,,claude-opus-4.7
+19,subject_drop,subj_2pl,1,"estudiantes , susurráis en la biblioteca .",vosotros respetáis la regla del silencio .,respetáis,1,es,,claude-opus-4.7
+19,subject_drop,subj_2pl,0,"estudiantes , susurráis en la biblioteca .",respetáis la regla del silencio .,respetáis,0,es,,claude-opus-4.7
+20,subject_drop,subj_2pl,1,"viajeros , organizáis bien el viaje .",vosotros planificáis cada pequeño detalle .,planificáis,1,es,,claude-opus-4.7
+20,subject_drop,subj_2pl,0,"viajeros , organizáis bien el viaje .",planificáis cada pequeño detalle .,planificáis,0,es,,claude-opus-4.7
+21,subject_drop,subj_2pl,1,"ana y sara , tomáis buenas notas .",vosotras recordáis todos los puntos clave .,recordáis,1,es,ana;sara,claude-opus-4.7
+21,subject_drop,subj_2pl,0,"ana y sara , tomáis buenas notas .",recordáis todos los puntos clave .,recordáis,0,es,ana;sara,claude-opus-4.7
+22,subject_drop,subj_2pl,1,"mario y lucas , horneáis una tarta cada otoño .",vosotros llenáis la casa de canela .,llenáis,1,es,mario;lucas,claude-opus-4.7
+22,subject_drop,subj_2pl,0,"mario y lucas , horneáis una tarta cada otoño .",llenáis la casa de canela .,llenáis,0,es,mario;lucas,claude-opus-4.7
+23,subject_drop,subj_2pl,1,"elena y clara , firmáis el libro con cariño .",vosotras dejáis una nota breve y cálida .,dejáis,1,es,elena;clara,claude-opus-4.7
+23,subject_drop,subj_2pl,0,"elena y clara , firmáis el libro con cariño .",dejáis una nota breve y cálida .,dejáis,0,es,elena;clara,claude-opus-4.7
+24,subject_drop,subj_2pl,1,"david y óscar , dividís cada cuenta de la cena .",vosotros tratáis a cada invitado con justicia .,tratáis,1,es,david;oscar,claude-opus-4.7
+24,subject_drop,subj_2pl,0,"david y óscar , dividís cada cuenta de la cena .",tratáis a cada invitado con justicia .,tratáis,0,es,david;oscar,claude-opus-4.7
+1,subject_drop,subj_1sg,1,acabo de terminar el proyecto .,yo creo que el resultado es bueno .,creo,1,es,,claude-opus-4.7
+1,subject_drop,subj_1sg,0,acabo de terminar el proyecto .,creo que el resultado es bueno .,creo,0,es,,claude-opus-4.7
+2,subject_drop,subj_1sg,1,vi la nueva película .,yo pienso que la trama es ingeniosa .,pienso,1,es,,claude-opus-4.7
+2,subject_drop,subj_1sg,0,vi la nueva película .,pienso que la trama es ingeniosa .,pienso,0,es,,claude-opus-4.7
+3,subject_drop,subj_1sg,1,leí tu largo mensaje .,yo entiendo tus principales preocupaciones .,entiendo,1,es,,claude-opus-4.7
+3,subject_drop,subj_1sg,0,leí tu largo mensaje .,entiendo tus principales preocupaciones .,entiendo,0,es,,claude-opus-4.7
+4,subject_drop,subj_1sg,1,probé la nueva receta .,yo recomiendo el plato a todos .,recomiendo,1,es,,claude-opus-4.7
+4,subject_drop,subj_1sg,0,probé la nueva receta .,recomiendo el plato a todos .,recomiendo,0,es,,claude-opus-4.7
+5,subject_drop,subj_1sg,1,visité la exposición de arte .,yo admiro el trabajo del artista .,admiro,1,es,,claude-opus-4.7
+5,subject_drop,subj_1sg,0,visité la exposición de arte .,admiro el trabajo del artista .,admiro,0,es,,claude-opus-4.7
+6,subject_drop,subj_1sg,1,revisé el nuevo contrato .,yo acepto los términos principales .,acepto,1,es,,claude-opus-4.7
+6,subject_drop,subj_1sg,0,revisé el nuevo contrato .,acepto los términos principales .,acepto,0,es,,claude-opus-4.7
+7,subject_drop,subj_1sg,1,oí el anuncio sorpresa .,yo celebro la noticia inesperada .,celebro,1,es,,claude-opus-4.7
+7,subject_drop,subj_1sg,0,oí el anuncio sorpresa .,celebro la noticia inesperada .,celebro,0,es,,claude-opus-4.7
+8,subject_drop,subj_1sg,1,vi el ensayo de la tarde .,yo disfruto la escena inicial .,disfruto,1,es,,claude-opus-4.7
+8,subject_drop,subj_1sg,0,vi el ensayo de la tarde .,disfruto la escena inicial .,disfruto,0,es,,claude-opus-4.7
+9,subject_drop,subj_1sg,1,conocí al nuevo colega .,yo encuentro al chico bastante amable .,encuentro,1,es,,claude-opus-4.7
+9,subject_drop,subj_1sg,0,conocí al nuevo colega .,encuentro al chico bastante amable .,encuentro,0,es,,claude-opus-4.7
+10,subject_drop,subj_1sg,1,probé la sopa espesa .,yo prefiero un poco más de sal .,prefiero,1,es,,claude-opus-4.7
+10,subject_drop,subj_1sg,0,probé la sopa espesa .,prefiero un poco más de sal .,prefiero,0,es,,claude-opus-4.7
+11,subject_drop,subj_1sg,1,visité el viejo museo .,yo recuerdo cada cuadro con detalle .,recuerdo,1,es,,claude-opus-4.7
+11,subject_drop,subj_1sg,0,visité el viejo museo .,recuerdo cada cuadro con detalle .,recuerdo,0,es,,claude-opus-4.7
+12,subject_drop,subj_1sg,1,estudié el mapa doblado .,yo sé la ruta más corta .,sé,1,es,,claude-opus-4.7
+12,subject_drop,subj_1sg,0,estudié el mapa doblado .,sé la ruta más corta .,sé,0,es,,claude-opus-4.7
+13,subject_drop,subj_1sg,1,atendí la puerta que sonaba .,yo saludo a nuestros invitados con cariño .,saludo,1,es,,claude-opus-4.7
+13,subject_drop,subj_1sg,0,atendí la puerta que sonaba .,saludo a nuestros invitados con cariño .,saludo,0,es,,claude-opus-4.7
+14,subject_drop,subj_1sg,1,limpié la pequeña cocina .,yo pulí cada encimera de madera .,pulí,1,es,,claude-opus-4.7
+14,subject_drop,subj_1sg,0,limpié la pequeña cocina .,pulí cada encimera de madera .,pulí,0,es,,claude-opus-4.7
+15,subject_drop,subj_1sg,1,paseé al perro temprano .,yo venzo el calor de la mañana .,venzo,1,es,,claude-opus-4.7
+15,subject_drop,subj_1sg,0,paseé al perro temprano .,venzo el calor de la mañana .,venzo,0,es,,claude-opus-4.7
+16,subject_drop,subj_1sg,1,firmé el nuevo contrato .,yo entro al piso el viernes .,entro,1,es,,claude-opus-4.7
+16,subject_drop,subj_1sg,0,firmé el nuevo contrato .,entro al piso el viernes .,entro,0,es,,claude-opus-4.7
+17,subject_drop,subj_1sg,1,abrí la pesada carta .,yo leo el texto al instante .,leo,1,es,,claude-opus-4.7
+17,subject_drop,subj_1sg,0,abrí la pesada carta .,leo el texto al instante .,leo,0,es,,claude-opus-4.7
+18,subject_drop,subj_1sg,1,miré el tiempo de la tarde .,yo espero fuerte lluvia esta noche .,espero,1,es,,claude-opus-4.7
+18,subject_drop,subj_1sg,0,miré el tiempo de la tarde .,espero fuerte lluvia esta noche .,espero,0,es,,claude-opus-4.7
+19,subject_drop,subj_1sg,1,llamé al médico local .,yo programé una revisión rápida .,programé,1,es,,claude-opus-4.7
+19,subject_drop,subj_1sg,0,llamé al médico local .,programé una revisión rápida .,programé,0,es,,claude-opus-4.7
+20,subject_drop,subj_1sg,1,escribí un largo informe .,yo entrego el documento mañana mismo .,entrego,1,es,,claude-opus-4.7
+20,subject_drop,subj_1sg,0,escribí un largo informe .,entrego el documento mañana mismo .,entrego,0,es,,claude-opus-4.7
+21,subject_drop,subj_1sg,1,reservé el vuelo de la mañana .,yo preparo mi maleta esta noche .,preparo,1,es,,claude-opus-4.7
+21,subject_drop,subj_1sg,0,reservé el vuelo de la mañana .,preparo mi maleta esta noche .,preparo,0,es,,claude-opus-4.7
+22,subject_drop,subj_1sg,1,planté los pequeños tomates .,yo riego las plantas cada mañana .,riego,1,es,,claude-opus-4.7
+22,subject_drop,subj_1sg,0,planté los pequeños tomates .,riego las plantas cada mañana .,riego,0,es,,claude-opus-4.7
+23,subject_drop,subj_1sg,1,conocí a la nueva vecina .,yo disfruto mucho su compañía .,disfruto,1,es,,claude-opus-4.7
+23,subject_drop,subj_1sg,0,conocí a la nueva vecina .,disfruto mucho su compañía .,disfruto,0,es,,claude-opus-4.7
+24,subject_drop,subj_1sg,1,entrené todo el verano .,yo siento mucha más fuerza ahora .,siento,1,es,,claude-opus-4.7
+24,subject_drop,subj_1sg,0,entrené todo el verano .,siento mucha más fuerza ahora .,siento,0,es,,claude-opus-4.7
+1,subject_drop,subj_1pl,1,revisamos el nuevo contrato .,nosotros aceptamos los términos principales .,aceptamos,1,es,,claude-opus-4.7
+1,subject_drop,subj_1pl,0,revisamos el nuevo contrato .,aceptamos los términos principales .,aceptamos,0,es,,claude-opus-4.7
+2,subject_drop,subj_1pl,1,vimos el partido juntos .,nosotros animamos al equipo local .,animamos,1,es,,claude-opus-4.7
+2,subject_drop,subj_1pl,0,vimos el partido juntos .,animamos al equipo local .,animamos,0,es,,claude-opus-4.7
+3,subject_drop,subj_1pl,1,pintamos el salón .,nosotros elegimos un amarillo suave claro .,elegimos,1,es,,claude-opus-4.7
+3,subject_drop,subj_1pl,0,pintamos el salón .,elegimos un amarillo suave claro .,elegimos,0,es,,claude-opus-4.7
+4,subject_drop,subj_1pl,1,paseamos por el parque tranquilo .,nosotros disfrutamos la brisa fresca de la tarde .,disfrutamos,1,es,,claude-opus-4.7
+4,subject_drop,subj_1pl,0,paseamos por el parque tranquilo .,disfrutamos la brisa fresca de la tarde .,disfrutamos,0,es,,claude-opus-4.7
+5,subject_drop,subj_1pl,1,organizamos la larga cena .,nosotros servimos un buen vino local .,servimos,1,es,,claude-opus-4.7
+5,subject_drop,subj_1pl,0,organizamos la larga cena .,servimos un buen vino local .,servimos,0,es,,claude-opus-4.7
+6,subject_drop,subj_1pl,1,horneamos pan fresco hoy .,nosotros compartimos barras con los vecinos .,compartimos,1,es,,claude-opus-4.7
+6,subject_drop,subj_1pl,0,horneamos pan fresco hoy .,compartimos barras con los vecinos .,compartimos,0,es,,claude-opus-4.7
+7,subject_drop,subj_1pl,1,nos mudamos a una casa nueva .,nosotros desempacamos las cajas muy despacio .,desempacamos,1,es,,claude-opus-4.7
+7,subject_drop,subj_1pl,0,nos mudamos a una casa nueva .,desempacamos las cajas muy despacio .,desempacamos,0,es,,claude-opus-4.7
+8,subject_drop,subj_1pl,1,probamos la cafetería del centro .,nosotros recomendamos la pasta de almendra .,recomendamos,1,es,,claude-opus-4.7
+8,subject_drop,subj_1pl,0,probamos la cafetería del centro .,recomendamos la pasta de almendra .,recomendamos,0,es,,claude-opus-4.7
+9,subject_drop,subj_1pl,1,condujimos por la costa .,nosotros paramos en cada pequeña playa .,paramos,1,es,,claude-opus-4.7
+9,subject_drop,subj_1pl,0,condujimos por la costa .,paramos en cada pequeña playa .,paramos,0,es,,claude-opus-4.7
+10,subject_drop,subj_1pl,1,entramos en el club de lectura local .,nosotros comentamos una novela cada mes .,comentamos,1,es,,claude-opus-4.7
+10,subject_drop,subj_1pl,0,entramos en el club de lectura local .,comentamos una novela cada mes .,comentamos,0,es,,claude-opus-4.7
+11,subject_drop,subj_1pl,1,adoptamos una gata de rescate amable .,nosotros llamamos pepper a la gata .,llamamos,1,es,,claude-opus-4.7
+11,subject_drop,subj_1pl,0,adoptamos una gata de rescate amable .,llamamos pepper a la gata .,llamamos,0,es,,claude-opus-4.7
+12,subject_drop,subj_1pl,1,limpiamos el garaje desordenado ayer .,nosotros donamos las dos bicis viejas .,donamos,1,es,,claude-opus-4.7
+12,subject_drop,subj_1pl,0,limpiamos el garaje desordenado ayer .,donamos las dos bicis viejas .,donamos,0,es,,claude-opus-4.7
+13,subject_drop,subj_1pl,1,visitamos el mercado del domingo .,nosotros compramos media pinta de arándanos .,compramos,1,es,,claude-opus-4.7
+13,subject_drop,subj_1pl,0,visitamos el mercado del domingo .,compramos media pinta de arándanos .,compramos,0,es,,claude-opus-4.7
+14,subject_drop,subj_1pl,1,reparamos la valla de madera rota .,nosotros pintamos las nuevas tablas de la valla .,pintamos,1,es,,claude-opus-4.7
+14,subject_drop,subj_1pl,0,reparamos la valla de madera rota .,pintamos las nuevas tablas de la valla .,pintamos,0,es,,claude-opus-4.7
+15,subject_drop,subj_1pl,1,planeamos el largo viaje de fin de semana .,nosotros reservamos una cabaña pequeña y tranquila .,reservamos,1,es,,claude-opus-4.7
+15,subject_drop,subj_1pl,0,planeamos el largo viaje de fin de semana .,reservamos una cabaña pequeña y tranquila .,reservamos,0,es,,claude-opus-4.7
+16,subject_drop,subj_1pl,1,probamos la nueva versión del programa .,nosotros encontramos un puñado de fallos .,encontramos,1,es,,claude-opus-4.7
+16,subject_drop,subj_1pl,0,probamos la nueva versión del programa .,encontramos un puñado de fallos .,encontramos,0,es,,claude-opus-4.7
+17,subject_drop,subj_1pl,1,nos reunimos en la biblioteca principal .,nosotros estudiamos hasta bastante tarde .,estudiamos,1,es,,claude-opus-4.7
+17,subject_drop,subj_1pl,0,nos reunimos en la biblioteca principal .,estudiamos hasta bastante tarde .,estudiamos,0,es,,claude-opus-4.7
+18,subject_drop,subj_1pl,1,oímos un ruido fuerte y extraño .,nosotros revisamos cada habitación rápido .,revisamos,1,es,,claude-opus-4.7
+18,subject_drop,subj_1pl,0,oímos un ruido fuerte y extraño .,revisamos cada habitación rápido .,revisamos,0,es,,claude-opus-4.7
+19,subject_drop,subj_1pl,1,hicimos pasta fresca esta noche .,nosotros estiramos la masa a mano .,estiramos,1,es,,claude-opus-4.7
+19,subject_drop,subj_1pl,0,hicimos pasta fresca esta noche .,estiramos la masa a mano .,estiramos,0,es,,claude-opus-4.7
+20,subject_drop,subj_1pl,1,seguimos al guía de la visita .,nosotros aprendimos mucha historia local .,aprendimos,1,es,,claude-opus-4.7
+20,subject_drop,subj_1pl,0,seguimos al guía de la visita .,aprendimos mucha historia local .,aprendimos,0,es,,claude-opus-4.7
+21,subject_drop,subj_1pl,1,vimos la puesta de sol desde casa .,nosotros tomamos una docena de fotos rápidas .,tomamos,1,es,,claude-opus-4.7
+21,subject_drop,subj_1pl,0,vimos la puesta de sol desde casa .,tomamos una docena de fotos rápidas .,tomamos,0,es,,claude-opus-4.7
+22,subject_drop,subj_1pl,1,volvimos de las vacaciones anoche .,nosotros dormimos casi toda la mañana .,dormimos,1,es,,claude-opus-4.7
+22,subject_drop,subj_1pl,0,volvimos de las vacaciones anoche .,dormimos casi toda la mañana .,dormimos,0,es,,claude-opus-4.7
+23,subject_drop,subj_1pl,1,empezamos un pequeño huerto trasero .,"nosotros cultivamos tomates , albahaca y menta .",cultivamos,1,es,,claude-opus-4.7
+23,subject_drop,subj_1pl,0,empezamos un pequeño huerto trasero .,"cultivamos tomates , albahaca y menta .",cultivamos,0,es,,claude-opus-4.7
+24,subject_drop,subj_1pl,1,terminamos el gran rompecabezas al fin .,nosotros colgamos el cuadro sobre el sofá .,colgamos,1,es,,claude-opus-4.7
+24,subject_drop,subj_1pl,0,terminamos el gran rompecabezas al fin .,colgamos el cuadro sobre el sofá .,colgamos,0,es,,claude-opus-4.7

@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,control,subj_control,1,marco necesitaba ayuda con el proyecto .,marco intentó él pedir ayuda .,pedir,3,es,marco,claude-opus-4.7
+1,control,subj_control,0,marco necesitaba ayuda con el proyecto .,marco intentó pedir ayuda .,pedir,2,es,marco,claude-opus-4.7
+2,control,subj_control,1,ana trabajó en el rompecabezas durante horas .,ana logró ella terminar el rompecabezas .,terminar,3,es,ana,claude-opus-4.7
+2,control,subj_control,0,ana trabajó en el rompecabezas durante horas .,ana logró terminar el rompecabezas .,terminar,2,es,ana,claude-opus-4.7
+3,control,subj_control,1,la reunión se puso muy tensa .,sara rehusó ella hablar en la reunión .,hablar,3,es,sara,claude-opus-4.7
+3,control,subj_control,0,la reunión se puso muy tensa .,sara rehusó hablar en la reunión .,hablar,2,es,sara,claude-opus-4.7
+4,control,subj_control,1,la casa vieja tenía una puerta pesada .,elena procuró ella abrir la puerta pesada .,abrir,3,es,elena,claude-opus-4.7
+4,control,subj_control,0,la casa vieja tenía una puerta pesada .,elena procuró abrir la puerta pesada .,abrir,2,es,elena,claude-opus-4.7
+5,control,subj_control,1,la carrera era muy competitiva .,daniel esperó él ganar la carrera .,ganar,3,es,daniel,claude-opus-4.7
+5,control,subj_control,0,la carrera era muy competitiva .,daniel esperó ganar la carrera .,ganar,2,es,daniel,claude-opus-4.7
+6,control,subj_control,1,el museo tenía una nueva exposición .,pablo planeó él visitar el museo .,visitar,3,es,pablo,claude-opus-4.7
+6,control,subj_control,0,el museo tenía una nueva exposición .,pablo planeó visitar el museo .,visitar,2,es,pablo,claude-opus-4.7
+7,control,subj_control,1,el programa aceptaba estudiantes internacionales .,lucía decidió ella estudiar fuera .,estudiar,3,es,lucia,claude-opus-4.7
+7,control,subj_control,0,el programa aceptaba estudiantes internacionales .,lucía decidió estudiar fuera .,estudiar,2,es,lucia,claude-opus-4.7
+8,control,subj_control,1,la cena se retrasaba mucho .,marta pretendió ella salir antes de la cena .,salir,3,es,marta,claude-opus-4.7
+8,control,subj_control,0,la cena se retrasaba mucho .,marta pretendió salir antes de la cena .,salir,2,es,marta,claude-opus-4.7
+9,control,subj_control,1,el equipo necesitaba otro jugador .,clara aceptó ella unirse al equipo .,unirse,3,es,clara,claude-opus-4.7
+9,control,subj_control,0,el equipo necesitaba otro jugador .,clara aceptó unirse al equipo .,unirse,2,es,clara,claude-opus-4.7
+10,control,subj_control,1,el sofá parecía muy cómodo .,lucas fingió él dormir en el sofá .,dormir,3,es,lucas,claude-opus-4.7
+10,control,subj_control,0,el sofá parecía muy cómodo .,lucas fingió dormir en el sofá .,dormir,2,es,lucas,claude-opus-4.7
+11,control,subj_control,1,la habitación estaba completamente oscura .,sofía dudó en ella entrar en el cuarto oscuro .,entrar,4,es,sofia,claude-opus-4.7
+11,control,subj_control,0,la habitación estaba completamente oscura .,sofía dudó en entrar en el cuarto oscuro .,entrar,3,es,sofia,claude-opus-4.7
+12,control,subj_control,1,el tren iba adelantado hoy .,david falló en él llegar a tiempo .,llegar,4,es,david,claude-opus-4.7
+12,control,subj_control,0,el tren iba adelantado hoy .,david falló en llegar a tiempo .,llegar,3,es,david,claude-opus-4.7
+13,control,subj_control,1,el tiempo empeoraba .,óscar se ofreció a él llevarnos a casa .,llevarnos,5,es,oscar,claude-opus-4.7
+13,control,subj_control,0,el tiempo empeoraba .,óscar se ofreció a llevarnos a casa .,llevarnos,4,es,oscar,claude-opus-4.7
+14,control,subj_control,1,su jefe ignoraba sus quejas .,mario amenazó con él dejar el trabajo .,dejar,4,es,mario,claude-opus-4.7
+14,control,subj_control,0,su jefe ignoraba sus quejas .,mario amenazó con dejar el trabajo .,dejar,3,es,mario,claude-opus-4.7
+15,control,subj_control,1,la piscina estaba templada y poco profunda .,ana aprendió a ella nadar el verano pasado .,nadar,4,es,ana,claude-opus-4.7
+15,control,subj_control,0,la piscina estaba templada y poco profunda .,ana aprendió a nadar el verano pasado .,nadar,3,es,ana,claude-opus-4.7
+16,control,subj_control,1,la silla era vieja y tambaleante .,marco trató de él arreglar la silla rota .,arreglar,4,es,marco,claude-opus-4.7
+16,control,subj_control,0,la silla era vieja y tambaleante .,marco trató de arreglar la silla rota .,arreglar,3,es,marco,claude-opus-4.7
+17,control,subj_control,1,el horario estaba apretado hoy .,sara consiguió ella coger el último autobús .,coger,3,es,sara,claude-opus-4.7
+17,control,subj_control,0,el horario estaba apretado hoy .,sara consiguió coger el último autobús .,coger,2,es,sara,claude-opus-4.7
+18,control,subj_control,1,la carta exigía una respuesta .,elena rechazó ella firmar la carta .,firmar,3,es,elena,claude-opus-4.7
+18,control,subj_control,0,la carta exigía una respuesta .,elena rechazó firmar la carta .,firmar,2,es,elena,claude-opus-4.7
+19,control,subj_control,1,la caja era pesada y torpe .,daniel se esforzó por él levantar la caja .,levantar,5,es,daniel,claude-opus-4.7
+19,control,subj_control,0,la caja era pesada y torpe .,daniel se esforzó por levantar la caja .,levantar,4,es,daniel,claude-opus-4.7
+20,control,subj_control,1,el cielo estaba despejado esa tarde .,pablo deseó él ver el atardecer .,ver,3,es,pablo,claude-opus-4.7
+20,control,subj_control,0,el cielo estaba despejado esa tarde .,pablo deseó ver el atardecer .,ver,2,es,pablo,claude-opus-4.7
+21,control,subj_control,1,la valla era vieja y desconchada .,lucía pensó ella pintar la valla .,pintar,3,es,lucia,claude-opus-4.7
+21,control,subj_control,0,la valla era vieja y desconchada .,lucía pensó pintar la valla .,pintar,2,es,lucia,claude-opus-4.7
+22,control,subj_control,1,había sido una semana larga .,marta resolvió ella llamar a su hermana .,llamar,3,es,marta,claude-opus-4.7
+22,control,subj_control,0,había sido una semana larga .,marta resolvió llamar a su hermana .,llamar,2,es,marta,claude-opus-4.7
+23,control,subj_control,1,la fiesta era el sábado .,clara se propuso ella hornear un pastel .,hornear,4,es,clara,claude-opus-4.7
+23,control,subj_control,0,la fiesta era el sábado .,clara se propuso hornear un pastel .,hornear,3,es,clara,claude-opus-4.7
+24,control,subj_control,1,su vecino estaba muy ocupado .,lucas prometió él ayudar a su vecino .,ayudar,3,es,lucas,claude-opus-4.7
+24,control,subj_control,0,su vecino estaba muy ocupado .,lucas prometió ayudar a su vecino .,ayudar,2,es,lucas,claude-opus-4.7
+25,control,obj_control,1,el paciente se sentía muy cansado hoy .,el médico urgió al paciente él descansar .,descansar,6,es,,claude-opus-4.7
+25,control,obj_control,0,el paciente se sentía muy cansado hoy .,el médico urgió al paciente descansar .,descansar,5,es,,claude-opus-4.7
+26,control,obj_control,1,el partido comenzaba en diez minutos .,el entrenador mandó al equipo él calentar .,calentar,6,es,,claude-opus-4.7
+26,control,obj_control,0,el partido comenzaba en diez minutos .,el entrenador mandó al equipo calentar .,calentar,5,es,,claude-opus-4.7
+27,control,obj_control,1,la clase estudiaba poesía .,el profesor pidió al estudiante él leer en voz alta .,leer,6,es,,claude-opus-4.7
+27,control,obj_control,0,la clase estudiaba poesía .,el profesor pidió al estudiante leer en voz alta .,leer,5,es,,claude-opus-4.7
+28,control,obj_control,1,la cena tenía verduras en el plato .,la madre persuadió al niño a él comer despacio .,comer,7,es,,claude-opus-4.7
+28,control,obj_control,0,la cena tenía verduras en el plato .,la madre persuadió al niño a comer despacio .,comer,6,es,,claude-opus-4.7
+29,control,obj_control,1,la audiencia se retrasaba .,el abogado convenció al cliente de él esperar pacientemente .,esperar,7,es,,claude-opus-4.7
+29,control,obj_control,0,la audiencia se retrasaba .,el abogado convenció al cliente de esperar pacientemente .,esperar,6,es,,claude-opus-4.7
+30,control,obj_control,1,una tormenta se acercaba al barco .,el capitán forzó a la tripulación a ella regresar a casa .,regresar,8,es,,claude-opus-4.7
+30,control,obj_control,0,una tormenta se acercaba al barco .,el capitán forzó a la tripulación a regresar a casa .,regresar,7,es,,claude-opus-4.7
+31,control,obj_control,1,el museo estaba casi vacío .,el guardia permitió al visitante él entrar silenciosamente .,entrar,6,es,,claude-opus-4.7
+31,control,obj_control,0,el museo estaba casi vacío .,el guardia permitió al visitante entrar silenciosamente .,entrar,5,es,,claude-opus-4.7
+32,control,obj_control,1,la sala del tribunal quedó en silencio .,el juez ordenó al testigo él hablar claramente .,hablar,6,es,,claude-opus-4.7
+32,control,obj_control,0,la sala del tribunal quedó en silencio .,el juez ordenó al testigo hablar claramente .,hablar,5,es,,claude-opus-4.7
+33,control,obj_control,1,la sala estaba calurosa esa tarde .,la enfermera instó al chico a él beber agua .,beber,7,es,,claude-opus-4.7
+33,control,obj_control,0,la sala estaba calurosa esa tarde .,la enfermera instó al chico a beber agua .,beber,6,es,,claude-opus-4.7
+34,control,obj_control,1,la pista estaba fría y dura .,el entrenador aconsejó al corredor él estirar primero .,estirar,6,es,,claude-opus-4.7
+34,control,obj_control,0,la pista estaba fría y dura .,el entrenador aconsejó al corredor estirar primero .,estirar,5,es,,claude-opus-4.7
+35,control,obj_control,1,el examen la ponía nerviosa .,el padre animó a la chica a ella intentar de nuevo .,intentar,8,es,,claude-opus-4.7
+35,control,obj_control,0,el examen la ponía nerviosa .,el padre animó a la chica a intentar de nuevo .,intentar,7,es,,claude-opus-4.7
+36,control,obj_control,1,la carretera estaba helada y peligrosa .,el policía exhortó al conductor a él reducir la velocidad .,reducir,7,es,,claude-opus-4.7
+36,control,obj_control,0,la carretera estaba helada y peligrosa .,el policía exhortó al conductor a reducir la velocidad .,reducir,6,es,,claude-opus-4.7
+37,control,obj_control,1,el turno terminaba temprano ese día .,el jefe dejó al trabajador él salir temprano .,salir,6,es,,claude-opus-4.7
+37,control,obj_control,0,el turno terminaba temprano ese día .,el jefe dejó al trabajador salir temprano .,salir,5,es,,claude-opus-4.7
+38,control,obj_control,1,el salón estaba caliente .,el anfitrión invitó al invitado a él sentarse .,sentarse,7,es,,claude-opus-4.7
+38,control,obj_control,0,el salón estaba caliente .,el anfitrión invitó al invitado a sentarse .,sentarse,6,es,,claude-opus-4.7
+39,control,obj_control,1,el estudio tenía lienzos nuevos .,el mentor enseñó al artista a él dibujar círculos .,dibujar,7,es,,claude-opus-4.7
+39,control,obj_control,0,el estudio tenía lienzos nuevos .,el mentor enseñó al artista a dibujar círculos .,dibujar,6,es,,claude-opus-4.7
+40,control,obj_control,1,marco llegaba tarde otra vez .,ana apremió a marco a él apurarse .,apurarse,6,es,ana;marco,claude-opus-4.7
+40,control,obj_control,0,marco llegaba tarde otra vez .,ana apremió a marco a apurarse .,apurarse,5,es,ana;marco,claude-opus-4.7
+41,control,obj_control,1,las llaves estaban en la encimera .,daniel dijo a sara ella traer las llaves .,traer,5,es,daniel;sara,claude-opus-4.7
+41,control,obj_control,0,las llaves estaban en la encimera .,daniel dijo a sara traer las llaves .,traer,4,es,daniel;sara,claude-opus-4.7
+42,control,obj_control,1,el viento se hacía más fuerte .,elena rogó a pablo él cerrar la ventana .,cerrar,5,es,elena;pablo,claude-opus-4.7
+42,control,obj_control,0,el viento se hacía más fuerte .,elena rogó a pablo cerrar la ventana .,cerrar,4,es,elena;pablo,claude-opus-4.7
+43,control,obj_control,1,el público quería más música .,lucía persuadió a david a él cantar una canción .,cantar,6,es,lucia;david,claude-opus-4.7
+43,control,obj_control,0,el público quería más música .,lucía persuadió a david a cantar una canción .,cantar,5,es,lucia;david,claude-opus-4.7
+44,control,obj_control,1,la fiesta apenas empezaba .,marta convenció a lucas de él quedarse más tiempo .,quedarse,6,es,marta;lucas,claude-opus-4.7
+44,control,obj_control,0,la fiesta apenas empezaba .,marta convenció a lucas de quedarse más tiempo .,quedarse,5,es,marta;lucas,claude-opus-4.7
+45,control,obj_control,1,la discusión había ido demasiado lejos .,óscar forzó a clara a ella disculparse públicamente .,disculparse,6,es,oscar;clara,claude-opus-4.7
+45,control,obj_control,0,la discusión había ido demasiado lejos .,óscar forzó a clara a disculparse públicamente .,disculparse,5,es,oscar;clara,claude-opus-4.7
+46,control,obj_control,1,el libro era muy raro .,mario permitió a sofía ella tomarlo prestado .,tomarlo,5,es,mario;sofia,claude-opus-4.7
+46,control,obj_control,0,el libro era muy raro .,mario permitió a sofía tomarlo prestado .,tomarlo,4,es,mario;sofia,claude-opus-4.7
+47,control,obj_control,1,la cocina era un desastre .,ana ordenó a daniel él limpiar el desastre .,limpiar,5,es,ana;daniel,claude-opus-4.7
+47,control,obj_control,0,la cocina era un desastre .,ana ordenó a daniel limpiar el desastre .,limpiar,4,es,ana;daniel,claude-opus-4.7
+48,control,obj_control,1,el viaje empezaba temprano mañana .,sara pidió a mario él preparar un almuerzo .,preparar,5,es,sara;mario,claude-opus-4.7
+48,control,obj_control,0,el viaje empezaba temprano mañana .,sara pidió a mario preparar un almuerzo .,preparar,4,es,sara;mario,claude-opus-4.7

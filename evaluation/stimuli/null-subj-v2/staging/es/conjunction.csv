@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,conjunction,conj_no_shift,1,ana tenía mucha sed .,ana abrió la botella y ella sirvió un poco de agua .,sirvió,6,es,ana,claude-opus-4.7
+1,conjunction,conj_no_shift,0,ana tenía mucha sed .,ana abrió la botella y sirvió un poco de agua .,sirvió,5,es,ana,claude-opus-4.7
+2,conjunction,conj_no_shift,1,sara se sentía muy cansada .,sara se sentó en el sofá y ella cerró los ojos .,cerró,8,es,sara,claude-opus-4.7
+2,conjunction,conj_no_shift,0,sara se sentía muy cansada .,sara se sentó en el sofá y cerró los ojos .,cerró,7,es,sara,claude-opus-4.7
+3,conjunction,conj_no_shift,1,elena terminó sus deberes .,elena preparó su mochila y ella salió para la escuela .,salió,6,es,elena,claude-opus-4.7
+3,conjunction,conj_no_shift,0,elena terminó sus deberes .,elena preparó su mochila y salió para la escuela .,salió,5,es,elena,claude-opus-4.7
+4,conjunction,conj_no_shift,1,marta adora las flores frescas .,marta caminó hasta el jardín y ella cortó unas rosas .,cortó,7,es,marta,claude-opus-4.7
+4,conjunction,conj_no_shift,0,marta adora las flores frescas .,marta caminó hasta el jardín y cortó unas rosas .,cortó,6,es,marta,claude-opus-4.7
+5,conjunction,conj_no_shift,1,clara tuvo un día largo .,clara llegó a casa y ella preparó un baño caliente .,preparó,6,es,clara,claude-opus-4.7
+5,conjunction,conj_no_shift,0,clara tuvo un día largo .,clara llegó a casa y preparó un baño caliente .,preparó,5,es,clara,claude-opus-4.7
+6,conjunction,conj_no_shift,1,lucía adora leer .,lucía se sentó junto a la ventana y ella abrió su novela .,abrió,9,es,lucia,claude-opus-4.7
+6,conjunction,conj_no_shift,0,lucía adora leer .,lucía se sentó junto a la ventana y abrió su novela .,abrió,8,es,lucia,claude-opus-4.7
+7,conjunction,conj_no_shift,1,sofía quería pintar .,sofía mezcló los colores y ella tomó el pincel .,tomó,6,es,sofia,claude-opus-4.7
+7,conjunction,conj_no_shift,0,sofía quería pintar .,sofía mezcló los colores y tomó el pincel .,tomó,5,es,sofia,claude-opus-4.7
+8,conjunction,conj_no_shift,1,daniel se despertó tarde .,daniel agarró su chaqueta y él corrió al autobús .,corrió,6,es,daniel,claude-opus-4.7
+8,conjunction,conj_no_shift,0,daniel se despertó tarde .,daniel agarró su chaqueta y corrió al autobús .,corrió,5,es,daniel,claude-opus-4.7
+9,conjunction,conj_no_shift,1,mario tenía mucha hambre .,mario abrió la nevera y él tomó un sándwich .,tomó,6,es,mario,claude-opus-4.7
+9,conjunction,conj_no_shift,0,mario tenía mucha hambre .,mario abrió la nevera y tomó un sándwich .,tomó,5,es,mario,claude-opus-4.7
+10,conjunction,conj_no_shift,1,pablo disfruta las mañanas tranquilas .,pablo preparó un café y él leyó el periódico .,leyó,6,es,pablo,claude-opus-4.7
+10,conjunction,conj_no_shift,0,pablo disfruta las mañanas tranquilas .,pablo preparó un café y leyó el periódico .,leyó,5,es,pablo,claude-opus-4.7
+11,conjunction,conj_no_shift,1,lucas aprecia los discos antiguos .,lucas limpió el tocadiscos y él puso algo de jazz .,puso,6,es,lucas,claude-opus-4.7
+11,conjunction,conj_no_shift,0,lucas aprecia los discos antiguos .,lucas limpió el tocadiscos y puso algo de jazz .,puso,5,es,lucas,claude-opus-4.7
+12,conjunction,conj_no_shift,1,marco oyó un golpe .,marco cruzó la sala y él abrió la puerta pesada .,abrió,6,es,marco,claude-opus-4.7
+12,conjunction,conj_no_shift,0,marco oyó un golpe .,marco cruzó la sala y abrió la puerta pesada .,abrió,5,es,marco,claude-opus-4.7
+13,conjunction,conj_no_shift,1,david tenía mucho frío .,david encendió un fuego pequeño y él calentó sus manos .,calentó,7,es,david,claude-opus-4.7
+13,conjunction,conj_no_shift,0,david tenía mucho frío .,david encendió un fuego pequeño y calentó sus manos .,calentó,6,es,david,claude-opus-4.7
+14,conjunction,conj_no_shift,1,óscar tenía el día libre .,óscar fue al parque y él alimentó a los patos .,alimentó,6,es,oscar,claude-opus-4.7
+14,conjunction,conj_no_shift,0,óscar tenía el día libre .,óscar fue al parque y alimentó a los patos .,alimentó,5,es,oscar,claude-opus-4.7
+15,conjunction,conj_no_shift,1,ana organizó una fiesta pequeña .,ana saludó a sus amigos y ella ofreció bebidas .,ofreció,7,es,ana,claude-opus-4.7
+15,conjunction,conj_no_shift,0,ana organizó una fiesta pequeña .,ana saludó a sus amigos y ofreció bebidas .,ofreció,6,es,ana,claude-opus-4.7
+16,conjunction,conj_no_shift,1,sara aprendió una canción nueva .,sara afinó la guitarra y ella tocó el primer verso .,tocó,6,es,sara,claude-opus-4.7
+16,conjunction,conj_no_shift,0,sara aprendió una canción nueva .,sara afinó la guitarra y tocó el primer verso .,tocó,5,es,sara,claude-opus-4.7
+17,conjunction,conj_no_shift,1,clara se sentía inspirada hoy .,clara afiló su lápiz y ella dibujó una escena rápida .,dibujó,6,es,clara,claude-opus-4.7
+17,conjunction,conj_no_shift,0,clara se sentía inspirada hoy .,clara afiló su lápiz y dibujó una escena rápida .,dibujó,5,es,clara,claude-opus-4.7
+18,conjunction,conj_no_shift,1,daniel tenía tiempo extra .,daniel lavó el coche y él barrió la entrada .,barrió,6,es,daniel,claude-opus-4.7
+18,conjunction,conj_no_shift,0,daniel tenía tiempo extra .,daniel lavó el coche y barrió la entrada .,barrió,5,es,daniel,claude-opus-4.7
+19,conjunction,conj_no_shift,1,pablo planeó una caminata larga .,pablo llenó su cantimplora y él ató sus botas .,ató,6,es,pablo,claude-opus-4.7
+19,conjunction,conj_no_shift,0,pablo planeó una caminata larga .,pablo llenó su cantimplora y ató sus botas .,ató,5,es,pablo,claude-opus-4.7
+20,conjunction,conj_no_shift,1,lucas quería aire fresco .,lucas salió afuera y él respiró la mañana fría .,respiró,5,es,lucas,claude-opus-4.7
+20,conjunction,conj_no_shift,0,lucas quería aire fresco .,lucas salió afuera y respiró la mañana fría .,respiró,4,es,lucas,claude-opus-4.7
+21,conjunction,conj_no_shift,1,marco necesitaba concentrarse .,marco cerró el portátil y él tomó un libro .,tomó,6,es,marco,claude-opus-4.7
+21,conjunction,conj_no_shift,0,marco necesitaba concentrarse .,marco cerró el portátil y tomó un libro .,tomó,5,es,marco,claude-opus-4.7
+22,conjunction,conj_no_shift,1,óscar quería relajarse .,óscar llenó la bañera y él encendió una vela .,encendió,6,es,oscar,claude-opus-4.7
+22,conjunction,conj_no_shift,0,óscar quería relajarse .,óscar llenó la bañera y encendió una vela .,encendió,5,es,oscar,claude-opus-4.7
+23,conjunction,conj_no_shift,1,sofía vio a un perro callejero .,sofía se arrodilló en la hierba y ella ofreció una mano suave .,ofreció,8,es,sofia,claude-opus-4.7
+23,conjunction,conj_no_shift,0,sofía vio a un perro callejero .,sofía se arrodilló en la hierba y ofreció una mano suave .,ofreció,7,es,sofia,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david necesitaba ejercicio .,david se ató los zapatos y él trotó por la cuadra .,trotó,7,es,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david necesitaba ejercicio .,david se ató los zapatos y trotó por la cuadra .,trotó,6,es,david,claude-opus-4.7
+1,conjunction,conj_shift,1,ana se sentía mal .,ana llamó al doctor y él recetó una medicina nueva .,recetó,6,es,ana,claude-opus-4.7
+1,conjunction,conj_shift,0,ana se sentía mal .,ana llamó al doctor y recetó una medicina nueva .,recetó,5,es,ana,claude-opus-4.7
+2,conjunction,conj_shift,1,sara vio a un camarero amable .,sara pidió al camarero y él trajo la comida rápidamente .,trajo,6,es,sara,claude-opus-4.7
+2,conjunction,conj_shift,0,sara vio a un camarero amable .,sara pidió al camarero y trajo la comida rápidamente .,trajo,5,es,sara,claude-opus-4.7
+3,conjunction,conj_shift,1,elena necesitaba un vestido nuevo .,elena visitó a la modista y ella cosió un vestido brillante .,cosió,7,es,elena,claude-opus-4.7
+3,conjunction,conj_shift,0,elena necesitaba un vestido nuevo .,elena visitó a la modista y cosió un vestido brillante .,cosió,6,es,elena,claude-opus-4.7
+4,conjunction,conj_shift,1,marta tenía una fuga en el fregadero .,marta avisó al fontanero y él arregló el desagüe pronto .,arregló,6,es,marta,claude-opus-4.7
+4,conjunction,conj_shift,0,marta tenía una fuga en el fregadero .,marta avisó al fontanero y arregló el desagüe pronto .,arregló,5,es,marta,claude-opus-4.7
+5,conjunction,conj_shift,1,clara estaba perdida en el centro .,clara preguntó a un desconocido y él señaló hacia la estación .,señaló,7,es,clara,claude-opus-4.7
+5,conjunction,conj_shift,0,clara estaba perdida en el centro .,clara preguntó a un desconocido y señaló hacia la estación .,señaló,6,es,clara,claude-opus-4.7
+6,conjunction,conj_shift,1,lucía conoció a una desconocida amable .,lucía saludó a la mujer y ella sonrió con calidez .,sonrió,7,es,lucia,claude-opus-4.7
+6,conjunction,conj_shift,0,lucía conoció a una desconocida amable .,lucía saludó a la mujer y sonrió con calidez .,sonrió,6,es,lucia,claude-opus-4.7
+7,conjunction,conj_shift,1,sofía conoció a una panadera .,sofía felicitó a la panadera y ella compartió su receta .,compartió,7,es,sofia,claude-opus-4.7
+7,conjunction,conj_shift,0,sofía conoció a una panadera .,sofía felicitó a la panadera y compartió su receta .,compartió,6,es,sofia,claude-opus-4.7
+8,conjunction,conj_shift,1,daniel quería un corte de pelo .,daniel se sentó frente a la peluquera y ella recortó su cabello con cuidado .,recortó,9,es,daniel,claude-opus-4.7
+8,conjunction,conj_shift,0,daniel quería un corte de pelo .,daniel se sentó frente a la peluquera y recortó su cabello con cuidado .,recortó,8,es,daniel,claude-opus-4.7
+9,conjunction,conj_shift,1,mario vio a su antigua maestra .,mario saludó a la maestra y ella sonrió al verlo .,sonrió,7,es,mario,claude-opus-4.7
+9,conjunction,conj_shift,0,mario vio a su antigua maestra .,mario saludó a la maestra y sonrió al verlo .,sonrió,6,es,mario,claude-opus-4.7
+10,conjunction,conj_shift,1,pablo notó a un guardia alto .,pablo se acercó al guardia y él asintió con cortesía .,asintió,7,es,pablo,claude-opus-4.7
+10,conjunction,conj_shift,0,pablo notó a un guardia alto .,pablo se acercó al guardia y asintió con cortesía .,asintió,6,es,pablo,claude-opus-4.7
+11,conjunction,conj_shift,1,lucas necesitaba direcciones urgentes .,lucas detuvo a una corredora y ella dibujó un mapa rápido .,dibujó,7,es,lucas,claude-opus-4.7
+11,conjunction,conj_shift,0,lucas necesitaba direcciones urgentes .,lucas detuvo a una corredora y dibujó un mapa rápido .,dibujó,6,es,lucas,claude-opus-4.7
+12,conjunction,conj_shift,1,marco vio a una amiga cerca .,marco abrazó a la amiga y ella rió con alegría .,rió,7,es,marco,claude-opus-4.7
+12,conjunction,conj_shift,0,marco vio a una amiga cerca .,marco abrazó a la amiga y rió con alegría .,rió,6,es,marco,claude-opus-4.7
+13,conjunction,conj_shift,1,david necesitaba un libro de consulta .,david preguntó a la bibliotecaria y ella buscó el volumen raro .,buscó,7,es,david,claude-opus-4.7
+13,conjunction,conj_shift,0,david necesitaba un libro de consulta .,david preguntó a la bibliotecaria y buscó el volumen raro .,buscó,6,es,david,claude-opus-4.7
+14,conjunction,conj_shift,1,óscar conoció a la nueva entrenadora .,óscar estrechó la mano a la entrenadora y ella lo recibió con calidez .,recibió,10,es,oscar,claude-opus-4.7
+14,conjunction,conj_shift,0,óscar conoció a la nueva entrenadora .,óscar estrechó la mano a la entrenadora y lo recibió con calidez .,recibió,9,es,oscar,claude-opus-4.7
+15,conjunction,conj_shift,1,ana tenía un reloj roto .,ana lo llevó al joyero y él reparó los pequeños engranajes .,reparó,7,es,ana,claude-opus-4.7
+15,conjunction,conj_shift,0,ana tenía un reloj roto .,ana lo llevó al joyero y reparó los pequeños engranajes .,reparó,6,es,ana,claude-opus-4.7
+16,conjunction,conj_shift,1,sara quería verduras frescas .,sara compró al granjero y él cargó las cajas arriba .,cargó,6,es,sara,claude-opus-4.7
+16,conjunction,conj_shift,0,sara quería verduras frescas .,sara compró al granjero y cargó las cajas arriba .,cargó,5,es,sara,claude-opus-4.7
+17,conjunction,conj_shift,1,elena necesitaba consejo legal .,elena escribió al abogado y él respondió en una hora .,respondió,6,es,elena,claude-opus-4.7
+17,conjunction,conj_shift,0,elena necesitaba consejo legal .,elena escribió al abogado y respondió en una hora .,respondió,5,es,elena,claude-opus-4.7
+18,conjunction,conj_shift,1,clara necesitaba llegar a casa .,clara saludó a un conductor y él frenó de inmediato .,frenó,7,es,clara,claude-opus-4.7
+18,conjunction,conj_shift,0,clara necesitaba llegar a casa .,clara saludó a un conductor y frenó de inmediato .,frenó,6,es,clara,claude-opus-4.7
+19,conjunction,conj_shift,1,lucía derramó su bebida .,lucía se disculpó con la camarera y ella limpió la mesa .,limpió,8,es,lucia,claude-opus-4.7
+19,conjunction,conj_shift,0,lucía derramó su bebida .,lucía se disculpó con la camarera y limpió la mesa .,limpió,7,es,lucia,claude-opus-4.7
+20,conjunction,conj_shift,1,daniel conoció a una guía turística .,daniel escuchó a la guía y ella explicó las ruinas antiguas .,explicó,7,es,daniel,claude-opus-4.7
+20,conjunction,conj_shift,0,daniel conoció a una guía turística .,daniel escuchó a la guía y explicó las ruinas antiguas .,explicó,6,es,daniel,claude-opus-4.7
+21,conjunction,conj_shift,1,mario notó a una artista callejera .,mario observó a la artista y ella pintó un retrato rápido .,pintó,7,es,mario,claude-opus-4.7
+21,conjunction,conj_shift,0,mario notó a una artista callejera .,mario observó a la artista y pintó un retrato rápido .,pintó,6,es,mario,claude-opus-4.7
+22,conjunction,conj_shift,1,pablo necesitaba un café fuerte .,pablo pidió a la barista y ella calentó la leche con cuidado .,calentó,7,es,pablo,claude-opus-4.7
+22,conjunction,conj_shift,0,pablo necesitaba un café fuerte .,pablo pidió a la barista y calentó la leche con cuidado .,calentó,6,es,pablo,claude-opus-4.7
+23,conjunction,conj_shift,1,marco perdió su cartera .,marco avisó al agente y él redactó un informe escrito .,redactó,6,es,marco,claude-opus-4.7
+23,conjunction,conj_shift,0,marco perdió su cartera .,marco avisó al agente y redactó un informe escrito .,redactó,5,es,marco,claude-opus-4.7
+24,conjunction,conj_shift,1,óscar encontró a un niño perdido .,óscar habló con la madre y ella lo agradeció entre lágrimas .,agradeció,8,es,oscar,claude-opus-4.7
+24,conjunction,conj_shift,0,óscar encontró a un niño perdido .,óscar habló con la madre y lo agradeció entre lágrimas .,agradeció,7,es,oscar,claude-opus-4.7

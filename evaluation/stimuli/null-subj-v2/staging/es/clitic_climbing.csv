@@ -1,0 +1,49 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,clitic_climbing,climb,1,,ana lo quiere comer ahora .,quiere,2,es,ana,claude-opus-4.7
+1,clitic_climbing,climb,0,,ana quiere comerlo ahora .,quiere,1,es,ana,claude-opus-4.7
+2,clitic_climbing,climb,1,,marco la puede ver hoy .,puede,2,es,marco,claude-opus-4.7
+2,clitic_climbing,climb,0,,marco puede verla hoy .,puede,1,es,marco,claude-opus-4.7
+3,clitic_climbing,climb,1,,lucía los tiene que hacer .,tiene,2,es,lucía,claude-opus-4.7
+3,clitic_climbing,climb,0,,lucía tiene que hacerlos .,tiene,1,es,lucía,claude-opus-4.7
+4,clitic_climbing,climb,1,,daniel me va a llamar pronto .,va,2,es,daniel,claude-opus-4.7
+4,clitic_climbing,climb,0,,daniel va a llamarme pronto .,va,1,es,daniel,claude-opus-4.7
+5,clitic_climbing,climb,1,,sofía te debe escuchar bien .,debe,2,es,sofía,claude-opus-4.7
+5,clitic_climbing,climb,0,,sofía debe escucharte bien .,debe,1,es,sofía,claude-opus-4.7
+6,clitic_climbing,climb,1,,clara las empieza a leer .,empieza,2,es,clara,claude-opus-4.7
+6,clitic_climbing,climb,0,,clara empieza a leerlas .,empieza,1,es,clara,claude-opus-4.7
+7,clitic_climbing,climb,1,,mario lo acaba de decir .,acaba,2,es,mario,claude-opus-4.7
+7,clitic_climbing,climb,0,,mario acaba de decirlo .,acaba,1,es,mario,claude-opus-4.7
+8,clitic_climbing,climb,1,,elena la suele traer siempre .,suele,2,es,elena,claude-opus-4.7
+8,clitic_climbing,climb,0,,elena suele traerla siempre .,suele,1,es,elena,claude-opus-4.7
+9,clitic_climbing,climb,1,,pablo los vuelve a buscar .,vuelve,2,es,pablo,claude-opus-4.7
+9,clitic_climbing,climb,0,,pablo vuelve a buscarlos .,vuelve,1,es,pablo,claude-opus-4.7
+10,clitic_climbing,climb,1,,marta nos prefiere llevar temprano .,prefiere,2,es,marta,claude-opus-4.7
+10,clitic_climbing,climb,0,,marta prefiere llevarnos temprano .,prefiere,1,es,marta,claude-opus-4.7
+11,clitic_climbing,climb,1,,lucas lo sabe cocinar bien .,sabe,2,es,lucas,claude-opus-4.7
+11,clitic_climbing,climb,0,,lucas sabe cocinarlo bien .,sabe,1,es,lucas,claude-opus-4.7
+12,clitic_climbing,climb,1,,david la logra recordar fácilmente .,logra,2,es,david,claude-opus-4.7
+12,clitic_climbing,climb,0,,david logra recordarla fácilmente .,logra,1,es,david,claude-opus-4.7
+13,clitic_climbing,climb,1,,sara me intenta ayudar siempre .,intenta,2,es,sara,claude-opus-4.7
+13,clitic_climbing,climb,0,,sara intenta ayudarme siempre .,intenta,1,es,sara,claude-opus-4.7
+14,clitic_climbing,climb,1,,óscar te necesita encontrar pronto .,necesita,2,es,óscar,claude-opus-4.7
+14,clitic_climbing,climb,0,,óscar necesita encontrarte pronto .,necesita,1,es,óscar,claude-opus-4.7
+15,clitic_climbing,climb,1,,ana lo desea terminar hoy .,desea,2,es,ana,claude-opus-4.7
+15,clitic_climbing,climb,0,,ana desea terminarlo hoy .,desea,1,es,ana,claude-opus-4.7
+16,clitic_climbing,climb,1,,clara las quiere mirar ahora .,quiere,2,es,clara,claude-opus-4.7
+16,clitic_climbing,climb,0,,clara quiere mirarlas ahora .,quiere,1,es,clara,claude-opus-4.7
+17,clitic_climbing,climb,1,,marco les puede hablar después .,puede,2,es,marco,claude-opus-4.7
+17,clitic_climbing,climb,0,,marco puede hablarles después .,puede,1,es,marco,claude-opus-4.7
+18,clitic_climbing,climb,1,,sofía los tiene que escribir .,tiene,2,es,sofía,claude-opus-4.7
+18,clitic_climbing,climb,0,,sofía tiene que escribirlos .,tiene,1,es,sofía,claude-opus-4.7
+19,clitic_climbing,climb,1,,mario la va a pensar mejor .,va,2,es,mario,claude-opus-4.7
+19,clitic_climbing,climb,0,,mario va a pensarla mejor .,va,1,es,mario,claude-opus-4.7
+20,clitic_climbing,climb,1,,elena nos debe llevar ahora .,debe,2,es,elena,claude-opus-4.7
+20,clitic_climbing,climb,0,,elena debe llevarnos ahora .,debe,1,es,elena,claude-opus-4.7
+21,clitic_climbing,climb,1,,pablo lo empieza a entender .,empieza,2,es,pablo,claude-opus-4.7
+21,clitic_climbing,climb,0,,pablo empieza a entenderlo .,empieza,1,es,pablo,claude-opus-4.7
+22,clitic_climbing,climb,1,,marta la acaba de abrir .,acaba,2,es,marta,claude-opus-4.7
+22,clitic_climbing,climb,0,,marta acaba de abrirla .,acaba,1,es,marta,claude-opus-4.7
+23,clitic_climbing,climb,1,,daniel te suele visitar mucho .,suele,2,es,daniel,claude-opus-4.7
+23,clitic_climbing,climb,0,,daniel suele visitarte mucho .,suele,1,es,daniel,claude-opus-4.7
+24,clitic_climbing,climb,1,,lucía los vuelve a perder .,vuelve,2,es,lucía,claude-opus-4.7
+24,clitic_climbing,climb,0,,lucía vuelve a perderlos .,vuelve,1,es,lucía,claude-opus-4.7

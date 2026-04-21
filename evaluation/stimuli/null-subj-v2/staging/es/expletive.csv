@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,expletive,expl_seems,1,la luz se apaga a menudo .,ello parece que hay una avería .,parece,1,es,,claude-opus-4.7
+1,expletive,expl_seems,0,la luz se apaga a menudo .,parece que hay una avería .,parece,0,es,,claude-opus-4.7
+2,expletive,expl_seems,1,el perro ladra a las sombras .,ello parece que tiene miedo .,parece,1,es,,claude-opus-4.7
+2,expletive,expl_seems,0,el perro ladra a las sombras .,parece que tiene miedo .,parece,0,es,,claude-opus-4.7
+3,expletive,expl_seems,1,el reloj anda bastante lento .,ello parece que la batería se agota .,parece,1,es,,claude-opus-4.7
+3,expletive,expl_seems,0,el reloj anda bastante lento .,parece que la batería se agota .,parece,0,es,,claude-opus-4.7
+4,expletive,expl_seems,1,el cielo se oscurece mucho .,ello parece que viene una tormenta .,parece,1,es,,claude-opus-4.7
+4,expletive,expl_seems,0,el cielo se oscurece mucho .,parece que viene una tormenta .,parece,0,es,,claude-opus-4.7
+5,expletive,expl_seems,1,el techo gotea cada invierno .,ello parece que las tejas están sueltas .,parece,1,es,,claude-opus-4.7
+5,expletive,expl_seems,0,el techo gotea cada invierno .,parece que las tejas están sueltas .,parece,0,es,,claude-opus-4.7
+6,expletive,expl_seems,1,la planta se ve bastante marchita .,ello parece que nadie la regó .,parece,1,es,,claude-opus-4.7
+6,expletive,expl_seems,0,la planta se ve bastante marchita .,parece que nadie la regó .,parece,0,es,,claude-opus-4.7
+7,expletive,expl_seems,1,la película terminó de manera extraña .,ello resulta que el asesino escapó .,resulta,1,es,,claude-opus-4.7
+7,expletive,expl_seems,0,la película terminó de manera extraña .,resulta que el asesino escapó .,resulta,0,es,,claude-opus-4.7
+8,expletive,expl_seems,1,el examen estuvo bastante fácil .,ello resulta que casi todos aprobaron .,resulta,1,es,,claude-opus-4.7
+8,expletive,expl_seems,0,el examen estuvo bastante fácil .,resulta que casi todos aprobaron .,resulta,0,es,,claude-opus-4.7
+9,expletive,expl_seems,1,el paquete llegó vacío .,ello resulta que la caja estaba dañada .,resulta,1,es,,claude-opus-4.7
+9,expletive,expl_seems,0,el paquete llegó vacío .,resulta que la caja estaba dañada .,resulta,0,es,,claude-opus-4.7
+10,expletive,expl_seems,1,el autobús llega tarde cada día .,ello sucede que el conductor es nuevo .,sucede,1,es,,claude-opus-4.7
+10,expletive,expl_seems,0,el autobús llega tarde cada día .,sucede que el conductor es nuevo .,sucede,0,es,,claude-opus-4.7
+11,expletive,expl_seems,1,la impresora se atasca cada hora .,ello ocurre que el papel es grueso .,ocurre,1,es,,claude-opus-4.7
+11,expletive,expl_seems,0,la impresora se atasca cada hora .,ocurre que el papel es grueso .,ocurre,0,es,,claude-opus-4.7
+12,expletive,expl_seems,1,la tienda cierra bastante temprano .,ello sucede que el dueño está enfermo .,sucede,1,es,,claude-opus-4.7
+12,expletive,expl_seems,0,la tienda cierra bastante temprano .,sucede que el dueño está enfermo .,sucede,0,es,,claude-opus-4.7
+13,expletive,expl_seems,1,las flores florecieron en marzo .,ello se nota que la primavera llegó pronto .,se,1,es,,claude-opus-4.7
+13,expletive,expl_seems,0,las flores florecieron en marzo .,se nota que la primavera llegó pronto .,se,0,es,,claude-opus-4.7
+14,expletive,expl_seems,1,el pan subió muy rápido .,ello se ve que la levadura estaba fresca .,se,1,es,,claude-opus-4.7
+14,expletive,expl_seems,0,el pan subió muy rápido .,se ve que la levadura estaba fresca .,se,0,es,,claude-opus-4.7
+15,expletive,expl_seems,1,el equipo ganó cada partido .,ello se nota que el entrenador es excelente .,se,1,es,,claude-opus-4.7
+15,expletive,expl_seems,0,el equipo ganó cada partido .,se nota que el entrenador es excelente .,se,0,es,,claude-opus-4.7
+16,expletive,expl_seems,1,los precios siguen subiendo más .,ello se ve que menos gente compra .,se,1,es,,claude-opus-4.7
+16,expletive,expl_seems,0,los precios siguen subiendo más .,se ve que menos gente compra .,se,0,es,,claude-opus-4.7
+17,expletive,expl_seems,1,el tráfico avanza muy despacio .,ello queda claro que muchos conductores se quejan .,queda,1,es,,claude-opus-4.7
+17,expletive,expl_seems,0,el tráfico avanza muy despacio .,queda claro que muchos conductores se quejan .,queda,0,es,,claude-opus-4.7
+18,expletive,expl_seems,1,el invierno duró bastante .,ello queda claro que todos se sienten cansados .,queda,1,es,,claude-opus-4.7
+18,expletive,expl_seems,0,el invierno duró bastante .,queda claro que todos se sienten cansados .,queda,0,es,,claude-opus-4.7
+19,expletive,expl_seems,1,el informe tenía muchos errores .,ello queda claro que el gerente debe leerlo .,queda,1,es,,claude-opus-4.7
+19,expletive,expl_seems,0,el informe tenía muchos errores .,queda claro que el gerente debe leerlo .,queda,0,es,,claude-opus-4.7
+20,expletive,expl_seems,1,las reglas cambiaron la semana pasada .,ello se ve que cada jugador las conoce .,se,1,es,,claude-opus-4.7
+20,expletive,expl_seems,0,las reglas cambiaron la semana pasada .,se ve que cada jugador las conoce .,se,0,es,,claude-opus-4.7
+21,expletive,expl_seems,1,el puente necesita reparaciones urgentes .,ello ocurre que la ciudad actúa rápido .,ocurre,1,es,,claude-opus-4.7
+21,expletive,expl_seems,0,el puente necesita reparaciones urgentes .,ocurre que la ciudad actúa rápido .,ocurre,0,es,,claude-opus-4.7
+22,expletive,expl_seems,1,el testigo se negó a hablar .,ello queda claro que el caso sigue sin resolverse .,queda,1,es,,claude-opus-4.7
+22,expletive,expl_seems,0,el testigo se negó a hablar .,queda claro que el caso sigue sin resolverse .,queda,0,es,,claude-opus-4.7
+23,expletive,expl_seems,1,el presupuesto no tiene suficiente dinero .,ello sucede que el proyecto debe continuar .,sucede,1,es,,claude-opus-4.7
+23,expletive,expl_seems,0,el presupuesto no tiene suficiente dinero .,sucede que el proyecto debe continuar .,sucede,0,es,,claude-opus-4.7
+24,expletive,expl_seems,1,la carretera sigue cerrada .,ello aparece que el puente necesita arreglo .,aparece,1,es,,claude-opus-4.7
+24,expletive,expl_seems,0,la carretera sigue cerrada .,aparece que el puente necesita arreglo .,aparece,0,es,,claude-opus-4.7
+1,expletive,expl_be,1,¿ buscabas a alguien ?,ello es el chico que querías .,es,1,es,,claude-opus-4.7
+1,expletive,expl_be,0,¿ buscabas a alguien ?,es el chico que querías .,es,0,es,,claude-opus-4.7
+2,expletive,expl_be,1,¿ encontraste el libro ?,ello es el que está en el estante .,es,1,es,,claude-opus-4.7
+2,expletive,expl_be,0,¿ encontraste el libro ?,es el que está en el estante .,es,0,es,,claude-opus-4.7
+3,expletive,expl_be,1,¿ quién llamó por teléfono ?,ello es el médico de la clínica .,es,1,es,,claude-opus-4.7
+3,expletive,expl_be,0,¿ quién llamó por teléfono ?,es el médico de la clínica .,es,0,es,,claude-opus-4.7
+4,expletive,expl_be,1,alguien tocó la puerta .,ello era el cartero otra vez .,era,1,es,,claude-opus-4.7
+4,expletive,expl_be,0,alguien tocó la puerta .,era el cartero otra vez .,era,0,es,,claude-opus-4.7
+5,expletive,expl_be,1,un ruido fuerte me despertó .,ello era el vecino moviendo muebles .,era,1,es,,claude-opus-4.7
+5,expletive,expl_be,0,un ruido fuerte me despertó .,era el vecino moviendo muebles .,era,0,es,,claude-opus-4.7
+6,expletive,expl_be,1,algo olía delicioso anoche .,ello era el pastel en el horno .,era,1,es,,claude-opus-4.7
+6,expletive,expl_be,0,algo olía delicioso anoche .,era el pastel en el horno .,era,0,es,,claude-opus-4.7
+7,expletive,expl_be,1,el tiempo cambió toda la mañana .,ello resulta más frío a cada hora .,resulta,1,es,,claude-opus-4.7
+7,expletive,expl_be,0,el tiempo cambió toda la mañana .,resulta más frío a cada hora .,resulta,0,es,,claude-opus-4.7
+8,expletive,expl_be,1,el jardín se ve bastante seco .,ello resulta más difícil cultivar flores .,resulta,1,es,,claude-opus-4.7
+8,expletive,expl_be,0,el jardín se ve bastante seco .,resulta más difícil cultivar flores .,resulta,0,es,,claude-opus-4.7
+9,expletive,expl_be,1,la reunión duró mucho tiempo .,ello resulta agotador tras tres horas .,resulta,1,es,,claude-opus-4.7
+9,expletive,expl_be,0,la reunión duró mucho tiempo .,resulta agotador tras tres horas .,resulta,0,es,,claude-opus-4.7
+10,expletive,expl_be,1,el pronóstico anunció fuertes tormentas .,ello sigue nublado durante todo el día .,sigue,1,es,,claude-opus-4.7
+10,expletive,expl_be,0,el pronóstico anunció fuertes tormentas .,sigue nublado durante todo el día .,sigue,0,es,,claude-opus-4.7
+11,expletive,expl_be,1,el horario estaba muy apretado .,ello sigue difícil terminar a tiempo .,sigue,1,es,,claude-opus-4.7
+11,expletive,expl_be,0,el horario estaba muy apretado .,sigue difícil terminar a tiempo .,sigue,0,es,,claude-opus-4.7
+12,expletive,expl_be,1,la carretera estuvo helada toda la semana .,ello sigue peligroso para los conductores nuevos .,sigue,1,es,,claude-opus-4.7
+12,expletive,expl_be,0,la carretera estuvo helada toda la semana .,sigue peligroso para los conductores nuevos .,sigue,0,es,,claude-opus-4.7
+13,expletive,expl_be,1,el aire se puso pesado adentro .,ello queda cálido durante toda la noche .,queda,1,es,,claude-opus-4.7
+13,expletive,expl_be,0,el aire se puso pesado adentro .,queda cálido durante toda la noche .,queda,0,es,,claude-opus-4.7
+14,expletive,expl_be,1,la cabaña vieja no tiene calefacción .,ello queda frío cada invierno .,queda,1,es,,claude-opus-4.7
+14,expletive,expl_be,0,la cabaña vieja no tiene calefacción .,queda frío cada invierno .,queda,0,es,,claude-opus-4.7
+15,expletive,expl_be,1,el sótano no tiene ventanas .,ello queda oscuro incluso al mediodía .,queda,1,es,,claude-opus-4.7
+15,expletive,expl_be,0,el sótano no tiene ventanas .,queda oscuro incluso al mediodía .,queda,0,es,,claude-opus-4.7
+16,expletive,expl_be,1,la mañana empezó soleada .,ello se puso ventoso por la tarde .,se,1,es,,claude-opus-4.7
+16,expletive,expl_be,0,la mañana empezó soleada .,se puso ventoso por la tarde .,se,0,es,,claude-opus-4.7
+17,expletive,expl_be,1,el concierto duró tres horas .,ello se puso ruidoso cerca de la canción final .,se,1,es,,claude-opus-4.7
+17,expletive,expl_be,0,el concierto duró tres horas .,se puso ruidoso cerca de la canción final .,se,0,es,,claude-opus-4.7
+18,expletive,expl_be,1,el fuego ardió por horas .,ello se puso caluroso dentro del cuarto pequeño .,se,1,es,,claude-opus-4.7
+18,expletive,expl_be,0,el fuego ardió por horas .,se puso caluroso dentro del cuarto pequeño .,se,0,es,,claude-opus-4.7
+19,expletive,expl_be,1,la multitud creció cada minuto .,ello resulta agobiante cerca del escenario .,resulta,1,es,,claude-opus-4.7
+19,expletive,expl_be,0,la multitud creció cada minuto .,resulta agobiante cerca del escenario .,resulta,0,es,,claude-opus-4.7
+20,expletive,expl_be,1,la biblioteca tiene paredes gruesas .,ello resulta tranquilo en la sala de lectura .,resulta,1,es,,claude-opus-4.7
+20,expletive,expl_be,0,la biblioteca tiene paredes gruesas .,resulta tranquilo en la sala de lectura .,resulta,0,es,,claude-opus-4.7
+21,expletive,expl_be,1,la tormenta pasó rápido .,ello resulta fresco fuera de la casa .,resulta,1,es,,claude-opus-4.7
+21,expletive,expl_be,0,la tormenta pasó rápido .,resulta fresco fuera de la casa .,resulta,0,es,,claude-opus-4.7
+22,expletive,expl_be,1,¿ quién tocó el timbre dos veces ?,ello era el repartidor otra vez .,era,1,es,,claude-opus-4.7
+22,expletive,expl_be,0,¿ quién tocó el timbre dos veces ?,era el repartidor otra vez .,era,0,es,,claude-opus-4.7
+23,expletive,expl_be,1,¿ cuál chaqueta está en el perchero ?,ello es la azul de ayer .,es,1,es,,claude-opus-4.7
+23,expletive,expl_be,0,¿ cuál chaqueta está en el perchero ?,es la azul de ayer .,es,0,es,,claude-opus-4.7
+24,expletive,expl_be,1,¿ qué niña ganó el premio ?,ello era la chica de tu clase .,era,1,es,,claude-opus-4.7
+24,expletive,expl_be,0,¿ qué niña ganó el premio ?,era la chica de tu clase .,era,0,es,,claude-opus-4.7

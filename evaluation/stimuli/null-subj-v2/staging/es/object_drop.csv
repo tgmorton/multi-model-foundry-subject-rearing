@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,object_drop,obj_3sg,1,¿ dónde está el jarrón ?,ana lo puso en la mesa .,puso,2,es,ana,claude-opus-4.7
+1,object_drop,obj_3sg,0,¿ dónde está el jarrón ?,ana puso en la mesa .,puso,1,es,ana,claude-opus-4.7
+2,object_drop,obj_3sg,1,¿ dónde está la carta ?,daniel la envió ayer por la mañana .,envió,2,es,daniel,claude-opus-4.7
+2,object_drop,obj_3sg,0,¿ dónde está la carta ?,daniel envió ayer por la mañana .,envió,1,es,daniel,claude-opus-4.7
+3,object_drop,obj_3sg,1,¿ dónde está el cuadro ?,sara lo colgó encima de la chimenea .,colgó,2,es,sara,claude-opus-4.7
+3,object_drop,obj_3sg,0,¿ dónde está el cuadro ?,sara colgó encima de la chimenea .,colgó,1,es,sara,claude-opus-4.7
+4,object_drop,obj_3sg,1,¿ dónde está la llave de repuesto ?,mario la tiró cerca de la puerta .,tiró,2,es,mario,claude-opus-4.7
+4,object_drop,obj_3sg,0,¿ dónde está la llave de repuesto ?,mario tiró cerca de la puerta .,tiró,1,es,mario,claude-opus-4.7
+5,object_drop,obj_3sg,1,¿ dónde está el libro de la biblioteca ?,elena lo devolvió esta mañana .,devolvió,2,es,elena,claude-opus-4.7
+5,object_drop,obj_3sg,0,¿ dónde está el libro de la biblioteca ?,elena devolvió esta mañana .,devolvió,1,es,elena,claude-opus-4.7
+6,object_drop,obj_3sg,1,¿ dónde está el regalo ?,pablo lo envolvió en papel azul .,envolvió,2,es,pablo,claude-opus-4.7
+6,object_drop,obj_3sg,0,¿ dónde está el regalo ?,pablo envolvió en papel azul .,envolvió,1,es,pablo,claude-opus-4.7
+7,object_drop,obj_3sg,1,¿ dónde está el teléfono ?,lucía lo dejó en la encimera .,dejó,2,es,lucia,claude-opus-4.7
+7,object_drop,obj_3sg,0,¿ dónde está el teléfono ?,lucía dejó en la encimera .,dejó,1,es,lucia,claude-opus-4.7
+8,object_drop,obj_3sg,1,¿ dónde está el pastel de cumpleaños ?,lucas lo guardó en la nevera .,guardó,2,es,lucas,claude-opus-4.7
+8,object_drop,obj_3sg,0,¿ dónde está el pastel de cumpleaños ?,lucas guardó en la nevera .,guardó,1,es,lucas,claude-opus-4.7
+9,object_drop,obj_3sg,1,¿ dónde está la bufanda de lana ?,marta la dobló en el cajón .,dobló,2,es,marta,claude-opus-4.7
+9,object_drop,obj_3sg,0,¿ dónde está la bufanda de lana ?,marta dobló en el cajón .,dobló,1,es,marta,claude-opus-4.7
+10,object_drop,obj_3sg,1,¿ dónde está la bicicleta ?,marco la aparcó junto al garaje .,aparcó,2,es,marco,claude-opus-4.7
+10,object_drop,obj_3sg,0,¿ dónde está la bicicleta ?,marco aparcó junto al garaje .,aparcó,1,es,marco,claude-opus-4.7
+11,object_drop,obj_3sg,1,¿ dónde está el sobre ?,sofía lo selló antes de la reunión .,selló,2,es,sofia,claude-opus-4.7
+11,object_drop,obj_3sg,0,¿ dónde está el sobre ?,sofía selló antes de la reunión .,selló,1,es,sofia,claude-opus-4.7
+12,object_drop,obj_3sg,1,¿ dónde está el mapa viejo ?,david lo extendió sobre el escritorio .,extendió,2,es,david,claude-opus-4.7
+12,object_drop,obj_3sg,0,¿ dónde está el mapa viejo ?,david extendió sobre el escritorio .,extendió,1,es,david,claude-opus-4.7
+13,object_drop,obj_3sg,1,¿ dónde está el tarro de miel ?,clara lo colocó en el estante .,colocó,2,es,clara,claude-opus-4.7
+13,object_drop,obj_3sg,0,¿ dónde está el tarro de miel ?,clara colocó en el estante .,colocó,1,es,clara,claude-opus-4.7
+14,object_drop,obj_3sg,1,¿ dónde está la cámara nueva ?,óscar la metió en su bolsa .,metió,2,es,oscar,claude-opus-4.7
+14,object_drop,obj_3sg,0,¿ dónde está la cámara nueva ?,óscar metió en su bolsa .,metió,1,es,oscar,claude-opus-4.7
+15,object_drop,obj_3sg,1,¿ y la silla vieja ?,los transportistas la empujaron contra la pared .,empujaron,3,es,,claude-opus-4.7
+15,object_drop,obj_3sg,0,¿ y la silla vieja ?,los transportistas empujaron contra la pared .,empujaron,2,es,,claude-opus-4.7
+16,object_drop,obj_3sg,1,¿ y la lámpara rota ?,los obreros la llevaron al sótano .,llevaron,3,es,,claude-opus-4.7
+16,object_drop,obj_3sg,0,¿ y la lámpara rota ?,los obreros llevaron al sótano .,llevaron,2,es,,claude-opus-4.7
+17,object_drop,obj_3sg,1,¿ y la caja roja ?,los niños la subieron por las escaleras .,subieron,3,es,,claude-opus-4.7
+17,object_drop,obj_3sg,0,¿ y la caja roja ?,los niños subieron por las escaleras .,subieron,2,es,,claude-opus-4.7
+18,object_drop,obj_3sg,1,¿ y la planta pequeña ?,el niño la riega cada día .,riega,3,es,,claude-opus-4.7
+18,object_drop,obj_3sg,0,¿ y la planta pequeña ?,el niño riega cada día .,riega,2,es,,claude-opus-4.7
+19,object_drop,obj_3sg,1,¿ y la alfombra pesada ?,los hombres la enrollaron contra la pared .,enrollaron,3,es,,claude-opus-4.7
+19,object_drop,obj_3sg,0,¿ y la alfombra pesada ?,los hombres enrollaron contra la pared .,enrollaron,2,es,,claude-opus-4.7
+20,object_drop,obj_3sg,1,¿ y el cuadro polvoriento ?,el conservador lo limpió con gran cuidado .,limpió,3,es,,claude-opus-4.7
+20,object_drop,obj_3sg,0,¿ y el cuadro polvoriento ?,el conservador limpió con gran cuidado .,limpió,2,es,,claude-opus-4.7
+21,object_drop,obj_3sg,1,¿ y la caja de madera ?,el conductor la cargó al camión .,cargó,3,es,,claude-opus-4.7
+21,object_drop,obj_3sg,0,¿ y la caja de madera ?,el conductor cargó al camión .,cargó,2,es,,claude-opus-4.7
+22,object_drop,obj_3sg,1,¿ y el manuscrito antiguo ?,el erudito lo examinó durante muchas horas .,examinó,3,es,,claude-opus-4.7
+22,object_drop,obj_3sg,0,¿ y el manuscrito antiguo ?,el erudito examinó durante muchas horas .,examinó,2,es,,claude-opus-4.7
+23,object_drop,obj_3sg,1,¿ y el reloj antiguo ?,la abuela lo revisa cada domingo .,revisa,3,es,,claude-opus-4.7
+23,object_drop,obj_3sg,0,¿ y el reloj antiguo ?,la abuela revisa cada domingo .,revisa,2,es,,claude-opus-4.7
+24,object_drop,obj_3sg,1,¿ y la botella de cristal ?,el camarero la llenó con agua fría .,llenó,3,es,,claude-opus-4.7
+24,object_drop,obj_3sg,0,¿ y la botella de cristal ?,el camarero llenó con agua fría .,llenó,2,es,,claude-opus-4.7
+1,object_drop,obj_3pl,1,¿ dónde están los platos ?,ana los lavó después de la larga cena .,lavó,2,es,ana,claude-opus-4.7
+1,object_drop,obj_3pl,0,¿ dónde están los platos ?,ana lavó después de la larga cena .,lavó,1,es,ana,claude-opus-4.7
+2,object_drop,obj_3pl,1,¿ dónde están los papeles viejos ?,daniel los archivó en el armario gris .,archivó,2,es,daniel,claude-opus-4.7
+2,object_drop,obj_3pl,0,¿ dónde están los papeles viejos ?,daniel archivó en el armario gris .,archivó,1,es,daniel,claude-opus-4.7
+3,object_drop,obj_3pl,1,¿ dónde están las flores frescas ?,sara las arregló en un jarrón alto .,arregló,2,es,sara,claude-opus-4.7
+3,object_drop,obj_3pl,0,¿ dónde están las flores frescas ?,sara arregló en un jarrón alto .,arregló,1,es,sara,claude-opus-4.7
+4,object_drop,obj_3pl,1,¿ dónde están las botas de invierno ?,mario las guardó en el armario del pasillo .,guardó,2,es,mario,claude-opus-4.7
+4,object_drop,obj_3pl,0,¿ dónde están las botas de invierno ?,mario guardó en el armario del pasillo .,guardó,1,es,mario,claude-opus-4.7
+5,object_drop,obj_3pl,1,¿ dónde están los libros de la biblioteca ?,elena los devolvió el lunes por la mañana .,devolvió,2,es,elena,claude-opus-4.7
+5,object_drop,obj_3pl,0,¿ dónde están los libros de la biblioteca ?,elena devolvió el lunes por la mañana .,devolvió,1,es,elena,claude-opus-4.7
+6,object_drop,obj_3pl,1,¿ dónde están los regalos de boda ?,pablo los envolvió en papel plateado .,envolvió,2,es,pablo,claude-opus-4.7
+6,object_drop,obj_3pl,0,¿ dónde están los regalos de boda ?,pablo envolvió en papel plateado .,envolvió,1,es,pablo,claude-opus-4.7
+7,object_drop,obj_3pl,1,¿ dónde están las llaves de casa ?,lucía las dejó en la encimera de la cocina .,dejó,2,es,lucia,claude-opus-4.7
+7,object_drop,obj_3pl,0,¿ dónde están las llaves de casa ?,lucía dejó en la encimera de la cocina .,dejó,1,es,lucia,claude-opus-4.7
+8,object_drop,obj_3pl,1,¿ dónde están las galletas horneadas ?,lucas las puso sobre la rejilla de enfriamiento .,puso,2,es,lucas,claude-opus-4.7
+8,object_drop,obj_3pl,0,¿ dónde están las galletas horneadas ?,lucas puso sobre la rejilla de enfriamiento .,puso,1,es,lucas,claude-opus-4.7
+9,object_drop,obj_3pl,1,¿ dónde están los jerséis de lana ?,marta los dobló en el cajón de cedro .,dobló,2,es,marta,claude-opus-4.7
+9,object_drop,obj_3pl,0,¿ dónde están los jerséis de lana ?,marta dobló en el cajón de cedro .,dobló,1,es,marta,claude-opus-4.7
+10,object_drop,obj_3pl,1,¿ dónde están las dos bicicletas ?,marco las aparcó junto a la valla trasera .,aparcó,2,es,marco,claude-opus-4.7
+10,object_drop,obj_3pl,0,¿ dónde están las dos bicicletas ?,marco aparcó junto a la valla trasera .,aparcó,1,es,marco,claude-opus-4.7
+11,object_drop,obj_3pl,1,¿ dónde están las facturas ?,sofía las firmó antes de la reunión .,firmó,2,es,sofia,claude-opus-4.7
+11,object_drop,obj_3pl,0,¿ dónde están las facturas ?,sofía firmó antes de la reunión .,firmó,1,es,sofia,claude-opus-4.7
+12,object_drop,obj_3pl,1,¿ dónde están los mapas viejos ?,david los extendió sobre la mesa ancha .,extendió,2,es,david,claude-opus-4.7
+12,object_drop,obj_3pl,0,¿ dónde están los mapas viejos ?,david extendió sobre la mesa ancha .,extendió,1,es,david,claude-opus-4.7
+13,object_drop,obj_3pl,1,¿ dónde están los tarros de cristal ?,clara los colocó en el estante superior .,colocó,2,es,clara,claude-opus-4.7
+13,object_drop,obj_3pl,0,¿ dónde están los tarros de cristal ?,clara colocó en el estante superior .,colocó,1,es,clara,claude-opus-4.7
+14,object_drop,obj_3pl,1,¿ dónde están los álbumes de fotos ?,óscar los metió en la maleta grande .,metió,2,es,oscar,claude-opus-4.7
+14,object_drop,obj_3pl,0,¿ dónde están los álbumes de fotos ?,óscar metió en la maleta grande .,metió,1,es,oscar,claude-opus-4.7
+15,object_drop,obj_3pl,1,¿ y las sillas viejas ?,los transportistas las empujaron contra la pared del fondo .,empujaron,3,es,,claude-opus-4.7
+15,object_drop,obj_3pl,0,¿ y las sillas viejas ?,los transportistas empujaron contra la pared del fondo .,empujaron,2,es,,claude-opus-4.7
+16,object_drop,obj_3pl,1,¿ y las lámparas rotas ?,los obreros las llevaron al sótano .,llevaron,3,es,,claude-opus-4.7
+16,object_drop,obj_3pl,0,¿ y las lámparas rotas ?,los obreros llevaron al sótano .,llevaron,2,es,,claude-opus-4.7
+17,object_drop,obj_3pl,1,¿ y las cajas rojas ?,los niños las subieron por las escaleras .,subieron,3,es,,claude-opus-4.7
+17,object_drop,obj_3pl,0,¿ y las cajas rojas ?,los niños subieron por las escaleras .,subieron,2,es,,claude-opus-4.7
+18,object_drop,obj_3pl,1,¿ y las plantas pequeñas ?,el jardinero las riega cada mañana .,riega,3,es,,claude-opus-4.7
+18,object_drop,obj_3pl,0,¿ y las plantas pequeñas ?,el jardinero riega cada mañana .,riega,2,es,,claude-opus-4.7
+19,object_drop,obj_3pl,1,¿ y las alfombras pesadas ?,los hombres las enrollaron contra la pared trasera .,enrollaron,3,es,,claude-opus-4.7
+19,object_drop,obj_3pl,0,¿ y las alfombras pesadas ?,los hombres enrollaron contra la pared trasera .,enrollaron,2,es,,claude-opus-4.7
+20,object_drop,obj_3pl,1,¿ a dónde fueron las cartas ?,la secretaria las deslizó detrás del escritorio de madera .,deslizó,3,es,,claude-opus-4.7
+20,object_drop,obj_3pl,0,¿ a dónde fueron las cartas ?,la secretaria deslizó detrás del escritorio de madera .,deslizó,2,es,,claude-opus-4.7
+21,object_drop,obj_3pl,1,¿ y las cajas de madera ?,el conductor las cargó al camión de carga .,cargó,3,es,,claude-opus-4.7
+21,object_drop,obj_3pl,0,¿ y las cajas de madera ?,el conductor cargó al camión de carga .,cargó,2,es,,claude-opus-4.7
+22,object_drop,obj_3pl,1,¿ y los manuscritos antiguos ?,el erudito los estudió durante muchas largas horas .,estudió,3,es,,claude-opus-4.7
+22,object_drop,obj_3pl,0,¿ y los manuscritos antiguos ?,el erudito estudió durante muchas largas horas .,estudió,2,es,,claude-opus-4.7
+23,object_drop,obj_3pl,1,¿ y los relojes antiguos ?,la abuela los ajusta cada domingo por la mañana .,ajusta,3,es,,claude-opus-4.7
+23,object_drop,obj_3pl,0,¿ y los relojes antiguos ?,la abuela ajusta cada domingo por la mañana .,ajusta,2,es,,claude-opus-4.7
+24,object_drop,obj_3pl,1,¿ y las botellas de cristal ?,el camarero las llenó con agua fría y fresca .,llenó,3,es,,claude-opus-4.7
+24,object_drop,obj_3pl,0,¿ y las botellas de cristal ?,el camarero llenó con agua fría y fresca .,llenó,2,es,,claude-opus-4.7

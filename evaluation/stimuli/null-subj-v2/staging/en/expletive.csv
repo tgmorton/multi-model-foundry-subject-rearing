@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,expletive,expl_seems,1,the light turns off often .,it seems that the light has a fault .,seems,1,en,,claude-opus-4.7
+1,expletive,expl_seems,0,the light turns off often .,seems that the light has a fault .,seems,0,en,,claude-opus-4.7
+2,expletive,expl_seems,1,the dog barks at shadows .,it seems that the dog is afraid .,seems,1,en,,claude-opus-4.7
+2,expletive,expl_seems,0,the dog barks at shadows .,seems that the dog is afraid .,seems,0,en,,claude-opus-4.7
+3,expletive,expl_seems,1,the clock runs rather slow .,it seems that the battery is dying .,seems,1,en,,claude-opus-4.7
+3,expletive,expl_seems,0,the clock runs rather slow .,seems that the battery is dying .,seems,0,en,,claude-opus-4.7
+4,expletive,expl_seems,1,the sky grows much darker .,it appears that a storm is coming .,appears,1,en,,claude-opus-4.7
+4,expletive,expl_seems,0,the sky grows much darker .,appears that a storm is coming .,appears,0,en,,claude-opus-4.7
+5,expletive,expl_seems,1,the roof leaks every winter .,it appears that the tiles are loose .,appears,1,en,,claude-opus-4.7
+5,expletive,expl_seems,0,the roof leaks every winter .,appears that the tiles are loose .,appears,0,en,,claude-opus-4.7
+6,expletive,expl_seems,1,the plant looks quite wilted .,it appears that nobody watered it .,appears,1,en,,claude-opus-4.7
+6,expletive,expl_seems,0,the plant looks quite wilted .,appears that nobody watered it .,appears,0,en,,claude-opus-4.7
+7,expletive,expl_seems,1,the movie ended strangely .,it turns out that the killer escaped .,turns,1,en,,claude-opus-4.7
+7,expletive,expl_seems,0,the movie ended strangely .,turns out that the killer escaped .,turns,0,en,,claude-opus-4.7
+8,expletive,expl_seems,1,the test was quite easy .,it turns out that most students passed .,turns,1,en,,claude-opus-4.7
+8,expletive,expl_seems,0,the test was quite easy .,turns out that most students passed .,turns,0,en,,claude-opus-4.7
+9,expletive,expl_seems,1,the package arrived empty .,it turns out that the box was damaged .,turns,1,en,,claude-opus-4.7
+9,expletive,expl_seems,0,the package arrived empty .,turns out that the box was damaged .,turns,0,en,,claude-opus-4.7
+10,expletive,expl_seems,1,the bus runs late daily .,it happens that the driver is new .,happens,1,en,,claude-opus-4.7
+10,expletive,expl_seems,0,the bus runs late daily .,happens that the driver is new .,happens,0,en,,claude-opus-4.7
+11,expletive,expl_seems,1,the printer jams every hour .,it happens that the paper is thick .,happens,1,en,,claude-opus-4.7
+11,expletive,expl_seems,0,the printer jams every hour .,happens that the paper is thick .,happens,0,en,,claude-opus-4.7
+12,expletive,expl_seems,1,the shop closes quite early .,it happens that the owner is sick .,happens,1,en,,claude-opus-4.7
+12,expletive,expl_seems,0,the shop closes quite early .,happens that the owner is sick .,happens,0,en,,claude-opus-4.7
+13,expletive,expl_seems,1,the flowers bloomed in march .,it follows that spring came early .,follows,1,en,,claude-opus-4.7
+13,expletive,expl_seems,0,the flowers bloomed in march .,follows that spring came early .,follows,0,en,,claude-opus-4.7
+14,expletive,expl_seems,1,the bread rose very fast .,it follows that the yeast was fresh .,follows,1,en,,claude-opus-4.7
+14,expletive,expl_seems,0,the bread rose very fast .,follows that the yeast was fresh .,follows,0,en,,claude-opus-4.7
+15,expletive,expl_seems,1,the team won every match .,it follows that the coach is excellent .,follows,1,en,,claude-opus-4.7
+15,expletive,expl_seems,0,the team won every match .,follows that the coach is excellent .,follows,0,en,,claude-opus-4.7
+16,expletive,expl_seems,1,the prices keep climbing higher .,it figures that fewer people shop .,figures,1,en,,claude-opus-4.7
+16,expletive,expl_seems,0,the prices keep climbing higher .,figures that fewer people shop .,figures,0,en,,claude-opus-4.7
+17,expletive,expl_seems,1,the traffic moves so slowly .,it figures that many drivers complain .,figures,1,en,,claude-opus-4.7
+17,expletive,expl_seems,0,the traffic moves so slowly .,figures that many drivers complain .,figures,0,en,,claude-opus-4.7
+18,expletive,expl_seems,1,the winter lasted quite long .,it figures that everyone feels tired .,figures,1,en,,claude-opus-4.7
+18,expletive,expl_seems,0,the winter lasted quite long .,figures that everyone feels tired .,figures,0,en,,claude-opus-4.7
+19,expletive,expl_seems,1,the report listed many errors .,it matters that the manager reads it .,matters,1,en,,claude-opus-4.7
+19,expletive,expl_seems,0,the report listed many errors .,matters that the manager reads it .,matters,0,en,,claude-opus-4.7
+20,expletive,expl_seems,1,the rules changed last week .,it matters that every player knows them .,matters,1,en,,claude-opus-4.7
+20,expletive,expl_seems,0,the rules changed last week .,matters that every player knows them .,matters,0,en,,claude-opus-4.7
+21,expletive,expl_seems,1,the bridge needs urgent repairs .,it matters that the city acts quickly .,matters,1,en,,claude-opus-4.7
+21,expletive,expl_seems,0,the bridge needs urgent repairs .,matters that the city acts quickly .,matters,0,en,,claude-opus-4.7
+22,expletive,expl_seems,1,the witness refused to speak .,it remains that the case is unsolved .,remains,1,en,,claude-opus-4.7
+22,expletive,expl_seems,0,the witness refused to speak .,remains that the case is unsolved .,remains,0,en,,claude-opus-4.7
+23,expletive,expl_seems,1,the budget lacks enough money .,it remains that the project must continue .,remains,1,en,,claude-opus-4.7
+23,expletive,expl_seems,0,the budget lacks enough money .,remains that the project must continue .,remains,0,en,,claude-opus-4.7
+24,expletive,expl_seems,1,the road is still closed .,it remains that the bridge needs repair .,remains,1,en,,claude-opus-4.7
+24,expletive,expl_seems,0,the road is still closed .,remains that the bridge needs repair .,remains,0,en,,claude-opus-4.7
+1,expletive,expl_be,1,were you looking for someone ?,it is the guy you wanted .,is,1,en,,claude-opus-4.7
+1,expletive,expl_be,0,were you looking for someone ?,is the guy you wanted .,is,0,en,,claude-opus-4.7
+2,expletive,expl_be,1,did you find the book ?,it is the one on the shelf .,is,1,en,,claude-opus-4.7
+2,expletive,expl_be,0,did you find the book ?,is the one on the shelf .,is,0,en,,claude-opus-4.7
+3,expletive,expl_be,1,who called on the phone ?,it is the doctor from the clinic .,is,1,en,,claude-opus-4.7
+3,expletive,expl_be,0,who called on the phone ?,is the doctor from the clinic .,is,0,en,,claude-opus-4.7
+4,expletive,expl_be,1,someone knocked at the door .,it was the mail carrier again .,was,1,en,,claude-opus-4.7
+4,expletive,expl_be,0,someone knocked at the door .,was the mail carrier again .,was,0,en,,claude-opus-4.7
+5,expletive,expl_be,1,a loud noise woke me up .,it was the neighbor moving furniture .,was,1,en,,claude-opus-4.7
+5,expletive,expl_be,0,a loud noise woke me up .,was the neighbor moving furniture .,was,0,en,,claude-opus-4.7
+6,expletive,expl_be,1,something smelled delicious last night .,it was the cake in the oven .,was,1,en,,claude-opus-4.7
+6,expletive,expl_be,0,something smelled delicious last night .,was the cake in the oven .,was,0,en,,claude-opus-4.7
+7,expletive,expl_be,1,the weather shifted all morning .,it becomes colder by the hour .,becomes,1,en,,claude-opus-4.7
+7,expletive,expl_be,0,the weather shifted all morning .,becomes colder by the hour .,becomes,0,en,,claude-opus-4.7
+8,expletive,expl_be,1,the garden looks quite dry .,it becomes harder to grow flowers .,becomes,1,en,,claude-opus-4.7
+8,expletive,expl_be,0,the garden looks quite dry .,becomes harder to grow flowers .,becomes,0,en,,claude-opus-4.7
+9,expletive,expl_be,1,the meeting ran very long .,it becomes tiring after three hours .,becomes,1,en,,claude-opus-4.7
+9,expletive,expl_be,0,the meeting ran very long .,becomes tiring after three hours .,becomes,0,en,,claude-opus-4.7
+10,expletive,expl_be,1,the forecast predicted heavy storms .,it remains cloudy throughout the day .,remains,1,en,,claude-opus-4.7
+10,expletive,expl_be,0,the forecast predicted heavy storms .,remains cloudy throughout the day .,remains,0,en,,claude-opus-4.7
+11,expletive,expl_be,1,the schedule was very tight .,it remains difficult to finish on time .,remains,1,en,,claude-opus-4.7
+11,expletive,expl_be,0,the schedule was very tight .,remains difficult to finish on time .,remains,0,en,,claude-opus-4.7
+12,expletive,expl_be,1,the road was icy all week .,it remains dangerous for new drivers .,remains,1,en,,claude-opus-4.7
+12,expletive,expl_be,0,the road was icy all week .,remains dangerous for new drivers .,remains,0,en,,claude-opus-4.7
+13,expletive,expl_be,1,the air grew heavy inside .,it stays warm throughout the night .,stays,1,en,,claude-opus-4.7
+13,expletive,expl_be,0,the air grew heavy inside .,stays warm throughout the night .,stays,0,en,,claude-opus-4.7
+14,expletive,expl_be,1,the old cabin has no heater .,it stays cold during every winter .,stays,1,en,,claude-opus-4.7
+14,expletive,expl_be,0,the old cabin has no heater .,stays cold during every winter .,stays,0,en,,claude-opus-4.7
+15,expletive,expl_be,1,the basement has no windows .,it stays dark even at noon .,stays,1,en,,claude-opus-4.7
+15,expletive,expl_be,0,the basement has no windows .,stays dark even at noon .,stays,0,en,,claude-opus-4.7
+16,expletive,expl_be,1,the morning started out sunny .,it got windy by the afternoon .,got,1,en,,claude-opus-4.7
+16,expletive,expl_be,0,the morning started out sunny .,got windy by the afternoon .,got,0,en,,claude-opus-4.7
+17,expletive,expl_be,1,the concert lasted three hours .,it got loud near the final song .,got,1,en,,claude-opus-4.7
+17,expletive,expl_be,0,the concert lasted three hours .,got loud near the final song .,got,0,en,,claude-opus-4.7
+18,expletive,expl_be,1,the fire burned for hours .,it got hot inside the small room .,got,1,en,,claude-opus-4.7
+18,expletive,expl_be,0,the fire burned for hours .,got hot inside the small room .,got,0,en,,claude-opus-4.7
+19,expletive,expl_be,1,the crowd grew every minute .,it feels crowded near the front stage .,feels,1,en,,claude-opus-4.7
+19,expletive,expl_be,0,the crowd grew every minute .,feels crowded near the front stage .,feels,0,en,,claude-opus-4.7
+20,expletive,expl_be,1,the library has thick walls .,it feels quiet in the reading room .,feels,1,en,,claude-opus-4.7
+20,expletive,expl_be,0,the library has thick walls .,feels quiet in the reading room .,feels,0,en,,claude-opus-4.7
+21,expletive,expl_be,1,the storm passed through quickly .,it feels fresh outside the house .,feels,1,en,,claude-opus-4.7
+21,expletive,expl_be,0,the storm passed through quickly .,feels fresh outside the house .,feels,0,en,,claude-opus-4.7
+22,expletive,expl_be,1,who rang the bell twice ?,it was the delivery driver again .,was,1,en,,claude-opus-4.7
+22,expletive,expl_be,0,who rang the bell twice ?,was the delivery driver again .,was,0,en,,claude-opus-4.7
+23,expletive,expl_be,1,which jacket is on the hook ?,it is the blue one from yesterday .,is,1,en,,claude-opus-4.7
+23,expletive,expl_be,0,which jacket is on the hook ?,is the blue one from yesterday .,is,0,en,,claude-opus-4.7
+24,expletive,expl_be,1,which child won the prize ?,it was the girl from your class .,was,1,en,,claude-opus-4.7
+24,expletive,expl_be,0,which child won the prize ?,was the girl from your class .,was,0,en,,claude-opus-4.7

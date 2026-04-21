@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,se_impersonal,se_passive,1,,se dice que ganará el partido el domingo .,dice,1,es,,claude-opus-4.7
+1,se_impersonal,se_passive,0,,dicen que ganará el partido el domingo .,dicen,0,es,,claude-opus-4.7
+2,se_impersonal,se_passive,1,,se sabe que el precio subirá pronto .,sabe,1,es,,claude-opus-4.7
+2,se_impersonal,se_passive,0,,saben que el precio subirá pronto .,saben,0,es,,claude-opus-4.7
+3,se_impersonal,se_passive,1,,se comenta que llegará un nuevo director .,comenta,1,es,,claude-opus-4.7
+3,se_impersonal,se_passive,0,,comentan que llegará un nuevo director .,comentan,0,es,,claude-opus-4.7
+4,se_impersonal,se_passive,1,,se afirma que el acuerdo está cerrado .,afirma,1,es,,claude-opus-4.7
+4,se_impersonal,se_passive,0,,afirman que el acuerdo está cerrado .,afirman,0,es,,claude-opus-4.7
+5,se_impersonal,se_passive,1,,se cree que la tormenta pasará rápido .,cree,1,es,,claude-opus-4.7
+5,se_impersonal,se_passive,0,,creen que la tormenta pasará rápido .,creen,0,es,,claude-opus-4.7
+6,se_impersonal,se_passive,1,,se piensa que el plan funcionará bien .,piensa,1,es,,claude-opus-4.7
+6,se_impersonal,se_passive,0,,piensan que el plan funcionará bien .,piensan,0,es,,claude-opus-4.7
+7,se_impersonal,se_passive,1,,se menciona que habrá una fiesta esta noche .,menciona,1,es,,claude-opus-4.7
+7,se_impersonal,se_passive,0,,mencionan que habrá una fiesta esta noche .,mencionan,0,es,,claude-opus-4.7
+8,se_impersonal,se_passive,1,,se oye que los vecinos se mudaron ayer .,oye,1,es,,claude-opus-4.7
+8,se_impersonal,se_passive,0,,oyen que los vecinos se mudaron ayer .,oyen,0,es,,claude-opus-4.7
+9,se_impersonal,se_passive,1,,se rumorea que subirán los impuestos pronto .,rumorea,1,es,,claude-opus-4.7
+9,se_impersonal,se_passive,0,,rumorean que subirán los impuestos pronto .,rumorean,0,es,,claude-opus-4.7
+10,se_impersonal,se_passive,1,,se asegura que el tren llegará a tiempo .,asegura,1,es,,claude-opus-4.7
+10,se_impersonal,se_passive,0,,aseguran que el tren llegará a tiempo .,aseguran,0,es,,claude-opus-4.7
+11,se_impersonal,se_passive,1,,se supone que vendrán todos los invitados .,supone,1,es,,claude-opus-4.7
+11,se_impersonal,se_passive,0,,suponen que vendrán todos los invitados .,suponen,0,es,,claude-opus-4.7
+12,se_impersonal,se_passive,1,,se cuenta que aquel bosque está encantado .,cuenta,1,es,,claude-opus-4.7
+12,se_impersonal,se_passive,0,,cuentan que aquel bosque está encantado .,cuentan,0,es,,claude-opus-4.7
+13,se_impersonal,se_passive,1,,se decía que el puente era muy antiguo .,decía,1,es,,claude-opus-4.7
+13,se_impersonal,se_passive,0,,decían que el puente era muy antiguo .,decían,0,es,,claude-opus-4.7
+14,se_impersonal,se_passive,1,,se sabía que el examen sería difícil .,sabía,1,es,,claude-opus-4.7
+14,se_impersonal,se_passive,0,,sabían que el examen sería difícil .,sabían,0,es,,claude-opus-4.7
+15,se_impersonal,se_passive,1,,se comentaba que el actor cambiaría de agencia .,comentaba,1,es,,claude-opus-4.7
+15,se_impersonal,se_passive,0,,comentaban que el actor cambiaría de agencia .,comentaban,0,es,,claude-opus-4.7
+16,se_impersonal,se_passive,1,,se pensaba que el museo estaba cerrado .,pensaba,1,es,,claude-opus-4.7
+16,se_impersonal,se_passive,0,,pensaban que el museo estaba cerrado .,pensaban,0,es,,claude-opus-4.7
+17,se_impersonal,se_passive,1,,se creía que aquel cuadro era valioso .,creía,1,es,,claude-opus-4.7
+17,se_impersonal,se_passive,0,,creían que aquel cuadro era valioso .,creían,0,es,,claude-opus-4.7
+18,se_impersonal,se_passive,1,,se oía que los niños jugaban en el patio .,oía,1,es,,claude-opus-4.7
+18,se_impersonal,se_passive,0,,oían que los niños jugaban en el patio .,oían,0,es,,claude-opus-4.7
+19,se_impersonal,se_passive,1,,se dijo que la reunión se había cancelado .,dijo,1,es,,claude-opus-4.7
+19,se_impersonal,se_passive,0,,dijeron que la reunión se había cancelado .,dijeron,0,es,,claude-opus-4.7
+20,se_impersonal,se_passive,1,,se supo que el ladrón había escapado .,supo,1,es,,claude-opus-4.7
+20,se_impersonal,se_passive,0,,supieron que el ladrón había escapado .,supieron,0,es,,claude-opus-4.7
+21,se_impersonal,se_passive,1,,se afirmó que el documento era auténtico .,afirmó,1,es,,claude-opus-4.7
+21,se_impersonal,se_passive,0,,afirmaron que el documento era auténtico .,afirmaron,0,es,,claude-opus-4.7
+22,se_impersonal,se_passive,1,,se aseguró que el evento sería gratuito .,aseguró,1,es,,claude-opus-4.7
+22,se_impersonal,se_passive,0,,aseguraron que el evento sería gratuito .,aseguraron,0,es,,claude-opus-4.7
+23,se_impersonal,se_passive,1,,se contaba que había un tesoro escondido .,contaba,1,es,,claude-opus-4.7
+23,se_impersonal,se_passive,0,,contaban que había un tesoro escondido .,contaban,0,es,,claude-opus-4.7
+24,se_impersonal,se_passive,1,,se rumoreaba que la tienda iba a cerrar .,rumoreaba,1,es,,claude-opus-4.7
+24,se_impersonal,se_passive,0,,rumoreaban que la tienda iba a cerrar .,rumoreaban,0,es,,claude-opus-4.7
+25,se_impersonal,se_reflexive,1,,se vendió la casa rápidamente el mes pasado .,vendió,1,es,,claude-opus-4.7
+25,se_impersonal,se_reflexive,0,,alguien vendió la casa rápidamente el mes pasado .,vendió,1,es,,claude-opus-4.7
+26,se_impersonal,se_reflexive,1,,se construyó el puente en pocos meses .,construyó,1,es,,claude-opus-4.7
+26,se_impersonal,se_reflexive,0,,alguien construyó el puente en pocos meses .,construyó,1,es,,claude-opus-4.7
+27,se_impersonal,se_reflexive,1,,se terminó el proyecto antes de la fecha límite .,terminó,1,es,,claude-opus-4.7
+27,se_impersonal,se_reflexive,0,,alguien terminó el proyecto antes de la fecha límite .,terminó,1,es,,claude-opus-4.7
+28,se_impersonal,se_reflexive,1,,se resolvió el problema sin mayores complicaciones .,resolvió,1,es,,claude-opus-4.7
+28,se_impersonal,se_reflexive,0,,alguien resolvió el problema sin mayores complicaciones .,resolvió,1,es,,claude-opus-4.7
+29,se_impersonal,se_reflexive,1,,se abrió la tienda muy temprano esta mañana .,abrió,1,es,,claude-opus-4.7
+29,se_impersonal,se_reflexive,0,,alguien abrió la tienda muy temprano esta mañana .,abrió,1,es,,claude-opus-4.7
+30,se_impersonal,se_reflexive,1,,se cerró la fábrica después de la crisis .,cerró,1,es,,claude-opus-4.7
+30,se_impersonal,se_reflexive,0,,alguien cerró la fábrica después de la crisis .,cerró,1,es,,claude-opus-4.7
+31,se_impersonal,se_reflexive,1,,se pintó la pared de color azul .,pintó,1,es,,claude-opus-4.7
+31,se_impersonal,se_reflexive,0,,alguien pintó la pared de color azul .,pintó,1,es,,claude-opus-4.7
+32,se_impersonal,se_reflexive,1,,se firmó el contrato sin leerlo con cuidado .,firmó,1,es,,claude-opus-4.7
+32,se_impersonal,se_reflexive,0,,alguien firmó el contrato sin leerlo con cuidado .,firmó,1,es,,claude-opus-4.7
+33,se_impersonal,se_reflexive,1,,se rompió la ventana durante la tormenta .,rompió,1,es,,claude-opus-4.7
+33,se_impersonal,se_reflexive,0,,alguien rompió la ventana durante la tormenta .,rompió,1,es,,claude-opus-4.7
+34,se_impersonal,se_reflexive,1,,se arregló el coche en el taller del barrio .,arregló,1,es,,claude-opus-4.7
+34,se_impersonal,se_reflexive,0,,alguien arregló el coche en el taller del barrio .,arregló,1,es,,claude-opus-4.7
+35,se_impersonal,se_reflexive,1,,se publica el libro cada primavera sin falta .,publica,1,es,,claude-opus-4.7
+35,se_impersonal,se_reflexive,0,,alguien publica el libro cada primavera sin falta .,publica,1,es,,claude-opus-4.7
+36,se_impersonal,se_reflexive,1,,se repara el tejado todos los veranos .,repara,1,es,,claude-opus-4.7
+36,se_impersonal,se_reflexive,0,,alguien repara el tejado todos los veranos .,repara,1,es,,claude-opus-4.7
+37,se_impersonal,se_reflexive,1,,se limpia la piscina una vez por semana .,limpia,1,es,,claude-opus-4.7
+37,se_impersonal,se_reflexive,0,,alguien limpia la piscina una vez por semana .,limpia,1,es,,claude-opus-4.7
+38,se_impersonal,se_reflexive,1,,se cocina el arroz con mucho cuidado .,cocina,1,es,,claude-opus-4.7
+38,se_impersonal,se_reflexive,0,,alguien cocina el arroz con mucho cuidado .,cocina,1,es,,claude-opus-4.7
+39,se_impersonal,se_reflexive,1,,se escribía la carta a mano en aquella época .,escribía,1,es,,claude-opus-4.7
+39,se_impersonal,se_reflexive,0,,alguien escribía la carta a mano en aquella época .,escribía,1,es,,claude-opus-4.7
+40,se_impersonal,se_reflexive,1,,se leía el periódico cada mañana en la cafetería .,leía,1,es,,claude-opus-4.7
+40,se_impersonal,se_reflexive,0,,alguien leía el periódico cada mañana en la cafetería .,leía,1,es,,claude-opus-4.7
+41,se_impersonal,se_reflexive,1,,se preparaba la cena mientras sonaba música suave .,preparaba,1,es,,claude-opus-4.7
+41,se_impersonal,se_reflexive,0,,alguien preparaba la cena mientras sonaba música suave .,preparaba,1,es,,claude-opus-4.7
+42,se_impersonal,se_reflexive,1,,se usaba el salón para las reuniones importantes .,usaba,1,es,,claude-opus-4.7
+42,se_impersonal,se_reflexive,0,,alguien usaba el salón para las reuniones importantes .,usaba,1,es,,claude-opus-4.7
+43,se_impersonal,se_reflexive,1,,se lavó la ropa con agua muy fría .,lavó,1,es,,claude-opus-4.7
+43,se_impersonal,se_reflexive,0,,alguien lavó la ropa con agua muy fría .,lavó,1,es,,claude-opus-4.7
+44,se_impersonal,se_reflexive,1,,se plantó el árbol en el jardín trasero .,plantó,1,es,,claude-opus-4.7
+44,se_impersonal,se_reflexive,0,,alguien plantó el árbol en el jardín trasero .,plantó,1,es,,claude-opus-4.7
+45,se_impersonal,se_reflexive,1,,se envió el paquete por correo urgente .,envió,1,es,,claude-opus-4.7
+45,se_impersonal,se_reflexive,0,,alguien envió el paquete por correo urgente .,envió,1,es,,claude-opus-4.7
+46,se_impersonal,se_reflexive,1,,se pierde la paciencia con facilidad por aquí .,pierde,1,es,,claude-opus-4.7
+46,se_impersonal,se_reflexive,0,,alguien pierde la paciencia con facilidad por aquí .,pierde,1,es,,claude-opus-4.7
+47,se_impersonal,se_reflexive,1,,se encuentra la respuesta al final del libro .,encuentra,1,es,,claude-opus-4.7
+47,se_impersonal,se_reflexive,0,,alguien encuentra la respuesta al final del libro .,encuentra,1,es,,claude-opus-4.7
+48,se_impersonal,se_reflexive,1,,se escuchaba la radio durante el desayuno .,escuchaba,1,es,,claude-opus-4.7
+48,se_impersonal,se_reflexive,0,,alguien escuchaba la radio durante el desayuno .,escuchaba,1,es,,claude-opus-4.7
