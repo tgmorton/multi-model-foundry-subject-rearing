@@ -118,6 +118,8 @@ def main():
     p.add_argument("--batch_size", type=int, default=16)
     p.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     p.add_argument("--scoring_version", default="bench-v1")
+    p.add_argument("--scratch_dir",
+                   help="Pod-local dir for staged parquet writes.")
     args = p.parse_args()
 
     logging.basicConfig(
@@ -234,6 +236,7 @@ def main():
     log.info("=" * 60)
     runner = CachedRunner(
         cell, output_root=output_root, scoring_version=args.scoring_version,
+        scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
     )
     # We need to measure per-checkpoint cost, so we run manually rather
     # than using runner.run_once() — identical code path, just timed per
@@ -288,6 +291,7 @@ def main():
         runner_2 = CachedRunner(
             cell, output_root=output_root,
             scoring_version=args.scoring_version,
+            scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
         )
         s2 = runner_2.run_once()
     assert s2["n_forward_passes"] == 0, (

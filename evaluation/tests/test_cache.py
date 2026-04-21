@@ -201,6 +201,62 @@ def test_scoring_version_bump_invalidates_cache(tmp_path):
     assert s2["n_forward_passes"] == 2
 
 
+def test_scratch_dir_stages_writes_to_ephemeral_then_copies(tmp_path):
+    """With scratch_dir set, parquet lands at output_root and scratch is cleaned."""
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    output_root = tmp_path / "out"
+    scratch = tmp_path / "scratch"
+
+    runner = CachedRunner(
+        cell, output_root=output_root, scoring_version="v1",
+        scratch_dir=scratch,
+    )
+    summary = runner.run_once()
+    assert summary["n_forward_passes"] == 2
+
+    # Parquet files land at output_root exactly as without scratch.
+    items_files = list((output_root / "items").rglob("*.parquet"))
+    pairs_files = list((output_root / "pairs").rglob("*.parquet"))
+    assert items_files, "items parquet missing on output_root"
+    assert pairs_files, "pairs parquet missing on output_root"
+
+    # Cache markers land on output_root (durable filesystem).
+    markers = list((output_root / ".cache").glob("*.done"))
+    assert len(markers) == 2
+
+    # Scratch cell subdir is cleaned up (best-effort).
+    cell_scratch = scratch / cell.cell_id
+    assert not cell_scratch.exists(), (
+        f"Scratch cell subdir should be cleaned after copy; got {cell_scratch}"
+    )
+
+
+def test_scratch_dir_preserves_idempotency_across_pods(tmp_path):
+    """Second run in a 'different pod' (new scratch_dir) still hits cache."""
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    output_root = tmp_path / "out"
+
+    # "Pod 1": writes with scratch_dir=A
+    scratch_a = tmp_path / "scratch_a"
+    r1 = CachedRunner(
+        cell, output_root=output_root, scoring_version="v1",
+        scratch_dir=scratch_a,
+    )
+    s1 = r1.run_once()
+    assert s1["n_forward_passes"] == 2
+
+    # "Pod 2": different scratch (simulates a new pod's emptyDir) — should
+    # find markers on output_root and skip everything.
+    scratch_b = tmp_path / "scratch_b"
+    r2 = CachedRunner(
+        cell, output_root=output_root, scoring_version="v1",
+        scratch_dir=scratch_b,
+    )
+    s2 = r2.run_once()
+    assert s2["n_forward_passes"] == 0
+    assert s2["n_cached"] == 2
+
+
 def test_no_output_written_when_fully_cached(tmp_path):
     """When everything is cached, writer is skipped (no partial overwrites)."""
     cell = _make_cell(tmp_path, n_checkpoints=1)

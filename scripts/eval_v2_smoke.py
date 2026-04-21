@@ -60,6 +60,10 @@ def main():
                         help="Optional path to a UnigramTable pickle for SLOR.")
     parser.add_argument("--scoring_version", default="smoke-v1",
                         help="Scoring version tag for the cache key.")
+    parser.add_argument("--scratch_dir",
+                        help="Pod-local dir for staged parquet writes. "
+                             "Writes land here first then bulk-copy to "
+                             "output_root. On CephFS: ~30× faster.")
     parser.add_argument("--rerun", action="store_true",
                         help="Force rerun (ignore existing cache markers).")
     parser.add_argument("--verbose", action="store_true")
@@ -194,6 +198,7 @@ def main():
     log.info("=" * 60)
     runner = CachedRunner(
         cell, output_root=output_root, scoring_version=args.scoring_version,
+        scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
     )
     summary_1 = runner.run_once()
     _log_summary(log, "RUN 1", summary_1)
@@ -204,6 +209,7 @@ def main():
     log.info("=" * 60)
     runner_2 = CachedRunner(
         cell, output_root=output_root, scoring_version=args.scoring_version,
+        scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
     )
     summary_2 = runner_2.run_once()
     _log_summary(log, "RUN 2", summary_2)

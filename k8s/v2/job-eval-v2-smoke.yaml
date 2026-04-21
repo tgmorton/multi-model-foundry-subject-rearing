@@ -76,7 +76,8 @@ spec:
             --intervention baseline \
             --rep 0 \
             --batch_size 16 \
-            --device auto
+            --device auto \
+            --scratch_dir /scratch/eval_v2
 
           # Run 2: after 5 steps (checkpoint-5) — sanity that trained weights
           # produce different scores than untrained.
@@ -94,7 +95,8 @@ spec:
             --intervention baseline \
             --rep 0 \
             --batch_size 16 \
-            --device auto
+            --device auto \
+            --scratch_dir /scratch/eval_v2
 
           echo ""
           echo "=== Per-cell summary parquets ==="
@@ -154,9 +156,14 @@ spec:
           mountPath: /opt/repo
         - name: data
           mountPath: /mnt/data
+        - name: scratch
+          mountPath: /scratch
       volumes:
       - name: repo
         emptyDir: {}
+      - name: scratch
+        emptyDir:
+          sizeLimit: 10Gi
       - name: data
         persistentVolumeClaim:
           claimName: corpus-analysis-data
