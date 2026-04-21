@@ -1,0 +1,130 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-baseline-90m-full
+spec:
+  # Allow several restarts — preemption will hand control back and
+  # resume_from_checkpoint=true means each restart picks up from the
+  # latest checkpoint on the PVC. 10 epochs on a 3090 is multi-day.
+  backoffLimit: 20
+  # Keep the pod+logs around a week after completion for inspection.
+  ttlSecondsAfterFinished: 604800
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: training
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=========================================="
+          echo "  ENGLISH BASELINE — FULL PRODUCTION RUN"
+          echo "  10 epochs, batch 16 × grad_accum 16 = eff 256"
+          echo "=========================================="
+
+          cd /opt/repo
+
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            sentencepiece 2>&1 | tail -3
+
+          # --- Wire repo paths to persistent storage ---
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked \
+                   /mnt/data/tokenizers /mnt/data/models /mnt/data/logs
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+          ln -sfn /mnt/data/logs /opt/repo/logs
+
+          CONFIG=configs/experiments/experiment_0_baseline_90M_full.yaml
+
+          echo ""
+          echo "=== Validate config ==="
+          python -m model_foundry.cli validate-config $CONFIG
+
+          echo ""
+          echo "=== Tokenizer (skips if exists) ==="
+          python -m model_foundry.cli train-tokenizer $CONFIG
+
+          echo ""
+          echo "=== Tokenize dataset (skips if exists) ==="
+          python -m model_foundry.cli tokenize-dataset $CONFIG
+
+          echo ""
+          echo "=== Chunk dataset (skips if exists) ==="
+          python -m model_foundry.cli preprocess-data $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  TRAINING (10 epochs)"
+          echo "  resume_from_checkpoint=true in config so"
+          echo "  any restart picks up from the latest"
+          echo "  checkpoint on the PVC."
+          echo "=========================================="
+          python -m model_foundry.cli run $CONFIG
+
+          echo ""
+          echo "=========================================="
+          echo "  TRAINING COMPLETE"
+          echo "=========================================="
+          ls -la /mnt/data/models/exp0_baseline_90M_full/ | tail -30
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wandb-secret-thomas
+              key: WANDB_API_KEY
+        resources:
+          requests:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
