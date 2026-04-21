@@ -1,0 +1,115 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eval-v2-bench
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: eval-v2-bench
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=== eval-v2-bench started at $(date) on $(hostname) ==="
+
+          pip install --no-cache-dir \
+            transformers \
+            sentencepiece \
+            pandas \
+            pyarrow \
+            duckdb \
+            tqdm \
+            pydantic \
+            pyyaml
+
+          echo "=== pip install done at $(date) ==="
+
+          cd /opt/repo
+          which python && python --version
+
+          # Wipe any prior bench outputs so the cache layer doesn't skip work.
+          echo ""
+          echo "=== Wiping previous bench outputs ==="
+          rm -rf /mnt/data/eval_v2/bench_90M
+          ls /mnt/data/eval_v2/ 2>/dev/null || true
+
+          # Benchmark against the resume smoke dir (2 checkpoints: step-5
+          # and step-10) so we get amortized per-checkpoint timing.
+          # Load the full v2 stimuli tree — all 19 CSVs, ~5,500 items.
+          echo ""
+          echo "=== Running eval_v2_bench on all v2 stimuli ==="
+          PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
+            --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
+            --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
+            --stimuli_dir evaluation/stimuli/null-subj-v2/staging \
+            --output_root /mnt/data/eval_v2/bench_90M \
+            --cell_id bench_90M_all_stimuli \
+            --architecture gpt2 \
+            --intervention baseline \
+            --rep 0 \
+            --batch_size 16 \
+            --device auto
+
+          # Summary: grep just the benchmark lines for easy copying.
+          echo ""
+          echo "=== BENCH TIMING SUMMARY ==="
+          grep "\[BENCH\]" /tmp/*.log 2>/dev/null || \
+            echo "(bench lines are in the main stdout above)"
+
+          echo ""
+          echo "✅ eval-v2-bench complete at $(date)"
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: WANDB_MODE
+          value: "disabled"
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "2"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 8Gi
+            cpu: "2"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
