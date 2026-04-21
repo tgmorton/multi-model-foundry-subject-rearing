@@ -1,0 +1,3353 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/eval_stimuli/notebook/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Spanish Evaluation Set — Experimental Notebook - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spanish-evaluation-set-experimental-notebook" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Spanish Evaluation Set — Experimental Notebook
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../DOCUMENTATION_MAP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Documentation Map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../preprocessing/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pronoun_recovery/" class="md-tabs__link">
+          
+  
+  
+  Pronoun Recovery & Null Subjects
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../annotation_app/" class="md-tabs__link">
+          
+  
+  
+  Annotation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../NEW_CORPUS_ANALYSIS_PLAN/" class="md-tabs__link">
+          
+  
+  
+  Corpus Analysis
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../phase3_experimental_pipeline/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../k8s_jobs/" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../OSF_PREREGISTRATION/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DOCUMENTATION_MAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/ADVANCED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ABLATION_ENRICHMENT_IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ablation Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pronoun Recovery & Null Subjects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pronoun Recovery & Null Subjects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pronoun_recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../italian_null_subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Italian Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ttq_corpus_report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTQ Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spanish_corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spanish Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../annotation_app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../LAYERED_ANNOTATION_ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Corpus Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../NEW_CORPUS_ANALYSIS_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CORPUS_ANALYSIS_SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Original Specification (superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../corpus_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../corpus_analysis/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling (Phase 2, superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../k8s_jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../NRP_REGISTRY_SETUP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NRP Registry Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_2" id="__nav_11_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_4" id="__nav_11_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../OSF_PREREGISTRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSF Preregistration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-goal-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Goal &amp; scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-pinned-commitments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pinned commitments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decisions-log-reverse-chronological" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisions log (reverse-chronological)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Decisions log (reverse-chronological)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-spanish-translation-guide-drafted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — Spanish translation guide drafted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-evaluation-infrastructure-audit-metric-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — Evaluation infrastructure audit &amp; metric plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-spanish-staging-set-built-11-agents-all-11-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — Spanish staging set built (11 agents, all 11 categories)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-tokenization-conventions-resolved-against-training-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — Tokenization conventions resolved against training corpus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-first-opus-47-agent-run-on-subject_drop-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — First opus-4.7 agent run on subject_drop (English)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2026-04-16-initial-notebook-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2026-04-16 — Initial notebook setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Open questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Open questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-item-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Item scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-category-coverage-prereg-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Category coverage (prereg gaps)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-generator-choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Generator choice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-stimulus-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Stimulus structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-scoring-linking-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Scoring / linking functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-multiblimp-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 MultiBLiMP integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-literature-anchor-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Literature-anchor items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-prereg-amendment-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Prereg amendment strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#49-norming-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.9 Norming plan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#410-priming-paradigm-later-concern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.10 Priming paradigm (later concern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-methodology-commitments-running-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Methodology commitments (running list)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-key-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Key references
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Key references">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#directly-relevant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directly relevant
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-linguistic-priming-precedent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-linguistic priming precedent
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#literature-sourced-items-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literature-sourced items (candidates)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-lingual-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-lingual benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scoring-linking-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scoring / linking functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-action-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Action items
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spanish-evaluation-set-experimental-notebook">Spanish Evaluation Set — Experimental Notebook<a class="headerlink" href="#spanish-evaluation-set-experimental-notebook" title="Permanent link">&para;</a></h1>
+<p>Running log of design decisions for the parallel Spanish null-subject
+evaluation stimuli. Entries are dated; open questions tracked separately
+from pinned commitments.</p>
+<p>Decisions here override earlier informal discussion but do not override
+the OSF preregistration (<code>docs/OSF_PREREGISTRATION.md</code>). If a decision
+here diverges from the prereg, an amendment is required — flagged
+explicitly in the entry.</p>
+<hr />
+<h2 id="1-goal-scope">1. Goal &amp; scope<a class="headerlink" href="#1-goal-scope" title="Permanent link">&para;</a></h2>
+<p>Build a Spanish stimulus set that is <strong>strictly parallel</strong> to the
+existing English null-subject evaluation stimuli
+(<code>evaluation/stimuli/null-subj/</code>), enabling:</p>
+<ol>
+<li><strong>Monolingual Spanish evaluation</strong> of Spanish-trained BabeLM models
+   (mirrors the English/Italian evaluation already in prereg).</li>
+<li><strong>Cross-linguistic structural priming experiments</strong> — constructing
+   congruent/incongruent prime-target pairs across languages by drawing
+   cross-pairings (null→null, overt→null, etc.) between matched
+   English and Spanish items.</li>
+</ol>
+<p>The priming use case is the <em>reason</em> for strict parallelism: item-level
+correspondence across languages is what enables the cross-pairings to
+be interpretable.</p>
+<hr />
+<h2 id="2-pinned-commitments">2. Pinned commitments<a class="headerlink" href="#2-pinned-commitments" title="Permanent link">&para;</a></h2>
+<p>These are locked-in decisions. Move items here from §3 only when
+you're confident they won't change.</p>
+<ul>
+<li><strong>Dialect</strong>: Peninsular Spanish (aligns with <code>annotation/constants.py</code>
+  which maps <code>vosotros</code> and <code>ustedes</code> to separate labels).</li>
+<li><strong>Schema</strong>: Items joinable across languages on a shared <code>(item_group,
+  item)</code> key. English and Spanish live in parallel files with matching
+  item IDs.</li>
+<li><strong>No transformations</strong>: The 6-way transformation expansion from the
+  current English CSV (default / complex_long / complex_emb /
+  target_negation / context_negation / both_negation) will not be
+  ported. Those were artifacts of an earlier study.</li>
+<li><strong>Sanity-check controls</strong>: Not embedded in the null-subject set.
+  BLiMP runs separately on the same models and serves that role at
+  the whole-evaluation level.</li>
+</ul>
+<hr />
+<h2 id="3-decisions-log-reverse-chronological">3. Decisions log (reverse-chronological)<a class="headerlink" href="#3-decisions-log-reverse-chronological" title="Permanent link">&para;</a></h2>
+<h3 id="2026-04-16-spanish-translation-guide-drafted">2026-04-16 — Spanish translation guide drafted<a class="headerlink" href="#2026-04-16-spanish-translation-guide-drafted" title="Permanent link">&para;</a></h3>
+<p>Drafted <code>docs/eval_stimuli/spanish.md</code> as a Spanish-facing agent runbook
+(translation + Spanish-only generation). Decisions baked into the guide:</p>
+<ul>
+<li><strong>Core categories</strong>: generate item-paired Spanish counterparts to all 8
+  English categories. Where the EN↔ES pairing is awkward or structurally
+  impossible, document in metadata rather than silently diverge.</li>
+<li><strong>Grammaticality direction flips</strong> explicitly tabulated per condition
+  (§4 of spanish.md). Key flips: <code>subject_drop</code> 3rd-person
+  (EN→overt, ES→null), <code>embedded_drop</code> coref (flips), <code>extraction</code> subj
+  (that-trace asymmetry — the theoretical payoff).</li>
+<li><strong>Expletive</strong>: marked <code>ello</code> approach for the overt form, flagged for
+  vetter review.</li>
+<li><strong>subject_drop_no_agreement (ES)</strong>: artificial infinitive ablation
+  across all 6 conditions; context stays finite, only target is ablated.
+  Acknowledged as ungrammatical by design — tests residual pronoun
+  preference independent of agreement morphology.</li>
+<li><strong>Spanish-only categories added</strong>: <code>postverbal_subject</code> (2 conditions),
+  <code>se_impersonal</code> (2 conditions), <code>clitic_climbing</code> (1 condition).
+  These are monolingual-only (not cross-paired for priming).</li>
+<li><strong>Dialect</strong>: Peninsular. No voseo, no leísmo/loísmo/laísmo, no
+  dequeísmo. Validation check V18 enforces.</li>
+<li><strong>Accents</strong>: preserved as Unicode (<code>á é í ó ú ñ ü</code>), required in
+  names and words where standard. Validation V19 enforces.</li>
+</ul>
+<h3 id="2026-04-16-evaluation-infrastructure-audit-metric-plan">2026-04-16 — Evaluation infrastructure audit &amp; metric plan<a class="headerlink" href="#2026-04-16-evaluation-infrastructure-audit-metric-plan" title="Permanent link">&para;</a></h3>
+<p>Audited current eval code to map it against the prereg's metric commitments
+plus the minimal-pairs-methodology lit review recommendations.</p>
+<p><strong>Current state:</strong>
+- <code>evaluation/evaluators/null_subject_evaluator.py</code> computes per-item mean
+  and total surprisal (bits), hotspot surprisal, binary preference,
+  surprisal difference. Schema is v1 only.
+- <code>evaluation/core/surprisal_calculator.py</code> has a clean surprisal primitive.
+- FP16 supported; batching hooks exist but are unused (purely sequential).
+- No SLOR computation; no unigram baseline model; no end-to-end smoke
+  test with a real model.
+- Output is JSONL per checkpoint, aggregates to summary JSON.</p>
+<p><strong>Metric decisions (confirmed):</strong>
+- <strong>Mean log-probability per sentence</strong>: compute from existing surprisal
+  (<code>MeanLP = -mean_surprisal * ln(2)</code>). Trivial adapter.
+- <strong>Per pair</strong>: binary preference (exists), mean log-prob for each
+  sentence (new adapter), distance = difference (exists).
+- <strong>SLOR</strong>: include. Requires unigram baseline trained on BabyLM/BebeLM
+  training corpora (one per language). Cache serialized; load at eval
+  time; near-zero runtime cost after precomputation.
+- <strong>MORCELA</strong>: flagged as a follow-up. Requires an acceptability-rating
+  training set; not available yet for ES (and EN's availability is
+  unclear). Revisit after first wave of evaluations — the MORCELA
+  parameters can be learned from held-out stimuli once we have any
+  evaluation data in hand.</p>
+<p><strong>Order of operations before launching evaluations:</strong>
+1. Add v2 schema support (backwards-compatible column remap; use
+   <code>hotspot_position</code> directly rather than string-search).
+2. Add <code>mean_log_prob</code> fields alongside surprisal in per-item output.
+3. End-to-end smoke test on a tiny model against a v2 CSV (one EN + one
+   ES) to catch schema/tokenization issues early.
+4. Train unigram baselines on <code>data/english/train_90M/</code> and
+   <code>data/spanish/train_90M/</code> (subword-level, matching model tokenizers).
+   Serialize as <code>.pkl</code> or equivalent.
+5. Add SLOR output using the baselines.
+6. <strong>Batching refactor</strong> (separate pass, bigger change): tokenize + pad
+   + batch forward passes; reuse context tokenization across overt/null
+   of a pair. Projected 3–5× GPU speedup. Do this once metrics are
+   stable so we're not debugging batching + metrics simultaneously.
+7. MORCELA: follow-up.</p>
+<p><strong>Optimization candidates, ranked by (impact × effort):</strong>
+- H/L: <strong>batch forward passes across pairs</strong> — biggest win; currently
+  purely sequential. <strong>Verified isolation</strong>: standard batching stacks
+  independent sequences with padding + attention mask; no cross-item
+  attention. Smoke test will include a batched-vs-sequential assertion
+  to permanently lock down this invariant.
+- H/L: <strong>reuse context tokenization across overt/null of a pair</strong> —
+  half the per-pair compute. Still item-isolated (same pair shares
+  context by design).
+- M/L: <strong>pre-tokenize the stimulus set once per run</strong> rather than
+  per-call.
+- M/L: <strong>cache unigram baseline</strong> — once trained, don't recompute.</p>
+<p><strong>SLOR unigram-baseline policy: paired per corpus (FIT-CLAMS style).</strong></p>
+<p>Every trained model uses the unigram baseline computed on <em>its own
+training corpus</em> — not a global baseline. Rationale:</p>
+<ul>
+<li>The prereg's H2 (evidence manipulation) compares models trained on
+  different corpora. SLOR with a shared baseline would confound
+  frequency-distribution differences with grammatical-knowledge
+  differences. Per-corpus baselines cancel the frequency term on both
+  sides of the log and leave the structural contribution.</li>
+<li>Matches Padovani et al. 2025 (FIT-CLAMS) methodology.</li>
+<li>Free operationally: the existing n-gram-per-dataset training pipeline
+  produces each corpus's unigram as a byproduct; we just serialize it.</li>
+</ul>
+<p><strong>Implementation notes:</strong>
+- Unigram vocab must match the model tokenizer's subword vocabulary
+  (not whitespace tokens).
+- Smoothing: Laplace (+1). Simpler than KN, well-defined behavior for
+  zero-count tokens (e.g., pronouns in the pronoun-removed corpus).
+- Cache per-corpus; load once at eval time.
+- Report both raw <code>mean_log_prob</code> and <code>slor</code> per sentence so that
+  unexpected SLOR results can be diagnosed against the raw numbers.</p>
+<h3 id="2026-04-16-spanish-staging-set-built-11-agents-all-11-categories">2026-04-16 — Spanish staging set built (11 agents, all 11 categories)<a class="headerlink" href="#2026-04-16-spanish-staging-set-built-11-agents-all-11-categories" title="Permanent link">&para;</a></h3>
+<p>Dispatched 11 opus-4.7 agents in parallel against <code>docs/eval_stimuli/spanish.md</code>
+v1.0. All 11 completed cleanly. Staging at
+<code>evaluation/stimuli/null-subj-v2/staging/es/</code>.</p>
+<p><strong>Final counts: 1,488 rows / 744 paired items across 29 conditions.</strong></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Rows</th>
+<th>Pairs</th>
+<th>Conds</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>subject_drop</td>
+<td>288</td>
+<td>144</td>
+<td>6</td>
+<td>Item-paired with EN; demonstratives used for inanimate 3sg/3pl overt</td>
+</tr>
+<tr>
+<td>subject_drop_no_agreement</td>
+<td>288</td>
+<td>144</td>
+<td>6</td>
+<td>Infinitive ablation; 1 cross-cond V14 collision</td>
+</tr>
+<tr>
+<td>object_drop</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>Preverbal clitic structure; 2 cross-cond V14 collisions</td>
+</tr>
+<tr>
+<td>embedded_drop</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>Passes all checks; null preferred in coref (PAH)</td>
+</tr>
+<tr>
+<td>control</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>24+18 unique matrix verbs; prep subcat preserved</td>
+</tr>
+<tr>
+<td>expletive</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>Marked <code>ello</code>; agent flagged some <code>ello+se+V</code> items</td>
+</tr>
+<tr>
+<td>conjunction</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>Varied referent-introduction patterns</td>
+</tr>
+<tr>
+<td>extraction</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td><strong>Direction flips</strong> vs EN (que required in ES)</td>
+</tr>
+<tr>
+<td>postverbal_subject</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>V9 exception: delta=0, multiset equality instead</td>
+</tr>
+<tr>
+<td>se_impersonal</td>
+<td>96</td>
+<td>48</td>
+<td>2</td>
+<td>V8 exception: verb form changes across pair</td>
+</tr>
+<tr>
+<td>clitic_climbing</td>
+<td>48</td>
+<td>24</td>
+<td>1</td>
+<td>V9 exception (sort of): clitic re-attachment changes tok count</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cross-linguistic pairing</strong>: all 8 core categories have perfect item_id
+matches between EN and ES. Priming-ready.</p>
+<p><strong>V14 cross-condition collisions (3 total)</strong> — target text duplicates
+across conditions where contexts differ. Structurally meaningful (reveal
+where morphology does/doesn't carry subject-recovery signal). Valid in
+context but worth flagging for collaborator:
+- object_drop obj_3sg/16 vs obj_3pl/16: <code>los obreros llevaron al sótano .</code>
+- object_drop obj_3sg/17 vs obj_3pl/17: <code>los niños subieron por las escaleras .</code>
+- subject_drop_no_agreement subj_1sg/6 vs subj_1pl/1: <code>aceptar los términos principales .</code></p>
+<p><strong>Items flagged by the generating agents for collaborator's vet:</strong></p>
+<ol>
+<li><strong>expletive</strong>: <code>ello + se + V</code> stacking (<code>ello se puso ventoso</code>,
+   <code>ello queda claro que…</code>). Agent judged "possibly ungrammatical rather
+   than just archaic" — confirm marked-not-broken. Affected items:
+   expl_seems #24; expl_be #10, #16-18; expl_seems #13-20.</li>
+<li><strong>extraction</strong>: <code>esperas que + future indicative</code> (ext_subj #8/#16,
+   ext_obj #8/#16). <code>esperar que</code> typically selects subjunctive; kept
+   future indicative to match EN structure. Mildly marked register-wise.</li>
+<li><strong>subject_drop</strong>: agent used <strong>demonstratives <code>este</code>/<code>esta</code>/<code>estos</code>/<code>estas</code></strong>
+   as the overt form for inanimate 3sg/3pl subjects (spanish.md §5.1
+   only lists <code>él</code>/<code>ella</code>/<code>ellos</code>/<code>ellas</code>, which are strongly
+   human-marked). Preserves the overt-vs-null intent naturally —
+   confirm this deviation is acceptable.</li>
+<li><strong>subject_drop</strong>: 14 items rewritten to avoid preverbal clitics at
+   the hotspot vicinity (paraphrased to keep hotspot = canonical finite
+   verb position). Listed in agent report. Confirm structural
+   equivalence with EN counterparts.</li>
+<li><strong>postverbal_subject</strong>: all 24 <code>postv_interrogative</code> SV-marked items
+   (IDs 25-48). Agent judged "marked but not ungrammatical" — Peninsular
+   native speaker should confirm none are catastrophically degraded.</li>
+<li><strong>control</strong>: <code>pretender</code>, <code>dejar</code>, <code>permitir</code> used — ECM-adjacent.
+   Confirm control readings are preserved in their items.</li>
+<li><strong>se_impersonal</strong>: V2 and V8 are exceptions by design (hotspot token
+   differs across pair; target differs by more than one token).
+   Priming-analysis note: comparison is "surprisal at slot given
+   preceding context," not "same token, different prefix."</li>
+<li><strong>clitic_climbing</strong>: no two-clitic clusters (avoided on purpose).
+   Single-clitic attachments stay oxytone, no accents needed on <code>-rlo</code>,
+   <code>-rla</code>, etc.</li>
+</ol>
+<p><strong>SOP gaps the agents surfaced (for spanish.md v1.1 if iterated):</strong></p>
+<ul>
+<li>§5.1 mapping table should explicitly include demonstratives as the
+  overt form for inanimate 3sg/3pl, not just human pronouns.</li>
+<li>§5.8 should clarify that <code>esperar</code>/<code>sospechar</code>/<code>dudar</code> take subjunctive
+  in ES, so the EN "will + V" pattern won't map cleanly — either change
+  matrix verb or accept the mild markedness.</li>
+<li>§6.2 (se_impersonal) V2/V8 exceptions could be stated more explicitly
+  in the main validation section (§8), not just inline in §6.2.</li>
+<li>§4 grammaticality direction table doesn't distinguish "preference"
+  from "grammaticality" — adding a third column would be clearer for
+  conditions like <code>subject_drop</code> where both forms are grammatical in ES
+  but null is preferred.</li>
+</ul>
+<p><strong>Action for collaborator</strong>: vet the staging CSVs at
+<code>evaluation/stimuli/null-subj-v2/staging/es/*.csv</code>. Focus on the 8
+flagged item ranges above; spot-check the rest. Per-category agent
+reports (with spot-check examples) are in the original session
+transcript.</p>
+<h3 id="2026-04-16-tokenization-conventions-resolved-against-training-corpus">2026-04-16 — Tokenization conventions resolved against training corpus<a class="headerlink" href="#2026-04-16-tokenization-conventions-resolved-against-training-corpus" title="Permanent link">&para;</a></h3>
+<p>Sampled 500K chars from each of the 10 <code>data/spanish/train_90M/*.train</code>
+source files. Findings:</p>
+<ul>
+<li><strong>Contractions</strong>: FUSED. <code>del</code>/<code>al</code> dominate ~100:1 over <code>de el</code>/<code>a el</code>
+  across every source (e.g., europarl: 951 <code>del</code> vs 0 <code>de el</code>; gutenberg:
+  760 <code>del</code> vs 2 <code>de el</code>). Unambiguous.</li>
+<li><strong>Clitic attachment</strong>: follows standard Spanish orthography —
+  attached to non-finite forms (<code>comerlo</code>, <code>dándome</code>, <code>díselo</code>),
+  separate when preverbal on finite verbs (<code>lo puso</code>, <code>la vi</code>).
+  Confirmed by high "lo V" pattern frequency (263–889 per source) and
+  clean <code>-rlo</code>/<code>-rla</code> attached counts in all sources.</li>
+</ul>
+<p>Both defaults corrected in <code>docs/eval_stimuli/spanish.md</code>
+(§1, §3, §6.3, §9.4). Initial guide had them as expanded/separated —
+wrong on both; agent-run Spanish stimuli use the corpus-matching forms.</p>
+<h3 id="2026-04-16-first-opus-47-agent-run-on-subject_drop-english">2026-04-16 — First opus-4.7 agent run on <code>subject_drop</code> (English)<a class="headerlink" href="#2026-04-16-first-opus-47-agent-run-on-subject_drop-english" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ran an opus 4.7 subagent against <code>design.md</code> v1.0 to generate the
+  English <code>subject_drop</code> category (all 6 person/number conditions, 24
+  pairs each).</li>
+<li>Output: <code>evaluation/stimuli/null-subj-v2/staging/en/subject_drop.csv</code>
+  (288 rows, 144 pairs).</li>
+<li><strong>Quality assessment</strong>: genuinely good. Pair invariants V7 + V8 pass
+  universally. Verb diversity 23–24 unique of 24 per condition
+  (maximum). Natural English. Tense consistency maintained. No
+  near-duplicates.</li>
+<li><strong>One deviation from spec</strong>: agent capitalized names ("Ana") despite
+  §3's lowercase rule. Fixed post-hoc by lowercasing the CSV.</li>
+<li><strong>SOP gaps surfaced by the agent</strong> (now patched in design.md v1.1):</li>
+<li>§3 vs §7.1 capitalization conflict → unified to lowercase, accents
+    preserved for ES (new §9.7 failure mode added)</li>
+<li>§8.1 length bounds (5–12) contradicted V4 (5–15) and example
+    (3-token) → standardized: overt 6–15, null 5–14</li>
+<li>"Each item uses one name" didn't apply to 1sg/1pl and was awkward
+    for 2pl → added §7.3 name/vocative policy by condition</li>
+<li>V13 taxonomy was 3rd-person-focused → now has person-specific
+    taxonomies (3rd: human/inanimate/event/abstract; 2nd: addressee
+    type; 1st: exempt)</li>
+<li>§7 had no group vocatives → added §7.2 group-vocative inventory
+    (team, class, everyone, …)</li>
+<li>V2 hotspot position shifts between paired rows → documented</li>
+<li>Manifest ownership → clarified: generation agent doesn't touch
+    manifest, that's the Step-7 finalize agent</li>
+<li>V9 transformers fallback → documented (whitespace-token proxy when
+    transformers unavailable)</li>
+<li><strong>Takeaway</strong>: the SOP-as-written + a solid model (opus 4.7) gets us
+  to high-quality output in one pass, but the SOP had enough gaps that
+  the agent had to make judgement calls. v1.1 should produce cleaner
+  first-pass output.</li>
+</ul>
+<h3 id="2026-04-16-initial-notebook-setup">2026-04-16 — Initial notebook setup<a class="headerlink" href="#2026-04-16-initial-notebook-setup" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Started this notebook. Seeded with decisions from the
+  <code>docs/spanish_gold_integration.md</code> session and the minimal-pairs
+  methodology lit review
+  (<code>/Users/thomasmorton/zele/research/minimal-pairs-methodology-report.md</code>).</li>
+<li>Confirmed goal: Spanish set built primarily to enable cross-linguistic
+  structural priming via cross-pairings — not as a standalone benchmark.</li>
+<li>Confirmed no transformations; scale items per condition upward.</li>
+<li>Clarified that BLiMP serves the sanity-check-control role at the
+  evaluation-suite level; no embedded controls needed within the
+  null-subject set itself.</li>
+</ul>
+<hr />
+<h2 id="4-open-questions">4. Open questions<a class="headerlink" href="#4-open-questions" title="Permanent link">&para;</a></h2>
+<p>These are unresolved. Each will get a dated entry in §3 when decided.</p>
+<h3 id="41-item-scale">4.1 Item scale<a class="headerlink" href="#41-item-scale" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Question</strong>: How many items per condition? Current English CSV has</li>
+<li>Lit review suggests ≥50 for adequate power on aggregate accuracy.
+  For strictly-paired cross-linguistic stimuli, each item is more
+  expensive to generate + vet.</li>
+<li><strong>Leaning</strong>: 24–36 per condition as the sweet spot. Double or triple
+  the current.</li>
+<li><strong>Constraint</strong>: Must be generatable + vetable in reasonable time.</li>
+</ul>
+<h3 id="42-category-coverage-prereg-gaps">4.2 Category coverage (prereg gaps)<a class="headerlink" href="#42-category-coverage-prereg-gaps" title="Permanent link">&para;</a></h3>
+<p>The prereg lists 18 target grammatical contexts; the current English
+CSV has only 13. Missing:
+- 3sg/3pl <strong>object</strong> drop (clitic pronoun contexts) — core prereg item
+- <strong>Subject extraction (that-trace)</strong> — central to H5 distal effects
+- <strong>Object extraction</strong> — central to H5 distal effects
+- <strong>Subordinate clause pronoun dropping</strong> — may overlap with the current
+  <code>6_long_distance_binding</code>; naming mismatch worth resolving</p>
+<p><strong>Question</strong>: Do we build the missing categories in English first, then
+port all 18 to Spanish? Or port the 13 and treat the missing categories
+as a separate workstream?</p>
+<h3 id="43-generator-choice">4.3 Generator choice<a class="headerlink" href="#43-generator-choice" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Option A</strong>: Deepseek-V2 (prereg-committed, methodological continuity).</li>
+<li><strong>Option B</strong>: Claude agent (easier to iterate, easier to do paired
+  EN-ES generation in one pass).</li>
+<li>Either way, fluent-researcher vet remains essential.</li>
+<li><strong>Interacts with</strong>: §4.8 (prereg amendment). If we're amending to add
+  Spanish anyway, switching generators is free.</li>
+</ul>
+<h3 id="44-stimulus-structure">4.4 Stimulus structure<a class="headerlink" href="#44-stimulus-structure" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Current</strong>: <code>context + target</code>, hotspot marked at a word position.</li>
+<li><strong>For priming</strong>: may want <code>prime + context + target</code>, where prime is
+  separable so congruent/incongruent prime conditions can be constructed.</li>
+<li><strong>Alternative</strong>: keep target-only and construct prime combinations
+  downstream by drawing cross-pairings between items.</li>
+<li><strong>Leaning</strong>: target-only for the base set. Priming combinations built
+  in analysis code, not baked into stimulus structure. But worth
+  confirming.</li>
+</ul>
+<h3 id="45-scoring-linking-functions">4.5 Scoring / linking functions<a class="headerlink" href="#45-scoring-linking-functions" title="Permanent link">&para;</a></h3>
+<p>Prereg commits to SLOR. Lit review flags SLOR <strong>overcorrects</strong> for
+length and frequency (Tjuatja et al. 2024 — MORCELA).
+Recommended additions:
+- <strong>SLLN-LP</strong> (α ≈ 0.5): sub-linear length normalization, mitigates
+  without overcorrecting (Liu et al. 2024 — ZhoBLiMP)
+- <strong>MORCELA</strong>: learned normalization, outperforms SLOR across model
+  families
+- <strong>Raw LP + MeanLP</strong>: for robustness reporting
+- <strong>FIT-CLAMS controls</strong>: essential for the ablation-comparison
+  evaluations since ablations shift unigram frequency distributions
+  (Padovani et al. 2025)
+- <strong>Question</strong>: Lock in a multi-metric reporting policy now? This is
+  prereg-relevant.</p>
+<h3 id="46-multiblimp-integration">4.6 MultiBLiMP integration<a class="headerlink" href="#46-multiblimp-integration" title="Permanent link">&para;</a></h3>
+<p>Jumelet, Weissweiler &amp; Bisazza (2025) — 101 languages including Spanish,
+fully automated via UD + UniMorph. Could serve as:
+- Standalone Spanish eval block (language-specific benchmark coverage)
+- External validity check (if a Spanish model does well here but weirdly
+  on null-subject items, that's signal)
+- <strong>Not useful for priming</strong> (language-specific, no EN pairs).
+- <strong>Question</strong>: Include as a separate evaluation block in the eval
+  pipeline?</p>
+<h3 id="47-literature-anchor-items">4.7 Literature-anchor items<a class="headerlink" href="#47-literature-anchor-items" title="Permanent link">&para;</a></h3>
+<p>Candidates for externally-normed, cross-linguistically-paired items:
+- <strong>Filiaci, Sorace &amp; Carreiras (2013)</strong> — Italian/Spanish paired
+  null-subject items (PAH / Position of Antecedent Hypothesis)
+- <strong>Carminati (2002)</strong> — Italian null vs overt resolution
+- <strong>Alonso-Ovalle et al. (2002)</strong> — Spanish null-subject
+- <strong>Chamorro (2018)</strong> — Spanish subject pronoun resolution
+- Usefulness: 10–20 norming anchors embedded in the set give external
+  validity the generated items can't. The Italian side of the dissertation
+  doesn't have this; Spanish easily could.
+- <strong>Question</strong>: Worth the curation effort? Depends on how much weight
+  the norming anchor carries in the eventual writeup.</p>
+<h3 id="48-prereg-amendment-strategy">4.8 Prereg amendment strategy<a class="headerlink" href="#48-prereg-amendment-strategy" title="Permanent link">&para;</a></h3>
+<p>The current prereg is English + Italian. Spanish is not in it.
+Options:
+- <strong>Amendment</strong>: add Spanish as a third language. Cleanest if Spanish
+  is going to be a central part of the dissertation.
+- <strong>Separate sub-study</strong>: Spanish as its own prereg + writeup, cross-
+  referencing the main study. Lower commitment, more flexibility on
+  scoring-function changes etc.
+- <strong>Exploratory replication</strong>: Spanish findings framed as exploratory
+  extension of the core English/Italian results. Least formal commitment.
+- <strong>Interacts with</strong>: §4.3 (generator choice), §4.5 (scoring functions),
+  §4.9 (norming).</p>
+<h3 id="49-norming-plan">4.9 Norming plan<a class="headerlink" href="#49-norming-plan" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Option A</strong>: No norming. Rely on fluent-researcher vet during
+  generation. Lowest effort, defensible if items are well-constructed.</li>
+<li><strong>Option B</strong>: Sona-pool online norming, 20–30 native speakers per
+  item, acceptability ratings. Gold standard but significant effort.</li>
+<li><strong>Option C</strong>: Norm a subset (20–50 items) only, use as calibration.</li>
+<li><strong>Leaning</strong>: Option C. Norming cost scales with item count; norming
+  anchors plus spot-checks give you most of the validity at a fraction
+  of the effort.</li>
+<li><strong>Interacts with</strong>: §4.7 (lit-sourced anchors may already be normed).</li>
+</ul>
+<h3 id="410-priming-paradigm-later-concern">4.10 Priming paradigm (later concern)<a class="headerlink" href="#410-priming-paradigm-later-concern" title="Permanent link">&para;</a></h3>
+<p>Not urgent for stimulus construction, but the choice affects what
+downstream analysis looks like:
+- <strong>In-context</strong>: prepend prime to target's context, measure target
+  surprisal. No training.
+- <strong>Adaptation-based</strong> (Prasad et al. 2019): briefly fine-tune on
+  primes, measure target surprisal shift. Requires gradient access.
+- <strong>Cross-sentential</strong>: prime and target as consecutive sentences in
+  a single context window.
+- User's note: they've "never failed to find the effect" — so paradigm
+  choice is less risky than if this were speculative.</p>
+<hr />
+<h2 id="5-methodology-commitments-running-list">5. Methodology commitments (running list)<a class="headerlink" href="#5-methodology-commitments-running-list" title="Permanent link">&para;</a></h2>
+<p>Things we've committed to methodologically, with source:</p>
+<ul>
+<li><strong>SLOR + SLLN-LP + LP reported together</strong> (not locked yet; see §4.5)</li>
+<li><strong>FIT-CLAMS frequency controls for ablation comparisons</strong>
+  (not locked yet; see §4.5)</li>
+<li><strong>Token-length reporting per pair per tokenizer</strong> (Ueda et al. 2024)
+  — cheap, strengthens methods section, should just do it</li>
+<li><strong>By-item reporting alongside aggregate</strong> (Newman et al. 2021) — user
+  noted priming + interp work addresses systematicity vs. likely-behavior
+  issue; still worth reporting by-item for transparency</li>
+</ul>
+<hr />
+<h2 id="6-key-references">6. Key references<a class="headerlink" href="#6-key-references" title="Permanent link">&para;</a></h2>
+<h3 id="directly-relevant">Directly relevant<a class="headerlink" href="#directly-relevant" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Minimal-pairs methodology report</strong>
+  (<code>/Users/thomasmorton/zele/research/minimal-pairs-methodology-report.md</code>)
+  — lit review by Thomas, covers scoring functions, confounds, best
+  practices.</li>
+<li><strong>OSF preregistration</strong> (<code>docs/OSF_PREREGISTRATION.md</code>) — current
+  commitments for English/Italian.</li>
+<li><strong>Spanish corpus docs</strong> (<code>docs/spanish_corpus.md</code>) — the training
+  corpus Spanish models will be evaluated on.</li>
+<li><strong>Annotation constants</strong> (<code>annotation/constants.py</code>) — dialect choices
+  and pronoun form mappings already baked in.</li>
+</ul>
+<h3 id="cross-linguistic-priming-precedent">Cross-linguistic priming precedent<a class="headerlink" href="#cross-linguistic-priming-precedent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Hartsuiker, Pickering &amp; Veltkamp (2004) — foundational cross-linguistic
+  priming in Spanish-English bilinguals.</li>
+<li>Sinclair, Jumelet, Zuidema &amp; Fernández (2022) — structural priming
+  in multilingual LMs.</li>
+<li>Prasad, van Schijndel &amp; Linzen (2019) — monolingual LM priming methodology.</li>
+</ul>
+<h3 id="literature-sourced-items-candidates">Literature-sourced items (candidates)<a class="headerlink" href="#literature-sourced-items-candidates" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Filiaci, Sorace &amp; Carreiras (2013) — Italian/Spanish paired
+  null-subject stimuli.</li>
+<li>Carminati (2002) — Italian null vs overt.</li>
+<li>Alonso-Ovalle et al. (2002) — Spanish null-subject.</li>
+<li>Chamorro (2018) — Spanish subject pronoun resolution.</li>
+</ul>
+<h3 id="cross-lingual-benchmarks">Cross-lingual benchmarks<a class="headerlink" href="#cross-lingual-benchmarks" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Jumelet, Weissweiler &amp; Bisazza (2025) — MultiBLiMP (101 languages).</li>
+<li>Beauchemin et al. (2025) — QFrBLiMP (dialect variation precedent).</li>
+</ul>
+<h3 id="scoring-linking-functions">Scoring / linking functions<a class="headerlink" href="#scoring-linking-functions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Tjuatja, Neubig, Linzen &amp; Hao (2024) — MORCELA.</li>
+<li>Liu et al. (2024) — ZhoBLiMP / SLLN-LP.</li>
+<li>Padovani, Jumelet, Matusevych &amp; Bisazza (2025) — FIT-CLAMS.</li>
+<li>Hu, Wilcox, Song, Mahowald &amp; Levy (2025) — TACL, formal framework.</li>
+</ul>
+<hr />
+<h2 id="7-action-items">7. Action items<a class="headerlink" href="#7-action-items" title="Permanent link">&para;</a></h2>
+<p>Concrete next steps, unowned and undated until someone picks them up.</p>
+<ul>
+<li>[ ] Resolve category-coverage question (§4.2): build missing 4–5
+      categories in English first, or port the existing 13 to Spanish
+      first?</li>
+<li>[ ] Decide on item scale (§4.1). Probably depends on generator choice.</li>
+<li>[ ] Decide on generator (§4.3). Probably depends on prereg-amendment
+      strategy.</li>
+<li>[ ] Decide on prereg-amendment strategy (§4.8). Probably the upstream
+      decision most of the others hang on.</li>
+<li>[ ] Pull down MultiBLiMP Spanish, assess phenomena overlap with
+      current 13 categories (can happen independently; useful
+      information regardless).</li>
+<li>[ ] Draft an audit doc mapping current English CSV → prereg 18
+      categories, flagging gaps and naming mismatches (can happen
+      independently; cheap).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
