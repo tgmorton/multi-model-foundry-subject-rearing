@@ -53,15 +53,13 @@ spec:
           # Wipe any prior bench outputs so the cache layer doesn't skip work.
           echo ""
           echo "=== Wiping previous bench outputs ==="
-          rm -rf /mnt/data/eval_v2/bench_90M
+          rm -rf /mnt/data/eval_v2/bench_90M /mnt/data/eval_v2/bench_90M_v2
           ls /mnt/data/eval_v2/ 2>/dev/null || true
 
-          # Benchmark against the resume smoke dir (2 checkpoints: step-5
-          # and step-10) so we get amortized per-checkpoint timing.
-          # Load the full v2 stimuli tree — all 19 CSVs, ~5,500 items.
+          # Run 1 (BASELINE): write directly to CephFS.
           echo ""
-          echo "=== Running eval_v2_bench on all v2 stimuli ==="
-          PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
+          echo "=== Run 1 (baseline): direct CephFS writes ==="
+          time PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
             --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
             --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
             --stimuli_dir evaluation/stimuli/null-subj-v2/staging \
@@ -73,11 +71,43 @@ spec:
             --batch_size 16 \
             --device auto
 
-          # Summary: grep just the benchmark lines for easy copying.
+          # Run 2 (EPHEMERAL-STAGED): write to /tmp then cp -r to CephFS.
+          # Same inputs, different cell_id so cache doesn't skip.
           echo ""
-          echo "=== BENCH TIMING SUMMARY ==="
-          grep "\[BENCH\]" /tmp/*.log 2>/dev/null || \
-            echo "(bench lines are in the main stdout above)"
+          echo "=== Run 2 (staged): /tmp → CephFS ==="
+          mkdir -p /scratch/bench_out
+          echo "--- local write phase ---"
+          time PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
+            --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
+            --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
+            --stimuli_dir evaluation/stimuli/null-subj-v2/staging \
+            --output_root /scratch/bench_out/bench_90M_v2 \
+            --cell_id bench_90M_all_stimuli_v2 \
+            --architecture gpt2 \
+            --intervention baseline \
+            --rep 0 \
+            --batch_size 16 \
+            --device auto
+
+          echo ""
+          echo "--- local size + file count ---"
+          du -sh /scratch/bench_out/bench_90M_v2
+          find /scratch/bench_out/bench_90M_v2 -name "*.parquet" | wc -l | xargs echo "parquet files:"
+
+          echo ""
+          echo "--- cp -r phase (staged → CephFS) ---"
+          time cp -r /scratch/bench_out/bench_90M_v2 /mnt/data/eval_v2/bench_90M_v2
+
+          echo ""
+          echo "--- destination verification ---"
+          du -sh /mnt/data/eval_v2/bench_90M_v2
+          find /mnt/data/eval_v2/bench_90M_v2 -name "*.parquet" | wc -l | xargs echo "dest parquet files:"
+
+          # Summary of the timing comparison.
+          echo ""
+          echo "=== TIMING COMPARISON ==="
+          echo "Run 1 (direct CephFS): see write_parquet phase"
+          echo "Run 2 (local + cp):   see write_parquet phase (now local) + cp time"
 
           echo ""
           echo "✅ eval-v2-bench complete at $(date)"
@@ -102,9 +132,14 @@ spec:
           mountPath: /opt/repo
         - name: data
           mountPath: /mnt/data
+        - name: scratch
+          mountPath: /scratch
       volumes:
       - name: repo
         emptyDir: {}
+      - name: scratch
+        emptyDir:
+          sizeLimit: 10Gi
       - name: data
         persistentVolumeClaim:
           claimName: corpus-analysis-data
