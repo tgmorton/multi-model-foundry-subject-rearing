@@ -1,0 +1,65 @@
+# ===================================================================
+# EXPERIMENT 0: Baseline — CHECKPOINT RESUME SMOKE TEST
+#
+# Validates the full checkpoint save + load round-trip during actual
+# training. Designed to be run by a K8s job that invokes model-foundry
+# twice: once with train_steps=6 (saves checkpoint-5), then again with
+# resume_from_checkpoint=true and train_steps=11 (should resume from
+# step 5 and train to step 11, saving checkpoint-10 along the way).
+# ===================================================================
+
+experiment_name: "exp0_baseline_90M_smoke_resume"
+
+data:
+  source_corpus: "data/raw/train_90M/"
+  training_corpus: "data/raw/train_90M/"
+  test_corpus: "data/raw/test_10M/"
+  batch_size: 8
+  max_sequence_length: 1000
+
+dataset_manipulation: []
+
+tokenizer:
+  # Point at the main smoke run's tokenizer so we don't retrain it
+  # (the trainer will find tokenizer.model at this path and skip).
+  output_dir: "tokenizers/exp0_baseline_90M_smoke/"
+  vocab_size: 50004
+
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+training:
+  output_dir: "models/exp0_baseline_90M_smoke_resume/"
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  train_steps: 6                    # overridden in-job between runs
+  warmup_steps: 1
+  warmup_ratio: 0.1
+  epochs: 1
+
+  use_amp: true
+  gradient_accumulation_steps: 8    # effective batch 64
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+
+  # Disable auto-generation — we set explicit schedules per run
+  auto_generate_checkpoints: false
+  checkpoint_schedule: [5]          # overridden in-job between runs
+  resume_from_checkpoint: false     # overridden in-job for part 2
+
+logging:
+  use_wandb: false
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 9

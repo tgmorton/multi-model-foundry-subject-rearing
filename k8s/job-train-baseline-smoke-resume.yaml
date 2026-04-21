@@ -1,0 +1,213 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-baseline-smoke-resume
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: resume-smoke
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=========================================="
+          echo "  BASELINE RESUME SMOKE TEST"
+          echo "  Part 1: train 6 steps, save at step 5"
+          echo "  Part 2: resume, train to step 11, save at step 10"
+          echo "=========================================="
+
+          cd /opt/repo
+
+          # --- Install deps ---
+          pip install --no-cache-dir \
+            -r requirements.txt \
+            sentencepiece 2>&1 | tail -3
+
+          # --- Wire repo paths to persistent storage ---
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked \
+                   /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+
+          BASE_CONFIG=configs/experiments/experiment_0_baseline_90M_smoke_resume.yaml
+
+          # --- Ensure prerequisites are ready (all idempotent) ---
+          echo ""
+          echo "=== Tokenizer (skips if exists) ==="
+          python -m model_foundry.cli train-tokenizer $BASE_CONFIG
+
+          echo ""
+          echo "=== Tokenize dataset (skips if exists) ==="
+          python -m model_foundry.cli tokenize-dataset $BASE_CONFIG
+
+          echo ""
+          echo "=== Chunk dataset (skips if exists) ==="
+          python -m model_foundry.cli preprocess-data $BASE_CONFIG
+
+          # --- Clean any stale checkpoints from a previous aborted run ---
+          # The resume logic would otherwise pick them up.
+          rm -rf /mnt/data/models/exp0_baseline_90M_smoke_resume
+          mkdir -p /mnt/data/models/exp0_baseline_90M_smoke_resume
+
+          # ------------------------------------------------------------
+          # PART 1: train 6 steps, checkpoint at step 5
+          # ------------------------------------------------------------
+          echo ""
+          echo "=========================================="
+          echo "  PART 1: run to step 6 (save at step 5)"
+          echo "=========================================="
+
+          python - <<'PYEOF'
+          import yaml
+          with open('configs/experiments/experiment_0_baseline_90M_smoke_resume.yaml') as f:
+              cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 6
+          cfg['training']['checkpoint_schedule'] = [5]
+          cfg['training']['resume_from_checkpoint'] = False
+          with open('/tmp/resume_part1.yaml', 'w') as f:
+              yaml.safe_dump(cfg, f)
+          print("part1 config written")
+          PYEOF
+
+          python -m model_foundry.cli run /tmp/resume_part1.yaml
+
+          echo ""
+          echo "=== Part 1 complete — verifying checkpoint-5 exists ==="
+          if [ ! -d /mnt/data/models/exp0_baseline_90M_smoke_resume/checkpoint-5 ]; then
+            echo "❌ FAIL: checkpoint-5 not found after part 1"
+            ls -la /mnt/data/models/exp0_baseline_90M_smoke_resume/ || true
+            exit 1
+          fi
+          echo "✓ checkpoint-5 directory exists"
+
+          # Verify metadata reports global_step=5
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/exp0_baseline_90M_smoke_resume/checkpoint-5/metadata.json'))['global_step'])")
+          if [ "$STEP" != "5" ]; then
+            echo "❌ FAIL: checkpoint-5 metadata reports global_step=$STEP (expected 5)"
+            exit 1
+          fi
+          echo "✓ checkpoint-5 metadata reports global_step=5"
+
+          # ------------------------------------------------------------
+          # PART 2: resume, train to step 11, checkpoint at step 10
+          # ------------------------------------------------------------
+          echo ""
+          echo "=========================================="
+          echo "  PART 2: resume from step 5 → run to step 11"
+          echo "=========================================="
+
+          python - <<'PYEOF'
+          import yaml
+          with open('configs/experiments/experiment_0_baseline_90M_smoke_resume.yaml') as f:
+              cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 11
+          cfg['training']['checkpoint_schedule'] = [10]
+          cfg['training']['resume_from_checkpoint'] = True
+          with open('/tmp/resume_part2.yaml', 'w') as f:
+              yaml.safe_dump(cfg, f)
+          print("part2 config written")
+          PYEOF
+
+          # Capture output so we can assert on the "Resumed from step" log
+          python -m model_foundry.cli run /tmp/resume_part2.yaml 2>&1 | tee /tmp/part2.log
+
+          echo ""
+          echo "=== Part 2 complete — verifying resume behavior ==="
+
+          # Assertion 1: the trainer should have logged that it resumed
+          if ! grep -q "Resumed from step 5" /tmp/part2.log; then
+            echo "❌ FAIL: did not find 'Resumed from step 5' in part 2 log"
+            echo "--- relevant log excerpt ---"
+            grep -E "Resum|checkpoint|Starting training" /tmp/part2.log || true
+            exit 1
+          fi
+          echo "✓ log shows 'Resumed from step 5'"
+
+          # Assertion 2: checkpoint-10 should have been written
+          if [ ! -d /mnt/data/models/exp0_baseline_90M_smoke_resume/checkpoint-10 ]; then
+            echo "❌ FAIL: checkpoint-10 not found after part 2"
+            ls -la /mnt/data/models/exp0_baseline_90M_smoke_resume/ || true
+            exit 1
+          fi
+          echo "✓ checkpoint-10 directory exists"
+
+          # Assertion 3: checkpoint-10 metadata reports global_step=10
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/exp0_baseline_90M_smoke_resume/checkpoint-10/metadata.json'))['global_step'])")
+          if [ "$STEP" != "10" ]; then
+            echo "❌ FAIL: checkpoint-10 metadata reports global_step=$STEP (expected 10)"
+            exit 1
+          fi
+          echo "✓ checkpoint-10 metadata reports global_step=10"
+
+          # Assertion 4: checkpoint-5 should STILL exist (not wiped on resume)
+          if [ ! -d /mnt/data/models/exp0_baseline_90M_smoke_resume/checkpoint-5 ]; then
+            echo "❌ FAIL: checkpoint-5 was deleted during part 2"
+            exit 1
+          fi
+          echo "✓ checkpoint-5 still exists (not clobbered by resume)"
+
+          echo ""
+          echo "=========================================="
+          echo "  ✅ RESUME SMOKE TEST PASSED"
+          echo "=========================================="
+          echo "Artifacts on PVC:"
+          ls -la /mnt/data/models/exp0_baseline_90M_smoke_resume/
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        resources:
+          requests:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 32Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
