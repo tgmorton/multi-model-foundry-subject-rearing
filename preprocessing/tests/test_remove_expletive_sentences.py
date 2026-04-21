@@ -15,8 +15,10 @@ import spacy
 from preprocessing.ablations.remove_expletive_sentences import (
     EnglishExpletiveSentenceRemover,
     _has_expletive_en_enhanced,
+    _has_expletive_equivalent_es,
     _is_document_boundary,
     make_remove_expletive_sentences_en,
+    make_remove_expletive_sentences_es,
 )
 from preprocessing.registry import AblationRegistry
 
@@ -676,3 +678,204 @@ class TestContextBufferManagement:
         """make_remove_expletive_sentences_en should pass context_lines."""
         remover = make_remove_expletive_sentences_en(context_lines=5)
         assert remover._context_lines == 5
+
+
+# ---------------------------------------------------------------------------
+# Spanish — unit tests with mock docs
+# ---------------------------------------------------------------------------
+
+def _make_es_mock_token(
+    text="word",
+    lemma=None,
+    dep_="ROOT",
+    pos_="VERB",
+    lower_=None,
+    head=None,
+    children=None,
+    i=0,
+):
+    """Mock token for Spanish tests — like _make_mock_token but with `i` field
+    (needed by the ello-head tracking set)."""
+    tok = MagicMock()
+    tok.text = text
+    tok.lemma_ = lemma if lemma is not None else text.lower()
+    tok.dep_ = dep_
+    tok.pos_ = pos_
+    tok.lower_ = lower_ if lower_ is not None else text.lower()
+    tok.i = i
+    tok.head = head if head is not None else tok
+    tok.children = children if children is not None else []
+    return tok
+
+
+class TestSpanishWeatherVerb:
+    """Category 1: Spanish weather verbs."""
+
+    def test_llover_detected(self):
+        verb = _make_es_mock_token(text="llueve", lemma="llover", pos_="VERB", i=0)
+        doc = _make_mock_doc([verb], text="llueve mucho hoy")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_nevar_detected(self):
+        verb = _make_es_mock_token(text="nevaba", lemma="nevar", pos_="VERB", i=0)
+        doc = _make_mock_doc([verb], text="nevaba ayer")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_non_weather_verb_not_detected(self):
+        verb = _make_es_mock_token(text="corre", lemma="correr", pos_="VERB", i=0)
+        doc = _make_mock_doc([verb], text="juan corre rápido")
+        assert _has_expletive_equivalent_es(doc) is False
+
+
+class TestSpanishExistentialHaber:
+    """Category 2: existential haber (hay, había, ...)."""
+
+    def test_existential_hay_detected(self):
+        """'hay tres gatos' — VERB haber, no nsubj."""
+        verb = _make_es_mock_token(
+            text="hay", lemma="haber", pos_="VERB", dep_="ROOT",
+            children=[_make_es_mock_token(text="gatos", dep_="obj", pos_="NOUN", i=1)],
+            i=0,
+        )
+        doc = _make_mock_doc([verb], text="hay tres gatos")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_auxiliary_haber_not_detected(self):
+        """'ha comido' — AUX haber, not existential."""
+        aux = _make_es_mock_token(text="ha", lemma="haber", pos_="AUX", dep_="aux", i=0)
+        main = _make_es_mock_token(
+            text="comido", lemma="comer", pos_="VERB", dep_="ROOT",
+            children=[aux, _make_es_mock_token(text="juan", dep_="nsubj", pos_="PROPN", i=2)],
+            i=1,
+        )
+        aux.head = main
+        doc = _make_mock_doc([aux, main], text="juan ha comido")
+        assert _has_expletive_equivalent_es(doc) is False
+
+    def test_haber_with_nsubj_not_detected(self):
+        """'los problemas habían crecido' — haber with nsubj is not existential."""
+        verb = _make_es_mock_token(
+            text="habían", lemma="haber", pos_="VERB", dep_="ROOT",
+            children=[_make_es_mock_token(text="problemas", dep_="nsubj", pos_="NOUN", i=1)],
+            i=0,
+        )
+        doc = _make_mock_doc([verb], text="habían crecido los problemas")
+        assert _has_expletive_equivalent_es(doc) is False
+
+
+class TestSpanishImpersonalRaising:
+    """Category 3: impersonal raising verbs (parecer, resultar, ...)."""
+
+    def test_parece_que_detected(self):
+        """'parece que llega' — impersonal raising with clausal complement."""
+        ccomp_child = _make_es_mock_token(
+            text="llega", lemma="llegar", pos_="VERB", dep_="ccomp", i=2,
+        )
+        verb = _make_es_mock_token(
+            text="parece", lemma="parecer", pos_="VERB", dep_="ROOT",
+            children=[ccomp_child],
+            i=0,
+        )
+        doc = _make_mock_doc([verb, ccomp_child], text="parece que llega")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_parecer_with_nsubj_not_detected(self):
+        """'juan parece cansado' — parecer with nsubj is not impersonal."""
+        ccomp_child = _make_es_mock_token(text="cansado", dep_="xcomp", pos_="ADJ", i=2)
+        nsubj_child = _make_es_mock_token(text="juan", dep_="nsubj", pos_="PROPN", i=0)
+        verb = _make_es_mock_token(
+            text="parece", lemma="parecer", pos_="VERB", dep_="ROOT",
+            children=[nsubj_child, ccomp_child],
+            i=1,
+        )
+        doc = _make_mock_doc(
+            [nsubj_child, verb, ccomp_child], text="juan parece cansado"
+        )
+        assert _has_expletive_equivalent_es(doc) is False
+
+
+class TestSpanishImpersonalNecessity:
+    """Category 4: impersonal necessity verbs (bastar, convenir, ...)."""
+
+    def test_basta_detected(self):
+        """'basta con eso' — impersonal, no nsubj."""
+        verb = _make_es_mock_token(
+            text="basta", lemma="bastar", pos_="VERB", dep_="ROOT", i=0,
+        )
+        doc = _make_mock_doc([verb], text="basta con eso")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_bastar_with_nsubj_not_detected(self):
+        """'la comida basta' — nsubj present, not impersonal."""
+        nsubj_child = _make_es_mock_token(text="comida", dep_="nsubj", pos_="NOUN", i=0)
+        verb = _make_es_mock_token(
+            text="basta", lemma="bastar", pos_="VERB", dep_="ROOT",
+            children=[nsubj_child],
+            i=1,
+        )
+        doc = _make_mock_doc([nsubj_child, verb], text="la comida basta")
+        assert _has_expletive_equivalent_es(doc) is False
+
+
+class TestSpanishOvertEllo:
+    """Category 5: overt `ello` as subject of expletive verbs."""
+
+    def test_ello_parece_que_detected(self):
+        """'ello parece que ...' — archaic overt expletive."""
+        ccomp_child = _make_es_mock_token(text="llega", dep_="ccomp", pos_="VERB", i=3)
+        verb = _make_es_mock_token(
+            text="parece", lemma="parecer", pos_="VERB", dep_="ROOT", i=1,
+        )
+        ello = _make_es_mock_token(
+            text="ello", lemma="ello", pos_="PRON", dep_="nsubj",
+            head=verb, i=0,
+        )
+        verb.children = [ello, ccomp_child]
+        doc = _make_mock_doc([ello, verb, ccomp_child], text="ello parece que llega")
+        assert _has_expletive_equivalent_es(doc) is True
+
+    def test_ello_with_regular_verb_not_detected(self):
+        """'ello funciona' — ello with non-expletive verb is not caught."""
+        verb = _make_es_mock_token(
+            text="funciona", lemma="funcionar", pos_="VERB", dep_="ROOT", i=1,
+        )
+        ello = _make_es_mock_token(
+            text="ello", lemma="ello", pos_="PRON", dep_="nsubj",
+            head=verb, i=0,
+        )
+        verb.children = [ello]
+        doc = _make_mock_doc([ello, verb], text="ello funciona")
+        assert _has_expletive_equivalent_es(doc) is False
+
+
+class TestSpanishRegistration:
+    """Registry integration."""
+
+    def test_es_ablation_registered(self):
+        import preprocessing.ablations  # trigger registration
+        assert AblationRegistry.is_registered("remove_expletive_sentences_es")
+
+    def test_factory_returns_callable(self):
+        fn = make_remove_expletive_sentences_es()
+        assert callable(fn)
+
+    def test_factory_removes_weather_line(self):
+        """End-to-end factory call on a mocked weather verb doc."""
+        fn = make_remove_expletive_sentences_es()
+        verb = _make_es_mock_token(text="llueve", lemma="llover", pos_="VERB", i=0)
+        doc = _make_mock_doc([verb], text="llueve mucho")
+        doc.text_with_ws = "llueve mucho"
+        result, count = fn(doc)
+        assert result == ""
+        assert count == 1
+
+    def test_factory_keeps_normal_line(self):
+        fn = make_remove_expletive_sentences_es()
+        verb = _make_es_mock_token(text="corre", lemma="correr", pos_="VERB", i=1)
+        nsubj = _make_es_mock_token(text="juan", dep_="nsubj", pos_="PROPN", i=0)
+        verb.children = [nsubj]
+        doc = _make_mock_doc([nsubj, verb], text="juan corre")
+        doc.text_with_ws = "juan corre"
+        result, count = fn(doc)
+        assert result == "juan corre"
+        assert count == 0

@@ -28,11 +28,14 @@ from typing import Callable, Dict, List, Optional, Tuple
 import spacy
 
 from analysis.corpus_descriptives.constants import (
+    IMPERSONAL_VERBS_ES,
     IMPERSONAL_VERBS_IT,
+    NECESSITY_VERBS_ES,
     NECESSITY_VERBS_IT,
     RAISING_ADJECTIVES,
     RAISING_VERBS,
     WEATHER_VERBS,
+    WEATHER_VERBS_ES,
     WEATHER_VERBS_IT,
 )
 from preprocessing.registry import AblationRegistry
@@ -404,6 +407,96 @@ def make_remove_expletive_sentences_it() -> Callable[[spacy.tokens.Doc], Tuple[s
 
 
 # ---------------------------------------------------------------------------
+# Spanish
+# ---------------------------------------------------------------------------
+
+def _has_expletive_equivalent_es(doc: spacy.tokens.Doc) -> bool:
+    """
+    Return True if the doc contains a Spanish expletive-equivalent construction.
+
+    Spanish has no true overt expletive in most contexts (though literary
+    *ello* exists). Detection targets:
+
+    1. Weather verbs (e.g. *llueve*, *nieva*).
+    2. Existential *haber* — *hay*, *había*, etc. Existential *haber* is
+       tagged VERB (not AUX) and takes no ``nsubj`` child. Contrast with
+       auxiliary *haber* (``ha dicho``), which is AUX.
+    3. Impersonal raising verbs with a clausal complement and no ``nsubj``
+       (e.g. *parece que ...*).
+    4. Impersonal necessity verbs without ``nsubj`` (e.g. *basta con ...*).
+    5. Overt *ello* as subject of any of the above (archaic/literary;
+       e.g. *ello parece que ...*).
+    """
+    # Pre-scan for overt "ello" subjects (category 5)
+    ello_heads = set()
+    for tok in doc:
+        if tok.lower_ == "ello" and tok.dep_ in ("nsubj", "nsubj:pass"):
+            ello_heads.add(tok.head.i)
+
+    for tok in doc:
+        if tok.pos_ not in ("VERB", "AUX"):
+            continue
+
+        lemma = tok.lemma_.lower()
+        children_deps = {child.dep_ for child in tok.children}
+        has_nsubj = bool(children_deps & {"nsubj", "nsubj:pass"})
+
+        # 1. Weather verbs
+        if lemma in WEATHER_VERBS_ES:
+            return True
+
+        # 2. Existential "haber" (hay, había, habrá, ...).
+        #    spaCy's Spanish models (es_core_news_lg/trf) inconsistently tag
+        #    existential "hay" — sometimes VERB, sometimes AUX. We distinguish
+        #    existential from auxiliary haber by structural role: existential
+        #    haber is the root of its clause (not attached as dep_="aux" to
+        #    another verb) and takes no nsubj. Auxiliary haber is dep_="aux"
+        #    attached to a main verb (e.g., "ha comido").
+        if lemma == "haber" and tok.dep_ != "aux" and not has_nsubj:
+            return True
+
+        # 3. Impersonal raising verbs with clausal complement and no nsubj
+        if lemma in IMPERSONAL_VERBS_ES:
+            has_clausal = bool(children_deps & {"ccomp", "xcomp", "csubj"})
+            if has_clausal and not has_nsubj:
+                return True
+
+        # 4. Impersonal necessity verbs without nsubj
+        if lemma in NECESSITY_VERBS_ES:
+            if not has_nsubj:
+                return True
+
+        # 5. Overt "ello" as nsubj of any verb in categories 1-4
+        if tok.i in ello_heads:
+            if (
+                lemma in WEATHER_VERBS_ES
+                or lemma in IMPERSONAL_VERBS_ES
+                or lemma in NECESSITY_VERBS_ES
+                or (lemma == "haber" and tok.pos_ == "VERB")
+            ):
+                return True
+
+    return False
+
+
+def make_remove_expletive_sentences_es() -> Callable[[spacy.tokens.Doc], Tuple[str, int]]:
+    """
+    Factory for the Spanish expletive-equivalent sentence removal ablation.
+
+    Returns:
+        Ablation function ``(Doc) -> (str, int)``
+    """
+
+    def remove_expletive_sentences_es_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
+        """Remove the entire line if it contains an expletive-equivalent (ES)."""
+        if _has_expletive_equivalent_es(doc):
+            return "", 1
+        return doc.text_with_ws, 0
+
+    return remove_expletive_sentences_es_doc
+
+
+# ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
 
@@ -441,4 +534,10 @@ AblationRegistry.register(
     "remove_expletive_sentences_it",
     make_remove_expletive_sentences_it(),
     _make_validator(_has_expletive_equivalent_it),
+)
+
+AblationRegistry.register(
+    "remove_expletive_sentences_es",
+    make_remove_expletive_sentences_es(),
+    _make_validator(_has_expletive_equivalent_es),
 )
