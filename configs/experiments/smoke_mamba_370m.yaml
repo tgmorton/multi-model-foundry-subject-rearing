@@ -1,0 +1,57 @@
+# ===================================================================
+# SMOKE TEST — Mamba 370M
+# Validates full pipeline + checkpoint resume round-trip.
+# Shares tokenizer with exp0_baseline_90M_smoke (idempotent skip).
+# ===================================================================
+
+experiment_name: "smoke_mamba_370m"
+
+data:
+  source_corpus: "data/raw/train_90M/"
+  training_corpus: "data/raw/train_90M/"
+  test_corpus: "data/raw/test_10M/"
+  batch_size: 2
+  max_sequence_length: 256
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/exp0_baseline_90M_smoke/"
+  vocab_size: 50004
+
+model:
+  architecture: "mamba"
+  mamba:
+    d_model: 1024
+    n_layers: 48
+    d_state: 16
+    d_conv: 4
+    expand: 2
+    dropout: 0.1
+
+training:
+  output_dir: "models/smoke_mamba_370m/"
+  learning_rate: 0.0003
+  adam_beta1: 0.9
+  adam_beta2: 0.95               # Mamba authors recommend lower beta2
+  adam_epsilon: 1.0e-6
+  train_steps: 6                   # overridden in-job
+  warmup_steps: 1
+  warmup_ratio: 0.1
+  epochs: 1
+  objective: "causal_lm"
+  use_amp: true
+  gradient_accumulation_steps: 4
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+  auto_generate_checkpoints: false
+  checkpoint_schedule: [5]
+  resume_from_checkpoint: false
+
+logging:
+  use_wandb: false
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 9

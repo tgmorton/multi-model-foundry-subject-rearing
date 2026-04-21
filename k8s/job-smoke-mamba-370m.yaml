@@ -1,0 +1,121 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-mamba-370m
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: smoke
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=========================================="
+          echo "  SMOKE TEST — Mamba 370M"
+          echo "=========================================="
+
+          cd /opt/repo
+          pip install --no-cache-dir -r requirements.txt sentencepiece 2>&1 | tail -3
+
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+
+          BASE=configs/experiments/smoke_mamba_370m.yaml
+          NAME=smoke_mamba_370m
+
+          python -m model_foundry.cli validate-config $BASE
+
+          echo "=== Tokenizer (idempotent) ==="
+          python -m model_foundry.cli train-tokenizer $BASE
+
+          echo "=== Tokenize (idempotent) ==="
+          python -m model_foundry.cli tokenize-dataset $BASE
+
+          echo "=== Chunk (idempotent) ==="
+          python -m model_foundry.cli preprocess-data $BASE
+
+          rm -rf /mnt/data/models/$NAME
+          mkdir -p /mnt/data/models/$NAME
+
+          echo "=========================================="
+          echo "  PART 1: 6 steps, save at step 5"
+          echo "=========================================="
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 6
+          cfg['training']['checkpoint_schedule'] = [5]
+          cfg['training']['resume_from_checkpoint'] = False
+          with open('/tmp/p1.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+          python -m model_foundry.cli run /tmp/p1.yaml
+
+          test -d /mnt/data/models/$NAME/checkpoint-5 || { echo "❌ checkpoint-5 missing"; exit 1; }
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-5/metadata.json'))['global_step'])")
+          [ "$STEP" = "5" ] || { echo "❌ checkpoint-5 reports step=$STEP"; exit 1; }
+          echo "✓ checkpoint-5 saved correctly"
+
+          echo "=========================================="
+          echo "  PART 2: resume → run to step 11"
+          echo "=========================================="
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 11
+          cfg['training']['checkpoint_schedule'] = [10]
+          cfg['training']['resume_from_checkpoint'] = True
+          with open('/tmp/p2.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+          python -m model_foundry.cli run /tmp/p2.yaml 2>&1 | tee /tmp/p2.log
+
+          grep -q "Resumed from step 5" /tmp/p2.log || { echo "❌ no resume log"; exit 1; }
+          test -d /mnt/data/models/$NAME/checkpoint-10 || { echo "❌ checkpoint-10 missing"; exit 1; }
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-10/metadata.json'))['global_step'])")
+          [ "$STEP" = "10" ] || { echo "❌ checkpoint-10 reports step=$STEP"; exit 1; }
+
+          echo "=========================================="
+          echo "  ✅ Mamba 370M SMOKE PASSED"
+          echo "=========================================="
+          ls -la /mnt/data/models/$NAME/
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        resources:
+          requests: {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+          limits:   {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}
