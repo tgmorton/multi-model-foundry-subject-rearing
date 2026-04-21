@@ -96,11 +96,24 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     def tokenize_function(examples):
         return {'input_ids': tokenizer.encode(examples['text'], out_type=int)}
 
-    print("  - Tokenizing training dataset (this may take a while)...")
+    # num_proc: respect cgroup CPU affinity (sched_getaffinity) rather than
+    # host cpu_count. Under K8s limits like cpu=4, os.cpu_count() still
+    # reports the host's 32+ CPUs and we end up oversubscribed 10x+,
+    # causing worker processes to crash with
+    # `ValueError: I/O operation on closed file` inside multiprocess.pool.
+    # Cap further at 8 workers for the HF datasets map step — beyond that
+    # SentencePiece encode contention and arrow shard IPC become the bottleneck.
+    try:
+        available = len(os.sched_getaffinity(0))
+    except AttributeError:
+        available = os.cpu_count() or 1
+    num_proc = max(1, min(8, available))
+    print(f"  - Tokenizing with num_proc={num_proc} "
+          f"(cpu_count={os.cpu_count()}, affinity={available})")
     tokenized_training_dataset = raw_training_dataset.map(
         tokenize_function,
         batched=True,
-        num_proc=os.cpu_count(),
+        num_proc=num_proc,
         remove_columns=['text']
     )
     print("  - Training tokenization complete.")
@@ -120,11 +133,11 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
                 raw_test_dataset = load_dataset('text', data_files={'test': test_files}, split='test', cache_dir=cache_dir)
                 print(f"  - Found {len(raw_test_dataset):,} total lines in the test corpus.")
 
-                print("  - Tokenizing test dataset...")
+                print(f"  - Tokenizing test dataset with num_proc={num_proc}...")
                 tokenized_test_dataset = raw_test_dataset.map(
                     tokenize_function,
                     batched=True,
-                    num_proc=os.cpu_count(),
+                    num_proc=num_proc,
                     remove_columns=['text']
                 )
                 print("  - Test tokenization complete.")

@@ -316,8 +316,17 @@ class DataProcessor:
         
         # Create DataLoader with high-performance optimizations
         import os
-        # Set aggressive defaults for high-performance training
-        num_workers = getattr(self.config.data, 'num_workers', os.cpu_count() // 2 or 1)
+        # num_workers: under K8s, os.cpu_count() returns the host CPU count
+        # (32+), but our cgroup allocation is typically 4. Use
+        # sched_getaffinity if available and cap conservatively.
+        if hasattr(self.config.data, 'num_workers') and self.config.data.num_workers is not None:
+            num_workers = self.config.data.num_workers
+        else:
+            try:
+                available = len(os.sched_getaffinity(0))
+            except AttributeError:
+                available = os.cpu_count() or 1
+            num_workers = max(1, min(4, available // 2 or 1))
         pin_memory = getattr(self.config.data, 'pin_memory', True)
         prefetch_factor = getattr(self.config.data, 'prefetch_factor', 2)
         
