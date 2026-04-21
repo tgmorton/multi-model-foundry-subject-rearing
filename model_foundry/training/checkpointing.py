@@ -204,9 +204,41 @@ class CheckpointManager:
         from .tokenization import load_tokenizer
         tokenizer = load_tokenizer(latest_checkpoint)
 
-        # Load model and move to device
+        # Load model and move to device.
+        # HF save_pretrained may emit either model.safetensors (default in
+        # newer transformers) or pytorch_model.bin. The state dict keys
+        # correspond to the underlying HF model (e.g. "transformer.h.0..."),
+        # not our wrapper class which prefixes with "hf_model.". Load into
+        # model.hf_model when present, and use strict=False to allow tied
+        # weights (e.g. GPT-2's lm_head) to be missing from the saved state.
         model = model_factory().to(device)
-        model.load_state_dict(torch.load(Path(latest_checkpoint) / "pytorch_model.bin", map_location=device))
+        ckpt_path = Path(latest_checkpoint)
+        safetensors_file = ckpt_path / "model.safetensors"
+        bin_file = ckpt_path / "pytorch_model.bin"
+        if safetensors_file.exists():
+            from safetensors.torch import load_file
+            state_dict = load_file(str(safetensors_file), device=str(device))
+        elif bin_file.exists():
+            state_dict = torch.load(bin_file, map_location=device,
+                                    weights_only=False)
+        else:
+            raise FileNotFoundError(
+                f"No model weights found in {latest_checkpoint}. "
+                f"Expected model.safetensors or pytorch_model.bin."
+            )
+
+        target = model.hf_model if hasattr(model, "hf_model") else model
+        missing, unexpected = target.load_state_dict(state_dict, strict=False)
+        if unexpected:
+            raise RuntimeError(
+                f"Unexpected keys loading checkpoint: {unexpected}"
+            )
+        # Only tied weights (e.g. lm_head in GPT-2) should be missing.
+        for k in missing:
+            if "lm_head" not in k and "tied" not in k.lower():
+                raise RuntimeError(
+                    f"Unexpected missing key loading checkpoint: {k}"
+                )
 
         # Load training state
         state = torch.load(Path(latest_checkpoint) / "training_state.pt", map_location="cpu")
