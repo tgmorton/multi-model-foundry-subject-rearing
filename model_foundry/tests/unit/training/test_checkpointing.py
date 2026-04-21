@@ -232,14 +232,16 @@ class TestCheckpointManager:
         scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1.0,
                                                        total_iters=10)
 
-        model, tokenizer, step, epoch = manager.load_checkpoint(
-            model_factory=lambda: create_model(tiny_config),
+        # Build a throwaway model to pass in — the function should early-out
+        # before it touches anything.
+        model = create_model(tiny_config)
+        tokenizer, step, epoch = manager.load_checkpoint(
+            model=model,
             device=torch.device("cpu"),
             optimizer=optimizer,
             lr_scheduler=scheduler
         )
 
-        assert model is None
         assert tokenizer is None
         assert step == 0
         assert epoch == 0
@@ -257,14 +259,14 @@ class TestCheckpointManager:
                                                        total_iters=10)
 
         # Even if a checkpoint exists, it shouldn't load
-        model, tokenizer, step, epoch = manager.load_checkpoint(
-            model_factory=lambda: create_model(tiny_config),
+        tokenizer, step, epoch = manager.load_checkpoint(
+            model=tiny_model,
             device=torch.device("cpu"),
             optimizer=optimizer,
             lr_scheduler=scheduler
         )
 
-        assert model is None
+        assert tokenizer is None
 
     @pytest.mark.skip(reason="Requires valid tokenizer model file - integration test")
     def test_checkpoint_roundtrip(self, tiny_config, temp_workspace, tiny_model,
@@ -305,15 +307,16 @@ class TestCheckpointManager:
                                                           start_factor=1.0,
                                                           total_iters=10)
 
-        # Load checkpoint
-        loaded_model, loaded_tokenizer, step, epoch = manager.load_checkpoint(
-            model_factory=lambda: create_model(tiny_config),
+        # Load checkpoint into a freshly-initialised target model
+        loaded_model = create_model(tiny_config)
+        loaded_tokenizer, step, epoch = manager.load_checkpoint(
+            model=loaded_model,
             device=torch.device("cpu"),
             optimizer=new_optimizer,
             lr_scheduler=new_scheduler
         )
 
-        assert loaded_model is not None
+        assert loaded_tokenizer is not None
         assert step == 5
         assert epoch == 0
 
@@ -354,8 +357,9 @@ class TestCheckpointManager:
                                                           start_factor=1.0,
                                                           total_iters=10)
 
-        loaded_model, loaded_tokenizer, step, epoch = manager.load_checkpoint(
-            model_factory=lambda: create_model(tiny_config),
+        loaded_model = create_model(tiny_config)
+        loaded_tokenizer, step, epoch = manager.load_checkpoint(
+            model=loaded_model,
             device=torch.device("cpu"),
             optimizer=new_optimizer,
             lr_scheduler=new_scheduler

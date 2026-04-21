@@ -173,28 +173,36 @@ class CheckpointManager:
         if metadata['wandb_run_id']:
             print(f"    - WandB run ID: {metadata['wandb_run_id']}")
 
-    def load_checkpoint(self, model_factory, device: torch.device,
+    def load_checkpoint(self, model, device: torch.device,
                         optimizer, lr_scheduler, scaler: Optional[torch.cuda.amp.GradScaler] = None):
         """
         Load training state from the latest checkpoint if resume is enabled.
 
+        Loads model weights INTO the provided model object in-place (rather
+        than creating a new one), which is critical: the optimizer is bound
+        to ``model.parameters()`` at construction time, so replacing the
+        model object would silently break optimizer.step() (gradients would
+        accumulate on the loaded model but the optimizer would iterate the
+        old/discarded parameter refs, recording no inf checks and tripping
+        ``scaler.step()`` with "No inf checks were recorded for this optimizer").
+
         Args:
-            model_factory: Function to create a new model instance
-            device: Device to load the model onto
+            model: Existing model object to load weights into (in-place).
+            device: Device the model is on (used for safetensors loader).
             optimizer: Optimizer to restore state into
             lr_scheduler: Scheduler to restore state into
             scaler: Optional AMP gradient scaler to restore
 
         Returns:
-            Tuple of (model, tokenizer, global_step, epoch) or (None, None, 0, 0) if no checkpoint
+            Tuple of (tokenizer, global_step, epoch) or (None, 0, 0) if no checkpoint
         """
         if not self.config.training.resume_from_checkpoint or not self.output_dir.exists():
-            return None, None, 0, 0
+            return None, 0, 0
 
         checkpoints = glob.glob(str(self.output_dir / "checkpoint-*"))
         if not checkpoints:
             print("  - `resume_from_checkpoint` is true, but no checkpoints found. Starting fresh.")
-            return None, None, 0, 0
+            return None, 0, 0
 
         # Find the checkpoint with the highest step number
         latest_checkpoint = max(checkpoints, key=lambda p: int(re.search(r'checkpoint-(\d+)', p).group(1)))
@@ -204,14 +212,13 @@ class CheckpointManager:
         from .tokenization import load_tokenizer
         tokenizer = load_tokenizer(latest_checkpoint)
 
-        # Load model and move to device.
+        # Load weights into the existing model in-place.
         # HF save_pretrained may emit either model.safetensors (default in
         # newer transformers) or pytorch_model.bin. The state dict keys
         # correspond to the underlying HF model (e.g. "transformer.h.0..."),
         # not our wrapper class which prefixes with "hf_model.". Load into
         # model.hf_model when present, and use strict=False to allow tied
         # weights (e.g. GPT-2's lm_head) to be missing from the saved state.
-        model = model_factory().to(device)
         ckpt_path = Path(latest_checkpoint)
         safetensors_file = ckpt_path / "model.safetensors"
         bin_file = ckpt_path / "pytorch_model.bin"
@@ -263,7 +270,7 @@ class CheckpointManager:
 
         print(f"  - Resumed from step {global_step} at epoch {epoch}.")
 
-        return model, tokenizer, global_step, epoch
+        return tokenizer, global_step, epoch
 
     def cleanup_old_checkpoints(self, keep_latest: int = 5):
         """

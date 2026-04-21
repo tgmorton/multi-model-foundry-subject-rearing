@@ -314,16 +314,18 @@ class Trainer:
             self.config, self.base_dir, self.git_commit_hash
         )
 
-        # Try to load from checkpoint
-        model, tokenizer, global_step, epoch = self.checkpoint_manager.load_checkpoint(
-            model_factory=lambda: create_model(self.config),
+        # Try to load from checkpoint. We pass self.model in so that weights
+        # are loaded in-place — critical because self.optimizer is already
+        # bound to self.model.parameters() from _initialize_optimizer_and_scheduler
+        # above. Replacing self.model would orphan the optimizer.
+        tokenizer, global_step, epoch = self.checkpoint_manager.load_checkpoint(
+            model=self.model,
             device=self.device,
             optimizer=self.optimizer,
             lr_scheduler=self.lr_scheduler
         )
 
-        if model is not None:
-            self.model = model
+        if tokenizer is not None:
             self.tokenizer = tokenizer
         else:
             # Load tokenizer from directory
