@@ -1,0 +1,56 @@
+# GitLab CI pipeline for multi-model-foundry-subject-rearing.
+#
+# Single job: build the deps-only training image with kaniko and push it
+# to the project's container registry. Source code lives in the repo and
+# is fetched at pod startup by scripts/docker-entrypoint.sh, so code edits
+# do NOT trigger a rebuild — only Dockerfile / deps / entrypoint changes.
+#
+# Outputs:
+#   $CI_REGISTRY_IMAGE:latest
+#   $CI_REGISTRY_IMAGE:<short-sha>
+#
+# K8s jobs should pin the SHA tag for reproducibility and only roll
+# `:latest` for development.
+
+image: gcr.io/kaniko-project/executor:debug
+
+stages:
+  - build
+
+variables:
+  # kaniko HTTP/2 push is glacial without this — see playbook §9.
+  GODEBUG: "http2client=0"
+
+build-image:
+  stage: build
+  timeout: 4h
+  rules:
+    # Auto-rebuild only when an image input changes.
+    - changes:
+        - Dockerfile
+        - requirements.txt
+        - pyproject.toml
+        - scripts/docker-entrypoint.sh
+        - .gitlab-ci.yml
+      when: always
+    # Otherwise leave a manual button in the UI for forced rebuilds.
+    - when: manual
+      allow_failure: true
+  script:
+    - mkdir -p /kaniko/.docker
+    - |
+      cat > /kaniko/.docker/config.json <<EOF
+      {"auths":{"$CI_REGISTRY":{"username":"$CI_REGISTRY_USER","password":"$CI_REGISTRY_PASSWORD"}}}
+      EOF
+    - >
+      /kaniko/executor
+      --cache=true
+      --cache-repo=$CI_REGISTRY_IMAGE/cache
+      --cache-ttl=720h
+      --push-retry=10
+      --compressed-caching=false
+      --snapshot-mode=redo
+      --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/Dockerfile
+      --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+      --destination $CI_REGISTRY_IMAGE:latest
