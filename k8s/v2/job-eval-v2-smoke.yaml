@@ -42,7 +42,9 @@ spec:
             pandas \
             pyarrow \
             duckdb \
-            tqdm
+            tqdm \
+            pydantic \
+            pyyaml
 
           echo "=== pip install done at $(date) ==="
 
