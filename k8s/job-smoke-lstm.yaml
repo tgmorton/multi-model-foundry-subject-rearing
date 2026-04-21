@@ -17,6 +17,9 @@ spec:
                 values:
                 - NVIDIA-GeForce-RTX-3090
                 - NVIDIA-A10
+                - NVIDIA-RTX-A6000
+                - NVIDIA-L40
+                - NVIDIA-A40
       initContainers:
       - name: clone-repo
         image: alpine/git
