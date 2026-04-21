@@ -104,6 +104,19 @@ class BERTModel(BaseLanguageModel):
         """
         self.hf_model.resize_token_embeddings(new_num_tokens)
 
+    def save_pretrained(self, save_directory: str) -> None:
+        """Delegate to HuggingFace's save method on the wrapped model.
+
+        Without this override the base class default uses
+        ``torch.save(self.state_dict(), "pytorch_model.bin")`` on the
+        wrapper, which prefixes every key with ``hf_model.``. Resume
+        then tries to load into ``model.hf_model`` (unprefixed) and
+        fails with "Unexpected keys: ['hf_model.bert.embeddings...']".
+        Delegating keeps the on-disk state_dict aligned with what the
+        HF model expects.
+        """
+        self.hf_model.save_pretrained(save_directory)
+
     @property
     def model_type(self) -> str:
         """Get model type identifier."""
