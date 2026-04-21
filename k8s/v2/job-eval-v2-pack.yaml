@@ -1,0 +1,147 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eval-v2-pack
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: eval-v2-pack
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=== eval-v2-pack started at $(date) on $(hostname) ==="
+
+          pip install --no-cache-dir \
+            transformers \
+            sentencepiece \
+            pandas \
+            pyarrow \
+            duckdb \
+            tqdm \
+            pydantic \
+            pyyaml
+
+          echo "=== pip install done at $(date) ==="
+
+          cd /opt/repo
+          which python && python --version
+
+          nvidia-smi || true
+
+          # Clean any prior pack outputs.
+          rm -rf /mnt/data/eval_v2/pack_n*
+
+          # Sweep N=1, 2, 4, 8 on the same pod/GPU. Each trial uses a
+          # distinct scoring_version so the cache doesn't short-circuit
+          # repeated runs.
+          for N in 1 2 4 8; do
+            echo ""
+            echo "=========================================="
+            echo "  PACK SWEEP N=$N"
+            echo "=========================================="
+            rm -rf /scratch/pack_n$N
+            mkdir -p /scratch/pack_n$N
+
+            PYTHONPATH=/opt/repo python -u scripts/eval_v2_pack.py \
+              --n_workers $N \
+              --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
+              --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
+              --stimuli_dir evaluation/stimuli/null-subj-v2/staging \
+              --output_root /mnt/data/eval_v2/pack_n$N \
+              --scratch_dir /scratch/pack_n$N \
+              --summary_path /mnt/data/eval_v2/pack_n$N/packing_summary.json \
+              --scoring_version pack-v1-n$N
+          done
+
+          # Final table: extract throughput from each N's summary.
+          echo ""
+          echo "=========================================="
+          echo "  PACKING SWEEP SUMMARY"
+          echo "=========================================="
+          python -u - <<'PY'
+          import json
+          from pathlib import Path
+          print(f"{'N':>3} {'total_s':>10} {'ckpts/s':>10} {'items/s':>10} {'speedup':>10}")
+          t1 = None
+          for n in (1, 2, 4, 8):
+              p = Path(f"/mnt/data/eval_v2/pack_n{n}/packing_summary.json")
+              if not p.exists():
+                  print(f"{n:>3}  MISSING")
+                  continue
+              d = json.loads(p.read_text())
+              total = d['total_wall_secs']
+              cps = d['ckpts_per_sec']
+              ips = d['items_per_sec']
+              if n == 1:
+                  t1 = total
+                  speedup = 1.0
+              else:
+                  # Speedup = how much faster the whole batch finished
+                  # than N serial N=1 runs would have.
+                  speedup = (t1 * n) / total if t1 else float('nan')
+              print(f"{n:>3} {total:>10.2f} {cps:>10.3f} {ips:>10.1f} {speedup:>9.2f}x")
+          PY
+
+          echo ""
+          echo "✅ eval-v2-pack complete at $(date)"
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: WANDB_MODE
+          value: "disabled"
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 16Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+        - name: scratch
+          mountPath: /scratch
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: scratch
+        emptyDir:
+          sizeLimit: 20Gi
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
