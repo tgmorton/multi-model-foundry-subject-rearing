@@ -53,9 +53,18 @@ def hash_file(path: Path, nbytes: int = 12) -> str:
 
 
 def checkpoint_id(checkpoint_path: Path) -> str:
-    """Content hash of a checkpoint directory's `pytorch_model.bin`."""
-    bin_path = Path(checkpoint_path) / "pytorch_model.bin"
-    return hash_file(bin_path)
+    """Content hash of a checkpoint directory's weights file.
+
+    Accepts either `model.safetensors` (newer HF) or `pytorch_model.bin`.
+    """
+    ckpt = Path(checkpoint_path)
+    for fname in ("model.safetensors", "pytorch_model.bin"):
+        p = ckpt / fname
+        if p.exists():
+            return hash_file(p)
+    raise FileNotFoundError(
+        f"No weights file in {ckpt} (expected model.safetensors or pytorch_model.bin)"
+    )
 
 
 # --- Cache key --------------------------------------------------------------

@@ -169,13 +169,40 @@ class PerModelRunner:
         return self._model
 
     def load_checkpoint(self, checkpoint_path: Path) -> None:
-        """Swap in a checkpoint's weights via `load_state_dict`."""
+        """Swap in a checkpoint's weights via `load_state_dict`.
+
+        Accepts either `model.safetensors` (newer HF default) or
+        `pytorch_model.bin`. Uses `strict=False` so tied weights
+        (e.g. GPT-2's `lm_head` sharing `wte`) are allowed to be
+        absent from the saved state, matching the training-time
+        saver semantics.
+        """
         model = self.build_model()
-        bin_path = Path(checkpoint_path) / "pytorch_model.bin"
-        if not bin_path.exists():
-            raise FileNotFoundError(f"pytorch_model.bin not found at {bin_path}")
-        state_dict = torch.load(bin_path, map_location=self.cell.device)
-        model.load_state_dict(state_dict, strict=True)
+        ckpt = Path(checkpoint_path)
+        safetensors_file = ckpt / "model.safetensors"
+        bin_file = ckpt / "pytorch_model.bin"
+        if safetensors_file.exists():
+            from safetensors.torch import load_file
+            state_dict = load_file(str(safetensors_file), device=str(self.cell.device))
+        elif bin_file.exists():
+            state_dict = torch.load(
+                bin_file, map_location=self.cell.device, weights_only=False
+            )
+        else:
+            raise FileNotFoundError(
+                f"No weights file in {ckpt} "
+                f"(expected model.safetensors or pytorch_model.bin)"
+            )
+        missing, unexpected = model.load_state_dict(state_dict, strict=False)
+        if unexpected:
+            raise RuntimeError(
+                f"Unexpected keys loading checkpoint: {unexpected}"
+            )
+        for k in missing:
+            if "lm_head" not in k and "tied" not in k.lower():
+                raise RuntimeError(
+                    f"Unexpected missing key loading checkpoint: {k}"
+                )
         model.eval()
 
     # --- Checkpoint-level evaluation ---------------------------------------
