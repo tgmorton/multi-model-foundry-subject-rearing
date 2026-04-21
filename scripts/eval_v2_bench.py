@@ -268,18 +268,35 @@ def main():
             processed.append((step, path))
             log.info("  ckpt-%d: %d items + %d pairs", step, len(items), len(pairs))
 
-    # Persist + mark
+    # Persist + mark. If --scratch_dir is set we honor the same
+    # stage-then-copy pattern as CachedRunner so bench numbers reflect
+    # production wall-time rather than a direct-CephFS worst case.
     if all_items or all_pairs:
-        with timer(log, "write_parquet"):
-            from evaluation.output_v2 import write_cell_results
+        from evaluation.output_v2 import write_cell_results
+        import shutil as _shutil
+
+        scratch_root = Path(args.scratch_dir) if args.scratch_dir else None
+        if scratch_root:
+            staged = scratch_root / cell.cell_id
+            staged.mkdir(parents=True, exist_ok=True)
+        else:
+            staged = None
+
+        with timer(log, "write_parquet_local"):
             write_summary = write_cell_results(
-                output_root=output_root,
+                output_root=staged if staged else output_root,
                 cell_id=cell.cell_id,
                 item_results=all_items,
                 pair_results=all_pairs,
             )
             log.info("  wrote %d item rows, %d pair rows",
                      write_summary["n_item_rows"], write_summary["n_pair_rows"])
+
+        if staged:
+            with timer(log, "copy_staged_to_output"):
+                _shutil.copytree(staged, output_root, dirs_exist_ok=True)
+                _shutil.rmtree(staged, ignore_errors=True)
+
         for step, path in processed:
             mark_cached(output_root, runner._make_key(checkpoint_id(path)))
 
