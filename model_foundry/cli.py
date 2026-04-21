@@ -163,48 +163,52 @@ def preprocess(
 
 @app.command()
 def train_tokenizer(
-    config_path: str = typer.Argument(..., help="Path to the experiment's .yaml configuration file")
+    config_path: str = typer.Argument(..., help="Path to the experiment's .yaml configuration file"),
+    force: bool = Option(False, "--force", help="Retrain even if tokenizer already exists")
 ):
     """
     Train a SentencePiece tokenizer for the experiment.
-    
+
     This command trains a new tokenizer on the training corpus specified in the config,
-    using the parameters defined in the 'tokenizer' section.
+    using the parameters defined in the 'tokenizer' section. Skips training if a
+    tokenizer already exists at the configured output_dir (use --force to override).
     """
     logger = logging.getLogger(__name__)
     logger.info(f"--- Training Tokenizer: {config_path} ---")
-    
+
     config = load_config(config_path)
     base_dir = find_project_root(__file__)
-    
+
     # Import and run the tokenizer training
     from .tokenizer.train_tokenizer import train_tokenizer_from_config
-    
+
     abs_config_path = config_path if os.path.isabs(config_path) else os.path.join(base_dir, config_path)
-    train_tokenizer_from_config(abs_config_path)
+    train_tokenizer_from_config(abs_config_path, force=force)
 
 
 @app.command()
 def tokenize_dataset(
-    config_path: str = typer.Argument(..., help="Path to the experiment's .yaml configuration file")
+    config_path: str = typer.Argument(..., help="Path to the experiment's .yaml configuration file"),
+    force: bool = Option(False, "--force", help="Re-tokenize even if tokenized dataset already exists")
 ):
     """
     Tokenize the training dataset using the experiment's tokenizer.
-    
+
     This command loads the training corpus, tokenizes it using the trained SentencePiece
-    model, and saves the tokenized dataset to disk for training.
+    model, and saves the tokenized dataset to disk for training. Skips re-tokenization
+    if an existing tokenized dataset is found (use --force to override).
     """
     logger = logging.getLogger(__name__)
     logger.info(f"--- Tokenizing Dataset: {config_path} ---")
-    
+
     config = load_config(config_path)
     base_dir = find_project_root(__file__)
-    
+
     # Import and run the dataset tokenization
     from .tokenizer.tokenize_dataset import tokenize_dataset_from_config
-    
+
     abs_config_path = config_path if os.path.isabs(config_path) else os.path.join(base_dir, config_path)
-    tokenize_dataset_from_config(abs_config_path)
+    tokenize_dataset_from_config(abs_config_path, force=force)
 
 
 @app.command()

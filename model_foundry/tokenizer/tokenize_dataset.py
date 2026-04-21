@@ -21,10 +21,14 @@ def find_project_root(start_path: str) -> str:
     return os.getcwd()
 
 
-def tokenize_dataset_from_config(config_path: str):
+def tokenize_dataset_from_config(config_path: str, force: bool = False):
     """
     Loads training and test corpora, tokenizes them using the experiment-specific SentencePiece
     model, and saves the tokenized datasets to disk.
+
+    Args:
+        config_path: Path to the experiment config YAML
+        force: If True, re-tokenize even if a tokenized dataset already exists
     """
     print(f"--- Tokenizing Dataset from Config: {config_path} ---")
 
@@ -56,6 +60,16 @@ def tokenize_dataset_from_config(config_path: str):
     print(f"  - Experiment:          {experiment_name}")
     print(f"  - Tokenizer Model:     {tokenizer_model_path}")
     print(f"  - Output Directory:    {tokenized_data_dir}")
+
+    # Idempotency check: skip if tokenized dataset already exists. The data
+    # loader expects a saved HF Dataset under train/ (and optionally test/),
+    # so we look for the canonical dataset_info.json sentinel.
+    train_sentinel = os.path.join(tokenized_data_dir, 'train', 'dataset_info.json')
+    if not force and os.path.exists(train_sentinel):
+        print(f"  - Tokenized dataset already exists at: {tokenized_data_dir}")
+        print(f"  - Skipping re-tokenization. Pass force=True (or --force on CLI) to override.")
+        print("----- Dataset Tokenization Skipped (cached) -----")
+        return
 
     tokenizer = spm.SentencePieceProcessor()
     tokenizer.load(tokenizer_model_path)

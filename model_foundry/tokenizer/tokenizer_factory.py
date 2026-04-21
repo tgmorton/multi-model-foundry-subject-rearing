@@ -373,7 +373,8 @@ class TokenizerFactory:
             )
 
 
-def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = None):
+def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = None,
+                                 force: bool = False):
     """
     Train a tokenizer using parameters from a YAML experiment config file.
 
@@ -383,9 +384,10 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
     Args:
         config_path: Path to YAML configuration file
         project_root: Project root directory (auto-detected if None)
+        force: If True, retrain even if a tokenizer already exists at output_dir
 
     Returns:
-        Trained tokenizer instance
+        Trained tokenizer instance, or None if skipped due to existing artifacts
     """
     import yaml
 
@@ -419,6 +421,22 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
     tokenizer_type = config['tokenizer'].get('tokenizer_type', 'sentencepiece')
     special_tokens = config['tokenizer'].get('special_tokens', None)
     experiment_name = config.get('experiment_name', 'tokenizer')
+
+    # Idempotency check: skip if a complete tokenizer already exists
+    # (looks for the key artifact files each tokenizer type produces).
+    _sentinel_files = {
+        'sentencepiece': ['tokenizer.model'],
+        'wordpiece':    ['tokenizer.json'],
+        'bpe':          ['tokenizer.json'],
+        'character':    ['tokenizer.json'],
+    }
+    sentinels = _sentinel_files.get(tokenizer_type, [])
+    if not force and os.path.isdir(output_dir) and sentinels:
+        if all(os.path.exists(os.path.join(output_dir, s)) for s in sentinels):
+            print(f"  - Tokenizer already exists at: {output_dir}")
+            print(f"  - Skipping re-training. Pass force=True (or --force on CLI) to override.")
+            print("----- Tokenizer Training Skipped (cached) -----")
+            return None
 
     # Find input files
     if not os.path.exists(training_corpus_path):

@@ -16,7 +16,7 @@ def find_project_root(start_path: str) -> str:
     return os.getcwd()
 
 
-def train_tokenizer_from_config(config_path: str):
+def train_tokenizer_from_config(config_path: str, force: bool = False):
     """
     Trains a tokenizer using parameters from a .yaml experiment file.
 
@@ -25,9 +25,10 @@ def train_tokenizer_from_config(config_path: str):
 
     Args:
         config_path: Path to the experiment's YAML configuration file
+        force: If True, retrain even if a tokenizer already exists
     """
     project_root = find_project_root(__file__)
-    return factory_train(config_path, project_root)
+    return factory_train(config_path, project_root, force=force)
 
 
 def main():
