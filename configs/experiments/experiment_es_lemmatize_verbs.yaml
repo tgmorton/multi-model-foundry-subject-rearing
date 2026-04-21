@@ -1,0 +1,75 @@
+# ===================================================================
+# EXPERIMENT: Lemmatize Verbs (Spanish)
+# GOAL: Train a model on Spanish corpus with all verbs collapsed to
+#       their lemma, eliminating tense/person/number/mood morphology.
+#       Tests whether rich verbal agreement morphology is necessary
+#       for null-subject licensing in Spanish.
+# ===================================================================
+
+experiment_name: "exp_lemmatize_verbs_es"
+
+# --- Data Configuration ---
+data:
+  source_corpus: "data/spanish/train_90M/"
+  training_corpus: "data/spanish/processed/exp_lemmatize_verbs_es/"
+  test_corpus: "data/spanish/test_10M/"
+  batch_size: 32
+  max_sequence_length: 1000
+
+# --- Dataset Manipulation Pipeline ---
+dataset_manipulation:
+  - type: lemmatize_verbs
+    input_path: "data/spanish/train_90M/"
+    output_path: "data/spanish/processed/exp_lemmatize_verbs_es/"
+    spacy_model: "es_core_news_lg"
+    parameters:
+      chunk_size: 1000
+      replacement_pool_dir: "data/spanish/pull_10M/"
+      skip_validation: false
+      verbose: true
+
+# --- Tokenizer Configuration ---
+tokenizer:
+  output_dir: "tokenizers/exp_lemmatize_verbs_es/"
+  vocab_size: 50004
+
+# --- Model Architecture ---
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+# --- Training Procedure ---
+training:
+  output_dir: "models/exp_lemmatize_verbs_es/"
+  learning_rate: 0.0004
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: null
+  warmup_ratio: 0.1
+  train_steps: null
+  epochs: 20
+  use_amp: true
+  gradient_accumulation_steps: 8
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+  use_flash_attention: true
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+
+# --- Logging & Reproducibility ---
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+random_seed: 9

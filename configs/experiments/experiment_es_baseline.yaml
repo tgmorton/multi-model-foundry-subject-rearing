@@ -1,0 +1,69 @@
+# ===================================================================
+# EXPERIMENT: Baseline (Spanish 90M)
+# GOAL: Train the base model on the unaltered BebeLM Spanish 90M corpus.
+# This serves as the control against which all Spanish ablations are measured.
+# ===================================================================
+
+experiment_name: "exp_baseline_es"
+
+# --- Data Configuration ---
+data:
+  source_corpus: "data/spanish/train_90M/"
+  training_corpus: "data/spanish/train_90M/"
+  test_corpus: "data/spanish/test_10M/"
+  batch_size: 32
+  max_sequence_length: 1000
+
+# --- Dataset Manipulation Pipeline ---
+# Empty — baseline uses unmodified corpus.
+dataset_manipulation: []
+
+# --- Tokenizer Configuration ---
+tokenizer:
+  output_dir: "tokenizers/exp_baseline_es/"
+  vocab_size: 50004
+
+# --- Model Architecture ---
+model:
+  layers: 12
+  embedding_size: 768
+  hidden_size: 768
+  intermediate_hidden_size: 3072
+  attention_heads: 12
+  activation_function: "gelu"
+  dropout: 0.1
+  attention_dropout: 0.1
+
+# --- Training Procedure ---
+training:
+  output_dir: "models/exp_baseline_es/"
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_steps: null
+  warmup_ratio: 0.1
+  train_steps: null
+  epochs: 20
+  use_amp: true
+  gradient_accumulation_steps: 32
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+  auto_generate_checkpoints: true
+  first_epoch_checkpoints: 20
+  subsequent_epochs_spacing: "log"
+  log_base: 2
+  linear_interval: null
+  min_checkpoint_interval: 100
+  min_checkpoints_per_epoch: 5
+  resume_from_checkpoint: false
+
+# --- Logging & Reproducibility ---
+logging:
+  use_wandb: true
+  wandb_project: "just-drop-the-subject"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 9
