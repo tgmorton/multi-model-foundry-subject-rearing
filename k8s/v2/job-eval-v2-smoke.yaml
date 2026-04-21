@@ -53,6 +53,14 @@ spec:
           # Sanity: which python?
           which python && python --version
 
+          # Clean any stale outputs from previous smoke runs so the
+          # content-addressed cache doesn't serve results produced by
+          # earlier (possibly buggy) code versions.
+          echo ""
+          echo "=== Wiping previous smoke outputs on PVC ==="
+          rm -rf /mnt/data/eval_v2/smoke_ckpt0 /mnt/data/eval_v2/smoke_ckpt5
+          ls /mnt/data/eval_v2/ 2>/dev/null || true
+
           # Run 1: untrained baseline (checkpoint-0)
           echo ""
           echo "=== Run 1: untrained baseline (checkpoint-0) ==="
