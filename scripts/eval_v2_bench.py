@@ -39,15 +39,19 @@ from contextlib import contextmanager
 from pathlib import Path
 
 
+TIMINGS: list[dict] = []
+
+
 @contextmanager
 def timer(log, phase: str):
-    """Log `[BENCH] phase=NAME secs=X.YZ` on exit."""
+    """Log `[BENCH] phase=NAME secs=X.YZ` on exit and capture to TIMINGS."""
     t0 = time.perf_counter()
     try:
         yield
     finally:
         dt = time.perf_counter() - t0
         log.info("[BENCH] phase=%s secs=%.3f", phase, dt)
+        TIMINGS.append({"phase": phase, "secs": dt})
 
 
 def log_cuda_memory(log, label: str):
@@ -315,6 +319,35 @@ def main():
                          int(total_gpu_mb // peak))
         except Exception as e:
             log.warning("final mem stats failed: %s", e)
+
+    # ── Dump timings to JSON on --output_root ───────────────────────────
+    import json
+    summary = {
+        "cell_id": args.cell_id,
+        "device": device,
+        "batch_size": args.batch_size,
+        "n_stimuli_rows": len(stimuli),
+        "n_checkpoints": len(ckpts),
+        "factory_calls": factory_calls["n"],
+        "total_wall_secs": time.perf_counter() - t_start,
+        "timings": TIMINGS,
+    }
+    if device == "cuda":
+        try:
+            import torch
+            summary["cuda_peak_alloc_MB"] = (
+                torch.cuda.max_memory_allocated() / 1024 ** 2
+            )
+            summary["cuda_total_MB"] = (
+                torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
+            )
+            summary["cuda_device_name"] = torch.cuda.get_device_name(0)
+        except Exception:
+            pass
+    output_root.mkdir(parents=True, exist_ok=True)
+    summary_path = output_root / "bench_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2))
+    log.info("Wrote timing summary to %s", summary_path)
 
     log.info("=" * 60)
     log.info("✅ BENCH COMPLETE")

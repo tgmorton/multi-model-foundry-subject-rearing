@@ -50,32 +50,16 @@ spec:
           cd /opt/repo
           which python && python --version
 
-          # Wipe any prior bench outputs so the cache layer doesn't skip work.
+          # STAGED run only. We already have the direct-CephFS baseline
+          # from the previous bench at /mnt/data/eval_v2/bench_90M (576s
+          # parquet write). Write to local /scratch then cp -r to CephFS.
           echo ""
-          echo "=== Wiping previous bench outputs ==="
-          rm -rf /mnt/data/eval_v2/bench_90M /mnt/data/eval_v2/bench_90M_v2
-          ls /mnt/data/eval_v2/ 2>/dev/null || true
-
-          # Run 1 (BASELINE): write directly to CephFS.
-          echo ""
-          echo "=== Run 1 (baseline): direct CephFS writes ==="
-          time PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
-            --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
-            --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
-            --stimuli_dir evaluation/stimuli/null-subj-v2/staging \
-            --output_root /mnt/data/eval_v2/bench_90M \
-            --cell_id bench_90M_all_stimuli \
-            --architecture gpt2 \
-            --intervention baseline \
-            --rep 0 \
-            --batch_size 16 \
-            --device auto
-
-          # Run 2 (EPHEMERAL-STAGED): write to /tmp then cp -r to CephFS.
-          # Same inputs, different cell_id so cache doesn't skip.
-          echo ""
-          echo "=== Run 2 (staged): /tmp → CephFS ==="
+          echo "=== Wiping previous staged outputs ==="
+          rm -rf /mnt/data/eval_v2/bench_90M_v2
           mkdir -p /scratch/bench_out
+
+          echo ""
+          echo "=== STAGED BENCH: /scratch → CephFS ==="
           echo "--- local write phase ---"
           time PYTHONPATH=/opt/repo python -u scripts/eval_v2_bench.py \
             --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
@@ -96,18 +80,27 @@ spec:
 
           echo ""
           echo "--- cp -r phase (staged → CephFS) ---"
-          time cp -r /scratch/bench_out/bench_90M_v2 /mnt/data/eval_v2/bench_90M_v2
+          CP_START=$(date +%s)
+          cp -r /scratch/bench_out/bench_90M_v2 /mnt/data/eval_v2/bench_90M_v2
+          CP_SECS=$(( $(date +%s) - CP_START ))
+          echo "cp_secs=$CP_SECS"
 
           echo ""
           echo "--- destination verification ---"
           du -sh /mnt/data/eval_v2/bench_90M_v2
           find /mnt/data/eval_v2/bench_90M_v2 -name "*.parquet" | wc -l | xargs echo "dest parquet files:"
 
-          # Summary of the timing comparison.
-          echo ""
-          echo "=== TIMING COMPARISON ==="
-          echo "Run 1 (direct CephFS): see write_parquet phase"
-          echo "Run 2 (local + cp):   see write_parquet phase (now local) + cp time"
+          # Append cp timing into the bench_summary.json so we have
+          # everything in one place even if logs rotate.
+          python - <<PY
+          import json, pathlib
+          p = pathlib.Path('/mnt/data/eval_v2/bench_90M_v2/bench_summary.json')
+          if p.exists():
+              d = json.loads(p.read_text())
+              d['cp_to_cephfs_secs'] = $CP_SECS
+              p.write_text(json.dumps(d, indent=2))
+              print('  appended cp_to_cephfs_secs=$CP_SECS to', p)
+          PY
 
           echo ""
           echo "✅ eval-v2-bench complete at $(date)"
