@@ -84,11 +84,22 @@ class TokenizerFactory:
         print(f"  - Training SentencePiece tokenizer...")
         spm.SentencePieceTrainer.train(arg_string)
 
-        # Convert to HuggingFace format
+        # Convert to HuggingFace format. The tokenizers-library
+        # SentencePieceUnigramTokenizer constructor expects a list of
+        # (token, score) tuples, not a model path. Parse them out of the
+        # .vocab file SentencePieceTrainer writes alongside the .model.
         from tokenizers import SentencePieceUnigramTokenizer
 
         sp_model_path = f"{model_prefix}.model"
-        tokenizer_backend = SentencePieceUnigramTokenizer(sp_model_path)
+        vocab_path = f"{model_prefix}.vocab"
+        vocab_tuples = []
+        with open(vocab_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                parts = line.rstrip('\n').split('\t')
+                if len(parts) >= 2:
+                    token, score = parts[0], float(parts[1])
+                    vocab_tuples.append((token, score))
+        tokenizer_backend = SentencePieceUnigramTokenizer(vocab_tuples)
 
         tokenizer = PreTrainedTokenizerFast(
             tokenizer_object=tokenizer_backend,
