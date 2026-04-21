@@ -7,8 +7,16 @@ spec:
   ttlSecondsAfterFinished: 86400
   template:
     spec:
-      nodeSelector:
-        nvidia.com/gpu.product: NVIDIA-GeForce-RTX-3090
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
       initContainers:
       - name: clone-repo
         image: alpine/git
