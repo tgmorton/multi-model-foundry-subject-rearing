@@ -210,11 +210,13 @@ class ModelConfig(BaseModel):
     # Convenience properties for backwards compatibility
     @property
     def layers(self) -> int:
-        """Get number of layers (works for both transformers and RNNs)."""
+        """Get number of layers (works for transformers, RNNs, and Mamba)."""
         if self.transformer:
             return self.transformer.layers
         elif self.rnn:
             return self.rnn.num_layers
+        elif self.mamba:
+            return self.mamba.n_layers
         raise ValueError("No architecture config provided")
 
     @property
@@ -224,6 +226,8 @@ class ModelConfig(BaseModel):
             return self.transformer.embedding_size
         elif self.rnn:
             return self.rnn.embedding_size
+        elif self.mamba:
+            return self.mamba.d_model
         raise ValueError("No architecture config provided")
 
     @property
@@ -233,6 +237,8 @@ class ModelConfig(BaseModel):
             return self.transformer.hidden_size
         elif self.rnn:
             return self.rnn.hidden_size
+        elif self.mamba:
+            return self.mamba.d_model
         raise ValueError("No architecture config provided")
 
     @property
