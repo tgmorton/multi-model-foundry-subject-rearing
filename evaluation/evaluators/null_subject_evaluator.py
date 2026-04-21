@@ -9,47 +9,105 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from tqdm import tqdm
 from ..core.surprisal_calculator import NullSubjectSurprisalCalculator
+from ..unigram import UnigramTable
 
 logger = logging.getLogger(__name__)
 
 
 class NullSubjectEvaluator:
     """Evaluate language models on null-subject stimuli."""
-    
-    def __init__(self, surprisal_calculator: NullSubjectSurprisalCalculator):
+
+    def __init__(
+        self,
+        surprisal_calculator: NullSubjectSurprisalCalculator,
+        unigram: Optional[UnigramTable] = None,
+    ):
         """
         Initialize null-subject evaluator.
-        
+
         Args:
             surprisal_calculator: Instance of NullSubjectSurprisalCalculator
+            unigram: Optional per-corpus unigram baseline (FIT-CLAMS style).
+                When supplied, the evaluator adds `overt_slor`, `null_slor`,
+                and related fields to each pair's result. When None, SLOR
+                fields are omitted.
         """
         self.calculator = surprisal_calculator
+        self.unigram = unigram
     
+    # v2 schema columns (from docs/eval_stimuli/design.md §1)
+    _V2_REQUIRED = [
+        'item_id', 'category', 'condition', 'pronoun_status',
+        'context', 'target', 'hotspot_token', 'hotspot_position',
+        'language',
+    ]
+
+    @staticmethod
+    def _is_v2_schema(df: pd.DataFrame) -> bool:
+        return 'item_id' in df.columns and 'hotspot_position' in df.columns
+
     def load_stimuli_file(self, filepath: str) -> pd.DataFrame:
         """
         Load a null-subject stimuli CSV file.
-        
+
+        Accepts either the v1 schema (item, item_group, pronoun_status,
+        c_english, target, hotspot_english) or the v2 schema
+        (item_id, category, condition, pronoun_status, context, target,
+        hotspot_token, hotspot_position, language, ...). Internally
+        normalizes to a common DataFrame using v1 column names plus a
+        `schema_version` tag and (for v2) the resolved `hotspot_position`.
+
         Args:
             filepath: Path to CSV file
-            
+
         Returns:
-            DataFrame with stimuli
+            DataFrame with stimuli, normalized to a common internal schema.
         """
         df = pd.read_csv(filepath)
-        
-        # Check if this is the master file with extended columns
-        if 'form' in df.columns:
-            # Master file format - validate required columns
-            required_cols = ['item', 'item_group', 'form', 'pronoun_status', 'c_english', 'target', 'hotspot_english']
+
+        if self._is_v2_schema(df):
+            missing = [c for c in self._V2_REQUIRED if c not in df.columns]
+            if missing:
+                raise ValueError(f"v2 schema missing required columns: {missing}")
+            # Normalize to internal representation (v1 column names)
+            df = df.rename(columns={
+                'item_id': 'item',
+                'category': 'item_group',
+                'context': 'c_english',
+                'hotspot_token': 'hotspot_english',
+            })
+            df['schema_version'] = 'v2'
+            # Validate hotspot_position points to hotspot_token in target
+            for _, row in df.iterrows():
+                toks = str(row['target']).split()
+                pos = int(row['hotspot_position'])
+                if pos < 0 or pos >= len(toks) or toks[pos] != row['hotspot_english']:
+                    raise ValueError(
+                        f"v2 hotspot mismatch in {Path(filepath).name} "
+                        f"item_id={row['item']} ps={row['pronoun_status']}: "
+                        f"hotspot_position={pos} but target.split()[{pos}]"
+                        f"={toks[pos] if 0 <= pos < len(toks) else '<OOB>'!r}"
+                        f" vs hotspot_token={row['hotspot_english']!r}"
+                    )
+        elif 'form' in df.columns:
+            # v1 master file format
+            required = ['item', 'item_group', 'form', 'pronoun_status',
+                        'c_english', 'target', 'hotspot_english']
+            missing = [c for c in required if c not in df.columns]
+            if missing:
+                raise ValueError(f"v1 master schema missing columns: {missing}")
+            df['schema_version'] = 'v1_master'
         else:
-            # Individual file format - validate required columns  
-            required_cols = ['item', 'item_group', 'pronoun_status', 'c_english', 'target', 'hotspot_english']
-            
-        missing_cols = [col for col in required_cols if col not in df.columns]
-        if missing_cols:
-            raise ValueError(f"Missing required columns: {missing_cols}")
-        
-        logger.info(f"Loaded {len(df)} stimuli from {Path(filepath).name}")
+            # v1 individual file format
+            required = ['item', 'item_group', 'pronoun_status',
+                        'c_english', 'target', 'hotspot_english']
+            missing = [c for c in required if c not in df.columns]
+            if missing:
+                raise ValueError(f"v1 schema missing columns: {missing}")
+            df['schema_version'] = 'v1'
+
+        logger.info(f"Loaded {len(df)} stimuli from {Path(filepath).name} "
+                    f"(schema={df['schema_version'].iloc[0]})")
         return df
     
     def process_item_group(self, group_df: pd.DataFrame) -> Dict:
@@ -91,16 +149,48 @@ class NullSubjectEvaluator:
         # Add metadata
         result['item'] = int(overt_row['item'])
         result['item_group'] = overt_row['item_group']
-        
-        # Add form information if available (master file)
-        if 'form' in overt_row:
+
+        # v2 schema: pass condition + language through
+        if 'condition' in overt_row.index:
+            result['condition'] = overt_row['condition']
+        if 'language' in overt_row.index:
+            result['language'] = overt_row['language']
+        if 'schema_version' in overt_row.index:
+            result['schema_version'] = overt_row['schema_version']
+
+        # Add form information if available (v1 master file)
+        if 'form' in overt_row.index:
             result['form'] = overt_row['form']
-            
+
         result['context'] = context
         result['overt_target'] = overt_target
         result['null_target'] = null_target
         result['hotspot'] = hotspot
-        
+
+        # D4: SLOR per side + difference + preference.
+        # SLOR(s) = (Σ log P_M(w) - Σ log P_u(w)) / |s|
+        # where the sum is over target tokens (natural log throughout).
+        if self.unigram is not None:
+            overt_ids = result.get('overt_per_token_ids', [])
+            null_ids = result.get('null_per_token_ids', [])
+            if overt_ids and null_ids:
+                overt_model_sum = result['overt_total_log_prob']
+                null_model_sum = result['null_total_log_prob']
+                overt_unigram_sum = self.unigram.sum_log_prob(overt_ids)
+                null_unigram_sum = self.unigram.sum_log_prob(null_ids)
+                overt_n = max(len(overt_ids), 1)
+                null_n = max(len(null_ids), 1)
+                overt_slor = (overt_model_sum - overt_unigram_sum) / overt_n
+                null_slor = (null_model_sum - null_unigram_sum) / null_n
+                result['overt_slor'] = float(overt_slor)
+                result['null_slor'] = float(null_slor)
+                result['overt_unigram_sum_log_prob'] = float(overt_unigram_sum)
+                result['null_unigram_sum_log_prob'] = float(null_unigram_sum)
+                result['slor_diff_overt_minus_null'] = float(overt_slor - null_slor)
+                result['prefers_overt_slor'] = bool(overt_slor > null_slor)
+                result['unigram_corpus_id'] = self.unigram.corpus_id
+                result['unigram_tokenizer_id'] = self.unigram.tokenizer_id
+
         return result
     
     def evaluate_file(
@@ -122,11 +212,16 @@ class NullSubjectEvaluator:
         df = self.load_stimuli_file(filepath)
         
         # Group by appropriate columns depending on file format
-        if 'form' in df.columns:
-            # Master file: group by item, item_group, and form to get pairs within each form
+        schema = df['schema_version'].iloc[0] if 'schema_version' in df.columns else 'v1'
+        if schema == 'v2':
+            # v2: pair on (item, item_group, condition) — condition distinguishes
+            # sub-conditions within a category (e.g. subj_3sg vs subj_3pl).
+            groups = df.groupby(['item', 'item_group', 'condition'])
+        elif 'form' in df.columns:
+            # v1 master: group by item, item_group, and form
             groups = df.groupby(['item', 'item_group', 'form'])
         else:
-            # Individual file: group by item only
+            # v1 individual: group by item only
             groups = df.groupby('item')
         
         if max_items:

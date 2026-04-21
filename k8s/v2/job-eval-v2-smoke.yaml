@@ -1,0 +1,157 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eval-v2-smoke
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "200m"
+          limits:
+            memory: 1Gi
+            cpu: "200m"
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: eval-v2-smoke
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=== eval-v2-smoke started at $(date) on $(hostname) ==="
+
+          # Install deps (pytorch + cuda already in base image)
+          pip install --no-cache-dir \
+            transformers \
+            sentencepiece \
+            pandas \
+            pyarrow \
+            duckdb \
+            tqdm
+
+          echo "=== pip install done at $(date) ==="
+
+          cd /opt/repo
+
+          # Sanity: which python?
+          which python && python --version
+
+          # Run 1: untrained baseline (checkpoint-0)
+          echo ""
+          echo "=== Run 1: untrained baseline (checkpoint-0) ==="
+          PYTHONPATH=/opt/repo python -u scripts/eval_v2_smoke.py \
+            --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke \
+            --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
+            --stimuli \
+              evaluation/stimuli/null-subj-v2/staging/en/subject_drop.csv \
+              evaluation/stimuli/null-subj-v2/staging/es/subject_drop.csv \
+            --output_root /mnt/data/eval_v2/smoke_ckpt0 \
+            --cell_id smoke_exp0_baseline_ckpt0 \
+            --architecture gpt2 \
+            --intervention baseline \
+            --rep 0 \
+            --batch_size 16 \
+            --device auto
+
+          # Run 2: after 5 steps (checkpoint-5) — sanity that trained weights
+          # produce different scores than untrained.
+          echo ""
+          echo "=== Run 2: after 5 training steps (checkpoint-5) ==="
+          PYTHONPATH=/opt/repo python -u scripts/eval_v2_smoke.py \
+            --checkpoint_root /mnt/data/models/exp0_baseline_90M_smoke_resume \
+            --tokenizer_dir /mnt/data/tokenizers/exp0_baseline_90M_smoke \
+            --stimuli \
+              evaluation/stimuli/null-subj-v2/staging/en/subject_drop.csv \
+              evaluation/stimuli/null-subj-v2/staging/es/subject_drop.csv \
+            --output_root /mnt/data/eval_v2/smoke_ckpt5 \
+            --cell_id smoke_exp0_baseline_ckpt5 \
+            --architecture gpt2 \
+            --intervention baseline \
+            --rep 0 \
+            --batch_size 16 \
+            --device auto
+
+          echo ""
+          echo "=== Per-cell summary parquets ==="
+          ls -R /mnt/data/eval_v2/smoke_ckpt0 || true
+          ls -R /mnt/data/eval_v2/smoke_ckpt5 || true
+
+          # Compare the two runs via DuckDB: do trained weights produce
+          # different preferences than untrained?
+          echo ""
+          echo "=== DuckDB cross-check: ckpt0 vs ckpt5 ==="
+          PYTHONPATH=/opt/repo python -u -c "
+          import duckdb
+          from evaluation.output_v2 import register_duckdb_views
+          from pathlib import Path
+
+          for name, root in [
+              ('ckpt0', '/mnt/data/eval_v2/smoke_ckpt0'),
+              ('ckpt5', '/mnt/data/eval_v2/smoke_ckpt5'),
+          ]:
+              con = duckdb.connect()
+              register_duckdb_views(con, Path(root))
+              row = con.execute('''
+                  SELECT
+                      language,
+                      AVG(CASE WHEN prefers_overt_meanlp THEN 1.0 ELSE 0.0 END) AS overt_pref,
+                      AVG(log_prob_diff_overt_minus_null) AS mean_diff,
+                      COUNT(*) AS n_pairs
+                  FROM pairs
+                  GROUP BY language ORDER BY language
+              ''').fetchall()
+              print(f'=== {name} ===')
+              for r in row:
+                  print(f'  lang={r[0]}  overt_pref={r[1]:.3f}  diff={r[2]:+.4f}  n={r[3]}')
+              con.close()
+          "
+
+          echo ""
+          echo "✅ eval-v2-smoke complete at $(date)"
+        env:
+        - name: PYTHONPATH
+          value: "/opt/repo"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
+        - name: WANDB_MODE
+          value: "disabled"
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "2"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 8Gi
+            cpu: "2"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule

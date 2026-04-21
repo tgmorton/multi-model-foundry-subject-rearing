@@ -130,28 +130,57 @@ class SurprisalCalculator:
                 surprisal = -log_prob / np.log(2)  # Convert to log2
                 surprisals.append(surprisal)
         
-        # Compile results
+        # Slice to target-only region (D5: per-token is always the target span)
+        if context:
+            target_surprisals = surprisals[context_len:]
+            target_token_strings = token_strings[context_len + 1:]
+            # target token ids: input positions context_len..len(tokens)-1,
+            # i.e. tokens[context_len:] (the tokens being scored; each score_i
+            # corresponds to the probability of tokens[context_len + i + 1],
+            # because surprisals[k] is for tokens[k+1]).
+            target_token_ids = tokens[context_len + 1:]
+        else:
+            target_surprisals = surprisals
+            target_token_strings = token_strings[1:]
+            target_token_ids = tokens[1:]
+
+        total_surprisal = float(sum(target_surprisals))
+        n_target = len(target_surprisals)
+        mean_surprisal = float(np.mean(target_surprisals)) if n_target else 0.0
+
+        # D2: natural-log log-probs derived from log2 surprisal.
+        # log(P) = log2(P) * ln(2) = -surprisal * ln(2)
+        ln2 = float(np.log(2))
+        per_token_log_prob = [-s * ln2 for s in target_surprisals]
+        total_log_prob = -total_surprisal * ln2
+        mean_log_prob = -mean_surprisal * ln2
+
         results = {
-            "total_surprisal": sum(surprisals[context_len:]) if context else sum(surprisals),
-            "mean_surprisal": np.mean(surprisals[context_len:]) if context else np.mean(surprisals),
-            "tokens": len(tokens) - context_len if context else len(tokens),
+            "total_surprisal": total_surprisal,
+            "mean_surprisal": mean_surprisal,
+            "tokens": n_target if context else len(tokens),
+            # D2: MeanLP (natural log)
+            "total_log_prob": total_log_prob,
+            "mean_log_prob": mean_log_prob,
         }
-        
+
         # Add hotspot surprisal if found
         if hotspot_idx is not None and hotspot_idx > 0:
             results["hotspot_surprisal"] = surprisals[hotspot_idx - 1]
             results["hotspot_position"] = hotspot_idx
-        
-        # Add per-token surprisals for target text only
-        if context:
-            target_surprisals = surprisals[context_len:]
-            target_tokens = token_strings[context_len + 1:]  # Skip one for alignment
-        else:
-            target_surprisals = surprisals
-            target_tokens = token_strings[1:]  # Skip BOS token
-        
-        results["per_token_surprisal"] = list(zip(target_tokens, target_surprisals))
-        
+            # D2: hotspot log-prob (natural log)
+            results["hotspot_log_prob"] = -surprisals[hotspot_idx - 1] * ln2
+
+        # per-token pairs (legacy surprisal form; kept for backward compat)
+        results["per_token_surprisal"] = list(zip(target_token_strings, target_surprisals))
+
+        # D5: per-target-token natural-log log-probs plus token ids for
+        # downstream SLOR / MORCELA scoring that needs subword identity.
+        # Length equals n_target; sum equals total_log_prob (up to float error).
+        results["per_token_log_prob"] = per_token_log_prob
+        results["per_token_ids"] = target_token_ids
+        results["per_token_strings"] = target_token_strings
+
         if return_tokens:
             return results, token_strings
         return results
@@ -302,18 +331,46 @@ class NullSubjectSurprisalCalculator(SurprisalCalculator):
             "overt_total_surprisal": overt_result["total_surprisal"],
             "null_total_surprisal": null_result["total_surprisal"],
             "prefers_overt": overt_result["mean_surprisal"] < null_result["mean_surprisal"],
-            "surprisal_difference": null_result["mean_surprisal"] - overt_result["mean_surprisal"]
+            "surprisal_difference": null_result["mean_surprisal"] - overt_result["mean_surprisal"],
+            # D2: MeanLP (natural-log) per side + difference
+            "overt_mean_log_prob": overt_result["mean_log_prob"],
+            "null_mean_log_prob": null_result["mean_log_prob"],
+            "overt_total_log_prob": overt_result["total_log_prob"],
+            "null_total_log_prob": null_result["total_log_prob"],
+            "log_prob_diff_overt_minus_null": (
+                overt_result["mean_log_prob"] - null_result["mean_log_prob"]
+            ),
+            # D2: binary preference under MeanLP (higher log-prob = preferred).
+            # By construction identical to prefers_overt (surprisal-based), but
+            # propagated explicitly so downstream code can switch metric without
+            # re-deriving.
+            "prefers_overt_meanlp": (
+                overt_result["mean_log_prob"] > null_result["mean_log_prob"]
+            ),
+            # D5: per-target-token log-probs (natural log) + token ids, for
+            # downstream MORCELA / SLOR rescoring without re-forward-passing.
+            "overt_per_token_log_prob": overt_result["per_token_log_prob"],
+            "null_per_token_log_prob": null_result["per_token_log_prob"],
+            "overt_per_token_ids": overt_result["per_token_ids"],
+            "null_per_token_ids": null_result["per_token_ids"],
+            "overt_n_target_tokens": len(overt_result["per_token_log_prob"]),
+            "null_n_target_tokens": len(null_result["per_token_log_prob"]),
         }
-        
-        # Add hotspot surprisals if available
+
+        # Add hotspot surprisals / log-probs if available
         if "hotspot_surprisal" in overt_result:
             results["overt_hotspot_surprisal"] = overt_result["hotspot_surprisal"]
+            results["overt_hotspot_log_prob"] = overt_result["hotspot_log_prob"]
         if "hotspot_surprisal" in null_result:
             results["null_hotspot_surprisal"] = null_result["hotspot_surprisal"]
-            
+            results["null_hotspot_log_prob"] = null_result["hotspot_log_prob"]
+
         if "hotspot_surprisal" in overt_result and "hotspot_surprisal" in null_result:
             results["hotspot_difference"] = (
                 null_result["hotspot_surprisal"] - overt_result["hotspot_surprisal"]
             )
-        
+            results["hotspot_log_prob_diff_overt_minus_null"] = (
+                overt_result["hotspot_log_prob"] - null_result["hotspot_log_prob"]
+            )
+
         return results

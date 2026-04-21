@@ -1,0 +1,5 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,subject_drop,subj_3sg,1,ana won prize .,she shows pride .,shows,1,en,ana,golden
+1,subject_drop,subj_3sg,0,ana won prize .,shows pride .,shows,0,en,ana,golden
+2,object_drop,obj_3sg,1,where is vase ?,ana put it on table .,on,3,en,ana,golden
+2,object_drop,obj_3sg,0,where is vase ?,ana put on table .,on,2,en,ana,golden
