@@ -5,6 +5,18 @@ Orchestrates the full pipeline: read parallel files → parse with spaCy
 → align with awesome-align → extract pronouns → resolve labels →
 write checkpoint JSONL.
 
+Supports Italian (``language="it"``) and Spanish (``language="es"``)
+as target languages. The underlying UD-based detector
+(``detect_finite_verbs``) is shared across both — the label resolver
+receives the language code and uses the right default-pronoun table
+per language.
+
+Note on config field names: the ``it_spacy_model`` and
+``europarl_it_path`` fields have Italian-origin names but accept any
+target-language values (e.g. ``es_core_news_lg`` and a Spanish parallel
+corpus path). Future refactors may rename these to language-agnostic
+identifiers; preserved here for backwards compatibility.
+
 Follows the architecture pattern of synthetic_data/generator.py:
 chunk processing, spaCy.pipe batching, tqdm progress, checkpointing.
 """
@@ -269,6 +281,7 @@ class EuroparlAlignmentGenerator:
                 it_verbs_list[j],
                 en_to_it,
                 stats=self.stats,
+                language=self.config.language,
             )
 
             self.stats.passed_pairs += 1

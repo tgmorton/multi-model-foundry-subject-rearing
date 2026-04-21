@@ -1,0 +1,37 @@
+# Tree-based null subject detector for Spanish
+#
+# Usage:
+#   python -m analysis.pronoun_recovery.run tree-extract --config configs/analysis/pronoun_recovery/pronoun_recovery_es_tree_detector.yaml
+#   python -m analysis.pronoun_recovery.run tree-train --config configs/analysis/pronoun_recovery/pronoun_recovery_es_tree_detector.yaml
+#   python -m analysis.pronoun_recovery.run tree-predict --config configs/analysis/pronoun_recovery/pronoun_recovery_es_tree_detector.yaml --text "creemos que el resultado es satisfactorio"
+
+aligned_data_path: data/pronoun_recovery/europarl_aligned/es/aligned_checkpoint.jsonl
+output_path: data/pronoun_recovery/tree_detector/es
+language: es
+
+# spaCy model (field name is Italian-origin but accepts any model name)
+it_spacy_model: es_core_news_lg
+spacy_batch_size: 50
+
+# Classifier selection (used by tree-predict and quality gates)
+classifier_type: gradient_boosted
+
+# Decision tree hyperparameters (None = grid search)
+# max_depth: null
+min_samples_leaf: 5
+
+# Gradient boosting hyperparameters
+n_estimators: 200
+learning_rate: 0.1
+# gb_max_depth: null
+
+# Cross-validation
+cv_folds: 5
+test_fraction: 0.2
+seed: 42
+
+# Quality gates — Italian combined HGB hit ~0.90 after gold-gap remediation;
+# Spanish target is ~0.85 at first pass, with room to iterate on
+# register-driven remediation if needed.
+min_detection_f1: 0.80
+min_feature_accuracy: 0.95

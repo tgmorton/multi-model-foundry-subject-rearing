@@ -1,12 +1,22 @@
 """
-Per-verb feature extraction for Italian null subject detection.
+Per-verb feature extraction for null subject detection.
 
 Takes a spaCy Doc, runs existing annotators, and produces a flat feature
 dict per finite verb suitable for decision tree training.
+
+Language support: Italian (``it``) and Spanish (``es``). Language-specific
+lemma sets (weather verbs, modals, copula, perfect auxiliary) are pulled
+from ``_LANGUAGE_FEATURE_CONFIG`` at construction time.
+
+Feature-name note: ``is_essere`` and ``is_avere`` are named after their
+Italian origin but semantically mean "is the primary copula" and "is the
+perfect-tense auxiliary" respectively. For Spanish they fire on
+``lemma == "ser"`` and ``lemma == "haber"`` respectively. Renaming is
+deferred to avoid invalidating the Italian model's saved feature schema.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, FrozenSet, List, Optional
 
 import spacy.tokens
 
@@ -15,21 +25,42 @@ from analysis.corpus_descriptives.annotators import (
     get_default_annotators,
 )
 from analysis.corpus_descriptives.constants import (
+    IMPERSONAL_VERBS_ES,
     IMPERSONAL_VERBS_IT,
+    NECESSITY_VERBS_ES,
     NECESSITY_VERBS_IT,
+    WEATHER_VERBS_ES,
     WEATHER_VERBS_IT,
 )
 from analysis.pronoun_recovery.constants import MORPH_TO_LABEL_SUFFIX
 
 
-# Italian modal verb lemmas
-_MODAL_LEMMAS_IT = frozenset({
-    "potere", "dovere", "volere", "sapere",
-})
-
-# Italian essere/avere
-_ESSERE = "essere"
-_AVERE = "avere"
+# Language-specific feature configuration.
+# Each entry provides the lemma sets and lemma strings that the feature
+# extractor looks up during processing. Add a new language by appending
+# a key with matching structure.
+_LANGUAGE_FEATURE_CONFIG: Dict[str, Dict[str, Any]] = {
+    "it": {
+        "weather_verbs": WEATHER_VERBS_IT,
+        "impersonal_verbs": IMPERSONAL_VERBS_IT,
+        "necessity_verbs": NECESSITY_VERBS_IT,
+        "modal_lemmas": frozenset({"potere", "dovere", "volere", "sapere"}),
+        "primary_copula": "essere",
+        "perfect_aux": "avere",
+    },
+    "es": {
+        "weather_verbs": WEATHER_VERBS_ES,
+        "impersonal_verbs": IMPERSONAL_VERBS_ES,
+        "necessity_verbs": NECESSITY_VERBS_ES,
+        # Spanish modals: poder, deber, querer, saber, tener (que)
+        "modal_lemmas": frozenset({"poder", "deber", "querer", "saber", "tener"}),
+        # "ser" is the primary identity copula; "estar" handled via a
+        # separate feature if needed downstream.
+        "primary_copula": "ser",
+        # "haber" is the perfect-tense auxiliary and also the existential.
+        "perfect_aux": "haber",
+    },
+}
 
 
 @dataclass
@@ -46,15 +77,25 @@ class VerbFeatureRow:
     features: Dict[str, Any] = field(default_factory=dict)
 
 
-class ItalianVerbFeatureExtractor:
-    """Extract feature vectors from Italian sentences for tree training.
+class VerbFeatureExtractor:
+    """Extract feature vectors from sentences for tree training.
 
     Runs the full annotator suite once per sentence, then joins annotator
     outputs to each finite verb position to build a flat feature dict.
+
+    Args:
+        language: ``"it"`` or ``"es"``. Controls which lemma sets
+            (weather, impersonal, modal, copula, perfect-aux) are used.
     """
 
     def __init__(self, language: str = "it"):
+        if language not in _LANGUAGE_FEATURE_CONFIG:
+            raise ValueError(
+                f"Unsupported language '{language}'. "
+                f"Supported: {sorted(_LANGUAGE_FEATURE_CONFIG)}"
+            )
         self.language = language
+        self._lang_config = _LANGUAGE_FEATURE_CONFIG[language]
         self._annotators = get_default_annotators(language=language)
         self._composite = CompositeAnnotator(self._annotators)
 
@@ -168,9 +209,9 @@ class ItalianVerbFeatureExtractor:
 
             # --- Expletive context ---
             lemma = tok.lemma_.lower()
-            feats["is_weather_verb"] = lemma in WEATHER_VERBS_IT
-            feats["is_impersonal_verb"] = lemma in IMPERSONAL_VERBS_IT
-            feats["is_necessity_verb"] = lemma in NECESSITY_VERBS_IT
+            feats["is_weather_verb"] = lemma in self._lang_config["weather_verbs"]
+            feats["is_impersonal_verb"] = lemma in self._lang_config["impersonal_verbs"]
+            feats["is_necessity_verb"] = lemma in self._lang_config["necessity_verbs"]
 
             # --- Copular impersonal ---
             # "è importante/necessario/chiaro..." — 3p cop + ADJ/NOUN head
@@ -263,9 +304,12 @@ class ItalianVerbFeatureExtractor:
             feats["distance_to_root"] = self._distance_to_root(tok)
 
             # --- Verb identity ---
-            feats["is_essere"] = lemma == _ESSERE
-            feats["is_avere"] = lemma == _AVERE
-            feats["is_modal"] = lemma in _MODAL_LEMMAS_IT
+            # is_essere: "is the primary identity copula" (essere/ser).
+            # is_avere: "is the perfect auxiliary" (avere/haber).
+            # Names are Italian-origin but the semantics generalize.
+            feats["is_essere"] = lemma == self._lang_config["primary_copula"]
+            feats["is_avere"] = lemma == self._lang_config["perfect_aux"]
+            feats["is_modal"] = lemma in self._lang_config["modal_lemmas"]
 
             # --- Subject presence (from dependency tree directly) ---
             children_deps = {c.dep_ for c in tok.children}
@@ -402,7 +446,7 @@ class ItalianVerbFeatureExtractor:
 
     @classmethod
     def _is_copular_impersonal(
-        cls, tok: spacy.tokens.Token, person: str | None,
+        cls, tok: spacy.tokens.Token, person: Optional[str],
     ) -> bool:
         """Detect copular impersonal constructions.
 
@@ -464,6 +508,12 @@ class ItalianVerbFeatureExtractor:
             current = current.head
             dist += 1
         return dist
+
+
+# Backwards-compatibility alias: the feature extractor was originally
+# Italian-only and named accordingly. Keep the alias so existing imports
+# in the Italian pipeline continue to work.
+ItalianVerbFeatureExtractor = VerbFeatureExtractor
 
 
 # Feature names for consistent ordering

@@ -1,10 +1,11 @@
 """Gender resolution heuristics for 3sg pronoun insertion.
 
-Italian has overt morphological gender marking on past participles and
-(in compound tenses) on the verb itself.  This module exposes a
-:class:`GenderResolver` that inspects spaCy morphological features to
-choose between ``lui`` / ``lei`` (Italian) or falls back to singular
-``they`` (English).
+Italian and Spanish have overt morphological gender marking on past
+participles (Spanish: *cansado* / *cansada*; Italian: *stanco* / *stanca*)
+and in compound tenses sometimes on the verb itself. This module exposes
+a :class:`GenderResolver` that inspects spaCy morphological features to
+choose between ``lui`` / ``lei`` (Italian), ``él`` / ``ella`` (Spanish),
+or falls back to singular ``they`` (English).
 """
 
 import logging
@@ -21,7 +22,7 @@ class GenderResolver:
     Instantiate once per language and reuse across documents.
 
     Args:
-        language: ISO 639-1 language code (``"en"`` or ``"it"``).
+        language: ISO 639-1 language code (``"en"``, ``"it"``, or ``"es"``).
     """
 
     def __init__(self, language: str = "en") -> None:
@@ -57,6 +58,8 @@ class GenderResolver:
         """
         if self.language == "it":
             return self._resolve_italian(verb_token)
+        if self.language == "es":
+            return self._resolve_spanish(verb_token)
         return self._resolve_english(verb_token)
 
     # ── English ──────────────────────────────────────────────────────────
@@ -130,3 +133,63 @@ class GenderResolver:
 
         # 4. Fallback: masculine default
         return "lui"
+
+    # ── Spanish ──────────────────────────────────────────────────────────
+
+    def _resolve_spanish(self, verb_token: spacy.tokens.Token) -> str:
+        """Spanish 3sg: use morphological cues for gender resolution.
+
+        Mirrors the Italian strategy — Spanish has the same kinds of
+        gender-marked morphology on past participles and predicative
+        adjectives. Walks the same four levels:
+
+        1. **Children of the verb** — past participle (*ha comido* doesn't
+           carry gender, but *está cansada* does) or predicative
+           adjective with a ``Gender`` feature.
+        2. **Head of the verb** — if verb is an aux/copula (*ha*, *es*,
+           *está*), the head may carry the gender.
+        3. **Verb's own morphology** — occasionally propagates to finite
+           forms.
+        4. **Fallback** — ``"él"`` (masculine default, per
+           ``ES_DEFAULT_PRONOUN`` in :mod:`..constants`).
+
+        Args:
+            verb_token: spaCy token for the finite Spanish verb.
+
+        Returns:
+            ``"él"`` or ``"ella"``.
+        """
+        # 1. Check children for past participle / predicate with gender
+        for child in verb_token.children:
+            if child.pos_ == "VERB" and child.dep_ in ("aux", "aux:pass", "cop"):
+                continue
+            gender_feats = child.morph.get("Gender")
+            if gender_feats:
+                gender = gender_feats[0]
+                if gender == "Fem":
+                    return "ella"
+                elif gender == "Masc":
+                    return "él"
+
+        # 2. Check head if verb is a participle under an auxiliary / copula
+        if verb_token.dep_ in ("aux", "cop"):
+            head = verb_token.head
+            gender_feats = head.morph.get("Gender")
+            if gender_feats:
+                gender = gender_feats[0]
+                if gender == "Fem":
+                    return "ella"
+                elif gender == "Masc":
+                    return "él"
+
+        # 3. Check verb's own gender feature
+        verb_gender = verb_token.morph.get("Gender")
+        if verb_gender:
+            gender = verb_gender[0]
+            if gender == "Fem":
+                return "ella"
+            elif gender == "Masc":
+                return "él"
+
+        # 4. Fallback: masculine default
+        return "él"

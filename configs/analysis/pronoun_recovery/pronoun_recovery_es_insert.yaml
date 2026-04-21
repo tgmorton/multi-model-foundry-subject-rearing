@@ -1,0 +1,39 @@
+# Stage 2: Deterministic pronoun insertion (Spanish)
+#
+# Runs the trained Spanish detector + insertion module over the
+# BebeLM Spanish 90M training corpus to produce an over-pronominal
+# corpus simulating English-like pronoun distribution in Spanish.
+#
+# Output: data/pronoun_recovery/inserted/es/ — consumed by
+# experiment_es_insert_pronouns.yaml as the source corpus (via
+# identity ablation, since the manipulation has already been applied).
+
+input_path: data/spanish/train_90M
+output_path: data/pronoun_recovery/inserted/es
+model_path: data/pronoun_recovery/models/es/best_checkpoint
+language: es
+
+# spaCy
+spacy_model: es_core_news_lg
+spacy_batch_size: 50
+
+# Model inference
+model_batch_size: 64
+max_seq_length: 256
+# device: auto-detected
+
+# Processing
+chunk_size: 1000
+
+# Genre mapping — Spanish BebeLM sources
+genre_map:
+  childes: CHILDES
+  child_narratives: ChildNarr
+  grerli: GRERLI
+  opensubtitles: OpenSubtitles
+  qed: QED
+  europarl: Europarl
+  leipzig_web: Leipzig Web
+  gutenberg: Gutenberg
+  vikidia: Vikidia
+  corlec: CORLEC

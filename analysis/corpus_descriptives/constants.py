@@ -88,6 +88,49 @@ ITALIAN_BRIDGE_VERBS = frozenset({
     "dichiarare", "sostenere", "annunciare", "prevedere",
 })
 
+# --- Spanish verb lists for expletive-equivalent detection ---
+
+# §1.2 Spanish weather verbs — impersonal meteorological predicates
+WEATHER_VERBS_ES = frozenset({
+    "llover", "nevar", "granizar", "tronar", "relampaguear",
+    "amanecer", "anochecer", "helar", "chispear", "lloviznar",
+    "escampar", "diluviar",
+})
+
+# §1.2 Spanish impersonal raising verbs — take clausal complement, no overt subject
+# (e.g. "parece que...", "resulta que...", "sucede que...")
+IMPERSONAL_VERBS_ES = frozenset({
+    "parecer", "resultar", "suceder", "ocurrir", "acontecer",
+    "constar", "urgir",
+})
+
+# §1.2 Spanish impersonal necessity verbs — no nsubj, impersonal by nature
+# (e.g. "basta con...", "conviene que...")
+NECESSITY_VERBS_ES = frozenset({
+    "bastar", "convenir", "corresponder", "importar",
+})
+
+# §1.8 Spanish bridge verbs — permit extraction from complement clauses
+SPANISH_BRIDGE_VERBS = frozenset({
+    "pensar", "creer", "decir", "saber", "suponer",
+    "esperar", "imaginar", "sentir", "sospechar",
+    "declarar", "sostener", "anunciar", "predecir",
+})
+
+# Spanish genre mapping: corpus filename stems → display names
+DEFAULT_GENRE_MAP_ES = {
+    "childes": "CHILDES",
+    "child_narratives": "ChildNarr",
+    "grerli": "GRERLI",
+    "opensubtitles": "OpenSubtitles",
+    "qed": "QED",
+    "europarl": "Europarl",
+    "leipzig_web": "Leipzig Web",
+    "gutenberg": "Gutenberg",
+    "vikidia": "Vikidia",
+    "corlec": "CORLEC",
+}
+
 # §1.5 Wh-lemmas for Italian question detection
 WH_LEMMAS_IT = frozenset({
     "chi", "che", "cosa", "quale", "dove", "quando", "perché", "come",

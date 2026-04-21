@@ -1,10 +1,20 @@
 """
-Resolve pronoun labels from EN-IT alignment + morphological cross-check.
+Resolve pronoun labels from EN-target alignment + morphological cross-check.
 
-Given an English subject pronoun aligned to an Italian token, resolves:
-1. The PRO.* label (from EN pronoun text, or IT morph for "you")
+Given an English subject pronoun aligned to a target-language token
+(Italian or Spanish), resolves:
+1. The PRO.* label (from EN pronoun text, or target morph for "you")
 2. Confidence level (high/medium) based on morph agreement
 3. Whether to skip the mapping (morph disagreement, overt subject, etc.)
+
+Variable names use the ``it_`` prefix for historical reasons — the
+function was originally written for Italian — but the logic is
+language-agnostic. When called with Spanish data (``SpanishVerb``
+aliased to ``ItalianVerb``, Spanish-parsed ``spacy.tokens.Doc``,
+EN→ES alignment), it produces markers for the Spanish pipeline.
+
+The lexical form in each ``ResolvedMarker`` is looked up from
+``LANGUAGE_DEFAULT_PRONOUNS[language]``.
 """
 
 import logging
@@ -14,8 +24,8 @@ from typing import Dict, List, Optional, Tuple
 import spacy.tokens
 
 from analysis.pronoun_recovery.constants import (
-    IT_DEFAULT_PRONOUN,
     LABEL_TO_ID,
+    LANGUAGE_DEFAULT_PRONOUNS,
     MORPH_TO_LABEL_SUFFIX,
 )
 
@@ -92,27 +102,38 @@ def resolve_markers(
     it_verbs: List[ItalianVerb],
     en_to_it: Dict[int, List[int]],
     stats: Optional[FilterStats] = None,
+    language: str = "it",
 ) -> List[ResolvedMarker]:
-    """Resolve EN pronouns → IT verb markers with morphological cross-check.
+    """Resolve EN pronouns → target-language verb markers.
+
+    Performs morphological cross-check between the English pronoun and
+    the aligned target-language verb.
 
     For each extracted EN subject pronoun:
-    1. Follow alignment to find the corresponding IT finite verb.
-    2. Skip if the IT verb already has an overt subject.
+    1. Follow alignment to find the corresponding target-lang finite verb.
+    2. Skip if the target verb already has an overt subject.
     3. Derive candidate label from EN pronoun (special handling for "you").
-    4. Cross-check label against IT verb morphology.
-    5. Deduplicate: one marker per IT verb (first pronoun wins).
+    4. Cross-check label against target verb morphology.
+    5. Deduplicate: one marker per target verb (first pronoun wins).
 
     Args:
         en_doc: Parsed English sentence.
-        it_doc: Parsed Italian sentence.
+        it_doc: Parsed target-language sentence (Italian or Spanish).
         extracted_pronouns: EN subject pronouns from en_pronoun_extractor.
-        it_verbs: Italian finite verbs from it_null_subject_detector.
-        en_to_it: EN→IT alignment dictionary.
+        it_verbs: Target-language finite verbs (from
+            ``it_null_subject_detector`` or ``es_null_subject_detector``
+            — both return the same ``ItalianVerb``/``SpanishVerb``
+            dataclass).
+        en_to_it: EN → target-language alignment dictionary.
         stats: Optional FilterStats to update.
+        language: ISO 639-1 target language code (``"it"`` or ``"es"``).
+            Controls which ``LANGUAGE_DEFAULT_PRONOUNS`` table is used
+            to look up the lexical form.
 
     Returns:
-        List of resolved markers, deduplicated by IT verb.
+        List of resolved markers, deduplicated by target-language verb.
     """
+    default_pronouns = LANGUAGE_DEFAULT_PRONOUNS.get(language, {})
     # Build verb lookup by token index.
     verb_lookup: Dict[int, ItalianVerb] = {v.token_idx: v for v in it_verbs}
 
@@ -180,8 +201,8 @@ def resolve_markers(
         it_verb_token = it_doc[it_verb.token_idx]
         position = it_verb_token.idx
 
-        # Look up default Italian lexical form for this label.
-        lexical_form = IT_DEFAULT_PRONOUN.get(candidate_label, "")
+        # Look up default lexical form for this label in the target language.
+        lexical_form = default_pronouns.get(candidate_label, "")
 
         if stats:
             if confidence == "high":
