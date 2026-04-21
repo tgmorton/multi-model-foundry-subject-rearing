@@ -18,7 +18,6 @@ spec:
                 - NVIDIA-GeForce-RTX-3090
                 - NVIDIA-A10
                 - NVIDIA-L4
-                - NVIDIA-L40
                 - NVIDIA-L40S
                 - NVIDIA-GeForce-RTX-4090
       initContainers:
