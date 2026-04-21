@@ -240,12 +240,29 @@ class CheckpointManager:
             raise RuntimeError(
                 f"Unexpected keys loading checkpoint: {unexpected}"
             )
-        # Only tied weights (e.g. lm_head in GPT-2) should be missing.
+        # Tied weights are legitimately missing from save_pretrained output
+        # (they share storage with another param and are reconstructed via
+        # tie_weights). Consult the model's own declaration of which keys
+        # are tied, falling back to a permissive name-based check for
+        # implementations that don't populate _tied_weights_keys.
+        allowed_missing = set()
+        for attr_name in ("_tied_weights_keys",):
+            attr = getattr(target, attr_name, None)
+            if attr:
+                allowed_missing.update(attr)
+        name_patterns = (
+            "lm_head",                        # GPT-2
+            "cls.predictions.decoder",         # BERT MLM head
+            "tied",
+        )
         for k in missing:
-            if "lm_head" not in k and "tied" not in k.lower():
-                raise RuntimeError(
-                    f"Unexpected missing key loading checkpoint: {k}"
-                )
+            if k in allowed_missing:
+                continue
+            if any(pat in k for pat in name_patterns):
+                continue
+            raise RuntimeError(
+                f"Unexpected missing key loading checkpoint: {k}"
+            )
 
         # Load training state
         state = torch.load(Path(latest_checkpoint) / "training_state.pt", map_location="cpu")

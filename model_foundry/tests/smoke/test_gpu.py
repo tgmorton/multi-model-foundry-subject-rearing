@@ -355,8 +355,9 @@ class TestCheckpointGPU:
             # The only acceptable missing keys are tied weights
             assert not unexpected, f"Unexpected keys in state dict: {unexpected}"
             for k in missing:
-                assert "lm_head" in k or "tied" in k.lower(), \
-                    f"Unexpected missing key: {k}"
+                assert any(pat in k for pat in (
+                    "lm_head", "cls.predictions.decoder", "tied",
+                )), f"Unexpected missing key: {k}"
             model2.eval()
 
             with torch.no_grad():
