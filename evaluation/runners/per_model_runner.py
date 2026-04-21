@@ -172,10 +172,15 @@ class PerModelRunner:
         """Swap in a checkpoint's weights via `load_state_dict`.
 
         Accepts either `model.safetensors` (newer HF default) or
-        `pytorch_model.bin`. Uses `strict=False` so tied weights
-        (e.g. GPT-2's `lm_head` sharing `wte`) are allowed to be
-        absent from the saved state, matching the training-time
-        saver semantics.
+        `pytorch_model.bin`.
+
+        Uses `strict=False` to tolerate tied weights that HF's
+        `save_pretrained` omits from the on-disk state, but only with an
+        explicit allowlist from the model's own `_tied_weights_keys`
+        attribute. Every HF `PreTrainedModel` subclass declares its
+        tying pattern there, so this generalizes across architectures
+        without any name-based heuristic. After loading we call
+        `tie_weights()` to re-establish sharing.
         """
         model = self.build_model()
         ckpt = Path(checkpoint_path)
@@ -198,11 +203,14 @@ class PerModelRunner:
             raise RuntimeError(
                 f"Unexpected keys loading checkpoint: {unexpected}"
             )
-        for k in missing:
-            if "lm_head" not in k and "tied" not in k.lower():
-                raise RuntimeError(
-                    f"Unexpected missing key loading checkpoint: {k}"
-                )
+        allowed_missing = set(getattr(model, "_tied_weights_keys", None) or [])
+        unexpected_missing = [k for k in missing if k not in allowed_missing]
+        if unexpected_missing:
+            raise RuntimeError(
+                f"Unexpected missing keys loading checkpoint: {unexpected_missing}"
+            )
+        if hasattr(model, "tie_weights"):
+            model.tie_weights()
         model.eval()
 
     # --- Checkpoint-level evaluation ---------------------------------------
@@ -309,13 +317,13 @@ def _build_pair_results(
     item_results: List[CheckpointItemResult],
 ) -> List[CheckpointPairResult]:
     """Group per-item results into (overt, null) pairs and compute diffs."""
-    by_key: Dict[Tuple[int, str, str, int], Dict[int, CheckpointItemResult]] = {}
+    by_key: Dict[Tuple[int, str, str, str, int], Dict[int, CheckpointItemResult]] = {}
     for r in item_results:
-        key = (r.item_id, r.category, r.condition, r.checkpoint_step)
+        key = (r.item_id, r.category, r.condition, r.language, r.checkpoint_step)
         by_key.setdefault(key, {})[r.pronoun_status] = r
 
     pairs: List[CheckpointPairResult] = []
-    for (item_id, category, condition, checkpoint_step), rows in by_key.items():
+    for (item_id, category, condition, language, checkpoint_step), rows in by_key.items():
         if 1 not in rows or 0 not in rows:
             continue  # incomplete pair — skip
         overt = rows[1]
