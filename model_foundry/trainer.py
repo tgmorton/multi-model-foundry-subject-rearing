@@ -173,8 +173,17 @@ class Trainer:
             print("  - TF32 enabled for faster training on Ampere+ GPUs")
 
         if self.config.training.use_gradient_checkpointing:
-            self.model.gradient_checkpointing_enable()
-            print("  - Gradient checkpointing enabled to save memory")
+            # Different architectures expose gradient checkpointing under
+            # different method names. Try the common ones in order.
+            if hasattr(self.model, 'gradient_checkpointing_enable'):
+                self.model.gradient_checkpointing_enable()
+                print("  - Gradient checkpointing enabled to save memory")
+            elif hasattr(self.model, 'enable_gradient_checkpointing'):
+                self.model.enable_gradient_checkpointing()
+                print("  - Gradient checkpointing enabled to save memory")
+            else:
+                print(f"  - WARNING: gradient checkpointing requested but "
+                      f"{type(self.model).__name__} does not expose it")
 
     def _initialize_optimizer_and_scheduler(self):
         """Initialize optimizer and learning rate scheduler."""
