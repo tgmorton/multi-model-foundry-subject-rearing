@@ -208,6 +208,26 @@ class Trainer:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
+    def _sync_vocab_size_with_tokenizer(self):
+        """Override config.tokenizer.vocab_size with the tokenizer's actual length.
+
+        `add_special_tokens` in the tokenizer factory can push the real vocab
+        size beyond the configured value (e.g. BERT adds [CLS]/[SEP]/[MASK]/
+        [PAD]/[UNK] on top of a 50004-piece SentencePiece model, giving a
+        true length of 50009). The model's embedding table must match — if
+        the tokenizer emits an id >= model vocab_size the forward pass trips
+        a CUDA device-side assert (indexSelectLargeIndex: srcIndex <
+        srcSelectDimSize).
+        """
+        if not hasattr(self, 'tokenizer') or self.tokenizer is None:
+            return
+        actual = len(self.tokenizer)
+        configured = self.config.tokenizer.vocab_size
+        if actual != configured:
+            print(f"  - Adjusting vocab_size {configured} → {actual} "
+                  f"(tokenizer has {actual - configured} extra special tokens)")
+            self.config.tokenizer.vocab_size = actual
+
     def _save_environment_snapshot(self):
         """Save environment snapshot for reproducibility."""
         import datetime
@@ -302,6 +322,15 @@ class Trainer:
         print("  - Calculating training parameters from dataset...")
         self._calculate_training_parameters()
 
+        # Load tokenizer BEFORE model init so we can size the embedding
+        # table to match the tokenizer's actual vocab (including any
+        # special tokens the tokenizer factory added via
+        # `add_special_tokens`, which can push real length beyond the
+        # configured vocab_size — e.g. BERT's [CLS]/[SEP]/[MASK]).
+        print("  - Loading tokenizer...")
+        self._load_tokenizer()
+        self._sync_vocab_size_with_tokenizer()
+
         # Initialize components
         print("  - Initializing model...")
         self._initialize_model()
@@ -325,12 +354,10 @@ class Trainer:
             lr_scheduler=self.lr_scheduler
         )
 
+        # If a checkpoint-loaded tokenizer exists, prefer it (its vocab
+        # should already match the loaded model weights).
         if tokenizer is not None:
             self.tokenizer = tokenizer
-        else:
-            # Load tokenizer from directory
-            print("  - Loading tokenizer...")
-            self._load_tokenizer()
 
         # Prepare data
         print("  - Preparing data...")
