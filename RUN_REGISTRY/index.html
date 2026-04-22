@@ -1,0 +1,3903 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/RUN_REGISTRY/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Run Registry — full design - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#run-registry-full-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Run Registry — full design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Documentation Map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pronoun_recovery/" class="md-tabs__link">
+          
+  
+  
+  Pronoun Recovery & Null Subjects
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../annotation_app/" class="md-tabs__link">
+          
+  
+  
+  Annotation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-tabs__link">
+          
+  
+  
+  Corpus Analysis
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../phase3_experimental_pipeline/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../k8s_jobs/" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../OSF_PREREGISTRATION/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ABLATION_ENRICHMENT_IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ablation Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pronoun Recovery & Null Subjects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pronoun Recovery & Null Subjects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pronoun_recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../italian_null_subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Italian Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttq_corpus_report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTQ Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spanish_corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spanish Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotation_app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LAYERED_ANNOTATION_ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Corpus Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CORPUS_ANALYSIS_SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Original Specification (superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling (Phase 2, superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s_jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NRP_REGISTRY_SETUP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NRP Registry Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_2" id="__nav_11_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_4" id="__nav_11_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OSF_PREREGISTRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSF Preregistration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-why-the-registry-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Why the registry exists
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-storage-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Storage layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-run-identifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The run identifier
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-schema-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Schema v1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Schema v1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-identity-classification-required-at-run-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Identity &amp; classification (required at run start)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-reproducibility-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Reproducibility (required)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-training-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Training lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-training-outputs-populated-at-register_run_end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Training outputs (populated at register_run_end)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-eval-lifecycle-populated-by-eval-writer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Eval lifecycle (populated by eval writer)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.6 Eval lifecycle (populated by eval writer)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#461-eval_benchmarks-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6.1 eval_benchmarks shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-pruning-archive-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Pruning &amp; archive lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-reference-rep-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Reference-rep selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#49-hp-sweep-specific" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.9 HP-sweep specific
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#410-bookkeeping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.10 Bookkeeping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. State machine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-who-writes-what-when-the-writer-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Who writes what, when — the writer contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-read-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Read patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Read patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#which-production-cells-still-need-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which production cells still need training?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#which-completed-runs-have-no-eval-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which completed runs have no eval yet?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show-me-the-reference-rep-for-each-cell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Show me the reference rep for each cell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paper-figure-final-loss-by-arch-condition-lang" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper figure: "final loss by arch × condition × lang"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paper-figure-trajectory-across-80-checkpoints-for-reference-reps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper figure: "trajectory across 80 checkpoints for reference reps"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hp-sweep-audit-what-hp-did-we-freeze-for-gpt2_medium-and-why" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HP sweep audit: what HP did we freeze for gpt2_medium and why?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postmortem-any-production-runs-with-5-ooms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Postmortem: any production runs with &gt;5 OOMs?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-availability-table-for-the-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data-availability table for the paper
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-rollup-views-beyond-registryparquet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Rollup views beyond registry.parquet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-concurrency-failure-semantics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Concurrency &amp; failure semantics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Concurrency &amp; failure semantics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concurrency-safe-by-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrency (safe by design)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-schema-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Schema evolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-integration-points-file-by-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Integration points — file-by-file
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Integration points — file-by-file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#already-landed-commit-3bd0d80" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Already landed (commit 3bd0d80)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#needed-to-complete-v1-ordered-by-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Needed to complete v1 (ordered by dependency)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#needed-for-the-storagepruner-lifecycle-separate-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Needed for the storage/pruner lifecycle (separate agent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#needed-for-hp-sweeps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Needed for HP sweeps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#needed-for-orchestration-optional-nice-to-have" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Needed for orchestration (optional, nice-to-have)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-one-worked-example-a-single-production-cell-cradle-to-archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. One worked example: a single production cell, cradle to archive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-what-we-explicitly-do-not-put-in-the-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. What we explicitly do NOT put in the registry
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="run-registry-full-design">Run Registry — full design<a class="headerlink" href="#run-registry-full-design" title="Permanent link">&para;</a></h1>
+<p>The registry is the portable, authoritative index of every training run in
+the study. This document specifies its complete schema, state machine,
+write contracts, read patterns, and integration points. It's the
+contract that every writer (training, eval, pruners, reference-rep
+selector, HP sweeps) implements.</p>
+<p>For the lower-level "how do pods talk to S3" plumbing, see
+<a href="../S3_INTEGRATION/"><code>S3_INTEGRATION.md</code></a>. This doc focuses on <strong>what
+the records contain and who changes what when</strong>.</p>
+<h2 id="1-why-the-registry-exists">1. Why the registry exists<a class="headerlink" href="#1-why-the-registry-exists" title="Permanent link">&para;</a></h2>
+<p>Four questions become unanswerable at 5,720 runs without one:</p>
+<ol>
+<li><strong>Which cells still need training?</strong> (Gate the meta-orchestrator.)</li>
+<li><strong>Which runs have eval parquets written?</strong> (Gate the eval runner and the post-eval pruner.)</li>
+<li><strong>Which seed is the reference rep for each cell?</strong> (Gate analyses that should use one rep per cell, not 10.)</li>
+<li><strong>What exactly produced this result?</strong> (<code>git_commit</code> + <code>config_hash</code> + <code>cache_key</code> + <code>docker_image</code> travel with the run forever, for the data-availability statement.)</li>
+</ol>
+<p>WandB covers parts of (1)–(3) live but is a dashboard, not an archive —
+it won't be reliable API-accessible in 5 years when a reader reproduces
+the paper. The registry is.</p>
+<h2 id="2-storage-layout">2. Storage layout<a class="headerlink" href="#2-storage-layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>s3://thomas-subject-drop-artifacts/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>└── run_registry/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ├── by_run/                                   ← source of truth
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    │   └── &lt;run_kind&gt;/&lt;arch&gt;/&lt;lang&gt;/&lt;condition&gt;/
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    │       └── &lt;run_id&gt;.json
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    └── registry.parquet                          ← materialized view,
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                                                    compactor rebuilds
+</code></pre></div>
+<ul>
+<li><strong><code>by_run/</code> is the source of truth.</strong> One file per run. Writers do
+  get-modify-put to a unique key, so concurrent writers for different
+  runs never collide. Writers for the same run (training, eval, pruner,
+  ref-rep selector) touch disjoint fields — which they do by design
+  (see §6).</li>
+<li><strong><code>registry.parquet</code> is a read optimization</strong> rebuilt by
+  <code>scripts/compact_registry.py</code> on an hourly K8s CronJob. Analyses load
+  this single file.</li>
+</ul>
+<p>The <code>&lt;run_kind&gt;</code> prefix (<code>hp_sweep</code>, <code>production</code>, <code>analysis_only</code>)
+makes it cheap to list just the production runs during a compaction
+pass if we ever need to skip sweep noise in the main parquet.</p>
+<h2 id="3-the-run-identifier">3. The run identifier<a class="headerlink" href="#3-the-run-identifier" title="Permanent link">&para;</a></h2>
+<p>Deterministic: <code>{arch}-{lang}-{condition}-s{seed}</code>, built via
+<code>registry.build_run_id(arch, lang, condition, seed)</code>.</p>
+<p>For HP-sweep trials (which don't have a canonical seed), we use:
+<code>sweep-{sweep_id}-trial-{trial_id}</code>.</p>
+<p>Re-runs of the same cell (e.g. after preemption) overwrite the same
+record but increment <code>attempt_count</code>, so postmortems can tell re-runs
+apart.</p>
+<h2 id="4-schema-v1">4. Schema v1<a class="headerlink" href="#4-schema-v1" title="Permanent link">&para;</a></h2>
+<p>Fields grouped by purpose. Every field is optional except where noted;
+missing fields deserialize as <code>null</code> from the compacted Parquet.</p>
+<h3 id="41-identity-classification-required-at-run-start">4.1 Identity &amp; classification (required at run start)<a class="headerlink" href="#41-identity-classification-required-at-run-start" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>schema_version</code></td>
+<td>int</td>
+<td>✓</td>
+<td>Currently <code>1</code>. Bump on breaking change.</td>
+</tr>
+<tr>
+<td><code>run_id</code></td>
+<td>str</td>
+<td>✓</td>
+<td>Deterministic (§3).</td>
+</tr>
+<tr>
+<td><code>run_kind</code></td>
+<td>str</td>
+<td>✓</td>
+<td><code>hp_sweep</code> | <code>production</code> | <code>analysis_only</code>. Drives compaction partitioning and consumer filters.</td>
+</tr>
+<tr>
+<td><code>arch</code></td>
+<td>str</td>
+<td>✓</td>
+<td><code>gpt2_small</code>, <code>gpt2_medium</code>, <code>gpt2_large</code>, <code>bert_large</code>, <code>lstm</code>, <code>mamba_370m</code>, <code>ngram_1</code>..<code>ngram_5</code></td>
+</tr>
+<tr>
+<td><code>lang</code></td>
+<td>str</td>
+<td>✓</td>
+<td><code>en</code> | <code>es</code></td>
+</tr>
+<tr>
+<td><code>condition</code></td>
+<td>str</td>
+<td>✓</td>
+<td><code>baseline</code> | <code>impoverish_case</code> | <code>lemmatize_verbs</code> | ...</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>int</td>
+<td>✓</td>
+<td>0–9 for production. For sweep trials, the sweep trial index.</td>
+</tr>
+<tr>
+<td><code>attempt_count</code></td>
+<td>int</td>
+<td>✓</td>
+<td>Bumped on each <code>register_run_start</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-reproducibility-required">4.2 Reproducibility (required)<a class="headerlink" href="#42-reproducibility-required" title="Permanent link">&para;</a></h3>
+<p>The "can a reader reproduce this result in 2031?" set.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config_hash</code></td>
+<td>str</td>
+<td>MD5 of the resolved, post-validation config (<code>config.model_dump()</code> canonicalised).</td>
+</tr>
+<tr>
+<td><code>git_commit</code></td>
+<td>str</td>
+<td>Short SHA of the code commit.</td>
+</tr>
+<tr>
+<td><code>docker_image</code></td>
+<td>str</td>
+<td>Full image reference including digest, once the GitLab CI image lands. E.g. <code>registry.nautilus.optiputer.net/thmorton/mmf:abc123@sha256:...</code>.</td>
+</tr>
+<tr>
+<td><code>cache_key</code></td>
+<td>str</td>
+<td>Content-addressed tokenized+chunked cache key (0.2).</td>
+</tr>
+<tr>
+<td><code>tokenizer_dir</code></td>
+<td>str</td>
+<td>Path to the tokenizer directory used. Hash of <code>tokenizer.model</code> also inside <code>cache_key</code>.</td>
+</tr>
+<tr>
+<td><code>dataset_manipulation_hash</code></td>
+<td>str</td>
+<td>Canonical JSON hash of the <code>dataset_manipulation</code> pipeline. <code>[]</code> for baseline.</td>
+</tr>
+<tr>
+<td><code>hyperparameters</code></td>
+<td>dict</td>
+<td>Flat map of the HP vector — <code>learning_rate</code>, <code>adam_beta1</code>, <code>adam_beta2</code>, <code>warmup_ratio</code>, <code>dropout</code>, <code>effective_batch_size</code>, etc. Same values the sweep optimizer ranged over.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-provenance">4.3 Provenance<a class="headerlink" href="#43-provenance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wandb_run_id</code></td>
+<td>str</td>
+<td>For joining against WandB API while it's live.</td>
+</tr>
+<tr>
+<td><code>wandb_project</code></td>
+<td>str</td>
+<td>E.g. <code>just-drop-the-subject</code>.</td>
+</tr>
+<tr>
+<td><code>wandb_sweep_id</code></td>
+<td>str?</td>
+<td>Only populated for <code>run_kind=hp_sweep</code>.</td>
+</tr>
+<tr>
+<td><code>node_name</code></td>
+<td>str</td>
+<td>K8s node, for postmortems.</td>
+</tr>
+<tr>
+<td><code>gpu_product</code></td>
+<td>str</td>
+<td><code>NVIDIA-GeForce-RTX-3090</code>, etc.</td>
+</tr>
+<tr>
+<td><code>k8s_pod_name</code></td>
+<td>str</td>
+<td>For postmortems.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-training-lifecycle">4.4 Training lifecycle<a class="headerlink" href="#44-training-lifecycle" title="Permanent link">&para;</a></h3>
+<p>State machine: <code>QUEUED → RUNNING → COMPLETE | FAILED | PREEMPTED</code>.
+<code>QUEUED</code> is optional (only the orchestrator writes it — see §7).</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td>str</td>
+<td>Current training state.</td>
+</tr>
+<tr>
+<td><code>started_at</code></td>
+<td>iso8601</td>
+<td>First <code>register_run_start</code>.</td>
+</tr>
+<tr>
+<td><code>finished_at</code></td>
+<td>iso8601?</td>
+<td>When <code>register_run_end</code> was called.</td>
+</tr>
+<tr>
+<td><code>duration_seconds</code></td>
+<td>int?</td>
+<td><code>finished_at - started_at</code>, precomputed for convenience.</td>
+</tr>
+<tr>
+<td><code>last_heartbeat_at</code></td>
+<td>iso8601</td>
+<td>Bumped on every <code>heartbeat()</code>. Reaper uses this.</td>
+</tr>
+<tr>
+<td><code>current_step</code></td>
+<td>int?</td>
+<td>Set by <code>heartbeat()</code>.</td>
+</tr>
+<tr>
+<td><code>current_loss</code></td>
+<td>float?</td>
+<td>Set by <code>heartbeat()</code>.</td>
+</tr>
+<tr>
+<td><code>failure_reason</code></td>
+<td>str?</td>
+<td>Free-text when <code>status=FAILED</code>. First 500 chars of the exception.</td>
+</tr>
+<tr>
+<td><code>oom_count</code></td>
+<td>int?</td>
+<td>Number of OOM events during this attempt (observable from training loop).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="45-training-outputs-populated-at-register_run_end">4.5 Training outputs (populated at <code>register_run_end</code>)<a class="headerlink" href="#45-training-outputs-populated-at-register_run_end" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>final_loss</code></td>
+<td>float</td>
+<td>Loss at the last optimizer step.</td>
+</tr>
+<tr>
+<td><code>train_steps</code></td>
+<td>int</td>
+<td>Scheduled total (same as <code>config.training.train_steps</code>).</td>
+</tr>
+<tr>
+<td><code>steps_completed</code></td>
+<td>int</td>
+<td>Actual — may be less than <code>train_steps</code> if <code>FAILED/PREEMPTED</code>.</td>
+</tr>
+<tr>
+<td><code>epochs_completed</code></td>
+<td>int</td>
+<td>How many epochs finished.</td>
+</tr>
+<tr>
+<td><code>total_tokens_processed</code></td>
+<td>int</td>
+<td>Same counter the checkpoint metadata tracks.</td>
+</tr>
+<tr>
+<td><code>checkpoint_count</code></td>
+<td>int</td>
+<td>Number of checkpoint dirs written. Should be 80 for production.</td>
+</tr>
+<tr>
+<td><code>checkpoint_paths</code></td>
+<td>list[str]</td>
+<td>Sorted by step. <code>/mnt/data/models/...</code> or <code>ceph://...</code> — not S3.</td>
+</tr>
+<tr>
+<td><code>tokens_per_sec_avg</code></td>
+<td>float?</td>
+<td>From 1.1 timing, for HP-sweep fitness and postmortem.</td>
+</tr>
+<tr>
+<td><code>data_fraction_avg</code></td>
+<td>float?</td>
+<td>Fraction of step time spent in DataLoader.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="46-eval-lifecycle-populated-by-eval-writer">4.6 Eval lifecycle (populated by eval writer)<a class="headerlink" href="#46-eval-lifecycle-populated-by-eval-writer" title="Permanent link">&para;</a></h3>
+<p>Eval is per-benchmark. Different benchmarks may finish at different times,
+so we track each independently plus an overall aggregate.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eval_status</code></td>
+<td>str</td>
+<td>Aggregate. <code>NONE</code> | <code>PARTIAL</code> | <code>COMPLETE</code> | <code>FAILED</code>.</td>
+</tr>
+<tr>
+<td><code>eval_started_at</code></td>
+<td>iso8601?</td>
+<td>First benchmark started.</td>
+</tr>
+<tr>
+<td><code>eval_finished_at</code></td>
+<td>iso8601?</td>
+<td>Last benchmark finished (or gave up).</td>
+</tr>
+<tr>
+<td><code>eval_benchmarks</code></td>
+<td>dict[str, dict]</td>
+<td>Map benchmark → <code>{status, parquet_path, finished_at, metric_summary}</code>. See §4.6.1.</td>
+</tr>
+<tr>
+<td><code>eval_duration_seconds</code></td>
+<td>int?</td>
+<td><code>eval_finished_at - eval_started_at</code>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="461-eval_benchmarks-shape">4.6.1 <code>eval_benchmarks</code> shape<a class="headerlink" href="#461-eval_benchmarks-shape" title="Permanent link">&para;</a></h4>
+<p>Keyed by benchmark name. Values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;blimp&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;parquet_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://thomas-subject-drop-artifacts/eval_results/blimp/gpt2_medium-en-baseline-s0.parquet&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-22T10:05:00Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;accuracy_final_ckpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6321</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;accuracy_best_ckpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6344</span><span class="p">}</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">&quot;perplexity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;parquet_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;ppl_final_ckpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">44.7</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">&quot;null_subj&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PARTIAL&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;parquet_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">&quot;stimuli_pronoun_sweep&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">}</span>
+</code></pre></div>
+<p><code>metric_summary</code> is an optional thin summary for ranking (drives
+reference-rep selection without reloading every parquet). Payload-heavy
+detail stays in the parquet.</p>
+<p>Benchmark names we plan to run: <code>blimp</code>, <code>perplexity</code>,
+<code>null_subject_expletive</code>, <code>null_subject_morph</code>, <code>null_subject_case</code>,
+<code>pronoun_sweep</code> (+ condition-specific variants TBD).</p>
+<h3 id="47-pruning-archive-lifecycle">4.7 Pruning &amp; archive lifecycle<a class="headerlink" href="#47-pruning-archive-lifecycle" title="Permanent link">&para;</a></h3>
+<p>Three pruner operations happen over a run's life, each records itself.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resume_state_steps</code></td>
+<td>list[int]</td>
+<td>Steps whose checkpoints carry <code>training_state.pt</code>. Typically the latest 3 during training.</td>
+</tr>
+<tr>
+<td><code>post_run_pruned_at</code></td>
+<td>iso8601?</td>
+<td>When the in-training pruner (1.4) stripped older <code>training_state.pt</code> files.</td>
+</tr>
+<tr>
+<td><code>post_eval_pruned_at</code></td>
+<td>iso8601?</td>
+<td>When the post-eval pruner (1.5) stripped ALL <code>training_state.pt</code> files and deleted non-ref-rep replicates.</td>
+</tr>
+<tr>
+<td><code>archived_at</code></td>
+<td>iso8601?</td>
+<td>When the ref rep moved from hot PVC to archive PVC.</td>
+</tr>
+<tr>
+<td><code>archive_paths</code></td>
+<td>list[str]?</td>
+<td>Replaces <code>checkpoint_paths</code> after archival. <code>/mnt/data/archive/...</code>.</td>
+</tr>
+<tr>
+<td><code>archive_size_bytes</code></td>
+<td>int?</td>
+<td>Final disk size after all pruning. Useful for the storage-planning dashboards.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="48-reference-rep-selection">4.8 Reference-rep selection<a class="headerlink" href="#48-reference-rep-selection" title="Permanent link">&para;</a></h3>
+<p>Written once per (arch × lang × condition) cell, on exactly one seed.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_reference_rep</code></td>
+<td>bool?</td>
+<td><code>true</code> on exactly one seed per cell. <code>null</code> until selection.</td>
+</tr>
+<tr>
+<td><code>reference_rep_rationale</code></td>
+<td>str?</td>
+<td>E.g. <code>"median BLiMP at final checkpoint among 10 seeds"</code>.</td>
+</tr>
+<tr>
+<td><code>reference_rep_metric</code></td>
+<td>str?</td>
+<td>Machine-readable: e.g. <code>"blimp.metric_summary.accuracy_final_ckpt"</code>.</td>
+</tr>
+<tr>
+<td><code>reference_rep_score</code></td>
+<td>float?</td>
+<td>The actual value the winner scored on the selection metric.</td>
+</tr>
+<tr>
+<td><code>reference_rep_selected_at</code></td>
+<td>iso8601?</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="49-hp-sweep-specific">4.9 HP-sweep specific<a class="headerlink" href="#49-hp-sweep-specific" title="Permanent link">&para;</a></h3>
+<p>Only populated when <code>run_kind=hp_sweep</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hp_sweep_id</code></td>
+<td>str</td>
+<td>WandB sweep id.</td>
+</tr>
+<tr>
+<td><code>hp_sweep_trial_id</code></td>
+<td>str</td>
+<td>WandB run id for this trial.</td>
+</tr>
+<tr>
+<td><code>hp_sweep_rank</code></td>
+<td>int?</td>
+<td>1 = best, set after sweep completes.</td>
+</tr>
+<tr>
+<td><code>hp_proxy_metric</code></td>
+<td>str?</td>
+<td>What the sweep ranked on (e.g. <code>"perplexity_after_2000_steps"</code>).</td>
+</tr>
+<tr>
+<td><code>hp_proxy_score</code></td>
+<td>float?</td>
+<td>Value of that metric.</td>
+</tr>
+<tr>
+<td><code>is_hp_winner</code></td>
+<td>bool?</td>
+<td><code>true</code> for the one trial we freeze as the HP vector for this arch. Its <code>hyperparameters</code> become the production config.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="410-bookkeeping">4.10 Bookkeeping<a class="headerlink" href="#410-bookkeeping" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>created_at</code></td>
+<td>iso8601</td>
+<td>First time this record was written. Immutable.</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>iso8601</td>
+<td>Last merge. Bumped by every <code>_merge_record</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-state-machine">5. State machine<a class="headerlink" href="#5-state-machine" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>                     ┌──────────────────────────────────────────────────┐
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                     │  Orchestrator decides a cell needs training       │
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                     └──────────────────────────────────────────────────┘
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                                         │
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                                         ▼
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                                    ┌─────────┐
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                                    │ QUEUED  │  (optional — only the orchestrator writes this)
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>                                    └────┬────┘
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                                         │  training pod starts
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                                         ▼
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                                    ┌─────────┐
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>                        ┌──────────►│ RUNNING │◄──── heartbeat every ~5 min
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>                        │  retry    └────┬────┘
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>                        │                │
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                        │  ┌─────────────┼─────────────┬────────────────┐
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                        │  │             │             │                │
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>                        │  │ finishes    │ crashes     │ node preempted │ times out
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>                        │  ▼             ▼             ▼                ▼
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>                        │ COMPLETE     FAILED       PREEMPTED         FAILED
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>                        │  │             │             │                │
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>                        └──┘             │             │                │
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>                        (attempt++)      │             │                │
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>                                         ▼             ▼                ▼
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>                                    ┌─────────────────────────────────────┐
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>                                    │  Eval runner picks up COMPLETE runs │
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>                                    └──────────────────────┬──────────────┘
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>                                                           │
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>                                                           ▼
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>                                                    eval_status=RUNNING
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>                                                           │
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>                                                           ▼
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>                                                    eval_status=COMPLETE
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>                                                           │
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>                                                           ▼
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>                                   ┌───────────────────────────────────────┐
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>                                   │  Ref-rep selector picks median seed   │
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>                                   └──────────────────────┬────────────────┘
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>                                                          │
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>                                                          ▼
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>                                                  is_reference_rep=true
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>                                                          │
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>                                                          ▼
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>                                      Post-eval pruner strips non-ref reps,
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>                                      deletes training_state.pt, optionally
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>                                      migrates ref to archive PVC
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>                                                          │
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>                                                          ▼
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>                                                  archived_at=...
+</code></pre></div>
+<h2 id="6-who-writes-what-when-the-writer-contract">6. Who writes what, when — the writer contract<a class="headerlink" href="#6-who-writes-what-when-the-writer-contract" title="Permanent link">&para;</a></h2>
+<p>Every writer owns <strong>exactly one column set</strong> from §4. Writers never
+modify fields outside their set — that's how we avoid coordination.</p>
+<table>
+<thead>
+<tr>
+<th>Writer</th>
+<th>Trigger</th>
+<th>Fields written</th>
+<th>Call site</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>orchestrator</strong> (optional)</td>
+<td>decides to launch a cell</td>
+<td>4.1 identity, <code>status=QUEUED</code>, <code>created_at</code></td>
+<td><code>scripts/orchestrator.py</code> (TBD)</td>
+</tr>
+<tr>
+<td><strong>training entrypoint</strong></td>
+<td>CLI <code>run</code> start</td>
+<td>4.1 identity, 4.2 reproducibility, 4.3 provenance, <code>status=RUNNING</code>, <code>started_at</code>, <code>last_heartbeat_at</code>, <code>attempt_count++</code>, <code>hyperparameters</code>, <code>train_steps</code></td>
+<td><code>model_foundry/cli.py::run</code> → <code>register_run_start</code></td>
+</tr>
+<tr>
+<td><strong>training loop</strong></td>
+<td>every ~5 min</td>
+<td><code>last_heartbeat_at</code>, <code>current_step</code>, <code>current_loss</code></td>
+<td><code>model_foundry/training/loop.py</code> → <code>heartbeat</code></td>
+</tr>
+<tr>
+<td><strong>training entrypoint (end)</strong></td>
+<td>CLI <code>run</code> completion</td>
+<td><code>status</code> (COMPLETE/FAILED/PREEMPTED), <code>finished_at</code>, <code>duration_seconds</code>, <code>final_loss</code>, <code>steps_completed</code>, <code>epochs_completed</code>, <code>total_tokens_processed</code>, <code>checkpoint_count</code>, <code>checkpoint_paths</code>, <code>resume_state_steps</code>, <code>tokens_per_sec_avg</code>, <code>data_fraction_avg</code>, <code>failure_reason</code>, <code>oom_count</code></td>
+<td><code>model_foundry/cli.py::run</code> → <code>register_run_end</code></td>
+</tr>
+<tr>
+<td><strong>eval runner</strong></td>
+<td>eval start</td>
+<td><code>eval_status=RUNNING</code>, <code>eval_started_at</code>, <code>eval_benchmarks[X]={status: RUNNING}</code></td>
+<td>eval runner (other agent) → <code>register_eval_start(benchmark=X)</code></td>
+</tr>
+<tr>
+<td><strong>eval runner</strong></td>
+<td>per-benchmark completion</td>
+<td><code>eval_benchmarks[X]={status, parquet_path, finished_at, metric_summary}</code>, aggregate <code>eval_status</code> recomputed</td>
+<td>→ <code>register_eval_benchmark_done</code></td>
+</tr>
+<tr>
+<td><strong>eval runner</strong></td>
+<td>all benchmarks done</td>
+<td><code>eval_status</code> aggregate, <code>eval_finished_at</code>, <code>eval_duration_seconds</code></td>
+<td>→ <code>register_eval_end</code></td>
+</tr>
+<tr>
+<td><strong>in-training pruner (1.4)</strong></td>
+<td>after each run completes</td>
+<td><code>post_run_pruned_at</code>, updates <code>checkpoint_paths</code> (analysis-only subset)</td>
+<td><code>scripts/prune_in_training.py</code> (TBD) → <code>register_pruner_event('post_run')</code></td>
+</tr>
+<tr>
+<td><strong>post-eval pruner (1.5)</strong></td>
+<td>after eval_status=COMPLETE for all reps of a cell</td>
+<td><code>post_eval_pruned_at</code>, removes non-ref-rep <code>checkpoint_paths</code>, compacts <code>resume_state_steps</code> to empty</td>
+<td><code>scripts/prune_post_eval.py</code> (TBD) → <code>register_pruner_event('post_eval')</code></td>
+</tr>
+<tr>
+<td><strong>ref-rep selector (1.6)</strong></td>
+<td>after all N seeds in a cell have <code>eval_status=COMPLETE</code></td>
+<td>On exactly one seed: <code>is_reference_rep=true</code>, <code>reference_rep_rationale</code>, <code>reference_rep_metric</code>, <code>reference_rep_score</code>, <code>reference_rep_selected_at</code></td>
+<td><code>scripts/select_reference_reps.py</code> (TBD) → <code>mark_reference_rep</code></td>
+</tr>
+<tr>
+<td><strong>archiver</strong></td>
+<td>after post-eval pruner</td>
+<td><code>archived_at</code>, <code>archive_paths</code>, <code>archive_size_bytes</code></td>
+<td><code>scripts/archive_runs.py</code> (TBD) → <code>register_archive_event</code></td>
+</tr>
+<tr>
+<td><strong>reaper</strong></td>
+<td>CronJob, looks for stale RUNNING</td>
+<td><code>status=PREEMPTED</code>, <code>failure_reason="stale heartbeat &gt; 2h"</code></td>
+<td><code>scripts/reap_stale_runs.py</code> (TBD)</td>
+</tr>
+<tr>
+<td><strong>HP sweep agent</strong></td>
+<td>per trial</td>
+<td>4.1 identity (as <code>hp_sweep</code>), 4.2 reproducibility, 4.3 provenance, 4.4 lifecycle, 4.5 outputs, 4.9 sweep fields</td>
+<td><code>scripts/sweep_agent.py</code> (existing, needs registry wiring)</td>
+</tr>
+<tr>
+<td><strong>HP sweep coordinator</strong></td>
+<td>after sweep completes</td>
+<td><code>hp_sweep_rank</code>, <code>is_hp_winner</code> on one trial</td>
+<td><code>scripts/select_hp_winner.py</code> (TBD)</td>
+</tr>
+<tr>
+<td><strong>compactor</strong></td>
+<td>hourly CronJob</td>
+<td>(reads only; writes <code>registry.parquet</code>)</td>
+<td><code>scripts/compact_registry.py</code></td>
+</tr>
+</tbody>
+</table>
+<p>Rule: <strong>field ownership is single-writer.</strong> If two writers want the
+same field, we make one of them canonical and the other read-only.</p>
+<h2 id="7-read-patterns">7. Read patterns<a class="headerlink" href="#7-read-patterns" title="Permanent link">&para;</a></h2>
+<p>These are the queries analyses and orchestration scripts will actually
+run. The compacted Parquet handles all of them natively.</p>
+<h3 id="which-production-cells-still-need-training">Which production cells still need training?<a class="headerlink" href="#which-production-cells-still-need-training" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;s3://thomas-subject-drop-artifacts/run_registry/registry.parquet&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">target_cells</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">cond</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">for</span> <span class="n">arch</span> <span class="ow">in</span> <span class="n">ARCHS</span> <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">LANGS</span> <span class="k">for</span> <span class="n">cond</span> <span class="ow">in</span> <span class="n">CONDS</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">done</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="o">.</span><span class="n">run_kind</span> <span class="o">==</span> <span class="s2">&quot;production&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;COMPLETE&quot;</span><span class="p">)]</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>           <span class="p">[[</span><span class="s2">&quot;arch&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;condition&quot;</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">still_needed</span> <span class="o">=</span> <span class="n">target_cells</span> <span class="o">-</span> <span class="n">done</span>
+</code></pre></div>
+<h3 id="which-completed-runs-have-no-eval-yet">Which completed runs have no eval yet?<a class="headerlink" href="#which-completed-runs-have-no-eval-yet" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">q</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="o">.</span><span class="n">run_kind</span> <span class="o">==</span> <span class="s2">&quot;production&quot;</span><span class="p">)</span> <span class="o">&amp;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>       <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;COMPLETE&quot;</span><span class="p">)</span> <span class="o">&amp;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>       <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">eval_status</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">eval_status</span> <span class="o">!=</span> <span class="s2">&quot;COMPLETE&quot;</span><span class="p">))]</span>
+</code></pre></div>
+<h3 id="show-me-the-reference-rep-for-each-cell">Show me the reference rep for each cell<a class="headerlink" href="#show-me-the-reference-rep-for-each-cell" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">ref</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_reference_rep</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>   <span class="c1"># exactly 1 per (arch, lang, condition)</span>
+</code></pre></div>
+<h3 id="paper-figure-final-loss-by-arch-condition-lang">Paper figure: "final loss by arch × condition × lang"<a class="headerlink" href="#paper-figure-final-loss-by-arch-condition-lang" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">ref_only</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_reference_rep</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">fig_data</span> <span class="o">=</span> <span class="n">ref_only</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;arch&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;condition&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">final_loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="paper-figure-trajectory-across-80-checkpoints-for-reference-reps">Paper figure: "trajectory across 80 checkpoints for reference reps"<a class="headerlink" href="#paper-figure-trajectory-across-80-checkpoints-for-reference-reps" title="Permanent link">&para;</a></h3>
+<p>Load the eval parquets (which are indexed per-checkpoint):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">ref</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">is_reference_rep</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># For each ref rep, its blimp eval parquet:</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">paths</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">eval_benchmarks</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;blimp&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parquet_path&quot;</span><span class="p">))</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">blimp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="o">.</span><span class="n">dropna</span><span class="p">()])</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># blimp has (run_id, checkpoint, stimulus, response) rows</span>
+</code></pre></div>
+<h3 id="hp-sweep-audit-what-hp-did-we-freeze-for-gpt2_medium-and-why">HP sweep audit: what HP did we freeze for gpt2_medium and why?<a class="headerlink" href="#hp-sweep-audit-what-hp-did-we-freeze-for-gpt2_medium-and-why" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">winner</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="o">.</span><span class="n">run_kind</span> <span class="o">==</span> <span class="s2">&quot;hp_sweep&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">is_hp_winner</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">arch</span> <span class="o">==</span> <span class="s2">&quot;gpt2_medium&quot;</span><span class="p">)]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">winner</span><span class="p">[[</span><span class="s2">&quot;hyperparameters&quot;</span><span class="p">,</span> <span class="s2">&quot;hp_proxy_metric&quot;</span><span class="p">,</span> <span class="s2">&quot;hp_proxy_score&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="postmortem-any-production-runs-with-5-ooms">Postmortem: any production runs with &gt;5 OOMs?<a class="headerlink" href="#postmortem-any-production-runs-with-5-ooms" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">oom_count</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">][[</span><span class="s2">&quot;run_id&quot;</span><span class="p">,</span> <span class="s2">&quot;oom_count&quot;</span><span class="p">,</span> <span class="s2">&quot;gpu_product&quot;</span><span class="p">,</span> <span class="s2">&quot;node_name&quot;</span><span class="p">]]</span>
+</code></pre></div>
+<h3 id="data-availability-table-for-the-paper">Data-availability table for the paper<a class="headerlink" href="#data-availability-table-for-the-paper" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">report</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">run_kind</span> <span class="o">==</span> <span class="s2">&quot;production&quot;</span><span class="p">][[</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="s2">&quot;run_id&quot;</span><span class="p">,</span> <span class="s2">&quot;arch&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;condition&quot;</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="s2">&quot;config_hash&quot;</span><span class="p">,</span> <span class="s2">&quot;git_commit&quot;</span><span class="p">,</span> <span class="s2">&quot;cache_key&quot;</span><span class="p">,</span> <span class="s2">&quot;docker_image&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="s2">&quot;final_loss&quot;</span><span class="p">,</span> <span class="s2">&quot;checkpoint_count&quot;</span><span class="p">,</span> <span class="s2">&quot;archive_paths&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="s2">&quot;eval_benchmarks&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">]]</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">report</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s2">&quot;paper_data_availability.parquet&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="8-rollup-views-beyond-registryparquet">8. Rollup views beyond <code>registry.parquet</code><a class="headerlink" href="#8-rollup-views-beyond-registryparquet" title="Permanent link">&para;</a></h2>
+<p>We may also produce secondary materialized views from the same
+<code>by_run/</code> source. Each is its own scheduled job.</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Key</th>
+<th>Rows</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>registry.parquet</code></td>
+<td>one row per run</td>
+<td>~17K at peak</td>
+<td>Primary: covers 99% of queries.</td>
+</tr>
+<tr>
+<td><code>cells.parquet</code></td>
+<td>one row per (arch, lang, condition)</td>
+<td>~320</td>
+<td>Per-cell aggregates: how many seeds done, reference rep id, mean final loss. For the orchestrator dashboard.</td>
+</tr>
+<tr>
+<td><code>archs.parquet</code></td>
+<td>one row per (arch, lang)</td>
+<td>~20</td>
+<td>Total tokens processed, total GPU hours, reference-rep final loss, etc. Top-level dashboard.</td>
+</tr>
+</tbody>
+</table>
+<p>None of these are strictly needed now. <code>registry.parquet</code> is — the
+others are follow-ups when the analysis code starts feeling slow.</p>
+<h2 id="9-concurrency-failure-semantics">9. Concurrency &amp; failure semantics<a class="headerlink" href="#9-concurrency-failure-semantics" title="Permanent link">&para;</a></h2>
+<h3 id="concurrency-safe-by-design">Concurrency (safe by design)<a class="headerlink" href="#concurrency-safe-by-design" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Different <code>run_id</code> keys never collide</strong> — distinct S3 keys,
+  distinct puts.</li>
+<li><strong>Same run, multiple writers</strong> don't touch the same fields. Training
+  writer owns §4.4–4.5; eval writer owns §4.6; pruner owns §4.7; ref-rep
+  owns §4.8. As long as writers obey §6's field ownership, we never need
+  a lock.</li>
+<li><strong>The get-modify-put cycle in <code>_merge_record</code></strong> is last-writer-wins
+  on any field both writers touch. Only <code>updated_at</code> is multiply-touched
+  legitimately, and we don't care about its exact ordering.</li>
+</ul>
+<h3 id="failure-handling">Failure handling<a class="headerlink" href="#failure-handling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>boto3 retries 5× with exponential backoff</strong> on transient S3 errors.
+  Configured in <code>registry._client</code>.</li>
+<li>Beyond that, the call raises. Callers:</li>
+<li><code>register_run_start</code> — <strong>fatal</strong>. Can't start a run without being
+    registered; abort.</li>
+<li><code>heartbeat</code> — non-fatal. Wrapped in <code>try/except</code>, logged at WARN.</li>
+<li><code>register_run_end</code> — non-fatal. Checkpoint already saved to disk;
+    log loudly and move on. Next training-start for this run will catch
+    up the registry.</li>
+<li>Eval / pruner / ref-rep writes — non-fatal. The authoritative
+    source is the artefact on disk / S3; the registry is just the
+    index. A re-run of the writer fixes it.</li>
+<li><strong>Pod crashes mid-run</strong> — record sits at <code>status=RUNNING</code> with
+  stale <code>last_heartbeat_at</code>. Reaper CronJob marks it <code>PREEMPTED</code> after
+  2h of no heartbeat, so the orchestrator can relaunch.</li>
+<li><strong>Malformed JSON</strong> — compactor logs and skips. Bad record sits in
+  <code>by_run/</code> for manual inspection.</li>
+<li><strong>Partial writes to Parquet</strong> — <code>registry.parquet</code> is overwritten
+  atomically on each compaction (single <code>put_object</code>), so readers never
+  see a partial parquet.</li>
+</ul>
+<h2 id="10-schema-evolution">10. Schema evolution<a class="headerlink" href="#10-schema-evolution" title="Permanent link">&para;</a></h2>
+<p>Rules for changing this schema without breaking existing records:</p>
+<ol>
+<li><strong>Additive changes are free.</strong> Add a new optional field, bump no
+   version. Old records deserialize as <code>null</code> in that column.</li>
+<li><strong>Renames / type changes require <code>schema_version</code> bump.</strong> The
+   compactor reads each record's own <code>schema_version</code>, dispatches to
+   the right upgrader, then writes the Parquet at the latest version.</li>
+<li><strong>Field removals</strong> aren't actually removals — mark the field
+   deprecated in this doc, leave it in records, stop writing to it.
+   Removing real columns would break historical Parquet readers.</li>
+<li><strong>Enum additions</strong> are free; enum removals require a version bump.</li>
+<li><strong>The upgrader lives in <code>model_foundry/registry.py</code></strong> as a
+   <code>_upgrade_vN_to_vN+1</code> function. One per schema bump.</li>
+</ol>
+<h2 id="11-integration-points-file-by-file">11. Integration points — file-by-file<a class="headerlink" href="#11-integration-points-file-by-file" title="Permanent link">&para;</a></h2>
+<h3 id="already-landed-commit-3bd0d80">Already landed (commit 3bd0d80)<a class="headerlink" href="#already-landed-commit-3bd0d80" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>model_foundry/registry.py</code> — <code>register_run_start</code>, <code>heartbeat</code>,
+  <code>register_run_end</code>, <code>register_eval_end</code>, <code>mark_reference_rep</code>,
+  <code>write_env_snapshot</code>, <code>iter_all_records</code>.</li>
+<li><code>scripts/compact_registry.py</code> — rebuilds <code>registry.parquet</code>.</li>
+<li><code>docs/S3_INTEGRATION.md</code> — S3 endpoint / secret / env-var block.</li>
+<li><code>boto3&gt;=1.34</code> in <code>requirements.txt</code>.</li>
+<li><code>s3-secret-thomas</code> K8s Secret exists.</li>
+<li><code>thomas-subject-drop-artifacts</code> bucket exists.</li>
+</ul>
+<h3 id="needed-to-complete-v1-ordered-by-dependency">Needed to complete v1 (ordered by dependency)<a class="headerlink" href="#needed-to-complete-v1-ordered-by-dependency" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Extend <code>register_run_start</code> / <code>register_run_end</code></strong> with the fields
+   in §4.2 (<code>docker_image</code>, <code>dataset_manipulation_hash</code>, <code>hyperparameters</code>),
+   §4.4 (<code>oom_count</code>), §4.5 (<code>steps_completed</code>, <code>epochs_completed</code>,
+   <code>tokens_per_sec_avg</code>, <code>data_fraction_avg</code>, <code>resume_state_steps</code>).
+   Small, additive changes to the module. ~30 LOC.</li>
+<li><strong>Add <code>register_eval_start</code> and <code>register_eval_benchmark_done</code></strong> for
+   per-benchmark granularity (§4.6). ~40 LOC. The existing
+   <code>register_eval_end</code> becomes the final aggregate call.</li>
+<li><strong>Add <code>register_pruner_event</code>, <code>register_archive_event</code></strong>. Each is
+   a thin <code>_merge_record</code> call. ~20 LOC each.</li>
+<li><strong>Wire <code>cli.py::run</code></strong> to call <code>register_run_start</code> before training
+   and <code>register_run_end</code> in a top-level <code>try/except/finally</code>. Read
+   <code>git_commit</code> and <code>config_hash</code> from existing trainer machinery. ~50 LOC.</li>
+<li><strong>Wire <code>loop.py</code></strong> to call <code>heartbeat</code> every N optimizer steps
+   (default: compute N such that the cadence is ~5 minutes). ~10 LOC.</li>
+<li><strong>Add env vars</strong> from <code>S3_INTEGRATION.md</code> §K8s-env-vars to every
+   training/eval K8s template.</li>
+<li><strong>Compactor CronJob</strong> — new <code>k8s/cronjob-compact-registry.yaml</code>
+   that runs <code>scripts/compact_registry.py</code> hourly. ~30 LOC of YAML.</li>
+<li><strong>Reaper CronJob</strong> — <code>scripts/reap_stale_runs.py</code> +
+   <code>k8s/cronjob-reap-stale-runs.yaml</code>. Looks for <code>status=RUNNING</code> with
+   <code>last_heartbeat_at &lt; now - 2h</code>, marks as PREEMPTED. ~50 LOC of code.</li>
+</ol>
+<h3 id="needed-for-the-storagepruner-lifecycle-separate-agent">Needed for the storage/pruner lifecycle (separate agent)<a class="headerlink" href="#needed-for-the-storagepruner-lifecycle-separate-agent" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>scripts/prune_in_training.py</code> (1.4)</li>
+<li><code>scripts/prune_post_eval.py</code> (1.5)</li>
+<li><code>scripts/archive_runs.py</code> (moves ref rep to <code>/mnt/data/archive/</code>)</li>
+<li><code>scripts/select_reference_reps.py</code> (1.6)</li>
+</ul>
+<p>These all consume the registry (find candidates) and write back
+(pruner events, archive events, ref-rep selection). They don't need
+registry schema changes — just call the existing merge functions.</p>
+<h3 id="needed-for-hp-sweeps">Needed for HP sweeps<a class="headerlink" href="#needed-for-hp-sweeps" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>scripts/sweep_agent.py</code> (audit of existing) — add
+  <code>register_run_start(run_kind="hp_sweep")</code> + <code>register_run_end</code> and
+  populate §4.9 fields.</li>
+<li><code>scripts/select_hp_winner.py</code> — rank sweep trials by <code>hp_proxy_score</code>,
+  mark the winner with <code>is_hp_winner=true</code> and <code>hp_sweep_rank=1</code>.</li>
+</ul>
+<h3 id="needed-for-orchestration-optional-nice-to-have">Needed for orchestration (optional, nice-to-have)<a class="headerlink" href="#needed-for-orchestration-optional-nice-to-have" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>scripts/orchestrator.py</code> — reads <code>registry.parquet</code>, diffs against
+  the target matrix, launches <code>run_kind=production</code> jobs for cells
+  that are missing or stuck. Could also write <code>status=QUEUED</code> records
+  as it decides to launch.</li>
+</ul>
+<h2 id="12-one-worked-example-a-single-production-cell-cradle-to-archive">12. One worked example: a single production cell, cradle to archive<a class="headerlink" href="#12-one-worked-example-a-single-production-cell-cradle-to-archive" title="Permanent link">&para;</a></h2>
+<p><code>gpt2_medium-en-baseline-s0</code>. This is what happens to its record over
+the course of the study.</p>
+<p><strong>T+0s</strong> — Orchestrator decides to launch (optional):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;schema_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt2_medium-en-baseline-s0&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;run_kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;arch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt2_medium&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;lang&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;en&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;condition&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;baseline&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;seed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;QUEUED&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+1m</strong> — Training pod starts, <code>register_run_start</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="err">...ide</span><span class="kc">nt</span><span class="err">i</span><span class="kc">t</span><span class="err">y</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">&quot;config_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;32e16f60&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;509de1e&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span><span class="nt">&quot;docker_image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;registry.../mmf:abc@sha256:...&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span><span class="nt">&quot;cache_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e80294850998&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;tokenizer_dir&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tokenizers/en_sp_50004&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span><span class="nt">&quot;dataset_manipulation_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span><span class="nt">&quot;hyperparameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;learning_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;warmup_ratio&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.03</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;batch_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">128</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">},</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span><span class="nt">&quot;wandb_run_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;zplgzkdf&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;wandb_project&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;just-drop-the-subject&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span><span class="nt">&quot;node_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;k8s-bharadwaj-03&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;gpu_product&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NVIDIA-GeForce-RTX-3090&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">  </span><span class="nt">&quot;k8s_pod_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;train-gpt2-med-en-baseline-s0-abc12&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;started_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;last_heartbeat_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">  </span><span class="nt">&quot;attempt_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;train_steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+every 5 min</strong> — <code>heartbeat</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;last_heartbeat_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;current_step&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1230</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;current_loss&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.12</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+20h</strong> — Training completes, <code>register_run_end</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="err">...</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;duration_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">72000</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">&quot;final_loss&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.15</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;train_steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;steps_completed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">&quot;epochs_completed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;total_tokens_processed&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">880</span><span class="err">_</span><span class="mi">000</span><span class="err">_</span><span class="mi">000</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="nt">&quot;checkpoint_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="nt">&quot;checkpoint_paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/mnt/data/models/.../checkpoint-50&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/mnt/data/models/.../checkpoint-5000&quot;</span><span class="p">],</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="nt">&quot;resume_state_steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">4832</span><span class="p">,</span><span class="w"> </span><span class="mi">4915</span><span class="p">,</span><span class="w"> </span><span class="mi">5000</span><span class="p">],</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">  </span><span class="nt">&quot;tokens_per_sec_avg&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2380.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;data_fraction_avg&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.12</span><span class="p">,</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="nt">&quot;oom_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+20h+10min</strong> — In-training pruner strips old <code>training_state.pt</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;post_run_pruned_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;checkpoint_paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">same</span><span class="w"> </span><span class="err">lis</span><span class="kc">t</span><span class="err">;</span><span class="w"> </span><span class="err">o</span><span class="kc">nl</span><span class="err">y</span><span class="w"> </span><span class="kc">tra</span><span class="err">i</span><span class="kc">n</span><span class="err">i</span><span class="kc">n</span><span class="err">g_s</span><span class="kc">tate</span><span class="err">.p</span><span class="kc">t</span><span class="w"> </span><span class="err">dropped</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+22h</strong> — Eval runner picks it up:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;eval_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;eval_started_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;eval_benchmarks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;blimp&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RUNNING&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">}}</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+25h</strong> — Each benchmark completes:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;eval_benchmarks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span><span class="nt">&quot;blimp&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;parquet_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://.../blimp/gpt2_medium-en-baseline-s0.parquet&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">              </span><span class="nt">&quot;finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;accuracy_final_ckpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6321</span><span class="p">}},</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="nt">&quot;perplexity&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;ppl_final_ckpt&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">44.7</span><span class="p">}},</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span><span class="nt">&quot;null_subject_expletive&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;metric_summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">}},</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="err">...</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span><span class="nt">&quot;eval_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;eval_finished_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;eval_duration_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10800</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>T+2d</strong> — Once all 10 reps have <code>eval_status=COMPLETE</code>, ref-rep
+selector picks the median BLiMP performer. Say seed=3 wins; seed=0 does
+not get <code>is_reference_rep=true</code>.</p>
+<p><strong>T+2d+5m</strong> — Post-eval pruner runs. Because seed=0 is NOT the ref rep,
+its entire checkpoint directory is deleted:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;post_eval_pruned_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;checkpoint_paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="nt">&quot;checkpoint_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div></p>
+<p>The record stays in the registry (we remember that seed 0 ran and what
+it scored) but its artefacts are gone. The ref rep (seed=3) is kept in
+the hot PVC; separately, an archiver may migrate it to <code>/mnt/data/archive/</code>
+at some point and set <code>archived_at</code> + <code>archive_paths</code>.</p>
+<p><strong>5 years later</strong> — a reader loads <code>registry.parquet</code>, filters to
+<code>is_reference_rep=true</code>, and reproduces every figure in the paper using
+only the eval parquets and the ref-rep checkpoints.</p>
+<h2 id="13-what-we-explicitly-do-not-put-in-the-registry">13. What we explicitly do NOT put in the registry<a class="headerlink" href="#13-what-we-explicitly-do-not-put-in-the-registry" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Per-stimulus eval results</strong> (billions of rows total). These live in
+  the eval parquets; the registry only records the parquet path.</li>
+<li><strong>Training loss curves</strong> (5,000 steps × 5,720 runs). These live in
+  WandB and a future WandB-export parquet; the registry only records
+  <code>final_loss</code> and a few aggregates.</li>
+<li><strong>Config contents</strong> beyond their hash. The full YAML is recoverable
+  from <code>git_commit</code> + <code>run_id</code>; we don't need to duplicate it in the
+  record.</li>
+<li><strong>GPU-telemetry time series</strong>. WandB system metrics cover this.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
