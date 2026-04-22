@@ -1,27 +1,51 @@
 # Run Registry — full design
 
-The registry is the portable, authoritative index of every training run in
-the study. This document specifies its complete schema, state machine,
-write contracts, read patterns, and integration points. It's the
-contract that every writer (training, eval, pruners, reference-rep
-selector, HP sweeps) implements.
+The registry is the portable, authoritative index of every training run
+in the study. It exists to keep things **organized** as the study scales
+from dozens of runs to thousands — not to auto-schedule or auto-launch
+anything. The user decides when to run groups; the registry makes those
+groups easy to enumerate, launch, and track.
+
+This document specifies the complete schema, state machine, write
+contracts, read patterns, launcher helpers, and integration points. It
+covers every writer (training, eval, pruners, reference-rep selector,
+HP sweeps) that will touch registry records.
 
 For the lower-level "how do pods talk to S3" plumbing, see
 [`S3_INTEGRATION.md`](S3_INTEGRATION.md). This doc focuses on **what
-the records contain and who changes what when**.
+the records contain, who changes what when, and how the user drives
+group operations off them**.
 
 ## 1. Why the registry exists
 
-Four questions become unanswerable at 5,720 runs without one:
+Five jobs, all for the user's convenience, none automatic:
 
-1. **Which cells still need training?** (Gate the meta-orchestrator.)
-2. **Which runs have eval parquets written?** (Gate the eval runner and the post-eval pruner.)
-3. **Which seed is the reference rep for each cell?** (Gate analyses that should use one rep per cell, not 10.)
-4. **What exactly produced this result?** (`git_commit` + `config_hash` + `cache_key` + `docker_image` travel with the run forever, for the data-availability statement.)
+1. **"Launch all English GPT-2 medium baselines"** — the user issues
+   one command, the launcher (§7) consults the registry to see which
+   of the 10 seeds already exist, renders one K8s Job per missing or
+   failed seed, and reports back. The registry is what makes this one
+   command possible.
+2. **"Eval all completed baselines that don't have BLiMP yet"** — same
+   shape, different script. Registry is the queryable filter.
+3. **"Tell me which cells still need training"** — read-only; a table
+   query against the registry.
+4. **"Which seed is the reference rep for each cell?"** — a registry
+   field, written once per cell after all 10 reps have eval'd.
+5. **"What exactly produced this result?"** — `git_commit` +
+   `config_hash` + `cache_key` + `docker_image` travel with every
+   record forever, for the paper's data-availability statement.
 
-WandB covers parts of (1)–(3) live but is a dashboard, not an archive —
+WandB covers parts of (3)–(5) live but is a dashboard, not an archive —
 it won't be reliable API-accessible in 5 years when a reader reproduces
 the paper. The registry is.
+
+**What the registry is NOT:** a scheduler, a job queue, a daemon, an
+auto-relauncher. If a run goes stale, a reaper (§6) marks it
+`PREEMPTED` and the **user** decides whether to relaunch. If eval
+fails, the registry shows `eval_status=FAILED` and the **user** decides
+whether to retry. Cron-like automation that's safe to run unattended
+(compaction, reaping) is explicitly scoped in §12; everything else is
+user-driven.
 
 ## 2. Storage layout
 
@@ -220,39 +244,49 @@ Only populated when `run_kind=hp_sweep`.
 
 ## 5. State machine
 
+All transitions are either writer-driven (training pod, eval runner)
+or user-driven (launcher, selector). Nothing moves on its own.
+
 ```
                      ┌──────────────────────────────────────────────────┐
-                     │  Orchestrator decides a cell needs training       │
+                     │  User runs `scripts/launch_training.py` for a    │
+                     │  group (e.g. all 10 seeds of gpt2_med / en /     │
+                     │  baseline). Launcher filters by registry state.  │
                      └──────────────────────────────────────────────────┘
                                          │
                                          ▼
                                     ┌─────────┐
-                                    │ QUEUED  │  (optional — only the orchestrator writes this)
-                                    └────┬────┘
+                                    │ QUEUED  │  (launcher writes this just before kubectl apply;
+                                    └────┬────┘   gives us a "know everything that was launched"
+                                         │          trail even if the pod never starts)
                                          │  training pod starts
                                          ▼
                                     ┌─────────┐
-                        ┌──────────►│ RUNNING │◄──── heartbeat every ~5 min
-                        │  retry    └────┬────┘
-                        │                │
-                        │  ┌─────────────┼─────────────┬────────────────┐
-                        │  │             │             │                │
-                        │  │ finishes    │ crashes     │ node preempted │ times out
-                        │  ▼             ▼             ▼                ▼
-                        │ COMPLETE     FAILED       PREEMPTED         FAILED
-                        │  │             │             │                │
-                        └──┘             │             │                │
-                        (attempt++)      │             │                │
-                                         ▼             ▼                ▼
-                                    ┌─────────────────────────────────────┐
-                                    │  Eval runner picks up COMPLETE runs │
-                                    └──────────────────────┬──────────────┘
-                                                           │
-                                                           ▼
-                                                    eval_status=RUNNING
-                                                           │
-                                                           ▼
-                                                    eval_status=COMPLETE
+                                    │ RUNNING │◄──── heartbeat every ~5 min
+                                    └────┬────┘
+                                         │
+                                 ┌───────┼───────────┬────────────────┐
+                                 │       │           │                │
+                                 │finish │ crashes   │ node preempted │ 2h stale
+                                 ▼       ▼           ▼                ▼
+                              COMPLETE FAILED    PREEMPTED           PREEMPTED
+                                 │       │           │         (reaper marks)
+                                 │       └───────────┴────────────────┘
+                                 │                   │
+                                 │                   └─ user decides whether
+                                 │                       to relaunch; launcher
+                                 │                       filters by status
+                                 ▼
+                     ┌─────────────────────────────────────┐
+                     │  User runs `scripts/launch_evals.py`│
+                     │  over all COMPLETE runs missing X   │
+                     └──────────────────────┬──────────────┘
+                                            │
+                                            ▼
+                                      eval_status=RUNNING
+                                            │
+                                            ▼
+                                      eval_status=COMPLETE
                                                            │
                                                            ▼
                                    ┌───────────────────────────────────────┐
@@ -276,31 +310,202 @@ Only populated when `run_kind=hp_sweep`.
 Every writer owns **exactly one column set** from §4. Writers never
 modify fields outside their set — that's how we avoid coordination.
 
+"Trigger" column: **user** = the user runs a script manually;
+**automatic** = driven by the pod or a CronJob without a user in the loop.
+
 | Writer | Trigger | Fields written | Call site |
 |---|---|---|---|
-| **orchestrator** (optional) | decides to launch a cell | 4.1 identity, `status=QUEUED`, `created_at` | `scripts/orchestrator.py` (TBD) |
-| **training entrypoint** | CLI `run` start | 4.1 identity, 4.2 reproducibility, 4.3 provenance, `status=RUNNING`, `started_at`, `last_heartbeat_at`, `attempt_count++`, `hyperparameters`, `train_steps` | `model_foundry/cli.py::run` → `register_run_start` |
-| **training loop** | every ~5 min | `last_heartbeat_at`, `current_step`, `current_loss` | `model_foundry/training/loop.py` → `heartbeat` |
-| **training entrypoint (end)** | CLI `run` completion | `status` (COMPLETE/FAILED/PREEMPTED), `finished_at`, `duration_seconds`, `final_loss`, `steps_completed`, `epochs_completed`, `total_tokens_processed`, `checkpoint_count`, `checkpoint_paths`, `resume_state_steps`, `tokens_per_sec_avg`, `data_fraction_avg`, `failure_reason`, `oom_count` | `model_foundry/cli.py::run` → `register_run_end` |
-| **eval runner** | eval start | `eval_status=RUNNING`, `eval_started_at`, `eval_benchmarks[X]={status: RUNNING}` | eval runner (other agent) → `register_eval_start(benchmark=X)` |
-| **eval runner** | per-benchmark completion | `eval_benchmarks[X]={status, parquet_path, finished_at, metric_summary}`, aggregate `eval_status` recomputed | → `register_eval_benchmark_done` |
-| **eval runner** | all benchmarks done | `eval_status` aggregate, `eval_finished_at`, `eval_duration_seconds` | → `register_eval_end` |
-| **in-training pruner (1.4)** | after each run completes | `post_run_pruned_at`, updates `checkpoint_paths` (analysis-only subset) | `scripts/prune_in_training.py` (TBD) → `register_pruner_event('post_run')` |
-| **post-eval pruner (1.5)** | after eval_status=COMPLETE for all reps of a cell | `post_eval_pruned_at`, removes non-ref-rep `checkpoint_paths`, compacts `resume_state_steps` to empty | `scripts/prune_post_eval.py` (TBD) → `register_pruner_event('post_eval')` |
-| **ref-rep selector (1.6)** | after all N seeds in a cell have `eval_status=COMPLETE` | On exactly one seed: `is_reference_rep=true`, `reference_rep_rationale`, `reference_rep_metric`, `reference_rep_score`, `reference_rep_selected_at` | `scripts/select_reference_reps.py` (TBD) → `mark_reference_rep` |
-| **archiver** | after post-eval pruner | `archived_at`, `archive_paths`, `archive_size_bytes` | `scripts/archive_runs.py` (TBD) → `register_archive_event` |
-| **reaper** | CronJob, looks for stale RUNNING | `status=PREEMPTED`, `failure_reason="stale heartbeat > 2h"` | `scripts/reap_stale_runs.py` (TBD) |
-| **HP sweep agent** | per trial | 4.1 identity (as `hp_sweep`), 4.2 reproducibility, 4.3 provenance, 4.4 lifecycle, 4.5 outputs, 4.9 sweep fields | `scripts/sweep_agent.py` (existing, needs registry wiring) |
-| **HP sweep coordinator** | after sweep completes | `hp_sweep_rank`, `is_hp_winner` on one trial | `scripts/select_hp_winner.py` (TBD) |
-| **compactor** | hourly CronJob | (reads only; writes `registry.parquet`) | `scripts/compact_registry.py` |
+| **launcher** | user runs `scripts/launch_training.py` for a group | 4.1 identity, `status=QUEUED`, `created_at`, intended `hyperparameters` / `train_steps` | `scripts/launch_training.py` (TBD) → `register_run_queued` |
+| **training entrypoint** | automatic — pod starts | 4.1 identity, 4.2 reproducibility, 4.3 provenance, `status=RUNNING`, `started_at`, `last_heartbeat_at`, `attempt_count++` | `model_foundry/cli.py::run` → `register_run_start` |
+| **training loop** | automatic — every ~5 min | `last_heartbeat_at`, `current_step`, `current_loss` | `model_foundry/training/loop.py` → `heartbeat` |
+| **training entrypoint (end)** | automatic — pod completion | `status` (COMPLETE/FAILED/PREEMPTED), `finished_at`, `duration_seconds`, `final_loss`, `steps_completed`, `epochs_completed`, `total_tokens_processed`, `checkpoint_count`, `checkpoint_paths`, `resume_state_steps`, `tokens_per_sec_avg`, `data_fraction_avg`, `failure_reason`, `oom_count` | `model_foundry/cli.py::run` → `register_run_end` |
+| **eval launcher** | user runs `scripts/launch_evals.py` for a group | `eval_status=QUEUED`, `eval_benchmarks[X]={status: QUEUED}` per requested benchmark | `scripts/launch_evals.py` (TBD) → `register_eval_queued` |
+| **eval runner** | automatic — eval pod starts | `eval_status=RUNNING`, `eval_started_at`, `eval_benchmarks[X]={status: RUNNING}` | eval runner → `register_eval_start(benchmark=X)` |
+| **eval runner** | automatic — per-benchmark finish | `eval_benchmarks[X]={status, parquet_path, finished_at, metric_summary}`; aggregate `eval_status` recomputed | → `register_eval_benchmark_done` |
+| **eval runner** | automatic — last benchmark done | `eval_status` aggregate, `eval_finished_at`, `eval_duration_seconds` | → `register_eval_end` |
+| **in-training pruner (1.4)** | user runs `scripts/prune_in_training.py`, OR gets invoked at the end of each training pod's script | `post_run_pruned_at`, updates `checkpoint_paths` (analysis-only subset) | `scripts/prune_in_training.py` (TBD) → `register_pruner_event('post_run')` |
+| **post-eval pruner (1.5)** | user runs `scripts/prune_post_eval.py` | `post_eval_pruned_at`, removes non-ref-rep `checkpoint_paths`, compacts `resume_state_steps` to empty | `scripts/prune_post_eval.py` (TBD) → `register_pruner_event('post_eval')` |
+| **ref-rep selector (1.6)** | user runs `scripts/select_reference_reps.py` | On exactly one seed per cell: `is_reference_rep=true`, `reference_rep_rationale`, `reference_rep_metric`, `reference_rep_score`, `reference_rep_selected_at` | `scripts/select_reference_reps.py` (TBD) → `mark_reference_rep` |
+| **archiver** | user runs `scripts/archive_runs.py` | `archived_at`, `archive_paths`, `archive_size_bytes` | `scripts/archive_runs.py` (TBD) → `register_archive_event` |
+| **reaper** | automatic CronJob — marks stale RUNNING | `status=PREEMPTED`, `failure_reason="stale heartbeat > 2h"` | `scripts/reap_stale_runs.py` (TBD) |
+| **HP sweep launcher** | user runs `scripts/launch_hp_sweep.py` | Multiple records with `run_kind=hp_sweep`, `status=QUEUED`, `hp_sweep_id`, 4.9 fields | `scripts/launch_hp_sweep.py` (TBD) |
+| **HP sweep agent** | automatic — per trial pod | 4.1 identity (as `hp_sweep`), 4.2 reproducibility, 4.3 provenance, 4.4 lifecycle, 4.5 outputs, 4.9 sweep fields | `scripts/sweep_agent.py` (existing, needs registry wiring) |
+| **HP sweep selector** | user runs `scripts/select_hp_winner.py` | `hp_sweep_rank`, `is_hp_winner` on one trial per arch | `scripts/select_hp_winner.py` (TBD) |
+| **compactor** | automatic CronJob — hourly | (reads only; writes `registry.parquet`) | `scripts/compact_registry.py` |
 
 Rule: **field ownership is single-writer.** If two writers want the
 same field, we make one of them canonical and the other read-only.
 
-## 7. Read patterns
+**What runs automatically vs. user-driven.** The only CronJobs in the
+plan are **compactor** (harmless: rebuilds a materialized view) and
+**reaper** (marks stale RUNNING as PREEMPTED; does NOT relaunch). Every
+other transition is either (a) automatic within a pod that the user
+launched, or (b) explicitly invoked by the user. Nothing auto-launches.
 
-These are the queries analyses and orchestration scripts will actually
-run. The compacted Parquet handles all of them natively.
+## 7. Launcher helpers — the user-facing interface
+
+The registry's ergonomic payoff: the user issues one command, the
+helper consults the registry to pick up the state, and launches just
+what's needed. All of these are thin Python scripts (~100–200 LOC
+each) that wrap (a) a registry query, (b) a K8s Job template render,
+(c) `kubectl apply`. None of them run on a schedule.
+
+### 7.1 `scripts/registry_list.py` — see the state of a group
+
+Read-only. Prints a table grouped by cell, with a colored status per
+seed.
+
+```
+$ registry_list --arch gpt2_medium --lang en --condition baseline
+
+arch          lang  condition  seed  status      eval    ref?  final_loss  duration
+gpt2_medium   en    baseline   0     COMPLETE    COMPL.  —     3.15        19h47m
+gpt2_medium   en    baseline   1     COMPLETE    RUN.    —     3.18        19h58m
+gpt2_medium   en    baseline   2     RUNNING     —       —     4.12 (cur)  12h14m+
+gpt2_medium   en    baseline   3     FAILED      —       —     —           OOM @step1804
+gpt2_medium   en    baseline   4-9   NOT-STARTED —       —     —           —
+
+6 of 10 seeds done, 1 running, 1 failed, 4 not started.
+```
+
+### 7.2 `scripts/launch_training.py` — launch a group
+
+Takes filters + seeds; for each matching cell that isn't already done
+or running, renders a K8s Job YAML from a template, `kubectl apply`s
+it, and writes `status=QUEUED` to the registry.
+
+```bash
+# "Launch all English GPT-2 medium baselines"
+python scripts/launch_training.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --seeds 0-9
+
+# Same but only for cells that aren't already COMPLETE/RUNNING
+# (the default — re-running is opt-in)
+python scripts/launch_training.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --seeds 0-9 \
+  --skip-if-status COMPLETE,RUNNING
+
+# Relaunch the failed / preempted seeds
+python scripts/launch_training.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --seeds 0-9 \
+  --only-if-status FAILED,PREEMPTED
+
+# Dry run — show the kubectl-apply plan without applying
+python scripts/launch_training.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --seeds 0-9 \
+  --dry-run
+```
+
+The script expands filters to concrete cells:
+
+```
+Plan:
+  gpt2_medium-en-baseline-s0   skip (status=COMPLETE)
+  gpt2_medium-en-baseline-s1   skip (status=RUNNING)
+  gpt2_medium-en-baseline-s2   launch
+  gpt2_medium-en-baseline-s3   launch (previous FAILED with OOM @step1804)
+  gpt2_medium-en-baseline-s4   launch
+  ...
+Launching 8 jobs. Continue? [y/N]
+```
+
+Multi-condition, multi-arch launches work the same way — filter lists
+or globs:
+
+```bash
+# All conditions × both languages × all seeds for gpt2_medium
+python scripts/launch_training.py \
+  --arch gpt2_medium \
+  --lang en,es \
+  --condition baseline,impoverish_case,lemmatize_verbs \
+  --seeds 0-9
+```
+
+### 7.3 `scripts/launch_evals.py` — launch eval on a group
+
+Same shape, with benchmark selection. Filters to runs where
+`status=COMPLETE` and the specified benchmarks aren't already
+`eval_benchmarks[X].status=COMPLETE`.
+
+```bash
+# "Eval BLiMP on every completed GPT-2 medium baseline"
+python scripts/launch_evals.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --benchmarks blimp
+
+# All benchmarks we care about, across all seeds of a whole matrix
+python scripts/launch_evals.py \
+  --arch gpt2_medium \
+  --lang en,es \
+  --condition baseline \
+  --benchmarks blimp,perplexity,null_subject_expletive
+```
+
+### 7.4 `scripts/launch_hp_sweep.py` — launch an HP sweep
+
+Kicks off a WandB sweep with N trials for a given arch. Each trial
+gets its own registry record with `run_kind=hp_sweep`. After the sweep
+finishes, the user runs `scripts/select_hp_winner.py` which picks the
+top trial by `hp_proxy_score` and sets `is_hp_winner=true` — that
+winner's `hyperparameters` block becomes the production HP config for
+that arch.
+
+```bash
+# 30 trials, Bayesian, Hyperband early-stop, 2000-step proxy
+python scripts/launch_hp_sweep.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --trials 30 --proxy-steps 2000 --early-stop hyperband
+
+python scripts/select_hp_winner.py --arch gpt2_medium
+```
+
+### 7.5 `scripts/select_reference_reps.py` — pick reference reps
+
+Once all 10 seeds of a cell have `eval_status=COMPLETE`, run this to
+mark the median-BLiMP seed as the reference rep for that cell.
+
+```bash
+# For one cell
+python scripts/select_reference_reps.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --metric "blimp.metric_summary.accuracy_final_ckpt" \
+  --reducer median
+
+# For every cell that has 10 complete seeds and no ref-rep yet
+python scripts/select_reference_reps.py --auto
+```
+
+### 7.6 Pruning and archival scripts
+
+Purely user-invoked, never on a cron. Each takes a filter and a
+confirmation prompt. See §6's rows for what fields they touch.
+
+```bash
+# Post-run prune: strip training_state.pt from old checkpoints,
+# keep the resume_state_steps (tip + 2 before)
+python scripts/prune_in_training.py --arch gpt2_medium --lang en --condition baseline
+
+# Post-eval prune: drop non-ref-rep checkpoints entirely, strip the
+# rest of training_state.pt from the ref rep. Destructive — requires
+# --confirm.
+python scripts/prune_post_eval.py \
+  --arch gpt2_medium --lang en --condition baseline \
+  --confirm
+
+# Archive: move the ref rep's remaining checkpoints from the hot PVC
+# to the cold archive PVC (subject-drop-archive).
+python scripts/archive_runs.py \
+  --arch gpt2_medium --lang en --condition baseline
+```
+
+## 8. Read patterns
+
+These are the queries the launchers (§7) and analyses actually run.
+The compacted Parquet handles all of them natively.
 
 ### Which production cells still need training?
 
@@ -373,7 +578,7 @@ report = df[df.run_kind == "production"][[
 report.to_parquet("paper_data_availability.parquet")
 ```
 
-## 8. Rollup views beyond `registry.parquet`
+## 9. Rollup views beyond `registry.parquet`
 
 We may also produce secondary materialized views from the same
 `by_run/` source. Each is its own scheduled job.
@@ -387,7 +592,7 @@ We may also produce secondary materialized views from the same
 None of these are strictly needed now. `registry.parquet` is — the
 others are follow-ups when the analysis code starts feeling slow.
 
-## 9. Concurrency & failure semantics
+## 10. Concurrency & failure semantics
 
 ### Concurrency (safe by design)
 
@@ -424,7 +629,7 @@ others are follow-ups when the analysis code starts feeling slow.
   atomically on each compaction (single `put_object`), so readers never
   see a partial parquet.
 
-## 10. Schema evolution
+## 11. Schema evolution
 
 Rules for changing this schema without breaking existing records:
 
@@ -440,7 +645,7 @@ Rules for changing this schema without breaking existing records:
 5. **The upgrader lives in `model_foundry/registry.py`** as a
    `_upgrade_vN_to_vN+1` function. One per schema bump.
 
-## 11. Integration points — file-by-file
+## 12. Integration points — file-by-file
 
 ### Already landed (commit 3bd0d80)
 
@@ -453,58 +658,115 @@ Rules for changing this schema without breaking existing records:
 - `s3-secret-thomas` K8s Secret exists.
 - `thomas-subject-drop-artifacts` bucket exists.
 
-### Needed to complete v1 (ordered by dependency)
+### Pod-side writers (training entrypoint + loop)
 
 1. **Extend `register_run_start` / `register_run_end`** with the fields
    in §4.2 (`docker_image`, `dataset_manipulation_hash`, `hyperparameters`),
    §4.4 (`oom_count`), §4.5 (`steps_completed`, `epochs_completed`,
    `tokens_per_sec_avg`, `data_fraction_avg`, `resume_state_steps`).
    Small, additive changes to the module. ~30 LOC.
-2. **Add `register_eval_start` and `register_eval_benchmark_done`** for
+2. **Add `register_eval_start` / `register_eval_benchmark_done`** for
    per-benchmark granularity (§4.6). ~40 LOC. The existing
    `register_eval_end` becomes the final aggregate call.
-3. **Add `register_pruner_event`, `register_archive_event`**. Each is
+3. **Add `register_run_queued` / `register_eval_queued`** for the
+   launchers (§7.2, §7.3) to mark intent before the pod starts.
+   ~10 LOC each.
+4. **Add `register_pruner_event`, `register_archive_event`**. Each is
    a thin `_merge_record` call. ~20 LOC each.
-4. **Wire `cli.py::run`** to call `register_run_start` before training
+5. **Wire `cli.py::run`** to call `register_run_start` before training
    and `register_run_end` in a top-level `try/except/finally`. Read
    `git_commit` and `config_hash` from existing trainer machinery. ~50 LOC.
-5. **Wire `loop.py`** to call `heartbeat` every N optimizer steps
+6. **Wire `loop.py`** to call `heartbeat` every N optimizer steps
    (default: compute N such that the cadence is ~5 minutes). ~10 LOC.
-6. **Add env vars** from `S3_INTEGRATION.md` §K8s-env-vars to every
+7. **Add env vars** from `S3_INTEGRATION.md` §K8s-env-vars to every
    training/eval K8s template.
-7. **Compactor CronJob** — new `k8s/cronjob-compact-registry.yaml`
-   that runs `scripts/compact_registry.py` hourly. ~30 LOC of YAML.
-8. **Reaper CronJob** — `scripts/reap_stale_runs.py` +
-   `k8s/cronjob-reap-stale-runs.yaml`. Looks for `status=RUNNING` with
-   `last_heartbeat_at < now - 2h`, marks as PREEMPTED. ~50 LOC of code.
 
-### Needed for the storage/pruner lifecycle (separate agent)
+### Launcher helpers — the user-facing interface (§7)
 
-- `scripts/prune_in_training.py` (1.4)
-- `scripts/prune_post_eval.py` (1.5)
-- `scripts/archive_runs.py` (moves ref rep to `/mnt/data/archive/`)
-- `scripts/select_reference_reps.py` (1.6)
+These are what the user actually invokes to run groups of things.
+Small, self-contained scripts that read the registry, render a
+template, and `kubectl apply`. Targeted LOC per script: 100–200.
 
-These all consume the registry (find candidates) and write back
-(pruner events, archive events, ref-rep selection). They don't need
-registry schema changes — just call the existing merge functions.
+- `scripts/registry_list.py` — table view of a filter (§7.1).
+- `scripts/launch_training.py` — launch a training group (§7.2).
+- `scripts/launch_evals.py` — launch an eval group (§7.3).
+- `scripts/launch_hp_sweep.py` — kick off a WandB sweep (§7.4).
+- `scripts/select_reference_reps.py` — pick ref reps per cell (§7.5).
+- `scripts/select_hp_winner.py` — mark HP-sweep winner.
+- `scripts/prune_in_training.py` — post-run cleanup (1.4).
+- `scripts/prune_post_eval.py` — post-eval cleanup (1.5).
+- `scripts/archive_runs.py` — hot → cold archive.
 
-### Needed for HP sweeps
+All of these consume the registry (find candidates) and write back
+(status=QUEUED / pruner events / archive events / ref-rep). They call
+functions already on `model_foundry.registry`, not new ones.
+
+The common pattern for every launcher:
+
+```python
+import click
+from model_foundry import registry
+from scripts._k8s_render import render_job, apply
+
+@click.command()
+@click.option("--arch", required=True)
+@click.option("--lang", required=True)
+@click.option("--condition", required=True)
+@click.option("--seeds", default="0-9")
+@click.option("--skip-if-status", default="COMPLETE,RUNNING,QUEUED")
+@click.option("--dry-run", is_flag=True)
+def launch_training(arch, lang, condition, seeds, skip_if_status, dry_run):
+    skip = set(skip_if_status.split(","))
+    plan = []
+    for seed in parse_range(seeds):
+        run_id = registry.build_run_id(arch, lang, condition, seed)
+        current = registry.get_record(arch, lang, condition, run_id)
+        if current and current.get("status") in skip:
+            plan.append((run_id, "skip", current["status"]))
+            continue
+        plan.append((run_id, "launch", None))
+    render_plan_table(plan)
+    if dry_run or not confirm("Continue?"):
+        return
+    for run_id, action, _ in plan:
+        if action != "launch":
+            continue
+        registry.register_run_queued(
+            arch=arch, lang=lang, condition=condition, run_id=run_id, ...
+        )
+        yaml_text = render_job("training", run_id=run_id, seed=seed, ...)
+        apply(yaml_text)
+```
+
+### Automatic infrastructure (CronJobs — two of them, scope-limited)
+
+- **Compactor CronJob** — new `k8s/cronjob-compact-registry.yaml`
+  that runs `scripts/compact_registry.py` hourly. Harmless: rebuilds
+  `registry.parquet` from `by_run/` shard. ~30 LOC of YAML.
+- **Reaper CronJob** — `scripts/reap_stale_runs.py` +
+  `k8s/cronjob-reap-stale-runs.yaml`. Looks for `status=RUNNING` with
+  `last_heartbeat_at < now - 2h`, marks as `PREEMPTED` with a
+  failure_reason. **Does not relaunch**; just marks. ~50 LOC of code.
+
+Every other "should this run automatically?" impulse should come back
+to the user as a launcher invocation.
+
+### HP sweep wiring
 
 - `scripts/sweep_agent.py` (audit of existing) — add
   `register_run_start(run_kind="hp_sweep")` + `register_run_end` and
-  populate §4.9 fields.
-- `scripts/select_hp_winner.py` — rank sweep trials by `hp_proxy_score`,
-  mark the winner with `is_hp_winner=true` and `hp_sweep_rank=1`.
+  populate §4.9 fields from each trial.
 
-### Needed for orchestration (optional, nice-to-have)
+### Explicitly NOT building
 
-- `scripts/orchestrator.py` — reads `registry.parquet`, diffs against
-  the target matrix, launches `run_kind=production` jobs for cells
-  that are missing or stuck. Could also write `status=QUEUED` records
-  as it decides to launch.
+- **An orchestrator daemon.** Earlier drafts proposed one; we decided
+  against. The user drives group launches via §7 helpers. If we later
+  want unattended "keep the matrix topped up" behavior, it can be a
+  thin CronJob that invokes `launch_training.py --skip-if-status=... --seeds=...`
+  with a fixed plan — but that's a separate, opt-in decision, not
+  part of the registry design.
 
-## 12. One worked example: a single production cell, cradle to archive
+## 13. One worked example: a single production cell, cradle to archive
 
 `gpt2_medium-en-baseline-s0`. This is what happens to its record over
 the course of the study.
@@ -600,7 +862,7 @@ at some point and set `archived_at` + `archive_paths`.
 `is_reference_rep=true`, and reproduces every figure in the paper using
 only the eval parquets and the ref-rep checkpoints.
 
-## 13. What we explicitly do NOT put in the registry
+## 14. What we explicitly do NOT put in the registry
 
 - **Per-stimulus eval results** (billions of rows total). These live in
   the eval parquets; the registry only records the parquet path.
