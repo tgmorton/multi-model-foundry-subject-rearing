@@ -1,0 +1,269 @@
+---
+# Smoke test for the GitLab-CI-built image.
+#
+# Verifies:
+#   1. imagePullSecret works — pod pulls from gitlab-registry.nrp-nautilus.io
+#   2. Pre-installed torch + requirements + flash-attn + mamba-ssm +
+#      causal-conv1d are all importable — NO pip install step.
+#   3. Training works end-to-end (GPT-2 medium, 6 steps).
+#   4. Flash Attention 2 is actually active, not falling back.
+#   5. Mamba uses the mamba-ssm CUDA kernels, not the pure PyTorch fallback.
+#   6. Prints total pod time + training-phase time so we can compare to
+#      the pytorch/pytorch:... baseline (job-smoke-gpt2-medium-opts ran
+#      ~15 min end-to-end on a slow node, most of which was pip install).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-gitlab-image
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: smoke
+        # Custom image built by GitLab CI — torch, project requirements,
+        # flash-attn, mamba-ssm, causal-conv1d all pre-installed.
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          POD_START_EPOCH=$(date +%s)
+
+          echo "=========================================="
+          echo "  GITLAB-IMAGE SMOKE"
+          echo "=========================================="
+
+          # ---- Environment / import probe ----
+          python - <<'PYEOF'
+          import sys, importlib
+          print("python:", sys.version.split()[0])
+          import torch
+          print("torch:", torch.__version__, "cuda:", torch.version.cuda)
+          print("cuda available:", torch.cuda.is_available())
+          if torch.cuda.is_available():
+              print("device:", torch.cuda.get_device_name(0))
+
+          def probe(name):
+              try:
+                  m = importlib.import_module(name)
+                  v = getattr(m, "__version__", "?")
+                  print(f"  {name:<20} OK   version={v}")
+                  return True
+              except Exception as e:
+                  print(f"  {name:<20} FAIL {e}")
+                  return False
+
+          print("package probes:")
+          ok_fa = probe("flash_attn")
+          ok_mamba = probe("mamba_ssm")
+          ok_conv = probe("causal_conv1d")
+          for p in ("transformers", "datasets", "sentencepiece", "wandb", "boto3", "pyarrow"):
+              probe(p)
+
+          # These are load-bearing for the image's purpose — fail loudly
+          # if they're missing so we don't silently fall back to the
+          # unoptimized path.
+          if not ok_fa:
+              sys.exit("FATAL: flash_attn missing — image did not ship FA2")
+          if not ok_mamba:
+              sys.exit("FATAL: mamba_ssm missing — image did not ship Mamba kernels")
+          if not ok_conv:
+              sys.exit("FATAL: causal_conv1d missing — required by mamba_ssm")
+          PYEOF
+
+          cd /opt/repo
+          # HEAD confirmation (no git in pytorch image — alpine clone left us .git/HEAD)
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+          echo ""
+
+          # Wire PVC paths
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+
+          STARTUP_END_EPOCH=$(date +%s)
+          echo "Startup overhead (no pip install): $((STARTUP_END_EPOCH - POD_START_EPOCH))s"
+          echo ""
+
+          ####################################################################
+          # PART A — GPT-2 medium, verifies Flash Attention 2
+          ####################################################################
+          echo "=========================================="
+          echo "  A. GPT-2 medium — Flash Attention 2 path"
+          echo "=========================================="
+          BASE=configs/experiments/smoke_gpt2_medium.yaml
+          NAME=smoke_gpt2_medium_gitlab
+          python -m model_foundry.cli validate-config $BASE
+
+          echo "=== Prep (idempotent, should hit cache) ==="
+          python -m model_foundry.cli train-tokenizer $BASE
+          python -m model_foundry.cli tokenize-dataset $BASE
+          python -m model_foundry.cli preprocess-data $BASE
+
+          rm -rf /mnt/data/models/$NAME
+          mkdir -p /mnt/data/models/$NAME
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['experiment_name'] = '$NAME'
+          cfg['training']['output_dir'] = 'models/$NAME'
+          cfg['training']['train_steps'] = 6
+          cfg['training']['checkpoint_schedule'] = [5]
+          cfg['training']['resume_from_checkpoint'] = False
+          with open('/tmp/gpt2.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+
+          GPT2_START=$(date +%s)
+          python -m model_foundry.cli run /tmp/gpt2.yaml 2>&1 | tee /tmp/gpt2.log
+          GPT2_END=$(date +%s)
+
+          # FA2 verification — must say "Successfully initialized model with
+          # Flash Attention 2", NOT "falling back to standard attention".
+          if grep -q "Successfully initialized model with Flash Attention 2" /tmp/gpt2.log; then
+            echo "OK Flash Attention 2 active on GPT-2 medium"
+          else
+            echo "FAIL: Flash Attention 2 did NOT activate. Relevant log lines:"
+            grep -E "Flash Attention|attention" /tmp/gpt2.log | head -10
+            exit 1
+          fi
+
+          test -d /mnt/data/models/$NAME/checkpoint-5 || { echo "FAIL: checkpoint-5 missing"; exit 1; }
+          echo "  -> GPT-2 medium 6 steps: $((GPT2_END - GPT2_START))s wall clock"
+          echo ""
+
+          ####################################################################
+          # PART B — Mamba 370M, verifies mamba-ssm + causal-conv1d CUDA kernels
+          ####################################################################
+          echo "=========================================="
+          echo "  B. Mamba 370M — mamba-ssm CUDA path"
+          echo "=========================================="
+          BASE=configs/experiments/smoke_mamba_370m.yaml
+          NAME=smoke_mamba_370m_gitlab
+          python -m model_foundry.cli validate-config $BASE
+
+          echo "=== Prep (idempotent, should hit cache) ==="
+          python -m model_foundry.cli train-tokenizer $BASE
+          python -m model_foundry.cli tokenize-dataset $BASE
+          python -m model_foundry.cli preprocess-data $BASE
+
+          rm -rf /mnt/data/models/$NAME
+          mkdir -p /mnt/data/models/$NAME
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['experiment_name'] = '$NAME'
+          cfg['training']['output_dir'] = 'models/$NAME'
+          cfg['training']['train_steps'] = 6
+          cfg['training']['checkpoint_schedule'] = [5]
+          cfg['training']['resume_from_checkpoint'] = False
+          with open('/tmp/mamba.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+
+          MAMBA_START=$(date +%s)
+          python -m model_foundry.cli run /tmp/mamba.yaml 2>&1 | tee /tmp/mamba.log
+          MAMBA_END=$(date +%s)
+
+          # Mamba kernel verification — the fallback path emits
+          # "mamba-ssm not available. Using pure PyTorch implementation."
+          # via warnings.warn(). If that line appears, kernels did NOT engage.
+          if grep -q "mamba-ssm not available" /tmp/mamba.log; then
+            echo "FAIL: Mamba fell back to pure PyTorch — CUDA kernels not active"
+            exit 1
+          fi
+          # Also sanity-check the model didn't silently crash before training
+          grep -q "Training Complete" /tmp/mamba.log || {
+            echo "FAIL: Mamba training did not complete"
+            tail -30 /tmp/mamba.log
+            exit 1
+          }
+          echo "OK Mamba mamba-ssm CUDA kernels active (no fallback warning)"
+
+          test -d /mnt/data/models/$NAME/checkpoint-5 || { echo "FAIL: checkpoint-5 missing"; exit 1; }
+          echo "  -> Mamba 6 steps: $((MAMBA_END - MAMBA_START))s wall clock"
+          echo ""
+
+          ####################################################################
+          # Summary + speedup reference
+          ####################################################################
+          POD_END_EPOCH=$(date +%s)
+          TOTAL=$((POD_END_EPOCH - POD_START_EPOCH))
+          STARTUP=$((STARTUP_END_EPOCH - POD_START_EPOCH))
+          GPT2_S=$((GPT2_END - GPT2_START))
+          MAMBA_S=$((MAMBA_END - MAMBA_START))
+
+          echo "=========================================="
+          echo "  GITLAB-IMAGE SMOKE: ALL CHECKS PASSED"
+          echo "=========================================="
+          echo "Timing breakdown:"
+          echo "  Pod startup (clone + probe + PVC wire): ${STARTUP}s"
+          echo "                                           (vs ~300s+ on pytorch/pytorch image: pip install"
+          echo "                                            each pod — × 5,720 production runs = ~475 GPU-hrs)"
+          echo ""
+          echo "  GPT-2 medium 6 steps (FA2 active):       ${GPT2_S}s"
+          echo "  Mamba 370M    6 steps (mamba-ssm active):${MAMBA_S}s"
+          echo "  Total pod wall clock:                    ${TOTAL}s"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - name: AWS_ENDPOINT_URL
+          value: "http://rook-ceph-rgw-nautiluss3.rook"
+        - name: AWS_DEFAULT_REGION
+          value: "us-west-1"
+        - name: REGISTRY_BUCKET
+          value: "thomas-subject-drop-artifacts"
+        resources:
+          requests: {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+          limits:   {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}
