@@ -84,18 +84,30 @@ RUN python -c "import torch; assert torch.version.cuda.startswith('12.1'), torch
  && python -c "import mamba_ssm; print('mamba_ssm', mamba_ssm.__version__)"
 
 # --- spaCy models ----------------------------------------------------------
-# All models referenced in code, across EN / IT / ES. The trf models are
-# large (~500MB each) but downloading them at pod startup costs minutes per
-# run; baking them in is a one-time cost.
-RUN python -m spacy download en_core_web_sm \
- && python -m spacy download en_core_web_md \
- && python -m spacy download en_core_web_lg \
- && python -m spacy download en_core_web_trf \
- && python -m spacy download it_core_news_sm \
- && python -m spacy download it_core_news_lg \
- && python -m spacy download es_core_news_sm \
- && python -m spacy download es_core_news_lg \
- && python -m spacy download es_core_news_trf
+# All models referenced in code, across EN / IT / ES. Pinned to spaCy
+# 3.7-compatible releases. We install via direct wheel URLs rather than
+# `python -m spacy download`: the download command relies on spaCy's
+# online compatibility lookup, which has been intermittently returning
+# empty version strings and producing 404s. Direct URLs are deterministic
+# and have no startup network dependency.
+#
+# Note: there is no es_core_news_trf in explosion/spacy-models. Code
+# references to it appear to be dead config — drop and re-add a custom
+# model if it ever becomes real.
+ARG SPACY_MODELS_BASE=https://github.com/explosion/spacy-models/releases/download
+RUN pip install \
+        ${SPACY_MODELS_BASE}/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/en_core_web_trf-3.7.3/en_core_web_trf-3.7.3-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/it_core_news_sm-3.7.0/it_core_news_sm-3.7.0-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/it_core_news_lg-3.7.0/it_core_news_lg-3.7.0-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/es_core_news_sm-3.7.0/es_core_news_sm-3.7.0-py3-none-any.whl \
+        ${SPACY_MODELS_BASE}/es_core_news_lg-3.7.0/es_core_news_lg-3.7.0-py3-none-any.whl
+
+# Smoke-test spaCy models load: catches missing-data-files errors at
+# build time rather than at first analysis run.
+RUN python -c "import spacy; [spacy.load(m) for m in ['en_core_web_sm','en_core_web_md','en_core_web_lg','en_core_web_trf','it_core_news_sm','it_core_news_lg','es_core_news_sm','es_core_news_lg']]; print('all spaCy models load ok')"
 
 # --- Entrypoint ------------------------------------------------------------
 COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
