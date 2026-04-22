@@ -132,16 +132,21 @@ spec:
           echo "=========================================="
           echo "  PART 3: analysis-only save policy check"
           echo "=========================================="
-          # Run 12 steps with save_resume_state_last_n=1, save at {5, 10, 12}
+          # Run 12 steps with save_resume_state_last_n=1, save at {5, 10, 11}
           # -> checkpoint-5 and checkpoint-10 should be analysis-only,
-          #    checkpoint-12 should have training_state.pt.
+          #    checkpoint-11 should have training_state.pt.
+          #
+          # Note: the training loop saves BEFORE incrementing global_step,
+          # so the maximum reachable save is train_steps-1. Using
+          # schedule=[5,10,11] with train_steps=12 puts the tip at the
+          # last optimizer step (consistent with the Part 1/2 pattern).
           rm -rf /mnt/data/models/$NAME
           mkdir -p /mnt/data/models/$NAME
           python - <<PYEOF
           import yaml
           with open('$BASE') as f: cfg = yaml.safe_load(f)
           cfg['training']['train_steps'] = 12
-          cfg['training']['checkpoint_schedule'] = [5, 10, 12]
+          cfg['training']['checkpoint_schedule'] = [5, 10, 11]
           cfg['training']['resume_from_checkpoint'] = False
           cfg['training']['save_resume_state_last_n'] = 1
           with open('/tmp/p3.yaml', 'w') as f: yaml.safe_dump(cfg, f)
@@ -156,8 +161,8 @@ spec:
             HAS=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-$step/metadata.json')).get('has_resume_state'))")
             [ "$HAS" = "False" ] || { echo "FAIL checkpoint-$step metadata has_resume_state=$HAS"; exit 1; }
           done
-          test -f /mnt/data/models/$NAME/checkpoint-12/training_state.pt || { echo "FAIL checkpoint-12 (tip) missing training_state.pt"; exit 1; }
-          echo "OK save-policy: checkpoints 5,10 analysis-only; checkpoint 12 full resume"
+          test -f /mnt/data/models/$NAME/checkpoint-11/training_state.pt || { echo "FAIL checkpoint-11 (tip) missing training_state.pt"; exit 1; }
+          echo "OK save-policy: checkpoints 5,10 analysis-only; checkpoint 11 full resume"
 
           echo "=========================================="
           echo "  PART 4: hashed cache path smoke (0.2)"
