@@ -85,7 +85,8 @@ class CheckpointManager:
 
     def save_checkpoint(self, model, tokenizer, optimizer, lr_scheduler,
                         global_step: int, epoch: int, scaler: Optional[torch.cuda.amp.GradScaler] = None,
-                        total_tokens_processed: int = 0):
+                        total_tokens_processed: int = 0,
+                        save_resume_state: bool = True):
         """
         Save the complete training state to a checkpoint directory.
 
@@ -98,6 +99,14 @@ class CheckpointManager:
             epoch: Current epoch number
             scaler: Optional AMP gradient scaler
             total_tokens_processed: Total number of tokens processed so far
+            save_resume_state: If True (default), also write
+                ``training_state.pt`` containing optimizer + scheduler +
+                RNG + AMP scaler state so the run can be resumed from this
+                checkpoint. If False, write analysis-only (model weights,
+                tokenizer, metadata). Analysis-only checkpoints are ~3×
+                smaller, suitable for older scheduled checkpoints where
+                we're unlikely to need resume. See 0.6 in the optimization
+                plan.
         """
         checkpoint_dir = self.output_dir / f"checkpoint-{global_step}"
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -106,23 +115,25 @@ class CheckpointManager:
         model.save_pretrained(checkpoint_dir)
         tokenizer.save_pretrained(checkpoint_dir)
 
-        # Save training state
-        state = {
-            'global_step': global_step,
-            'epoch': epoch,
-            'optimizer': optimizer.state_dict(),
-            'lr_scheduler': lr_scheduler.state_dict(),
-            'random_state': random.getstate(),
-            'numpy_random_state': np.random.get_state(),
-            'torch_random_state': torch.get_rng_state(),
-            'torch_cuda_random_state': torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
-            'git_commit_hash': self.git_commit_hash,
-            # Add AMP scaler state
-            'amp_scaler': scaler.state_dict() if scaler is not None else None,
-            # Add token count
-            'total_tokens_processed': total_tokens_processed,
-        }
-        torch.save(state, checkpoint_dir / "training_state.pt")
+        # Save training state (only when requested — resume state is ~2×
+        # the model size and is useless once the run finishes).
+        if save_resume_state:
+            state = {
+                'global_step': global_step,
+                'epoch': epoch,
+                'optimizer': optimizer.state_dict(),
+                'lr_scheduler': lr_scheduler.state_dict(),
+                'random_state': random.getstate(),
+                'numpy_random_state': np.random.get_state(),
+                'torch_random_state': torch.get_rng_state(),
+                'torch_cuda_random_state': torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None,
+                'git_commit_hash': self.git_commit_hash,
+                # Add AMP scaler state
+                'amp_scaler': scaler.state_dict() if scaler is not None else None,
+                # Add token count
+                'total_tokens_processed': total_tokens_processed,
+            }
+            torch.save(state, checkpoint_dir / "training_state.pt")
 
         # Calculate token metrics for comparison
         batch_size = self.config.data.batch_size
@@ -140,6 +151,10 @@ class CheckpointManager:
             'git_commit_hash': self.git_commit_hash,
             'config_hash': hashlib.md5(json.dumps(self.config.model_dump(), sort_keys=True).encode()).hexdigest(),
             'wandb_run_id': wandb.run.id if self.config.logging.use_wandb and wandb.run else None,
+            # 0.6 — record whether this checkpoint can be resumed from
+            # (full state) or is analysis-only. Used by loaders and the
+            # post-eval pruner.
+            'has_resume_state': save_resume_state,
             # Token counting metrics for cross-architecture comparison
             'token_metrics': {
                 'total_tokens_processed': total_tokens_processed,
@@ -167,7 +182,8 @@ class CheckpointManager:
         with open(checkpoint_dir / "metadata.json", 'w') as f:
             json.dump(metadata, f, indent=2)
 
-        print(f"\n  - Saved checkpoint at step {global_step} to '{checkpoint_dir}'")
+        kind = "full resume" if save_resume_state else "analysis-only"
+        print(f"\n  - Saved checkpoint at step {global_step} to '{checkpoint_dir}' ({kind})")
         print(f"    - Tokens processed: {total_tokens_processed:,} ({total_tokens_processed/1e6:.2f}M)")
         print(f"    - Config hash: {metadata['config_hash'][:8]}...")
         if metadata['wandb_run_id']:
@@ -204,9 +220,31 @@ class CheckpointManager:
             print("  - `resume_from_checkpoint` is true, but no checkpoints found. Starting fresh.")
             return None, 0, 0
 
-        # Find the checkpoint with the highest step number
-        latest_checkpoint = max(checkpoints, key=lambda p: int(re.search(r'checkpoint-(\d+)', p).group(1)))
-        print(f"  - Resuming training from latest checkpoint: {latest_checkpoint}")
+        # 0.6 — only analysis-only checkpoints (no training_state.pt) may
+        # exist from earlier scheduled saves. We need the latest checkpoint
+        # that actually carries a resume state; falling back to an analysis
+        # checkpoint would silently lose optimizer/scheduler/RNG state.
+        def _step_of(path: str) -> int:
+            return int(re.search(r'checkpoint-(\d+)', path).group(1))
+
+        checkpoints_sorted = sorted(checkpoints, key=_step_of, reverse=True)
+        latest_checkpoint = None
+        for candidate in checkpoints_sorted:
+            if (Path(candidate) / "training_state.pt").exists():
+                latest_checkpoint = candidate
+                break
+
+        if latest_checkpoint is None:
+            print("  - `resume_from_checkpoint` is true, but no checkpoint carries "
+                  "a training_state.pt (all are analysis-only). Starting fresh.")
+            return None, 0, 0
+
+        if latest_checkpoint != checkpoints_sorted[0]:
+            skipped = _step_of(checkpoints_sorted[0]) - _step_of(latest_checkpoint)
+            print(f"  - Skipped {skipped} analysis-only checkpoint step(s) with no "
+                  f"resume state; resuming from {latest_checkpoint}.")
+        else:
+            print(f"  - Resuming training from latest checkpoint: {latest_checkpoint}")
 
         # Load tokenizer first as it's needed for model setup
         from .tokenization import load_tokenizer

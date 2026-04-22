@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 import torch
 
 from .data_collators import get_data_collator
+from .cache_keys import compute_cache_key, cache_meta, resolve_cached_path
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +53,64 @@ class DataProcessor:
     def __init__(self, config, base_dir: str):
         self.config = config
         self.base_dir = base_dir
-        self.tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name)
-        self.chunked_data_dir = os.path.join(base_dir, "data", "chunked", config.experiment_name)
-        self.test_data_dir = os.path.join(base_dir, "data", "tokenized", config.experiment_name, "test")
+
+        # 0.2 — content-addressed cache paths. ``cache_key`` is computed
+        # from corpus + tokenizer + seq_length + manipulation, so runs
+        # that share those ingredients share tokenized/chunked data.
+        # Tokenizer artefact lookup can fail (e.g. pre-tokenizer-train
+        # instantiation in tests); fall back to legacy paths in that case.
+        training_corpus_path = config.data.training_corpus
+        if not os.path.isabs(training_corpus_path):
+            training_corpus_path = os.path.join(base_dir, training_corpus_path)
+        tokenizer_dir = config.tokenizer.output_dir
+        if not os.path.isabs(tokenizer_dir):
+            tokenizer_dir = os.path.join(base_dir, tokenizer_dir)
+        manipulation = config.dataset_manipulation or []
+
+        try:
+            self.cache_key: Optional[str] = compute_cache_key(
+                training_corpus_path,
+                tokenizer_dir,
+                config.data.max_sequence_length,
+                manipulation,
+            )
+        except FileNotFoundError:
+            # Tokenizer hasn't been trained yet (e.g. first-run ordering in
+            # the pipeline, or test harnesses). Disable hashing and rely
+            # entirely on the legacy experiment_name path — the writer in
+            # tokenize_dataset.py will populate the hashed path once the
+            # tokenizer exists.
+            self.cache_key = None
+
+        self.tokenized_data_dir = self._resolve_cache_path("tokenized")
+        self.chunked_data_dir = self._resolve_cache_path("chunked")
+        self.test_data_dir = os.path.join(self.tokenized_data_dir, "test")
         # Cache to avoid re-loading from disk repeatedly
         self._cached_chunked_dataset: Optional[Dataset] = None
+
+    def _resolve_cache_path(self, cache_type: str) -> str:
+        """Resolve a cache directory, preferring the hashed path.
+
+        Falls back to the legacy experiment_name-keyed location so runs
+        that predate 0.2 (e.g. the in-flight baseline) still load.
+        """
+        if self.cache_key is not None:
+            path, kind, is_fallback = resolve_cached_path(
+                self.base_dir,
+                cache_type,
+                self.cache_key,
+                experiment_name=self.config.experiment_name,
+            )
+            if is_fallback:
+                logger.info(
+                    "Using legacy %s cache at %s (hashed path %s not populated yet)",
+                    cache_type, path, self.cache_key,
+                )
+            return path
+        # No cache key (tokenizer not yet trained); fall back to legacy.
+        return os.path.join(
+            self.base_dir, "data", cache_type, self.config.experiment_name
+        )
         
     def _validate_tokenized_dataset(self) -> bool:
         """Validate that the tokenized dataset exists and has the expected structure."""
@@ -192,6 +246,36 @@ class DataProcessor:
         os.makedirs(self.chunked_data_dir, exist_ok=True)
         dataset.save_to_disk(self.chunked_data_dir)
         print(f"  ✓ Saved chunked dataset to: {self.chunked_data_dir}")
+
+        # 0.2 — sidecar metadata so the hashed dir is self-describing.
+        # Only write when we actually resolved the hashed path (cache_key
+        # is set and we're writing into a cache-key-named directory).
+        if self.cache_key and self.cache_key in self.chunked_data_dir:
+            import json as _json
+            training_corpus_path = self.config.data.training_corpus
+            if not os.path.isabs(training_corpus_path):
+                training_corpus_path = os.path.join(self.base_dir, training_corpus_path)
+            tokenizer_dir = self.config.tokenizer.output_dir
+            if not os.path.isabs(tokenizer_dir):
+                tokenizer_dir = os.path.join(self.base_dir, tokenizer_dir)
+            try:
+                meta = cache_meta(
+                    training_corpus_path,
+                    tokenizer_dir,
+                    self.config.data.max_sequence_length,
+                    self.config.dataset_manipulation or [],
+                    extra={
+                        "first_experiment_name": self.config.experiment_name,
+                        "cache_key": self.cache_key,
+                        "stage": "chunked",
+                    },
+                )
+                with open(os.path.join(self.chunked_data_dir, "meta.json"), "w", encoding="utf-8") as f:
+                    _json.dump(meta, f, indent=2)
+            except FileNotFoundError:
+                # Tokenizer disappeared between init and save — don't fail
+                # the chunking just for sidecar metadata.
+                pass
     
     def _load_chunked_dataset(self) -> Optional[Dataset]:
         """Load the chunked dataset from disk."""
@@ -318,17 +402,22 @@ class DataProcessor:
         import os
         # num_workers: under K8s, os.cpu_count() returns the host CPU count
         # (32+), but our cgroup allocation is typically 4. Use
-        # sched_getaffinity if available and cap conservatively.
-        if hasattr(self.config.data, 'num_workers') and self.config.data.num_workers is not None:
+        # sched_getaffinity if available.
+        #
+        # 0.4 gives us typed fields; 1.2 raises the auto ceiling from 4 to
+        # 12 so that once FA2 shifts the bottleneck from compute to I/O
+        # (seen via 1.1's data_ms metric), a K8s cpu: bump alone is
+        # enough to unlock more workers without another code change.
+        if self.config.data.num_workers is not None:
             num_workers = self.config.data.num_workers
         else:
             try:
                 available = len(os.sched_getaffinity(0))
             except AttributeError:
                 available = os.cpu_count() or 1
-            num_workers = max(1, min(4, available // 2 or 1))
-        pin_memory = getattr(self.config.data, 'pin_memory', True)
-        prefetch_factor = getattr(self.config.data, 'prefetch_factor', 2)
+            num_workers = max(1, min(12, available // 2 or 1))
+        pin_memory = self.config.data.pin_memory
+        prefetch_factor = self.config.data.prefetch_factor
         
         logger.debug(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_memory}, prefetch_factor={prefetch_factor}")
         

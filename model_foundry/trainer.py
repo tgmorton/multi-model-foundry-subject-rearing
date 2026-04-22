@@ -143,7 +143,7 @@ class Trainer:
 
     def _apply_torch_compile(self):
         """Apply torch.compile optimization if configured."""
-        compile_mode = getattr(self.config.training, 'compile_mode', None)
+        compile_mode = self.config.training.compile_mode
 
         if not compile_mode or str(compile_mode).lower() == 'none':
             print(f"  - Skipping torch.compile (compile_mode='{compile_mode}')")
@@ -153,15 +153,23 @@ class Trainer:
             print(f"  - Compiling model with torch.compile(mode='{compile_mode}')...")
             import torch._dynamo
             torch._dynamo.config.suppress_errors = True
+            # 1.3 — let Dynamo accumulate more compiled graphs before falling
+            # back to eager. Long runs otherwise trip the default cache size
+            # (8) and silently revert to unoptimized execution.
+            torch._dynamo.config.cache_size_limit = 256
 
+            # 1.3 — drop the hard-coded backend="eager" that defeated
+            # torch.compile's speedup; the default backend (Inductor) is
+            # where the win lives. Gated behind compile_mode in config so
+            # archs that regress under Inductor can opt out per-YAML.
             if compile_mode == 'reduce-overhead':
-                self.model = torch.compile(self.model, mode="reduce-overhead", backend="eager")
+                self.model = torch.compile(self.model, mode="reduce-overhead")
             elif compile_mode == 'max-autotune':
-                self.model = torch.compile(self.model, mode="max-autotune", backend="eager")
+                self.model = torch.compile(self.model, mode="max-autotune")
             else:
-                self.model = torch.compile(self.model, mode="default", backend="eager")
+                self.model = torch.compile(self.model, mode="default")
 
-            print("  - Model compilation successful")
+            print("  - Model compilation successful (backend=inductor)")
         except Exception as e:
             print(f"  - Warning: torch.compile failed ({e}), continuing without compilation")
 
@@ -187,12 +195,29 @@ class Trainer:
 
     def _initialize_optimizer_and_scheduler(self):
         """Initialize optimizer and learning rate scheduler."""
-        self.optimizer = AdamW(
-            self.model.parameters(),
+        # 0.5 — use fused AdamW on CUDA. ~10–20% faster on the optimizer
+        # step; requires contiguous params on the same device (true for
+        # our single-GPU training). CPU builds of PyTorch don't support
+        # fused=True, so gate on device type and fall back gracefully.
+        use_fused = torch.cuda.is_available() and self.device.type == "cuda"
+        optimizer_kwargs = dict(
             lr=self.config.training.learning_rate,
             betas=(self.config.training.adam_beta1, self.config.training.adam_beta2),
-            eps=self.config.training.adam_epsilon
+            eps=self.config.training.adam_epsilon,
         )
+        try:
+            self.optimizer = AdamW(
+                self.model.parameters(),
+                fused=use_fused,
+                **optimizer_kwargs,
+            )
+            if use_fused:
+                print("  - Using fused AdamW optimizer")
+        except (RuntimeError, TypeError) as e:
+            # Older torch versions reject `fused=` entirely; also a small
+            # number of param configurations can raise at construction.
+            print(f"  - Fused AdamW unavailable ({e}); using standard AdamW")
+            self.optimizer = AdamW(self.model.parameters(), **optimizer_kwargs)
 
         self.lr_scheduler = get_scheduler(
             "linear",

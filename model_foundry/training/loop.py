@@ -80,6 +80,21 @@ class TrainingLoop:
 
         # Get checkpoint schedule
         checkpoint_schedule = self.checkpoint_manager.get_checkpoint_schedule()
+
+        # 0.6 — determine which scheduled steps save full resume state
+        # (model + optimizer + scheduler + RNG + AMP scaler). Earlier
+        # scheduled steps save analysis-only (model + tokenizer + metadata),
+        # which is ~3× smaller. ``None`` keeps the legacy behavior where
+        # every checkpoint carries full resume state.
+        last_n = self.config.training.save_resume_state_last_n
+        if last_n is None:
+            resume_state_steps: Optional[Set[int]] = None
+        else:
+            sorted_schedule = sorted(checkpoint_schedule)
+            resume_state_steps = (
+                set(sorted_schedule[-last_n:]) if last_n > 0 else set()
+            )
+
         progress_bar = tqdm(
             range(self.config.training.train_steps),
             initial=self.global_step,
@@ -120,18 +135,47 @@ class TrainingLoop:
             # calibrated in optimizer-step units.
             micro_step = 0
 
-            for batch_idx, batch in enumerate(self.dataloader):
+            # 1.1 — per-optimizer-step timing accumulators. data_ms is wall
+            # time spent fetching batches from the dataloader; compute_ms
+            # covers H2D transfer + forward + backward + optimizer.step().
+            # Reset at each optimizer-step boundary and emitted via
+            # _log_metrics so HP sweeps can see the data/compute split.
+            data_ms_acc = 0.0
+            compute_ms_acc = 0.0
+            tokens_acc = 0
+
+            # Explicit iterator so we can time each next() call cleanly
+            # (1.1). Equivalent to the prior `for batch in self.dataloader`.
+            data_iter = iter(self.dataloader)
+
+            while True:
                 if self.global_step >= self.config.training.train_steps:
                     break
 
+                t_data_start = time.perf_counter()
                 try:
+                    batch = next(data_iter)
+                except StopIteration:
+                    break
+                data_ms_acc += (time.perf_counter() - t_data_start) * 1000
+
+                try:
+                    t_compute_start = time.perf_counter()
+
                     # Move batch to device
                     inputs = {k: v.to(self.device, non_blocking=True) for k, v in batch.items()}
 
-                    # Forward and backward pass
+                    # Forward and backward pass. Returns the loss as a
+                    # detached GPU tensor (0.3) — do NOT call .item() here
+                    # or we pay a cudaDeviceSynchronize on every micro-batch.
                     loss, did_optimizer_step = self._training_step(inputs, micro_step)
+
+                    compute_ms_acc += (time.perf_counter() - t_compute_start) * 1000
+
                     epoch_losses.append(loss)
-                    total_tokens_processed += inputs['input_ids'].numel()
+                    tokens_this_batch = inputs['input_ids'].numel()
+                    total_tokens_processed += tokens_this_batch
+                    tokens_acc += tokens_this_batch
                     micro_step += 1
 
                     # The remaining bookkeeping only runs when the
@@ -148,11 +192,35 @@ class TrainingLoop:
 
                         # Logging
                         if self.config.logging.use_wandb:
-                            self._log_metrics(loss, total_tokens_processed, steps_per_epoch)
+                            self._log_metrics(
+                                loss,
+                                total_tokens_processed,
+                                steps_per_epoch,
+                                data_ms=data_ms_acc,
+                                compute_ms=compute_ms_acc,
+                                tokens_this_step=tokens_acc,
+                            )
 
-                        # Checkpoint saving
+                        # Checkpoint saving. 0.6 — only the last N scheduled
+                        # steps carry optimizer+RNG+scaler state; earlier
+                        # saves are analysis-only.
                         if self.global_step in checkpoint_schedule:
-                            self._save_checkpoint(tokenizer, total_tokens_processed)
+                            save_resume = (
+                                resume_state_steps is None
+                                or self.global_step in resume_state_steps
+                            )
+                            self._save_checkpoint(
+                                tokenizer,
+                                total_tokens_processed,
+                                save_resume_state=save_resume,
+                            )
+
+                        # Reset per-step timing after logging/saving so
+                        # checkpoint save time doesn't pollute the next
+                        # step's numbers.
+                        data_ms_acc = 0.0
+                        compute_ms_acc = 0.0
+                        tokens_acc = 0
 
                         self.global_step += 1
                         progress_bar.update(1)
@@ -165,6 +233,11 @@ class TrainingLoop:
                         # boundary so the window restarts cleanly.
                         grad_accum = self.config.training.gradient_accumulation_steps
                         micro_step = micro_step - (micro_step % grad_accum)
+                        # Drop the partial-window timing; next optimizer
+                        # step should start from a clean slate.
+                        data_ms_acc = 0.0
+                        compute_ms_acc = 0.0
+                        tokens_acc = 0
                         continue
                     else:
                         raise
@@ -256,7 +329,26 @@ class TrainingLoop:
                 self.optimizer.zero_grad(set_to_none=True)
                 did_step = True
 
-        return loss.item() * grad_accum, did_step
+        # 0.3 — return the loss as a detached GPU tensor rather than a
+        # Python float. Calling .item() here forces cudaDeviceSynchronize
+        # on every micro-batch; at gradient_accumulation_steps=16 that's
+        # 16 syncs per optimizer step. Callers sync at their own cadence.
+        return (loss.detach() * grad_accum), did_step
+
+    @staticmethod
+    def _mean_loss(losses: list) -> float:
+        """
+        Reduce a list of per-micro-batch losses to a scalar float.
+
+        Losses may be either Python floats (legacy) or 0-D tensors (0.3).
+        Tensors are stacked and reduced in a single kernel so there is only
+        one host/device sync, not one per element.
+        """
+        if not losses:
+            return 0.0
+        if isinstance(losses[0], torch.Tensor):
+            return torch.stack(losses).mean().item()
+        return sum(losses) / len(losses)
 
     def _monitor_memory(self, max_memory_reserved: float) -> float:
         """
@@ -287,11 +379,14 @@ class TrainingLoop:
 
         Args:
             progress_bar: tqdm progress bar instance
-            epoch_losses: List of losses for current epoch
+            epoch_losses: List of per-micro-batch loss tensors for current
+                epoch (detached, on-device). We sync to Python scalar here,
+                which is one of the few places per optimizer step that a
+                host/device sync is acceptable.
             steps_per_epoch: Number of steps per epoch
         """
         current_lr = self.lr_scheduler.get_last_lr()[0]
-        avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
+        avg_loss = self._mean_loss(epoch_losses)
         current_epoch = min(self.config.training.epochs, (self.global_step // steps_per_epoch) + 1)
 
         # Calculate ETA
@@ -310,34 +405,68 @@ class TrainingLoop:
             'eta': eta_str
         })
 
-    def _log_metrics(self, loss: float, total_tokens_processed: int, steps_per_epoch: int):
+    def _log_metrics(self, loss, total_tokens_processed: int, steps_per_epoch: int,
+                     data_ms: float = 0.0, compute_ms: float = 0.0,
+                     tokens_this_step: int = 0):
         """
         Log metrics to W&B.
 
         Args:
-            loss: Current loss value
+            loss: Current loss (scalar float or 0-D tensor). Tensor inputs
+                are converted via .item() here — acceptable since logging
+                is gated on optimizer-step cadence, not micro-batch.
             total_tokens_processed: Total tokens processed so far
             steps_per_epoch: Number of steps per epoch
+            data_ms: Time spent fetching this optimizer step's batches from
+                the dataloader, in milliseconds (1.1).
+            compute_ms: Time spent on H2D + forward + backward + optimizer
+                for this optimizer step, in milliseconds (1.1).
+            tokens_this_step: Tokens processed in this optimizer step; used
+                to derive tokens/sec.
         """
         current_lr = self.lr_scheduler.get_last_lr()[0]
         current_epoch = min(self.config.training.epochs, (self.global_step // steps_per_epoch) + 1)
 
-        wandb.log({
-            "loss": loss,
+        if isinstance(loss, torch.Tensor):
+            loss_value = loss.item()
+        else:
+            loss_value = float(loss)
+
+        total_ms = data_ms + compute_ms
+        tokens_per_sec = (tokens_this_step / (total_ms / 1000.0)) if total_ms > 0 else 0.0
+
+        payload = {
+            "loss": loss_value,
             "learning_rate": current_lr,
             "epoch": current_epoch,
             "tokens_processed": total_tokens_processed,
             "memory_allocated_gb": torch.cuda.memory_allocated() / 1024**3 if torch.cuda.is_available() else 0,
-            "memory_reserved_gb": torch.cuda.memory_reserved() / 1024**3 if torch.cuda.is_available() else 0
-        }, step=self.global_step)
+            "memory_reserved_gb": torch.cuda.memory_reserved() / 1024**3 if torch.cuda.is_available() else 0,
+            # 1.1 — data-vs-compute timing split. Together with
+            # tokens_per_sec these distinguish "compute-bound" from
+            # "data-bound" runs, which drives HP sweep and CPU-budget
+            # tuning decisions.
+            "timing/data_ms": data_ms,
+            "timing/compute_ms": compute_ms,
+            "timing/total_ms": total_ms,
+            "timing/data_fraction": (data_ms / total_ms) if total_ms > 0 else 0.0,
+            "throughput/tokens_per_sec": tokens_per_sec,
+        }
 
-    def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0):
+        wandb.log(payload, step=self.global_step)
+
+    def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0,
+                         save_resume_state: bool = True):
         """
         Save a checkpoint with proper cleanup.
 
         Args:
             tokenizer: Tokenizer to save with checkpoint
             total_tokens_processed: Total number of tokens processed so far
+            save_resume_state: If True, include optimizer/scheduler/RNG/AMP
+                state so the run can be resumed from this checkpoint. If
+                False, write analysis-only (model + tokenizer + metadata),
+                which is ~3× smaller on disk. See 0.6.
         """
         # Ensure all gradients are cleared before checkpoint
         self.optimizer.zero_grad(set_to_none=True)
@@ -348,7 +477,8 @@ class TrainingLoop:
 
         self.checkpoint_manager.save_checkpoint(
             self.model, tokenizer, self.optimizer, self.lr_scheduler,
-            self.global_step, self.epoch, self.scaler, total_tokens_processed
+            self.global_step, self.epoch, self.scaler, total_tokens_processed,
+            save_resume_state=save_resume_state,
         )
 
         # Clear cache after checkpoint to free memory
@@ -399,7 +529,7 @@ class TrainingLoop:
             max_memory_reserved: Maximum memory reserved
             gradient_overflow_counter: Number of gradient overflows
         """
-        epoch_avg_loss = sum(epoch_losses) / len(epoch_losses) if epoch_losses else 0
+        epoch_avg_loss = self._mean_loss(epoch_losses)
         current_lr = self.lr_scheduler.get_last_lr()[0]
 
         print(f"  Epoch {epoch + 1} completed:")

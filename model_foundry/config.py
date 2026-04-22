@@ -10,6 +10,23 @@ class DataConfig(BaseModel):
     batch_size: int = Field(..., gt=0)
     max_sequence_length: int = Field(..., gt=0)
 
+    # DataLoader tuning (typed; replaces prior getattr/hasattr fallbacks).
+    # num_workers=None means "use cgroup-aware auto default" (see data.py).
+    num_workers: Optional[int] = Field(
+        default=None,
+        ge=0,
+        description="DataLoader worker count. None → cgroup-aware auto.",
+    )
+    pin_memory: bool = Field(
+        default=True,
+        description="Pin DataLoader output in host memory for faster H2D copy.",
+    )
+    prefetch_factor: int = Field(
+        default=2,
+        ge=1,
+        description="Number of batches pre-fetched per worker (only used when num_workers > 0).",
+    )
+
 class TokenizerConfig(BaseModel):
     output_dir: str
     vocab_size: int = Field(..., gt=0)
@@ -322,6 +339,25 @@ class TrainingConfig(BaseModel):
     # Memory optimizations
     use_tf32: bool = True  # Enable TF32 for faster training on Ampere+ GPUs
     use_gradient_checkpointing: bool = False  # Enable gradient checkpointing to save memory
+
+    # torch.compile mode. None disables compile entirely. Valid modes:
+    # "default", "reduce-overhead", "max-autotune". Backend is Inductor
+    # (torch.compile's default) — the old hard-coded "eager" backend
+    # defeated the speedup.
+    compile_mode: Optional[str] = Field(
+        default=None,
+        description="torch.compile mode ('default', 'reduce-overhead', 'max-autotune', or None to disable).",
+    )
+
+    # Resume-state save policy (0.6). If set, only the last N scheduled
+    # checkpoints save optimizer/scheduler/RNG/AMP state (~3× model size).
+    # Earlier checkpoints save analysis-only (weights + tokenizer + metadata).
+    # None → save resume state for every checkpoint (current/default behavior).
+    save_resume_state_last_n: Optional[int] = Field(
+        default=None,
+        ge=0,
+        description="Only last N scheduled checkpoints save resume state. None keeps all as full resume.",
+    )
 
     # Checkpoint generation parameters
     auto_generate_checkpoints: bool = False

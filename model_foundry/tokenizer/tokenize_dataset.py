@@ -1,10 +1,17 @@
 import argparse
+import json
 import os
 import yaml
 import sentencepiece as spm
 from datasets import load_dataset, disable_progress_bar
 from pathlib import Path
 import glob
+
+from model_foundry.cache_keys import (
+    compute_cache_key,
+    cache_meta,
+    resolve_cached_path,
+)
 
 # Correctly disable the progress bars from the datasets library
 disable_progress_bar()
@@ -47,7 +54,6 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
                                                                                                       training_corpus_path_from_config)
     tokenizer_dir = tokenizer_dir_from_config if os.path.isabs(tokenizer_dir_from_config) else os.path.join(base_dir,
                                                                                                             tokenizer_dir_from_config)
-    tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", experiment_name)
     tokenizer_model_path = os.path.join(tokenizer_dir, 'tokenizer.model')
 
     if not os.path.exists(training_corpus_path):
@@ -57,18 +63,39 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
         print(f"FATAL ERROR: Tokenizer model not found at '{tokenizer_model_path}'.")
         return
 
+    # 0.2 — content-addressed cache path so different experiments that
+    # share corpus + tokenizer + seq_length + manipulation reuse tokenized
+    # output. Falls back to the legacy experiment_name-keyed path when a
+    # run that predates this change already populated it.
+    max_sequence_length = int(config['data']['max_sequence_length'])
+    manipulation = config.get('dataset_manipulation') or []
+    cache_key = compute_cache_key(
+        training_corpus_path, tokenizer_dir, max_sequence_length, manipulation
+    )
+    tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", cache_key)
+    legacy_tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", experiment_name)
+
     print(f"  - Experiment:          {experiment_name}")
     print(f"  - Tokenizer Model:     {tokenizer_model_path}")
+    print(f"  - Cache key:           {cache_key}")
     print(f"  - Output Directory:    {tokenized_data_dir}")
 
     # Idempotency check: skip if tokenized dataset already exists. The data
     # loader expects a saved HF Dataset under train/ (and optionally test/),
-    # so we look for the canonical dataset_info.json sentinel.
+    # so we look for the canonical dataset_info.json sentinel — at either
+    # the hashed path (new) or the legacy experiment_name path (runs that
+    # predate 0.2, e.g. the in-flight baseline).
     train_sentinel = os.path.join(tokenized_data_dir, 'train', 'dataset_info.json')
+    legacy_train_sentinel = os.path.join(legacy_tokenized_data_dir, 'train', 'dataset_info.json')
     if not force and os.path.exists(train_sentinel):
         print(f"  - Tokenized dataset already exists at: {tokenized_data_dir}")
         print(f"  - Skipping re-tokenization. Pass force=True (or --force on CLI) to override.")
         print("----- Dataset Tokenization Skipped (cached) -----")
+        return
+    if not force and os.path.exists(legacy_train_sentinel):
+        print(f"  - Found legacy tokenized dataset at: {legacy_tokenized_data_dir}")
+        print(f"  - Using legacy cache; new runs with the same inputs will reuse the hashed path {cache_key}.")
+        print("----- Dataset Tokenization Skipped (legacy cache) -----")
         return
 
     tokenizer = spm.SentencePieceProcessor()
@@ -149,6 +176,19 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     # Save datasets
     print(f"\n  - Saving tokenized datasets to '{tokenized_data_dir}'...")
     os.makedirs(tokenized_data_dir, exist_ok=True)
+
+    # 0.2 — write sidecar metadata so the hashed directory is auditable
+    # without recomputing the key.
+    meta = cache_meta(
+        training_corpus_path, tokenizer_dir, max_sequence_length, manipulation,
+        extra={
+            "first_experiment_name": experiment_name,
+            "cache_key": cache_key,
+            "stage": "tokenized",
+        },
+    )
+    with open(os.path.join(tokenized_data_dir, "meta.json"), "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2)
     
     # Save training dataset
     tokenized_training_dataset.save_to_disk(os.path.join(tokenized_data_dir, 'train'))
