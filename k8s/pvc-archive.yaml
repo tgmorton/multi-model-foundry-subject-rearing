@@ -1,0 +1,27 @@
+---
+# Cold-storage PVC for reference-rep model checkpoints ("Lane 2" in the
+# storage architecture — see memory/reference_storage_plan.md).
+#
+# Holds: analysis-only (no optimizer state) checkpoints for the reference
+# replicate of each (arch × language × condition) cell. One PVC across
+# the whole study; pruners migrate finished runs here from the hot
+# `corpus-analysis-data` PVC after eval completes.
+#
+# Sizing rationale (from reference_storage_plan.md, 80-checkpoint policy):
+#   - Current prereg v2 (~8 conditions × 2 langs):  ~10 TB
+#   - Pared pronoun sweep (~15 conds × 2 langs):    ~20 TB
+#   - Full pronoun sweep (~27 conds × 2 langs):     ~35 TB
+# Request 40 TiB to cover the full pronoun sweep with overhead; Nautilus
+# only charges inactivity, not size, and the PVC can be online-resized up
+# if we're wrong (same as `corpus-analysis-data` was resized 20→200 GiB).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: subject-drop-archive
+spec:
+  storageClassName: rook-cephfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 40Ti

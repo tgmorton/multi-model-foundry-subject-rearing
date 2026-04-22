@@ -1,0 +1,202 @@
+---
+# S3 smoke test. Exercises every write pattern we plan to use from
+# training/eval pods against the Nautilus Ceph RGW S3 endpoint:
+#
+#   1. Small JSON put + get + parse  — the registry shape (0.8)
+#   2. Parquet via pyarrow.fs.S3FileSystem — the eval-result shape
+#   3. Text blob put + get            — the env_snapshot shape
+#   4. Multipart upload (12 MB)       — proves we can push >80 MB when
+#                                       needed (aws-cli is broken here;
+#                                       boto3 handles it natively)
+#   5. List-objects + delete          — lifecycle ops for the compactor
+#   6. Concurrent writes              — 8 pods would normally contend;
+#                                       this test does 8 writes in-process
+#                                       to different keys to confirm no
+#                                       throttling at Ceph layer
+#
+# Uses the inside-cluster endpoint (http://rook-ceph-rgw-nautiluss3.rook)
+# which the NRP docs recommend for high-bandwidth parallel access; the
+# outside endpoint goes through a load balancer.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: s3-smoke
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      containers:
+      - name: smoke
+        image: python:3.11-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  S3 smoke — thomas-subject-drop-artifacts"
+          echo "=========================================="
+          pip install --quiet boto3 pyarrow 2>&1 | tail -3
+
+          python - <<'PYEOF'
+          import io, json, os, time, uuid, concurrent.futures as cf
+          import boto3
+          from botocore.config import Config
+          import pyarrow as pa
+          import pyarrow.parquet as pq
+          import pyarrow.fs as pafs
+
+          BUCKET = "thomas-subject-drop-artifacts"
+          PREFIX = f"smoke/{int(time.time())}-{uuid.uuid4().hex[:6]}"
+          ENDPOINT = os.environ["AWS_ENDPOINT_URL"]
+
+          boto = boto3.client(
+              "s3",
+              endpoint_url=ENDPOINT,
+              config=Config(
+                  signature_version="s3v4",
+                  s3={"addressing_style": "path"},
+                  retries={"max_attempts": 5, "mode": "standard"},
+              ),
+          )
+
+          # ---- 1. Small JSON (registry shape) ----
+          print("\n[1] JSON put/get/parse")
+          record = {
+              "schema_version": 1,
+              "run_id": "smoke-run-0",
+              "arch": "gpt2_medium",
+              "lang": "en",
+              "condition": "baseline",
+              "seed": 0,
+              "status": "RUNNING",
+              "started_at": "2026-04-22T01:20:00Z",
+          }
+          key = f"{PREFIX}/run_registry/by_run/gpt2_medium/en/baseline/smoke-run-0.json"
+          boto.put_object(
+              Bucket=BUCKET, Key=key,
+              Body=json.dumps(record, indent=2).encode("utf-8"),
+              ContentType="application/json",
+          )
+          roundtrip = json.loads(
+              boto.get_object(Bucket=BUCKET, Key=key)["Body"].read()
+          )
+          assert roundtrip == record, "JSON round-trip mismatch"
+          print("   OK json roundtrip, key =", key)
+
+          # ---- 2. Parquet via pyarrow S3FileSystem (eval-result shape) ----
+          print("\n[2] parquet via pyarrow.fs.S3FileSystem")
+          # pyarrow reads env vars, but we pass explicitly to guarantee
+          # endpoint + path-style addressing against Ceph.
+          s3fs_ = pafs.S3FileSystem(
+              endpoint_override=ENDPOINT.replace("http://", "").replace("https://", ""),
+              scheme="http" if ENDPOINT.startswith("http://") else "https",
+              allow_bucket_creation=False,
+              allow_bucket_deletion=False,
+          )
+          table = pa.table({
+              "checkpoint": [0, 10, 20, 30],
+              "step": [0, 10, 20, 30],
+              "loss": [6.5, 5.2, 4.6, 4.1],
+              "blimp_score": [0.50, 0.55, 0.60, 0.63],
+          })
+          parquet_key = f"{PREFIX}/eval_results/perplexity/smoke-run-0.parquet"
+          with s3fs_.open_output_stream(f"{BUCKET}/{parquet_key}") as f:
+              pq.write_table(table, f)
+          # open_input_file() returns a seekable handle (unlike
+          # open_input_stream) which pq.read_table requires.
+          with s3fs_.open_input_file(f"{BUCKET}/{parquet_key}") as f:
+              read_back = pq.read_table(f)
+          assert read_back.equals(table), "parquet round-trip mismatch"
+          print(f"   OK parquet roundtrip, {len(table)} rows, key = {parquet_key}")
+
+          # ---- 3. Text blob (env_snapshot shape) ----
+          print("\n[3] env_snapshot text blob")
+          snapshot_text = (
+              "pip freeze:\n"
+              "  boto3==1.42.93\n"
+              "  pyarrow==...\n"
+              "git log -1: 509de1e\n"
+              "nvidia-smi: (no GPU in smoke pod)\n"
+          )
+          snapshot_key = f"{PREFIX}/env_snapshots/smoke-run-0.txt"
+          boto.put_object(
+              Bucket=BUCKET, Key=snapshot_key,
+              Body=snapshot_text.encode("utf-8"),
+              ContentType="text/plain",
+          )
+          back = boto.get_object(Bucket=BUCKET, Key=snapshot_key)["Body"].read().decode()
+          assert back == snapshot_text, "text roundtrip mismatch"
+          print("   OK text roundtrip")
+
+          # ---- 4. Multipart upload (12 MB — past the aws-cli 80MB bug via boto3) ----
+          print("\n[4] multipart upload via boto3 (12 MB)")
+          # boto3 upload_fileobj uses TransferManager which does multipart
+          # automatically once the body exceeds multipart_threshold (default 8 MB).
+          big = b"A" * (12 * 1024 * 1024)
+          big_key = f"{PREFIX}/archive/big.bin"
+          t0 = time.perf_counter()
+          boto.upload_fileobj(io.BytesIO(big), BUCKET, big_key)
+          elapsed = time.perf_counter() - t0
+          got = boto.get_object(Bucket=BUCKET, Key=big_key)
+          assert got["ContentLength"] == len(big), "multipart size mismatch"
+          print(f"   OK multipart {len(big)/1e6:.1f} MB in {elapsed:.1f}s "
+                f"({len(big)/elapsed/1e6:.1f} MB/s)")
+
+          # ---- 5. List + delete (compactor lifecycle) ----
+          print("\n[5] list_objects_v2 + delete")
+          page = boto.list_objects_v2(Bucket=BUCKET, Prefix=f"{PREFIX}/")
+          keys = [o["Key"] for o in page.get("Contents", [])]
+          assert key in keys and parquet_key in keys and snapshot_key in keys and big_key in keys
+          print(f"   OK listed {len(keys)} objects under prefix")
+
+          # Delete everything we wrote
+          boto.delete_objects(
+              Bucket=BUCKET,
+              Delete={"Objects": [{"Key": k} for k in keys]},
+          )
+          page2 = boto.list_objects_v2(Bucket=BUCKET, Prefix=f"{PREFIX}/")
+          assert page2.get("KeyCount", 0) == 0, "delete did not remove all keys"
+          print("   OK delete_objects emptied prefix")
+
+          # ---- 6. Concurrent writes (8 × different keys) ----
+          print("\n[6] 8 concurrent puts to distinct keys")
+          conc_prefix = f"{PREFIX}/concurrent"
+          def _put(i: int) -> str:
+              k = f"{conc_prefix}/rec-{i:02d}.json"
+              boto.put_object(Bucket=BUCKET, Key=k,
+                              Body=json.dumps({"i": i}).encode())
+              return k
+          t0 = time.perf_counter()
+          with cf.ThreadPoolExecutor(max_workers=8) as ex:
+              results = list(ex.map(_put, range(8)))
+          elapsed = time.perf_counter() - t0
+          page3 = boto.list_objects_v2(Bucket=BUCKET, Prefix=conc_prefix + "/")
+          assert page3.get("KeyCount") == 8, f"expected 8 objects, got {page3.get('KeyCount')}"
+          print(f"   OK 8 concurrent puts in {elapsed:.2f}s")
+
+          # Clean up the concurrent fan-out
+          boto.delete_objects(
+              Bucket=BUCKET,
+              Delete={"Objects": [{"Key": k} for k in results]},
+          )
+
+          print("\n==========================================")
+          print("  ALL S3 WRITE PATTERNS PASSED")
+          print("==========================================")
+          PYEOF
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}
+        - name: AWS_ENDPOINT_URL
+          value: "http://rook-ceph-rgw-nautiluss3.rook"
+        - name: AWS_DEFAULT_REGION
+          value: "us-west-1"
+        resources:
+          requests: {memory: 1Gi, cpu: "1"}
+          limits:   {memory: 1Gi, cpu: "1"}
+      restartPolicy: Never

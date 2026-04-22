@@ -1,0 +1,194 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-gpt2-medium-opts
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=optimizations/phase-0-1
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: smoke
+        image: pytorch/pytorch:2.5.1-cuda12.1-cudnn9-runtime
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          echo "=========================================="
+          echo "  SMOKE TEST — GPT-2 medium (355M), opts branch"
+          echo "=========================================="
+          # Note: pytorch/pytorch image has no git. Use HEAD file to
+          # confirm we got the right branch.
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no .git/HEAD — this is fine)"
+
+          cd /opt/repo
+          pip install --no-cache-dir -r requirements.txt sentencepiece 2>&1 | tail -3
+
+          # Wire PVC paths
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+
+          BASE=configs/experiments/smoke_gpt2_medium.yaml
+          NAME=smoke_gpt2_medium
+
+          python -m model_foundry.cli validate-config $BASE
+
+          echo "=== Tokenizer (idempotent) ==="
+          python -m model_foundry.cli train-tokenizer $BASE
+
+          echo "=== Tokenize (should write to hashed path; legacy fallback for old data) ==="
+          python -m model_foundry.cli tokenize-dataset $BASE
+
+          echo "=== Chunk (idempotent) ==="
+          python -m model_foundry.cli preprocess-data $BASE
+
+          # Clean stale checkpoints so resume doesn't pick up old runs
+          rm -rf /mnt/data/models/$NAME
+          mkdir -p /mnt/data/models/$NAME
+
+          echo "=========================================="
+          echo "  PART 1: 6 steps, save at step 5 (full resume)"
+          echo "=========================================="
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 6
+          cfg['training']['checkpoint_schedule'] = [5]
+          cfg['training']['resume_from_checkpoint'] = False
+          # Exercise new fields
+          cfg['training']['save_resume_state_last_n'] = 3
+          cfg['training']['compile_mode'] = None   # keep compile off for this smoke
+          with open('/tmp/p1.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+          python -m model_foundry.cli run /tmp/p1.yaml 2>&1 | tee /tmp/p1.log
+
+          test -d /mnt/data/models/$NAME/checkpoint-5 || { echo "FAIL checkpoint-5 missing"; exit 1; }
+          test -f /mnt/data/models/$NAME/checkpoint-5/training_state.pt || { echo "FAIL training_state.pt missing at tip"; exit 1; }
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-5/metadata.json'))['global_step'])")
+          [ "$STEP" = "5" ] || { echo "FAIL checkpoint-5 reports step=$STEP"; exit 1; }
+          HAS_RESUME=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-5/metadata.json')).get('has_resume_state'))")
+          [ "$HAS_RESUME" = "True" ] || { echo "FAIL checkpoint-5 metadata has_resume_state=$HAS_RESUME"; exit 1; }
+          echo "OK checkpoint-5 saved with full resume state"
+
+          echo "=== timing/* keys in log (1.1) ==="
+          grep -E "data_ms|compute_ms|tokens_per_sec" /tmp/p1.log | head -5 || echo "(timing only to WandB when enabled)"
+
+          echo "=== fused AdamW banner (0.5) ==="
+          grep -E "fused AdamW|Fused AdamW" /tmp/p1.log | head -2 || echo "FAIL no fused AdamW log line"
+
+          echo "=========================================="
+          echo "  PART 2: resume → run to step 11, save at 10"
+          echo "=========================================="
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 11
+          cfg['training']['checkpoint_schedule'] = [10]
+          cfg['training']['resume_from_checkpoint'] = True
+          cfg['training']['save_resume_state_last_n'] = 3
+          with open('/tmp/p2.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+          python -m model_foundry.cli run /tmp/p2.yaml 2>&1 | tee /tmp/p2.log
+
+          grep -q "Resumed from step 5" /tmp/p2.log || { echo "FAIL no resume log"; exit 1; }
+          test -d /mnt/data/models/$NAME/checkpoint-10 || { echo "FAIL checkpoint-10 missing"; exit 1; }
+          STEP=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-10/metadata.json'))['global_step'])")
+          [ "$STEP" = "10" ] || { echo "FAIL checkpoint-10 reports step=$STEP"; exit 1; }
+
+          echo "=========================================="
+          echo "  PART 3: analysis-only save policy check"
+          echo "=========================================="
+          # Run 12 steps with save_resume_state_last_n=1, save at {5, 10, 12}
+          # -> checkpoint-5 and checkpoint-10 should be analysis-only,
+          #    checkpoint-12 should have training_state.pt.
+          rm -rf /mnt/data/models/$NAME
+          mkdir -p /mnt/data/models/$NAME
+          python - <<PYEOF
+          import yaml
+          with open('$BASE') as f: cfg = yaml.safe_load(f)
+          cfg['training']['train_steps'] = 12
+          cfg['training']['checkpoint_schedule'] = [5, 10, 12]
+          cfg['training']['resume_from_checkpoint'] = False
+          cfg['training']['save_resume_state_last_n'] = 1
+          with open('/tmp/p3.yaml', 'w') as f: yaml.safe_dump(cfg, f)
+          PYEOF
+          python -m model_foundry.cli run /tmp/p3.yaml 2>&1 | tee /tmp/p3.log
+
+          for step in 5 10; do
+            if [ -f /mnt/data/models/$NAME/checkpoint-$step/training_state.pt ]; then
+              echo "FAIL checkpoint-$step should be analysis-only but has training_state.pt"
+              exit 1
+            fi
+            HAS=$(python -c "import json; print(json.load(open('/mnt/data/models/$NAME/checkpoint-$step/metadata.json')).get('has_resume_state'))")
+            [ "$HAS" = "False" ] || { echo "FAIL checkpoint-$step metadata has_resume_state=$HAS"; exit 1; }
+          done
+          test -f /mnt/data/models/$NAME/checkpoint-12/training_state.pt || { echo "FAIL checkpoint-12 (tip) missing training_state.pt"; exit 1; }
+          echo "OK save-policy: checkpoints 5,10 analysis-only; checkpoint 12 full resume"
+
+          echo "=========================================="
+          echo "  PART 4: hashed cache path smoke (0.2)"
+          echo "=========================================="
+          # tokenized/<hash>/train/dataset_info.json or the legacy
+          # tokenized/smoke_gpt2_medium/train/dataset_info.json should exist
+          HASHED=$(ls -d /mnt/data/tokenized/*/train/dataset_info.json 2>/dev/null | head -1)
+          if [ -z "$HASHED" ]; then
+            echo "FAIL no tokenized dataset_info.json found anywhere"
+            exit 1
+          fi
+          echo "OK found $HASHED"
+
+          echo "=========================================="
+          echo "  SMOKE GPT-2 medium + optimization stack PASSED"
+          echo "=========================================="
+          ls -la /mnt/data/models/$NAME/
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        resources:
+          requests: {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+          limits:   {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}

@@ -30,6 +30,9 @@ nltk==3.8.1
 pyarrow>=14.0.0
 polars>=0.20.0
 
+# === S3 access (run registry + eval parquets on Nautilus Ceph RGW) ===
+boto3>=1.34
+
 # === Annotation Review Web Interface ===
 fastapi>=0.100.0
 uvicorn[standard]>=0.23.0
