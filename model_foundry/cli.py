@@ -469,8 +469,13 @@ def _safe_register_run_end(identity: dict, *, status: str,
     """Wrap the end-of-run registry write so nothing raised here can
     interfere with the training job's own shutdown path."""
     logger = logging.getLogger(__name__)
+    # register_run_end keys records on (run_id, arch, lang, condition);
+    # seed and run_kind were set once at register_run_start and don't
+    # belong in the end-of-run mutation.
+    end_identity = {k: v for k, v in identity.items()
+                    if k in ("run_id", "arch", "lang", "condition")}
     kwargs = dict(status=status, failure_reason=failure_reason,
-                  **identity)
+                  **end_identity)
     if trainer is not None and getattr(trainer, "training_loop", None):
         tl = trainer.training_loop
         kwargs["steps_completed"] = getattr(tl, "global_step", None)
