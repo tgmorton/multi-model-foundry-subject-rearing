@@ -57,11 +57,22 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     tokenizer_model_path = os.path.join(tokenizer_dir, 'tokenizer.model')
 
     if not os.path.exists(training_corpus_path):
-        print(f"FATAL ERROR: Training corpus path not found at '{training_corpus_path}'.")
-        return
+        raise FileNotFoundError(
+            f"Training corpus path not found at '{training_corpus_path}'."
+        )
     if not os.path.exists(tokenizer_model_path):
-        print(f"FATAL ERROR: Tokenizer model not found at '{tokenizer_model_path}'.")
-        return
+        # Tokenizer training is an explicit one-shot step, not something
+        # the per-run pipeline does — re-training on each launch would
+        # shift the vocabulary (sentencepiece unigram has stochastic
+        # tie-breaking) and break within-(arch,lang) ablation
+        # comparisons.
+        raise FileNotFoundError(
+            f"Tokenizer model not found at '{tokenizer_model_path}'.\n"
+            f"  Train it once with:\n"
+            f"    kubectl apply -f k8s/job-train-tokenizer.yaml\n"
+            f"  (edit TOKENIZER_CONFIG env if your config.tokenizer.output_dir "
+            f"differs from the default)."
+        )
 
     # 0.2 — content-addressed cache path so different experiments that
     # share corpus + tokenizer + seq_length + manipulation reuse tokenized

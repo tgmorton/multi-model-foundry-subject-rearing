@@ -61,8 +61,8 @@ spec:
 
           python -m model_foundry.cli validate-config $BASE
 
-          echo "=== Tokenizer (idempotent) ==="
-          python -m model_foundry.cli train-tokenizer $BASE
+          # Tokenizer is assumed to already exist on the PVC.
+          # Train it once (per arch/lang) with k8s/job-train-tokenizer.yaml.
 
           echo "=== Tokenize (idempotent) ==="
           python -m model_foundry.cli tokenize-dataset $BASE

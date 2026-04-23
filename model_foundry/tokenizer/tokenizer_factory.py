@@ -434,6 +434,8 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
         'character':    ['tokenizer.json'],
     }
     sentinels = _sentinel_files.get(tokenizer_type, [])
+    # DEBUG: unconditional probe to diagnose CLI-path idempotency bug.
+    print(f"  - [debug] force={force!r} tokenizer_type={tokenizer_type!r} sentinels={sentinels!r} output_dir={output_dir!r}")
     output_path = Path(output_dir)
     try:
         resolved_dir = output_path.resolve()
@@ -450,6 +452,7 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
     dir_exists = resolved_dir.is_dir()
     sentinel_paths = [resolved_dir / s for s in sentinels]
     sentinels_present = sentinels and all(p.exists() for p in sentinel_paths)
+    print(f"  - [debug] resolved_dir={resolved_dir!r} dir_exists={dir_exists} sentinels_present={sentinels_present}")
     if not force and dir_exists and sentinels_present:
         print(f"  - Tokenizer already exists at: {output_dir}")
         print(f"  - Skipping re-training. Pass force=True (or --force on CLI) to override.")
