@@ -158,12 +158,18 @@ spec:
           "
 
           # --- Step 3: compose → final corpus ------------------------------
+          # --allow-short: line-removal ablations (remove_expletive_sentences_es)
+          # can empty small-genre pools (CORLEC spoken ≈ 1.1M words — after
+          # removing ~35% of it, the pool can't backfill train size). The
+          # resulting deficit is recorded in COMPOSE_MANIFEST.json
+          # (pool_exhausted + shortfall_after_pool) for audit.
           python scripts/compose_corpus.py \
             --ablated-train "$TRAIN_OUT" \
             --ablated-pool  "$POOL_OUT" \
             --target-corpus /mnt/data/raw/es/train_90M/ \
             --output        "$FINAL_OUT" \
-            --seed 42
+            --seed 42 \
+            --allow-short
 
           # Markdown summary of the run (for quick eyeball of tier counts)
           python scripts/ablation_report.py \

@@ -139,13 +139,21 @@ def _compose_file(
     target_tokens: int,
     output_path: Path,
     rng: random.Random,
+    allow_short: bool = False,
 ) -> Dict[str, int]:
     """Build the final file: concatenate ablated train + enough pool samples
     to hit the target token count. Returns stats for the manifest.
 
     Sampling is without replacement at the line level — each pool line is
-    used at most once. If the pool is too small to close the gap, we raise
-    so the caller knows to either loosen the target or regenerate the pool.
+    used at most once. If the pool is too small to close the gap:
+      - ``allow_short=False`` (default, strict): raise. Use when you want
+        to fail fast and either regenerate the pool or relax the target.
+      - ``allow_short=True``: emit a warning, accept the under-target output.
+        The manifest records ``pool_exhausted=True`` and
+        ``shortfall_after_pool=<tokens>`` so the deficit is auditable.
+        Use when the ablation deletes entire sentences and the pool is
+        naturally small (e.g., ``remove_expletive_sentences_es`` on
+        the ES ``spoken`` genre — CORLEC is ~1.1M words).
     """
     # Read both sides once. File sizes are bounded (pool is ~10% of train);
     # comfortably fits in memory for BabyLM/BebeLM source files.
@@ -192,14 +200,23 @@ def _compose_file(
             lines_drawn_from_pool += 1
             pool_lines_used_indices.append(idx)
 
-        if pool_tokens_added < shortfall:
-            raise ValueError(
-                f"[{stem}] ablated pool exhausted at {pool_tokens_added} "
-                f"tokens; still need {shortfall - pool_tokens_added} more. "
-                f"Pool had {len(pool_lines)} lines; ablation may have removed "
-                f"too many. Options: (1) use a larger pool, (2) accept "
-                f"under-target output."
-            )
+    pool_exhausted = False
+    shortfall_after_pool = 0
+    if shortfall > 0 and pool_tokens_added < shortfall:
+        pool_exhausted = True
+        shortfall_after_pool = shortfall - pool_tokens_added
+        msg = (
+            f"[{stem}] ablated pool exhausted at {pool_tokens_added} "
+            f"tokens; still need {shortfall_after_pool} more. "
+            f"Pool had {len(pool_lines)} lines; ablation may have removed "
+            f"too many. Options: (1) use a larger pool, (2) accept "
+            f"under-target output (--allow-short)."
+        )
+        if not allow_short:
+            raise ValueError(msg)
+        # Under-target is acceptable; log loudly so the manifest
+        # remains the ground truth and operators see it in stdout.
+        print(f"[warn] {msg}")
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -214,6 +231,8 @@ def _compose_file(
         "shortfall": shortfall,
         "pool_lines_drawn": lines_drawn_from_pool,
         "pool_tokens_added": pool_tokens_added,
+        "pool_exhausted": pool_exhausted,
+        "shortfall_after_pool": shortfall_after_pool,
         "final_tokens": final_tokens,
         "pool_lines_available": (
             sum(1 for _ in open(pool_path, "r", encoding="utf-8"))
@@ -253,8 +272,16 @@ def compose(
     target_corpus: Optional[Path] = None,
     target_tokens_per_file: Optional[Dict[str, int]] = None,
     seed: int = 42,
+    allow_short: bool = False,
 ) -> Dict:
-    """Run the compose step. Returns the manifest dict written to disk."""
+    """Run the compose step. Returns the manifest dict written to disk.
+
+    Args:
+        allow_short: If True, accept under-target per-file output when the
+            pool is exhausted (logs a warning + records the deficit in the
+            manifest). Default False = strict (raise). See ``_compose_file``
+            for when to use.
+    """
     start = time.time()
     output.mkdir(parents=True, exist_ok=True)
     remainder_dir = output / "pool_remainder"
@@ -298,6 +325,7 @@ def compose(
             target_tokens=target_tokens[stem],
             output_path=output_path,
             rng=file_rng,
+            allow_short=allow_short,
         )
         total_train_tokens += stats["train_tokens"]
         total_pool_tokens_added += stats["pool_tokens_added"]
@@ -389,6 +417,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
              '\'{"stem": int, ...}\'. Alternative to --target-corpus.',
     )
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--allow-short",
+        action="store_true",
+        help=(
+            "Accept per-file output below the target when the ablated "
+            "pool is too small to fully backfill (e.g., sentence-removal "
+            "ablations on small genres like ES spoken/CORLEC). The "
+            "shortfall is recorded in COMPOSE_MANIFEST.json "
+            "(pool_exhausted + shortfall_after_pool) for audit."
+        ),
+    )
     return p
 
 
@@ -406,6 +445,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         target_corpus=args.target_corpus,
         target_tokens_per_file=explicit,
         seed=args.seed,
+        allow_short=args.allow_short,
     )
     t = manifest["totals"]
     print(
