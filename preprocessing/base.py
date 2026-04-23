@@ -6,12 +6,13 @@ Handles file I/O, progress tracking, validation, and provenance tracking.
 """
 
 import glob
+import json
 import logging
 import os
 import random
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import spacy
 from tqdm import tqdm
@@ -75,6 +76,13 @@ class AblationPipeline:
 
         # Initialize provenance tracking
         self.manifest: Optional[ProvenanceManifest] = None
+
+        # Deterministic replacement-pool sampling. Uses a private RNG
+        # rather than global `random.seed(...)` so the pipeline doesn't
+        # disturb (or get disturbed by) other random state in the process.
+        # Matters for reproducibility AND for live-vs-cached parity —
+        # both paths produce identical pool draws given the same seed.
+        self._rng = random.Random(config.seed)
 
     def _setup_logging(self) -> logging.Logger:
         """
@@ -295,8 +303,13 @@ class AblationPipeline:
         original_text = "".join(lines)
         original_token_count = count_tokens(original_text)
 
-        # Ablate the file
-        ablated_text, items_ablated = self._ablate_lines(lines)
+        # Ablate the file — use the pre-annotated DocBin cache when available,
+        # otherwise fall back to live spaCy parsing.
+        use_cache = self._has_annotated_cache(file_path)
+        if use_cache:
+            ablated_text, items_ablated = self._ablate_from_cache(file_path)
+        else:
+            ablated_text, items_ablated = self._ablate_lines(lines)
 
         # Extract tier counts and removed line indices if supported
         tier_counts = {}
@@ -324,10 +337,18 @@ class AblationPipeline:
                     f"{type(e).__name__}: {e}. Skipping validation for this file."
                 )
 
-        # Rebuild to target size if replacement pool provided
+        # Rebuild to target size if replacement pool provided and backfill
+        # is not explicitly disabled. skip_backfill=True turns this
+        # pipeline into a pure transformer — used in the three-step
+        # workflow where train and pool are ablated separately and then
+        # composed by scripts/compose_corpus.py.
         pool_stats = {}
         current_token_count = count_tokens(ablated_text)
-        if self.config.replacement_pool_dir and current_token_count < original_token_count:
+        if (
+            self.config.replacement_pool_dir
+            and not self.config.skip_backfill
+            and current_token_count < original_token_count
+        ):
             ablated_text, additional_items, pool_stats = self._rebuild_to_target_size(
                 ablated_text=ablated_text,
                 target_token_count=original_token_count,
@@ -382,10 +403,24 @@ class AblationPipeline:
             ValueError: If ablation function fails on a document
             RuntimeError: If spaCy pipeline encounters an error
         """
+        from .annotate import is_passthrough_line
+
         ablated_text = ""
         total_items_ablated = 0
 
-        # Process in chunks for memory efficiency
+        # Process in chunks for memory efficiency. Trailing newlines are
+        # stripped before parsing — spaCy's lemmatizer (Spanish lg model
+        # especially) returns the surface form as the lemma for
+        # text ending in "\n" for some verbs (e.g. *acuerdas* → *acuerdas*
+        # instead of *acordar*). Re-attaching the newline after ablation
+        # preserves line boundaries. Verified 2026-04-21 against
+        # es_core_news_lg on CHILDES data.
+        #
+        # Empty lines and boundary markers (``= = = ... = = =``) are
+        # passed through verbatim — parsing them with spaCy produces
+        # empty docs that the ablation has nothing useful to do with,
+        # and we'd lose the line break. This matches the semantics of
+        # the DocBin cache reader in ``_ablate_from_cache``.
         with tqdm(
             total=len(lines),
             desc=f"  Ablating",
@@ -394,39 +429,159 @@ class AblationPipeline:
         ) as pbar:
             for i in range(0, len(lines), self.config.chunk_size):
                 chunk = lines[i:i + self.config.chunk_size]
+                # Partition into pass-through lines (written verbatim)
+                # and parse lines (fed to spaCy with newlines stripped).
+                parse_texts: List[str] = []
+                parse_raw: List[str] = []
+                parse_positions: List[int] = []
+                chunk_output: List[str] = [""] * len(chunk)
+                for offset, line in enumerate(chunk):
+                    if is_passthrough_line(line):
+                        chunk_output[offset] = line
+                    else:
+                        parse_texts.append(line.rstrip("\n\r"))
+                        parse_raw.append(line)
+                        parse_positions.append(offset)
 
-                try:
-                    # Process chunk with spaCy pipeline using configured batch size
-                    for line_idx, doc in enumerate(
-                        self.nlp.pipe(chunk, batch_size=self.config.spacy_batch_size)
-                    ):
-                        try:
-                            ablated_doc_text, num_items = self.ablation_fn(doc)
-                            ablated_text += ablated_doc_text
-                            total_items_ablated += num_items
-                        except Exception as e:
-                            # Log the specific line that failed
-                            global_line_idx = i + line_idx
+                if parse_texts:
+                    try:
+                        parse_cursor = 0
+                        for doc in self.nlp.pipe(
+                            parse_texts, batch_size=self.config.spacy_batch_size
+                        ):
+                            raw = parse_raw[parse_cursor]
+                            position = parse_positions[parse_cursor]
+                            try:
+                                ablated_doc_text, num_items = self.ablation_fn(doc)
+                                # Restore any trailing newline that was
+                                # in the source line but not captured by
+                                # the ablation output.
+                                if (
+                                    ablated_doc_text
+                                    and raw.endswith(("\n", "\r"))
+                                    and not ablated_doc_text.endswith(("\n", "\r"))
+                                ):
+                                    trailing = raw[len(raw.rstrip("\r\n")):]
+                                    ablated_doc_text += trailing
+                                chunk_output[position] = ablated_doc_text
+                                total_items_ablated += num_items
+                            except Exception as e:
+                                global_line_idx = i + position
+                                self.logger.error(
+                                    f"Ablation function failed on line {global_line_idx + 1}: "
+                                    f"{type(e).__name__}: {e}"
+                                )
+                                raise ValueError(
+                                    f"Ablation failed on line {global_line_idx + 1}"
+                                ) from e
+                            parse_cursor += 1
+
+                        ablated_text += "".join(chunk_output)
+                    except Exception as e:
+                        # Catch spaCy pipeline errors (re-raised below as RuntimeError)
+                        if not isinstance(e, ValueError):
                             self.logger.error(
-                                f"Ablation function failed on line {global_line_idx + 1}: "
+                                f"spaCy pipeline error in chunk {i // self.config.chunk_size + 1}: "
                                 f"{type(e).__name__}: {e}"
                             )
-                            # Re-raise to fail the file (but not the whole corpus)
-                            raise ValueError(
-                                f"Ablation failed on line {global_line_idx + 1}"
+                            raise RuntimeError(
+                                f"spaCy processing failed in chunk starting at line {i + 1}"
                             ) from e
-
-                except Exception as e:
-                    # Catch spaCy pipeline errors
-                    self.logger.error(
-                        f"spaCy pipeline error in chunk {i//self.config.chunk_size + 1}: "
-                        f"{type(e).__name__}: {e}"
-                    )
-                    raise RuntimeError(
-                        f"spaCy processing failed in chunk starting at line {i + 1}"
-                    ) from e
+                        raise
+                else:
+                    # Chunk had only passthrough lines; concatenate and move on.
+                    ablated_text += "".join(chunk_output)
 
                 pbar.update(len(chunk))
+
+        return ablated_text, total_items_ablated
+
+    def _has_annotated_cache(self, source_path: Path) -> bool:
+        """Return True if the config points at a valid DocBin cache for this file."""
+        annotated_dir = self.config.annotated_input_path
+        if annotated_dir is None:
+            return False
+        stem = source_path.stem
+        docbin_path = annotated_dir / f"{stem}.spacy"
+        linemap_path = annotated_dir / f"{stem}.linemap.jsonl"
+        if not (docbin_path.exists() and linemap_path.exists()):
+            self.logger.warning(
+                "annotated_input_path set but cache missing for %s "
+                "(%s / %s). Falling back to live parsing.",
+                source_path.name,
+                docbin_path.name,
+                linemap_path.name,
+            )
+            return False
+        return True
+
+    def _ablate_from_cache(self, source_path: Path) -> Tuple[str, int]:
+        """Apply the ablation using pre-annotated DocBin + line map.
+
+        Reads cached Docs keyed by ``doc_idx`` from ``{stem}.spacy`` and
+        iterates ``{stem}.linemap.jsonl`` in source-line order. Pass-through
+        lines (empty / boundary markers; doc_idx is null) are written
+        verbatim from ``raw_text``. Content lines are handed to the
+        registered ablation function.
+
+        Requires ``preprocessing.annotate.load_annotated_file`` and a DocBin
+        produced with the same spaCy model currently loaded into self.nlp.
+        """
+        from .annotate import load_annotated_file
+
+        annotated_dir = self.config.annotated_input_path
+        stem = source_path.stem
+
+        self.logger.info(
+            "Using annotated cache for %s (dir=%s)",
+            source_path.name,
+            annotated_dir,
+        )
+        docs, linemap = load_annotated_file(
+            annotated_dir=annotated_dir,
+            file_stem=stem,
+            vocab=self.nlp.vocab,
+        )
+
+        ablated_text = ""
+        total_items_ablated = 0
+
+        for entry in linemap:
+            doc_idx = entry.get("doc_idx")
+            raw_text = entry.get("raw_text", "")
+            if doc_idx is None:
+                # Pass-through: empty line or document boundary marker.
+                ablated_text += raw_text
+                continue
+
+            doc = docs[doc_idx]
+            try:
+                ablated_doc_text, num_items = self.ablation_fn(doc)
+            except Exception as e:
+                line_idx = entry.get("line_idx")
+                self.logger.error(
+                    "Ablation failed on cached doc_idx=%s (source line %s): "
+                    "%s: %s",
+                    doc_idx, line_idx, type(e).__name__, e,
+                )
+                raise ValueError(
+                    f"Ablation failed on cached doc {doc_idx} (source line {line_idx})"
+                ) from e
+
+            # The annotator may have stripped trailing whitespace (e.g., the
+            # generic cleaner in corpus_descriptives calls `.strip()` before
+            # parsing, so the parsed Doc has no trailing newline). Preserve
+            # line boundaries by re-attaching the trailing whitespace from
+            # the original raw line if the ablation output is missing it
+            # AND the ablation didn't remove the line entirely.
+            if ablated_doc_text and raw_text.endswith(("\n", "\r")):
+                if not ablated_doc_text.endswith(("\n", "\r")):
+                    # Copy the exact trailing whitespace run from raw_text
+                    trailing = raw_text[len(raw_text.rstrip("\r\n")):]
+                    ablated_doc_text = ablated_doc_text + trailing
+
+            ablated_text += ablated_doc_text
+            total_items_ablated += num_items
 
         return ablated_text, total_items_ablated
 
@@ -481,7 +636,7 @@ class AblationPipeline:
             while current_token_count < target_token_count and replacement_pool_sentences:
                 # Sample sentences from pool
                 num_to_sample = min(10, len(replacement_pool_sentences))
-                sample_indices = random.sample(range(len(replacement_pool_sentences)), num_to_sample)
+                sample_indices = self._rng.sample(range(len(replacement_pool_sentences)), num_to_sample)
                 sample_sentences = [replacement_pool_sentences[i] for i in sorted(sample_indices, reverse=True)]
 
                 # Remove sampled sentences from pool

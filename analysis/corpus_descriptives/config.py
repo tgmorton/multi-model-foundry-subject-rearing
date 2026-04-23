@@ -90,7 +90,26 @@ class CorpusAnalysisConfig(BaseModel):
         10000, gt=0, description="Batch size for writing annotations to Parquet"
     )
 
-    @field_validator("input_path", "output_path", "checkpoint_dir", mode="before")
+    # === Unified DocBin cache (shared with AblationPipeline) ===
+    emit_docbin: bool = Field(
+        False,
+        description=(
+            "If True, also emit a spaCy DocBin + line map per source file "
+            "during the annotation run. Enables ablation pipelines to reuse "
+            "the same parse rather than re-parsing. DocBin stores CLEANED "
+            "parses (what annotators saw); raw input lines are preserved in "
+            "the linemap for pass-through of boundary markers."
+        ),
+    )
+    docbin_output_dir: Optional[Path] = Field(
+        None,
+        description=(
+            "Where to write DocBin + linemap files. Defaults to "
+            "{output_path}/docbin/. Only used when emit_docbin=True."
+        ),
+    )
+
+    @field_validator("input_path", "output_path", "checkpoint_dir", "docbin_output_dir", mode="before")
     @classmethod
     def resolve_paths(cls, v):
         """Resolve relative paths against project root."""

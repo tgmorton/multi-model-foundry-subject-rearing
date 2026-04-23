@@ -26,20 +26,23 @@ experiment_name: "exp_insert_pronouns_es"
 
 # --- Data Configuration ---
 data:
-  # Source is the pre-inserted corpus from the analysis pipeline
-  source_corpus: "data/pronoun_recovery/inserted/es/"
-  training_corpus: "data/pronoun_recovery/inserted/es/"
-  test_corpus: "data/spanish/test_10M/"
+  # Source is the pre-inserted corpus from the pronoun_recovery pipeline
+  source_corpus: "/mnt/data/manipulations/es/insert_pronouns/"
+  training_corpus: "/mnt/data/manipulations/es/insert_pronouns/"
+  test_corpus: "/mnt/data/raw/es/test_10M/"
   batch_size: 32
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
-# Empty — insertion is performed offline by the pronoun_recovery pipeline.
+# Empty — insertion is performed offline by the pronoun_recovery pipeline
+# (see configs/analysis/pronoun_recovery/pronoun_recovery_es_insert.yaml).
+# Its output writes to `output_path: /mnt/data/manipulations/es/insert_pronouns/`
+# so this experiment just reads from there.
 dataset_manipulation: []
 
 # --- Tokenizer Configuration ---
 tokenizer:
-  output_dir: "tokenizers/exp_insert_pronouns_es/"
+  output_dir: "/mnt/data/tokenizers/exp_insert_pronouns_es/"
   vocab_size: 50004
 
 # --- Model Architecture ---
@@ -55,7 +58,7 @@ model:
 
 # --- Training Procedure ---
 training:
-  output_dir: "models/exp_insert_pronouns_es/"
+  output_dir: "/mnt/data/models/exp_insert_pronouns_es/"
   learning_rate: 0.0004
   adam_beta1: 0.9
   adam_beta2: 0.999

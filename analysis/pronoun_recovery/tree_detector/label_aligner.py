@@ -29,6 +29,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 import spacy
+from spacy.tokens import DocBin
 
 from analysis.pronoun_recovery.constants import LABEL_NONE, MORPH_TO_LABEL_SUFFIX
 
@@ -242,19 +243,77 @@ def _relabel_1p2p_morphological_heuristic(
     return n_relabelled
 
 
+def _load_or_parse_docs(
+    records: List[Dict],
+    nlp: spacy.language.Language,
+    batch_size: int,
+    annotated_input_path: Optional[Path],
+) -> List[spacy.tokens.Doc]:
+    """Return target-language Docs for the given records.
+
+    If ``annotated_input_path`` points at a DocBin emitted by
+    ``EuroparlAlignmentGenerator`` with ``emit_target_docbin=True``, load
+    and zip with records. Otherwise, re-parse ``clean_text`` via
+    ``nlp.pipe``.
+
+    The DocBin path is strict: if the DocBin's doc count doesn't match
+    the record count, we raise rather than silently corrupting labels.
+    The expected invariant is 1:1 ordering because the generator adds
+    to the DocBin and appends to records in the same loop.
+    """
+    if annotated_input_path is None:
+        texts = [r["clean_text"] for r in records]
+        return list(nlp.pipe(texts, batch_size=batch_size))
+
+    # Import lazily to avoid a circular dep if annotate.py ever pulls
+    # from this module.
+    from analysis.pronoun_recovery.parallel_data.generator import (
+        TARGET_DOCBIN_FILENAME,
+    )
+
+    docbin_path = Path(annotated_input_path) / TARGET_DOCBIN_FILENAME
+    if not docbin_path.exists():
+        raise FileNotFoundError(
+            f"annotated_input_path set but {TARGET_DOCBIN_FILENAME} not found "
+            f"at {docbin_path}. Re-run the alignment generator with "
+            f"emit_target_docbin=true, or unset annotated_input_path."
+        )
+
+    logger.info("Loading cached target-language Docs from %s", docbin_path)
+    docbin = DocBin().from_bytes(docbin_path.read_bytes())
+    docs = list(docbin.get_docs(nlp.vocab))
+
+    if len(docs) != len(records):
+        raise ValueError(
+            f"DocBin cache has {len(docs)} docs but aligned_checkpoint.jsonl "
+            f"has {len(records)} records. Cache is stale — regenerate both "
+            f"together."
+        )
+    return docs
+
+
 def align_gold_data(
     data_path: Path,
     nlp: spacy.language.Language,
     extractor: ItalianVerbFeatureExtractor,
     batch_size: int = 50,
+    annotated_input_path: Optional[Path] = None,
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     """Load gold data, extract features, and align markers to verbs.
 
     Args:
         data_path: Path to aligned_checkpoint.jsonl.
-        nlp: Loaded Italian spaCy model.
+        nlp: Loaded target-language spaCy model (used as vocab source when
+            reading a cached DocBin; used directly for parsing otherwise).
         extractor: Feature extractor instance.
         batch_size: spaCy pipe batch size.
+        annotated_input_path: If set, the directory where
+            ``EuroparlAlignmentGenerator`` wrote its ``target_parses.spacy``
+            DocBin. When present, records are zipped with cached Docs
+            (1:1 by position) instead of re-parsing ``clean_text``. This is
+            the hot-path optimization — on 500K Europarl pairs the parse
+            dominates runtime. Consumers must ensure the DocBin was produced
+            from the same source file the records came from.
 
     Returns:
         (X, y) where X is a DataFrame of features and y is an array of
@@ -271,9 +330,12 @@ def align_gold_data(
     n_propagated = 0
     n_heuristic = 0
 
-    # Process records through spaCy
-    texts = [r["clean_text"] for r in records]
-    docs = list(nlp.pipe(texts, batch_size=batch_size))
+    docs = _load_or_parse_docs(
+        records=records,
+        nlp=nlp,
+        batch_size=batch_size,
+        annotated_input_path=annotated_input_path,
+    )
 
     for record, doc in zip(records, docs):
         markers = record.get("markers", [])

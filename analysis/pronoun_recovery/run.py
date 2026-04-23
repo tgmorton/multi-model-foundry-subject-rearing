@@ -363,6 +363,7 @@ def tree_extract(
         nlp,
         extractor,
         batch_size=cfg.spacy_batch_size,
+        annotated_input_path=cfg.annotated_input_path,
     )
 
     save_aligned_data(X, y, Path(cfg.output_path))

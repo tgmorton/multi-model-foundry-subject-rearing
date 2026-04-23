@@ -23,13 +23,16 @@ chunk processing, spaCy.pipe batching, tqdm progress, checkpointing.
 
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import spacy
+from spacy.tokens import DocBin
 from tqdm import tqdm
 
 from analysis.pronoun_recovery.config import EuroparlAlignmentConfig
+from preprocessing.annotate import DOCBIN_ATTRS, dump_vocab, write_manifest
 from preprocessing.utils import get_spacy_device, setup_logging
 
 from .aligner import AwesomeAligner, build_alignment_dicts
@@ -44,6 +47,12 @@ from .validation import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# File name used when emit_target_docbin=True. Consumers that want to
+# re-use the parse (currently the tree detector via
+# TreeDetectorConfig.annotated_input_path) look for this exact stem.
+TARGET_DOCBIN_FILENAME = "target_parses.spacy"
 
 
 class EuroparlAlignmentGenerator:
@@ -69,6 +78,20 @@ class EuroparlAlignmentGenerator:
         self.aligner = AwesomeAligner(
             model_name=config.align_model,
         )
+
+        # Optional DocBin cache of target-language parses. When enabled,
+        # every record written to aligned_checkpoint.jsonl gets its parsed
+        # target-language Doc stored in this DocBin in matching order, so
+        # tree-detector training can skip the re-parse of clean_text.
+        self._target_docbin: Optional[DocBin] = None
+        if config.emit_target_docbin:
+            self._target_docbin = DocBin(
+                attrs=DOCBIN_ATTRS, store_user_data=False,
+            )
+            self.logger.info(
+                "emit_target_docbin=True: caching %s-language parses to %s",
+                config.language, Path(config.output_path) / TARGET_DOCBIN_FILENAME,
+            )
 
     def _load_spacy(self) -> Tuple[spacy.Language, spacy.Language]:
         """Load EN and IT spaCy models with GPU auto-detection."""
@@ -120,6 +143,12 @@ class EuroparlAlignmentGenerator:
 
         # Final checkpoint.
         self._write_checkpoint(all_records, checkpoint_path)
+
+        # Flush target-language DocBin cache (if enabled) — one Doc per
+        # record in the checkpoint, in the same order the records were
+        # appended. Consumers match by index.
+        if self._target_docbin is not None:
+            self._flush_target_docbin(output_dir, n_records=len(all_records))
 
         self.logger.info(
             "Pipeline complete: %d records with markers from %d pairs",
@@ -296,6 +325,13 @@ class EuroparlAlignmentGenerator:
             )
             records.append(record)
 
+            # Mirror record order in the target-language DocBin so the
+            # tree detector's align_gold_data can zip records with docs
+            # without re-parsing clean_text. The two files MUST stay in
+            # lockstep — add here, immediately after records.append.
+            if self._target_docbin is not None:
+                self._target_docbin.add(it_docs[idx])
+
         return records
 
     def _build_record(
@@ -338,3 +374,49 @@ class EuroparlAlignmentGenerator:
             for rec in records:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         self.logger.info("Checkpoint: %d records written to %s", len(records), path)
+
+    def _flush_target_docbin(self, output_dir: Path, n_records: int) -> None:
+        """Dump the target-language DocBin + vocab + manifest.
+
+        The DocBin stores one Doc per record in the same order as the
+        final aligned_checkpoint.jsonl. Consumers zip records with docs
+        by position. We also dump vocab so consumers that don't load the
+        target-language spaCy model themselves can still deserialize.
+        """
+        assert self._target_docbin is not None  # guarded by caller
+
+        docbin_path = output_dir / TARGET_DOCBIN_FILENAME
+        docbin_bytes = self._target_docbin.to_bytes()
+        docbin_path.write_bytes(docbin_bytes)
+
+        dump_vocab(self.nlp_it, output_dir)
+
+        write_manifest(
+            output_dir=output_dir,
+            spacy_model=self.config.it_spacy_model,
+            spacy_model_version=self.nlp_it.meta.get("version", "unknown"),
+            spacy_version=spacy.__version__,
+            device=self._metadata_device(),
+            files=[{
+                "file_name": TARGET_DOCBIN_FILENAME,
+                "n_lines_total": n_records,
+                "n_docs_stored": n_records,
+                "n_lines_passthrough": 0,
+                "input_checksum": "",
+                "docbin_bytes": len(docbin_bytes),
+                "processing_time_seconds": 0.0,
+            }],
+            processing_time_seconds=0.0,
+            source="pronoun_recovery.parallel_data.generator",
+        )
+        self.logger.info(
+            "Target DocBin cache: %d docs written to %s (%.1f MB)",
+            n_records, docbin_path, len(docbin_bytes) / (1024 * 1024),
+        )
+
+    def _metadata_device(self) -> str:
+        """Return the spaCy device name for manifest bookkeeping."""
+        try:
+            return get_spacy_device(verbose=False)
+        except Exception:
+            return "unknown"

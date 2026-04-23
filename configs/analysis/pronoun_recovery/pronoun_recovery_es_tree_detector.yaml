@@ -5,8 +5,8 @@
 #   python -m analysis.pronoun_recovery.run tree-train --config configs/analysis/pronoun_recovery/pronoun_recovery_es_tree_detector.yaml
 #   python -m analysis.pronoun_recovery.run tree-predict --config configs/analysis/pronoun_recovery/pronoun_recovery_es_tree_detector.yaml --text "creemos que el resultado es satisfactorio"
 
-aligned_data_path: data/pronoun_recovery/europarl_aligned/es/aligned_checkpoint.jsonl
-output_path: data/pronoun_recovery/tree_detector/es
+aligned_data_path: /mnt/data/pronoun_recovery/europarl_aligned/es/aligned_checkpoint.jsonl
+output_path: /mnt/data/pronoun_recovery/tree_detector/es
 language: es
 
 # spaCy model (field name is Italian-origin but accepts any model name)

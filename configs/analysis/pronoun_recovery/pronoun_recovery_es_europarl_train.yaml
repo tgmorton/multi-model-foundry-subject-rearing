@@ -5,9 +5,9 @@
 # Italian-origin names that persist for backwards compatibility; they
 # accept any target-language values (here, Spanish).
 
-europarl_en_path: data/spanish/parallel/europarl.en
-europarl_it_path: data/spanish/parallel/europarl.es
-output_path: data/pronoun_recovery/europarl_aligned/es_train
+europarl_en_path: /mnt/data/raw/es/parallel/europarl.en
+europarl_it_path: /mnt/data/raw/es/parallel/europarl.es
+output_path: /mnt/data/pronoun_recovery/europarl_aligned/es_train
 language: es
 
 # Training segment

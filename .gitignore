@@ -264,3 +264,6 @@ analysis/analysis/
 analysis/figures/
 analysis/tables/
 analysis/paper_figures/
+
+# Claude Code workspace
+.claude/

@@ -2,9 +2,9 @@
 # Mirror of pronoun_recovery_es_europarl_train.yaml with any K8s-specific
 # settings folded in (currently identical path structure).
 
-europarl_en_path: data/spanish/parallel/europarl.en
-europarl_it_path: data/spanish/parallel/europarl.es
-output_path: data/pronoun_recovery/europarl_aligned/es_train
+europarl_en_path: /mnt/data/raw/es/parallel/europarl.en
+europarl_it_path: /mnt/data/raw/es/parallel/europarl.es
+output_path: /mnt/data/pronoun_recovery/europarl_aligned/es_train
 language: es
 
 # Training segment

@@ -4,33 +4,45 @@
 #       sentences removed (weather verbs, existential haber,
 #       impersonal raising/necessity constructions, overt `ello`).
 # ===================================================================
+#
+# Path convention (see CLAUDE.md §Storage architecture):
+#   /mnt/data/raw/es/{train_90M, pull_10M, test_10M}/
+#   /mnt/data/manipulations/es/<long_slug>/        ← composed output
+#   /mnt/data/manipulations/es/<long_slug>/_train/ ← intermediate (skip_backfill=True)
+#   /mnt/data/manipulations/es/<long_slug>/_pool/  ← intermediate
+#   /mnt/data/annotated/<hash>/                    ← content-addressed DocBin cache
+# ===================================================================
 
 experiment_name: "exp_remove_expletive_sentences_es"
 
 # --- Data Configuration ---
 data:
-  source_corpus: "data/spanish/train_90M/"
-  training_corpus: "data/spanish/processed/exp_remove_expletive_sentences_es/"
-  test_corpus: "data/spanish/test_10M/"
+  source_corpus: "/mnt/data/raw/es/train_90M/"
+  training_corpus: "/mnt/data/manipulations/es/remove_expletive_sentences/"
+  test_corpus: "/mnt/data/raw/es/test_10M/"
   batch_size: 32
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
+# NOTE: This config uses the LEGACY single-step flow (ablate with
+# in-line backfill). For the three-step workflow (annotate + ablate
+# train+pool independently + compose), invoke the three scripts
+# directly — see CLAUDE.md + scripts/smoke_three_step.py.
 dataset_manipulation:
   - type: remove_expletive_sentences_es
-    input_path: "data/spanish/train_90M/"
-    output_path: "data/spanish/processed/exp_remove_expletive_sentences_es/"
+    input_path: "/mnt/data/raw/es/train_90M/"
+    output_path: "/mnt/data/manipulations/es/remove_expletive_sentences/"
     # Local smoke tests use es_core_news_lg; K8s jobs should pin _trf if available.
     spacy_model: "es_core_news_lg"
     parameters:
       chunk_size: 1000
-      replacement_pool_dir: "data/spanish/pull_10M/"
+      replacement_pool_dir: "/mnt/data/raw/es/pull_10M/"
       skip_validation: false
       verbose: true
 
 # --- Tokenizer Configuration ---
 tokenizer:
-  output_dir: "tokenizers/exp_remove_expletive_sentences_es/"
+  output_dir: "/mnt/data/tokenizers/exp_remove_expletive_sentences_es/"
   vocab_size: 50004
 
 # --- Model Architecture ---
@@ -46,7 +58,7 @@ model:
 
 # --- Training Procedure ---
 training:
-  output_dir: "models/exp_remove_expletive_sentences_es/"
+  output_dir: "/mnt/data/models/exp_remove_expletive_sentences_es/"
   learning_rate: 0.0004
   adam_beta1: 0.9
   adam_beta2: 0.999

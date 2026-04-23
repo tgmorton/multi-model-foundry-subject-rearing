@@ -8,9 +8,10 @@ experiment_name: "exp_baseline_es"
 
 # --- Data Configuration ---
 data:
-  source_corpus: "data/spanish/train_90M/"
-  training_corpus: "data/spanish/train_90M/"
-  test_corpus: "data/spanish/test_10M/"
+  # Production paths (Nautilus CephFS PVC `corpus-analysis-data` mounted at /mnt/data)
+  source_corpus: "/mnt/data/raw/es/train_90M/"
+  training_corpus: "/mnt/data/raw/es/train_90M/"
+  test_corpus: "/mnt/data/raw/es/test_10M/"
   batch_size: 32
   max_sequence_length: 1000
 
@@ -20,7 +21,7 @@ dataset_manipulation: []
 
 # --- Tokenizer Configuration ---
 tokenizer:
-  output_dir: "tokenizers/exp_baseline_es/"
+  output_dir: "/mnt/data/tokenizers/exp_baseline_es/"
   vocab_size: 50004
 
 # --- Model Architecture ---
@@ -36,7 +37,7 @@ model:
 
 # --- Training Procedure ---
 training:
-  output_dir: "models/exp_baseline_es/"
+  output_dir: "/mnt/data/models/exp_baseline_es/"
   learning_rate: 0.0001
   adam_beta1: 0.9
   adam_beta2: 0.999

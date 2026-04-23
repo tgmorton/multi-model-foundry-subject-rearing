@@ -49,6 +49,35 @@ class AblationConfig(BaseModel):
         description="Directory containing replacement pool files"
     )
 
+    # Three-step workflow toggle: when True, skip the backfill phase
+    # entirely. Output is just the transformed input — no pool draws,
+    # no target-size rebuild. Intended for the two-ablate-then-compose
+    # workflow where train and pool are ablated independently and a
+    # separate `compose_corpus.py` step draws from the ablated pool to
+    # hit target size. Mutually sensible with replacement_pool_dir=None.
+    skip_backfill: bool = Field(
+        False,
+        description=(
+            "When True, AblationPipeline runs as a pure transformer — "
+            "no replacement-pool backfill. Use this for the three-step "
+            "workflow: ablate(train) + ablate(pool) then compose. "
+            "Leaving False preserves current behavior (backfill at the "
+            "end of each ablation run)."
+        ),
+    )
+
+    # Pre-annotated input (optional optimization)
+    annotated_input_path: Optional[Path] = Field(
+        None,
+        description=(
+            "Directory of pre-annotated spaCy DocBin + line-map files "
+            "produced by `python -m preprocessing.annotate`. When set, the "
+            "pipeline skips spaCy parsing and reads cached Docs from this "
+            "directory. The directory must contain ANNOTATION_MANIFEST.json, "
+            "{stem}.spacy, and {stem}.linemap.jsonl per source file."
+        ),
+    )
+
     # spaCy configuration
     spacy_model: str = Field(
         "en_core_web_sm",
@@ -225,7 +254,16 @@ class FileStatistics(BaseModel):
     original_tokens: int = Field(0, ge=0, description="Original token count")
     final_tokens: int = Field(0, ge=0, description="Final token count")
     items_ablated: int = Field(0, ge=0, description="Number of items ablated")
-    proportion_removed: float = Field(0.0, ge=0.0, le=1.0, description="Proportion removed")
+    proportion_removed: float = Field(
+        0.0,
+        le=1.0,
+        description=(
+            "Proportion of tokens removed (positive) or added (negative). "
+            "Can be slightly negative when replacement-pool backfill "
+            "overshoots the target size on the final batch, or when a "
+            "lemmatization expands token count (rare with Moses tokenization)."
+        ),
+    )
     processing_time_seconds: float = Field(0.0, ge=0.0, description="Processing time")
 
     # Tier-level provenance (Change 2)

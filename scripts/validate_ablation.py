@@ -2,24 +2,58 @@
 """
 Validate an ablation by producing a stratified i.i.d. sample for hand review.
 
-For each genre file present in both the original and ablated directories, this
-script randomly samples N line indices (seeded) and writes an aligned TSV with
-columns suitable for manual annotation:
+Three sampling modes:
 
-    genre | line_num | original | ablated | correct? | notes
+1. ``--mode token`` (default) — token-replacement ablations. Line N in
+   the original matches line N in the ablated file; diff side-by-side.
+2. ``--mode line-removal`` — line-removal ablations where the ablated
+   file is shorter. Sample from the original; label each as
+   ``<KEPT>`` / ``<REMOVED>`` based on set membership in the ablated file.
+3. ``--mode three-step`` — the compose workflow (ablate train + pool
+   separately, then compose). Reads ``COMPOSE_MANIFEST.json`` from
+   ``--composed``; for each genre samples both from the train side
+   (to audit the ablation itself) AND from the pool-backfill lines
+   (to audit what's being appended). Requires ``--original``,
+   ``--composed``, and manifest metadata from the compose step.
+
+All modes write a TSV with columns suitable for manual annotation:
+
+    genre | source | line_num | original | ablated | correct? | notes
 
 The ``correct?`` and ``notes`` columns are left empty for the reviewer to fill in.
 
 Usage
 -----
-::
+Token-replacement::
 
-    python scripts/validate_ablation.py \\
+    python scripts/validate_ablation.py --mode token \\
         --original data/raw/train_90M/ \\
-        --ablated  data/processed/exp_remove_expletive_sentences_en/ \\
+        --ablated  data/processed/exp_impoverish_case_es/ \\
         --n-per-genre 20 \\
-        --seed 42 \\
-        --output validation/remove_expletive_sentences_en_sample.tsv
+        --output validation/impoverish_case_es.tsv
+
+Line-removal::
+
+    python scripts/validate_ablation.py --mode line-removal \\
+        --original data/raw/train_90M/ \\
+        --ablated  data/processed/exp_remove_expletives_en/ \\
+        --n-per-genre 20 \\
+        --output validation/remove_expl.tsv
+
+Three-step (compose workflow)::
+
+    python scripts/validate_ablation.py --mode three-step \\
+        --original  data/spanish/train_90M/ \\
+        --composed  data/processed/exp_remove_expl_es/ \\
+        --ablated-pool data/processed/exp_remove_expl_es_pool/ \\
+        --n-per-genre 30 \\
+        --output validation/remove_expl_es.tsv
+
+The ``source`` column distinguishes:
+- ``train-kept``     — line survived the ablation in train
+- ``train-removed``  — line was removed from train
+- ``train-modified`` — (token mode) line differs between original and ablated
+- ``pool-backfill``  — line was drawn from ablated pool to hit target size
 
 The script also prints a summary of per-genre ablation statistics (lines
 kept/removed, character-level deltas) to stdout.
@@ -27,6 +61,7 @@ kept/removed, character-level deltas) to stdout.
 
 import argparse
 import csv
+import json
 import os
 import random
 import sys
@@ -112,6 +147,68 @@ def sample_lines_line_removal(original_path: Path, ablated_path: Path, n: int, r
     return pairs
 
 
+def sample_three_step(
+    original_path: Path,
+    composed_path: Path,
+    ablated_pool_path: Path,
+    manifest_entry: dict,
+    n: int,
+    rng: random.Random,
+):
+    """Stratified sample for the three-step (ablate + compose) workflow.
+
+    Splits the N samples between two populations:
+    - Train-side: sample from the original raw corpus. For each sampled
+      line, check if it survived in the composed output (set membership,
+      same as line-removal mode).
+    - Pool-side: sample from the list of pool line indices that were
+      actually drawn (``pool_line_indices_used`` in the compose manifest).
+      Show the ablated pool line verbatim.
+
+    Returns tuples of ``(source, line_num, original_text, final_text)``.
+    """
+    with open(original_path, "r", encoding="utf-8") as f:
+        orig_lines = f.readlines()
+    with open(composed_path, "r", encoding="utf-8") as f:
+        composed_set = set(line.rstrip("\n") for line in f.readlines())
+
+    # 60/40 split favoring train-side review (more lines, more interesting)
+    n_train = max(1, int(n * 0.6))
+    n_pool = n - n_train
+
+    pairs = []
+
+    # Train-side samples
+    if orig_lines:
+        sample_size = min(n_train, len(orig_lines))
+        indices = sorted(rng.sample(range(len(orig_lines)), sample_size))
+        for idx in indices:
+            orig = orig_lines[idx].rstrip("\n")
+            label = "train-kept" if orig in composed_set else "train-removed"
+            # For removed lines, the "ablated" column is a clear marker.
+            ablated = orig if label == "train-kept" else "<REMOVED>"
+            pairs.append((label, idx + 1, orig, ablated))
+
+    # Pool-side samples: draw from the used indices list.
+    used_indices = manifest_entry.get("pool_line_indices_used", [])
+    if used_indices and n_pool > 0:
+        with open(ablated_pool_path, "r", encoding="utf-8") as f:
+            pool_lines = f.readlines()
+        sample_size = min(n_pool, len(used_indices))
+        picked = rng.sample(used_indices, sample_size)
+        for idx in sorted(picked):
+            ablated = pool_lines[idx].rstrip("\n") if idx < len(pool_lines) else "<POOL_LINE_MISSING>"
+            # No single "original" for pool-backfill rows — the original
+            # *pool* line is one layer back (the raw pool we annotated).
+            # Since reviewers care about whether the ablated pool line
+            # reads as acceptable Spanish, show the ablated line in both
+            # the "original" and "ablated" columns of the TSV — the source
+            # label makes the context obvious.
+            pairs.append(("pool-backfill", idx + 1, "<pool sample>", ablated))
+
+    return pairs
+
+
 def compute_stats(original_path: Path, ablated_path: Path):
     """Return a dict of basic statistics comparing original vs ablated."""
     with open(original_path, "r", encoding="utf-8") as f:
@@ -141,8 +238,16 @@ def main():
         help="Directory with original (pre-ablation) corpus files.",
     )
     parser.add_argument(
-        "--ablated", required=True, type=Path,
-        help="Directory with ablated corpus files.",
+        "--ablated", type=Path,
+        help="Directory with ablated corpus files (modes: token, line-removal).",
+    )
+    parser.add_argument(
+        "--composed", type=Path,
+        help="Directory with composed corpus files — mode=three-step only.",
+    )
+    parser.add_argument(
+        "--ablated-pool", type=Path,
+        help="Directory with ablated pool files — mode=three-step only.",
     )
     parser.add_argument(
         "--n-per-genre", type=int, default=20,
@@ -153,12 +258,16 @@ def main():
         help="Random seed for reproducible sampling (default: 42).",
     )
     parser.add_argument(
-        "--mode", choices=["token", "line-removal"], default="token",
+        "--mode",
+        choices=["token", "line-removal", "three-step"],
+        default="token",
         help=(
             "Sampling mode. 'token' (default) compares original and ablated "
-            "lines at the same index (for token-replacement ablations). "
-            "'line-removal' samples from the original and labels each line "
-            "as <KEPT> or <REMOVED> based on set membership in the ablated file."
+            "lines at the same index. 'line-removal' samples from the "
+            "original and labels each line as <KEPT> or <REMOVED>. "
+            "'three-step' reads COMPOSE_MANIFEST.json and samples from "
+            "both the train side and the pool-backfill lines, adding a "
+            "`source` column to the TSV."
         ),
     )
     parser.add_argument(
@@ -167,45 +276,113 @@ def main():
     )
     args = parser.parse_args()
 
-    # Validate directories
+    # Validate mode-specific arguments
     if not args.original.is_dir():
         print(f"Error: original directory not found: {args.original}", file=sys.stderr)
         sys.exit(1)
-    if not args.ablated.is_dir():
-        print(f"Error: ablated directory not found: {args.ablated}", file=sys.stderr)
-        sys.exit(1)
+    if args.mode in ("token", "line-removal"):
+        if args.ablated is None:
+            print(f"Error: mode={args.mode} requires --ablated", file=sys.stderr)
+            sys.exit(1)
+        if not args.ablated.is_dir():
+            print(f"Error: ablated directory not found: {args.ablated}", file=sys.stderr)
+            sys.exit(1)
+    if args.mode == "three-step":
+        if args.composed is None or args.ablated_pool is None:
+            print(
+                "Error: mode=three-step requires --composed and --ablated-pool",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        manifest_path = args.composed / "COMPOSE_MANIFEST.json"
+        if not manifest_path.exists():
+            print(
+                f"Error: no COMPOSE_MANIFEST.json at {manifest_path}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     rng = random.Random(args.seed)
-
-    # Ensure output directory exists
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
-    matches = list(find_matching_files(args.original, args.ablated))
-    if not matches:
-        print("Error: no matching files found between the two directories.", file=sys.stderr)
-        sys.exit(1)
-
-    # Collect samples and stats
     all_samples = []
     all_stats = []
 
-    sample_fn = sample_lines_line_removal if args.mode == "line-removal" else sample_lines_token
+    # ----------------------------------------------------------------------
+    # Mode: three-step (compose workflow)
+    # ----------------------------------------------------------------------
+    if args.mode == "three-step":
+        manifest = json.loads((args.composed / "COMPOSE_MANIFEST.json").read_text())
+        per_file = {entry["stem"]: entry for entry in manifest["per_file"]}
 
-    for genre, orig_path, abl_path in matches:
-        pairs = sample_fn(orig_path, abl_path, args.n_per_genre, rng)
-        for line_num, orig, abl in pairs:
-            all_samples.append((genre, line_num, orig, abl))
+        for genre in sorted(per_file.keys()):
+            orig_path = args.original / f"{genre}.train"
+            composed_path = args.composed / f"{genre}.train"
+            pool_path = args.ablated_pool / f"{genre}.train"
+            if not (orig_path.exists() and composed_path.exists() and pool_path.exists()):
+                print(
+                    f"[warn] {genre}: missing file in original/composed/pool; skipping",
+                    file=sys.stderr,
+                )
+                continue
 
-        stats = compute_stats(orig_path, abl_path)
-        stats["genre"] = genre
-        all_stats.append(stats)
+            pairs = sample_three_step(
+                original_path=orig_path,
+                composed_path=composed_path,
+                ablated_pool_path=pool_path,
+                manifest_entry=per_file[genre],
+                n=args.n_per_genre,
+                rng=rng,
+            )
+            for source, line_num, orig, abl in pairs:
+                all_samples.append((genre, source, line_num, orig, abl))
+
+            stats = compute_stats(orig_path, composed_path)
+            stats["genre"] = genre
+            all_stats.append(stats)
+
+    # ----------------------------------------------------------------------
+    # Modes: token or line-removal (pre-existing)
+    # ----------------------------------------------------------------------
+    else:
+        matches = list(find_matching_files(args.original, args.ablated))
+        if not matches:
+            print(
+                "Error: no matching files found between the two directories.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        sample_fn = (
+            sample_lines_line_removal if args.mode == "line-removal"
+            else sample_lines_token
+        )
+        for genre, orig_path, abl_path in matches:
+            pairs = sample_fn(orig_path, abl_path, args.n_per_genre, rng)
+            for line_num, orig, abl in pairs:
+                # Older modes don't carry a `source` label; mark as
+                # the inferred status so the TSV schema is consistent.
+                if args.mode == "token":
+                    source = "train-modified" if orig != abl else "train-kept"
+                else:
+                    source = (
+                        "train-removed" if abl == "<REMOVED>" else "train-kept"
+                    )
+                all_samples.append((genre, source, line_num, orig, abl))
+
+            stats = compute_stats(orig_path, abl_path)
+            stats["genre"] = genre
+            all_stats.append(stats)
 
     # Write TSV
     with open(args.output, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter="\t")
-        writer.writerow(["genre", "line_num", "original", "ablated", "correct?", "notes"])
-        for genre, line_num, orig, abl in all_samples:
-            writer.writerow([genre, line_num, orig, abl, "", ""])
+        writer.writerow([
+            "genre", "source", "line_num", "original", "ablated",
+            "correct?", "notes",
+        ])
+        for genre, source, line_num, orig, abl in all_samples:
+            writer.writerow([genre, source, line_num, orig, abl, "", ""])
 
     print(f"Wrote {len(all_samples)} sample rows to {args.output}\n")
 

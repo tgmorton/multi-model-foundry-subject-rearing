@@ -377,6 +377,17 @@ class EuroparlAlignmentConfig(_BaseConfig):
     # Validation
     spot_check_n: int = Field(100, gt=0, description="Number of samples for spot-check review")
 
+    # === Shared parse cache (DocBin) ===
+    emit_target_docbin: bool = Field(
+        False,
+        description=(
+            "If True, emit a spaCy DocBin of the target-language parses "
+            "in 1:1 record order alongside aligned_checkpoint.jsonl. "
+            "Downstream tree-detector feature extraction can then skip "
+            "re-parsing clean_text. See TreeDetectorConfig.annotated_input_path."
+        ),
+    )
+
     @field_validator(
         "europarl_en_path", "europarl_it_path", "output_path", mode="before"
     )
@@ -495,6 +506,18 @@ class TreeDetectorConfig(_BaseConfig):
     it_spacy_model: str = Field("it_core_news_lg")
     spacy_batch_size: int = Field(50, gt=0)
 
+    # === Shared parse cache ===
+    annotated_input_path: Optional[Path] = Field(
+        None,
+        description=(
+            "Optional path to a DocBin of target-language parses emitted "
+            "by EuroparlAlignmentGenerator (with emit_target_docbin=True). "
+            "When set, align_gold_data skips re-parsing clean_text and "
+            "loads docs in 1:1 record order from "
+            "{annotated_input_path}/target_parses.spacy."
+        ),
+    )
+
     # Classifier selection for final export
     classifier_type: str = Field(
         "decision_tree",
@@ -529,7 +552,9 @@ class TreeDetectorConfig(_BaseConfig):
     min_detection_f1: float = Field(0.80, ge=0.0, le=1.0)
     min_feature_accuracy: float = Field(0.95, ge=0.0, le=1.0)
 
-    @field_validator("aligned_data_path", "output_path", mode="before")
+    @field_validator(
+        "aligned_data_path", "output_path", "annotated_input_path", mode="before",
+    )
     @classmethod
     def resolve_paths(cls, v):
         return _resolve_path(v)

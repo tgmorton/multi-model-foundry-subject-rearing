@@ -1,0 +1,71 @@
+---
+# ============================================================================
+# Pre-cache `es_core_news_lg` to the subject-drop-archive PVC.
+# ============================================================================
+#
+# Why: `python -m spacy download es_core_news_lg` in the GitLab image fails
+# with a malformed URL (spaCy's compatibility lookup returns empty for this
+# spaCy version inside the container). Also, 10 annotate pods pulling 541 MB
+# concurrently would hammer GitHub.
+#
+# This job:
+#   1. pip installs the wheel directly (known-good URL) into
+#      /mnt/data/_spacy-site/ — a PVC-resident site-packages layout.
+#   2. Every downstream pod prepends $PYTHONPATH=/mnt/data/_spacy-site/ and
+#      does `spacy.load("es_core_news_lg")` normally — zero download.
+#
+# Cost: ~2 min (one 541 MB download over the cluster's outbound bandwidth),
+# then $0 marginal for every annotate/ablate pod. Idempotent: if already
+# installed, the pip install is a no-op.
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: precache-spacy-es
+  labels:
+    study: subject-drop
+    lang: es
+    stage: precache
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      containers:
+      - name: precache
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          TARGET=/mnt/data/_spacy-site
+          URL="https://github.com/explosion/spacy-models/releases/download/es_core_news_lg-3.7.0/es_core_news_lg-3.7.0-py3-none-any.whl"
+
+          echo "Installing es_core_news_lg-3.7.0 → $TARGET"
+          mkdir -p "$TARGET"
+          python -m pip install --no-deps --upgrade --target="$TARGET" "$URL"
+
+          # Validate by loading via the target site-dir.
+          PYTHONPATH="$TARGET" python -c "
+          import spacy, es_core_news_lg
+          nlp = es_core_news_lg.load()
+          doc = nlp('la casa está vacía.')
+          print('OK:', [(t.text, t.pos_, t.lemma_) for t in doc])
+          print('es_core_news_lg package version:', es_core_news_lg.__version__)
+          "
+          echo "Cache ready at $TARGET — downstream pods should set PYTHONPATH=$TARGET"
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        resources:
+          requests: {memory: 4Gi, cpu: "2"}
+          limits:   {memory: 4Gi, cpu: "2"}
+        volumeMounts:
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

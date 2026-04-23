@@ -17,7 +17,18 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import spacy
 from tqdm import tqdm
 
-from preprocessing.utils import get_spacy_device, setup_logging
+from preprocessing.utils import (
+    compute_file_checksum,
+    ensure_directory_exists,
+    get_spacy_device,
+    setup_logging,
+)
+from preprocessing.annotate import (
+    DocBinCollector,
+    dump_vocab,
+    is_passthrough_line,
+    write_manifest as write_docbin_manifest,
+)
 
 from .analyzers import ANALYZER_REGISTRY
 from .analyzers.base import BaseAnalyzer
@@ -329,8 +340,31 @@ class CorpusAnnotationPipeline:
         }
         self._file_idx_map: Dict[str, int] = {}  # genre -> current file index
 
+        # DocBin emission — shared cache for downstream ablations. When
+        # enabled we write one ``.spacy`` + ``.linemap.jsonl`` per source
+        # file plus a top-level ANNOTATION_MANIFEST.json, in a format
+        # identical to what ``preprocessing.annotate`` produces. The
+        # ``AblationPipeline`` consumes either with no discrimination.
+        self._docbin_stats: List[Dict[str, Any]] = []
+        self.docbin_output_dir: Optional[Path] = None
+        if config.emit_docbin:
+            self.docbin_output_dir = Path(
+                config.docbin_output_dir
+                or Path(output_dir or config.output_path) / "docbin"
+            )
+            ensure_directory_exists(self.docbin_output_dir)
+
         # Load spaCy
         self.nlp = self._load_spacy(config)
+
+        # Dump vocab once if we're emitting DocBin so downstream readers
+        # can reconstruct without reloading the source spaCy model.
+        if config.emit_docbin and self.docbin_output_dir is not None:
+            dump_vocab(self.nlp, self.docbin_output_dir)
+            self.logger.info(
+                "DocBin emission enabled; writing to %s",
+                self.docbin_output_dir,
+            )
 
     def _load_spacy(self, config: CorpusAnalysisConfig) -> spacy.Language:
         """Load spaCy model with GPU auto-detection."""
@@ -429,6 +463,26 @@ class CorpusAnnotationPipeline:
             meta_path.parent.mkdir(parents=True, exist_ok=True)
             meta_path.write_text(json.dumps(self._metadata, indent=2, default=str))
 
+        # Write ANNOTATION_MANIFEST.json for the DocBin consumer (if emitted).
+        # Format matches ``preprocessing.annotate`` so AblationPipeline can
+        # read from either producer interchangeably.
+        if self.config.emit_docbin and self.docbin_output_dir is not None:
+            manifest_path = write_docbin_manifest(
+                output_dir=self.docbin_output_dir,
+                spacy_model=self.config.spacy_model,
+                spacy_model_version=self.nlp.meta.get("version", "unknown"),
+                spacy_version=spacy.__version__,
+                device=self._metadata.get("device", "cpu"),
+                files=self._docbin_stats,
+                processing_time_seconds=elapsed,
+                source="corpus_descriptives.unified",
+            )
+            self.logger.info("Wrote DocBin manifest: %s", manifest_path)
+            # Surface the DocBin location in the Parquet-side metadata too,
+            # so anyone reading metadata.json knows the cache is available.
+            self._metadata["docbin_output_dir"] = str(self.docbin_output_dir)
+            self._metadata["docbin_manifest"] = str(manifest_path)
+
         return self._metadata
 
     def _resolve_genre(self, fpath: Path) -> Optional[str]:
@@ -445,7 +499,14 @@ class CorpusAnnotationPipeline:
         get_base_schema=None,
         get_layer_schema=None,
     ) -> int:
-        """Process a single corpus file. Returns sentence count."""
+        """Process a single corpus file. Returns sentence count.
+
+        If ``config.emit_docbin`` is enabled, a ``DocBinCollector`` runs
+        alongside the Parquet annotators — every cleaned Doc is added to
+        the DocBin, and every skipped input line (empty / boundary / etc.)
+        is recorded as a pass-through so the line_map reconstructs the
+        original source order at the end.
+        """
         self.logger.info(f"Processing {fpath.name} (genre={genre}, file_idx={file_idx})")
 
         cleaner = get_cleaner(genre, metadata_dir=Path(self.config.input_path))
@@ -455,6 +516,13 @@ class CorpusAnnotationPipeline:
 
         sent_count = 0
         global_sent_idx = 0  # Track sentence index across all chunks
+
+        # DocBin collector (shared cache for ablations) — one per file.
+        docbin_collector: Optional[DocBinCollector] = None
+        if self.config.emit_docbin and self.docbin_output_dir is not None:
+            docbin_collector = DocBinCollector(
+                output_dir=self.docbin_output_dir, file_stem=fpath.stem
+            )
 
         # Process in chunks
         num_chunks = (len(raw_lines) + self.config.chunk_size - 1) // self.config.chunk_size
@@ -466,14 +534,39 @@ class CorpusAnnotationPipeline:
         ):
             chunk = raw_lines[chunk_start : chunk_start + self.config.chunk_size]
 
-            # Clean lines and collect metadata
-            cleaned = []
-            meta_list = []
-            for raw_line in chunk:
+            # Clean lines and collect metadata. Track the original line
+            # index of every kept line so the DocBin linemap can replay
+            # source order (including pass-throughs) at flush time.
+            cleaned: List[str] = []
+            meta_list: List[Dict[str, Any]] = []
+            kept_line_indices: List[int] = []
+            kept_raw_lines: List[str] = []
+
+            for chunk_offset, raw_line in enumerate(chunk):
+                abs_line_idx = chunk_start + chunk_offset
+
+                # Boundary markers and empty lines must never be parsed
+                # as content, even if the genre's cleaner is the generic
+                # pass-through. Feed the cleaner the raw line first so
+                # state-keeping cleaners (CHILDES age tracking) still see
+                # boundaries, then overrule the cleaner's "content" verdict
+                # if the raw line is structurally a pass-through.
                 text, meta = cleaner(raw_line)
+                if is_passthrough_line(raw_line):
+                    if docbin_collector is not None:
+                        docbin_collector.add_passthrough(abs_line_idx, raw_line)
+                    continue
+
                 if text:
                     cleaned.append(text)
                     meta_list.append(meta)
+                    kept_line_indices.append(abs_line_idx)
+                    kept_raw_lines.append(raw_line)
+                elif docbin_collector is not None:
+                    # Cleaner returned empty (e.g. bracket-only annotation line)
+                    # — record as passthrough so ablation output preserves the
+                    # original raw line.
+                    docbin_collector.add_passthrough(abs_line_idx, raw_line)
 
             if not cleaned:
                 continue
@@ -483,8 +576,18 @@ class CorpusAnnotationPipeline:
                 cleaned, batch_size=self.config.spacy_batch_size
             )
 
-            # Process each doc (which may have multiple sentences)
+            # Process each doc (which may have multiple sentences).
+            # `doc_cursor` tracks the index within the cleaned batch so we
+            # can pair each Doc with its original raw line for the linemap.
+            doc_cursor = 0
             for doc, meta in zip(doc_stream, meta_list):
+                if docbin_collector is not None:
+                    docbin_collector.add_doc(
+                        kept_line_indices[doc_cursor],
+                        kept_raw_lines[doc_cursor],
+                        doc,
+                    )
+                doc_cursor += 1
                 speaker = meta.get("speaker")
                 role = meta.get("role")
 
@@ -573,5 +676,24 @@ class CorpusAnnotationPipeline:
 
                     global_sent_idx += 1
                     sent_count += 1
+
+        # Flush per-file DocBin and record stats for the manifest.
+        if docbin_collector is not None:
+            file_start = time.time()  # approximate; true time tracked at run level
+            flushed = docbin_collector.flush()
+            self._docbin_stats.append({
+                "file_name": fpath.name,
+                "n_lines_total": docbin_collector.n_lines,
+                "n_docs_stored": flushed["n_docs"],
+                "n_lines_passthrough": flushed["n_passthrough"],
+                "input_checksum": compute_file_checksum(fpath),
+                "docbin_bytes": flushed["docbin_bytes"],
+                "processing_time_seconds": 0.0,  # set at run level only
+            })
+            self.logger.info(
+                "  DocBin %s: %d docs + %d passthrough (%d bytes)",
+                fpath.stem, flushed["n_docs"], flushed["n_passthrough"],
+                flushed["docbin_bytes"],
+            )
 
         return sent_count

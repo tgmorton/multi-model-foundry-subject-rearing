@@ -1,0 +1,111 @@
+---
+# ============================================================================
+# Pull the staged Spanish corpus from S3 into the subject-drop-archive PVC.
+# ============================================================================
+#
+# Laptop uploaded files via boto3 to
+#   s3://thomas-subject-drop-artifacts/_tmp/upload/es/{train_90M,pull_10M}/*.train
+#
+# This job pulls them into
+#   /mnt/data/raw/es/{train_90M,pull_10M}/*.train
+# on the subject-drop-archive PVC, then deletes the S3 staging prefix.
+#
+# Why a Job and not `kubectl exec` on pod-archive: NRP's kubectl-exec
+# websocket gets killed mid-stream for long connections (both `tar |
+# kubectl exec` and `kubectl exec ... python pull_from_s3` failed
+# partway through the europarl.train download). A real Job runs
+# independently of the laptop's network.
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: s3-to-pvc-es
+  labels:
+    study: subject-drop
+    lang: es
+    stage: upload
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 86400   # 1 day
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      containers:
+      - name: transfer
+        # GitLab image has boto3 1.42.93 pre-installed
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["python", "-u", "-c"]
+        args:
+        - |
+          import os, time, boto3
+          from boto3.s3.transfer import TransferConfig
+
+          # Inside the cluster we prefer the cluster-internal endpoint
+          # (higher bandwidth, multi-OSD). Envs come from s3-secret-thomas
+          # via the envFrom block below.
+          s3 = boto3.client(
+              "s3",
+              endpoint_url=os.environ["AWS_ENDPOINT_URL"],
+              aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+              aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+              region_name=os.environ.get("AWS_DEFAULT_REGION", "us-west-1"),
+          )
+          BUCKET = os.environ["REGISTRY_BUCKET"]
+          PREFIX = "_tmp/upload/es"
+          DST = "/mnt/data/raw/es"
+          XFER = TransferConfig(
+              multipart_threshold=8 << 20,
+              multipart_chunksize=8 << 20,
+              max_concurrency=8,
+          )
+
+          keys = []
+          for page in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix=PREFIX):
+              for obj in page.get("Contents", []):
+                  keys.append((obj["Key"], obj["Size"]))
+          print(f"Found {len(keys)} objects under s3://{BUCKET}/{PREFIX}", flush=True)
+
+          total_bytes = sum(sz for _, sz in keys)
+          t0 = time.time()
+          for i, (key, size) in enumerate(sorted(keys), 1):
+              rel = key[len(PREFIX) + 1:]
+              dst = os.path.join(DST, rel)
+              os.makedirs(os.path.dirname(dst), exist_ok=True)
+              t = time.time()
+              s3.download_file(BUCKET, key, dst, Config=XFER)
+              print(f"  [{i:2}/{len(keys)}] {size/(1<<20):7.1f} MB  {rel}  ({time.time()-t:.1f}s)", flush=True)
+
+          elapsed = time.time() - t0
+          print(f"\nDownloaded {len(keys)} files ({total_bytes/(1<<20):.1f} MB total) in {elapsed:.1f}s "
+                f"({total_bytes/(1<<20)/elapsed:.1f} MB/s)", flush=True)
+
+          # Cleanup: delete the S3 staging prefix so we don't keep a copy
+          # of the raw corpus in the bucket indefinitely.
+          to_delete = [{"Key": k} for k, _ in keys]
+          # Delete in batches of 1000 (S3 API max)
+          for i in range(0, len(to_delete), 1000):
+              batch = to_delete[i:i + 1000]
+              s3.delete_objects(Bucket=BUCKET, Delete={"Objects": batch})
+          print(f"Deleted {len(to_delete)} staging objects from S3", flush=True)
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        - {name: PYTHONUNBUFFERED,   value: "1"}
+        resources:
+          # requests == limits to satisfy NRP admission webhook
+          requests: {memory: 2Gi, cpu: "1"}
+          limits:   {memory: 2Gi, cpu: "1"}
+        volumeMounts:
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

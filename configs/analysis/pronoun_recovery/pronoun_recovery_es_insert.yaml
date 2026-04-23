@@ -4,13 +4,15 @@
 # BebeLM Spanish 90M training corpus to produce an over-pronominal
 # corpus simulating English-like pronoun distribution in Spanish.
 #
-# Output: data/pronoun_recovery/inserted/es/ — consumed by
+# Output: /mnt/data/manipulations/es/insert_pronouns/ — consumed by
 # experiment_es_insert_pronouns.yaml as the source corpus (via
 # identity ablation, since the manipulation has already been applied).
 
-input_path: data/spanish/train_90M
-output_path: data/pronoun_recovery/inserted/es
-model_path: data/pronoun_recovery/models/es/best_checkpoint
+input_path: /mnt/data/raw/es/train_90M
+# Writes into the canonical manipulations slot so
+# experiment_es_insert_pronouns.yaml can pick it up directly.
+output_path: /mnt/data/manipulations/es/insert_pronouns
+model_path: /mnt/data/pronoun_recovery/models/es/best_checkpoint
 language: es
 
 # spaCy

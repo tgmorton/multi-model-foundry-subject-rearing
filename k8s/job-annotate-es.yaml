@@ -1,0 +1,162 @@
+---
+# ============================================================================
+# Annotate Spanish corpora (train_90M + pull_10M) with es_core_news_trf
+# ============================================================================
+#
+# Parses each .train file once, writing DocBin + linemap to a content-addressed
+# cache under /mnt/data/annotated/<hash>/. Consumed by the Spanish ablation
+# pipeline (three-step: annotate → ablate × 2 → compose).
+#
+# Fan-out: 20 pods (10 train genres + 10 pool genres), each parses one file.
+# parallelism capped at 10 to respect the open 24 GB Ampere/Ada pool.
+#
+# GPU: 1× RTX-3090 / A10 / L4 / RTX-4090 per pod. Open pool per CLAUDE.md
+# §Cluster/GPU allocation — ~400 GPUs available. No reservation needed.
+#
+# Expected wall-clock: ~40 min dominated by europarl.train (40% of corpus).
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: annotate-es-v1
+  labels:
+    study: subject-drop
+    lang: es
+    stage: annotate
+spec:
+  completionMode: Indexed
+  completions: 20
+  parallelism: 10
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800   # 7 days
+  template:
+    metadata:
+      labels:
+        study: subject-drop
+        lang: es
+        stage: annotate
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: annotator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+
+          # --- Compute which (corpus, file) this pod handles ---------------
+          # Fan-out scheme: indices 0-9 = train genres, 10-19 = pool genres.
+          # Keep in sync with the corpus ordering in build_spanish_corpus.py.
+          GENRES=(childes child_narratives grerli gutenberg leipzig_web \
+                  opensubtitles qed spoken vikidia europarl)
+          IDX=${JOB_COMPLETION_INDEX}
+          if [ "$IDX" -lt 10 ]; then
+            CORPUS=train_90M
+            GENRE=${GENRES[$IDX]}
+          else
+            CORPUS=pull_10M
+            GENRE=${GENRES[$((IDX - 10))]}
+          fi
+          echo "Pod $IDX → CORPUS=$CORPUS GENRE=$GENRE"
+
+          INPUT_DIR=/mnt/data/raw/es/${CORPUS}
+          INPUT_FILE=${INPUT_DIR}/${GENRE}.train
+          if [ ! -f "$INPUT_FILE" ]; then
+            echo "[warn] $INPUT_FILE not found — skipping this cell"
+            exit 0
+          fi
+
+          # --- Load Spanish spaCy pipeline from the PVC cache ---
+          # precache-spacy-es (see k8s/job-precache-spacy-es.yaml) writes
+          # es_core_news_lg to /mnt/data/_spacy-site/. We add that dir to
+          # PYTHONPATH so `import es_core_news_lg` works without any per-pod
+          # download. Spanish has NO _trf variant — _lg is the largest spaCy
+          # ships (verified 2026-04-23 against the spacy-models GitHub API).
+          # Include the cloned repo so `python -m preprocessing.annotate`
+          # resolves; and the PVC spaCy cache so `import es_core_news_lg` works.
+          export PYTHONPATH="/opt/repo:/mnt/data/_spacy-site:${PYTHONPATH:-}"
+          python -c "import es_core_news_lg; print('es_core_news_lg version:', es_core_news_lg.__version__)"
+
+          # --- Run the annotator on just this file ---------------------------
+          # Output path is content-addressed under /mnt/data/annotated/<hash>/.
+          # Computed from (abspath(input_dir), spacy_model, docbin_attrs) so
+          # train and pool get DIFFERENT cache dirs, and different files in
+          # the same corpus share the same cache dir (one per corpus).
+          cd /opt/repo
+
+          python -m preprocessing.annotate \
+            --input ${INPUT_DIR}/ \
+            --spacy-model es_core_news_lg \
+            --file ${GENRE} \
+            --chunk-size 500 \
+            --spacy-batch-size 64
+
+          echo "Pod $IDX done."
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        # S3 block (harmless if unused; consistent with training templates)
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          # requests == limits to satisfy NRP admission webhook
+          # (limit/request ratio must be ≤ 1.2).
+          requests:
+            memory: 24Gi
+            cpu: "6"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 24Gi
+            cpu: "6"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

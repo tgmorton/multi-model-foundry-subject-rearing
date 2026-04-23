@@ -10,27 +10,27 @@ experiment_name: "exp_lemmatize_verbs_es"
 
 # --- Data Configuration ---
 data:
-  source_corpus: "data/spanish/train_90M/"
-  training_corpus: "data/spanish/processed/exp_lemmatize_verbs_es/"
-  test_corpus: "data/spanish/test_10M/"
+  source_corpus: "/mnt/data/raw/es/train_90M/"
+  training_corpus: "/mnt/data/manipulations/es/lemmatize_verbs/"
+  test_corpus: "/mnt/data/raw/es/test_10M/"
   batch_size: 32
   max_sequence_length: 1000
 
 # --- Dataset Manipulation Pipeline ---
 dataset_manipulation:
   - type: lemmatize_verbs
-    input_path: "data/spanish/train_90M/"
-    output_path: "data/spanish/processed/exp_lemmatize_verbs_es/"
+    input_path: "/mnt/data/raw/es/train_90M/"
+    output_path: "/mnt/data/manipulations/es/lemmatize_verbs/"
     spacy_model: "es_core_news_lg"
     parameters:
       chunk_size: 1000
-      replacement_pool_dir: "data/spanish/pull_10M/"
+      replacement_pool_dir: "/mnt/data/raw/es/pull_10M/"
       skip_validation: false
       verbose: true
 
 # --- Tokenizer Configuration ---
 tokenizer:
-  output_dir: "tokenizers/exp_lemmatize_verbs_es/"
+  output_dir: "/mnt/data/tokenizers/exp_lemmatize_verbs_es/"
   vocab_size: 50004
 
 # --- Model Architecture ---
@@ -46,7 +46,7 @@ model:
 
 # --- Training Procedure ---
 training:
-  output_dir: "models/exp_lemmatize_verbs_es/"
+  output_dir: "/mnt/data/models/exp_lemmatize_verbs_es/"
   learning_rate: 0.0004
   adam_beta1: 0.9
   adam_beta2: 0.999

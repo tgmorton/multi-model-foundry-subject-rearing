@@ -4,9 +4,9 @@
 # Total Spanish Europarl pairs: 2,009,073
 # Test range: last ~10K lines (1999000-2009073)
 
-europarl_en_path: data/spanish/parallel/europarl.en
-europarl_it_path: data/spanish/parallel/europarl.es
-output_path: data/pronoun_recovery/europarl_aligned/es_test
+europarl_en_path: /mnt/data/raw/es/parallel/europarl.en
+europarl_it_path: /mnt/data/raw/es/parallel/europarl.es
+output_path: /mnt/data/pronoun_recovery/europarl_aligned/es_test
 language: es
 
 # Held-out segment: last 10K lines

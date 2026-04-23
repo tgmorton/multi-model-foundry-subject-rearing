@@ -48,12 +48,18 @@ linguistics vs information-theoretic accounts of subject-drop.
 See `memory/reference_storage_diagram.md` for the canonical ASCII
 picture. Summary:
 
-- **CephFS PVC `corpus-analysis-data`** (200 GiB, RWX) — hot operational
-  storage. Holds raw corpora, tokenizers, tokenized+chunked data,
-  in-flight checkpoints.
-- **CephFS PVC `subject-drop-archive`** (40 TiB, RWX) — cold
-  reference-rep storage. Holds analysis-only checkpoints for the
-  reference replicate of each cell after post-eval pruning.
+- **CephFS PVC `subject-drop-archive`** (40 TiB, RWX) — **primary
+  working storage going forward**. Holds raw corpora, annotation
+  caches, ablated manipulations, tokenizers, tokenized/chunked data,
+  in-flight checkpoints, and (later) pruned reference-rep checkpoints.
+  Mount at `/mnt/data` in new pods (NOT `/mnt/archive` — the name is
+  historical; this is the hot PVC now). Started empty 2026-04-22.
+- **CephFS PVC `corpus-analysis-data`** (200 GiB, RWX) — **legacy**,
+  frozen. Contains the in-flight English + Italian artifacts from
+  pre-Spanish-switch work (`raw/` EN, `italian/`, `models/` training
+  checkpoints). Do not write new data here — it's 90% full and the
+  English/Italian pipelines are winding down. Existing k8s templates
+  pointing at this PVC keep working; new work uses `subject-drop-archive`.
 - **Ceph RGW S3 bucket `thomas-subject-drop-artifacts`** — portable
   science outputs that travel with the paper. Registry, eval parquets,
   WandB exports, env snapshots.
@@ -61,6 +67,34 @@ picture. Summary:
   absolute.** Storage ceases to be a binding constraint during the
   active study. Post-publication migration is an institutional
   archiving question (Zenodo / OSF / UCSD service).
+
+**Canonical layout on `subject-drop-archive`** (mount at `/mnt/data`):
+
+```
+/mnt/data/
+├── raw/{en,es}/{train_90M, pull_10M, test_10M, parallel}/   ← source corpora
+├── annotated/<corpus_hash>/                                 ← content-addressed DocBin
+├── manipulations/{en,es}/<long_slug>/                       ← ablated corpora
+│   ├── *.train                                              ← composed (consumed by training)
+│   ├── COMPOSE_MANIFEST.json, ABLATION_MANIFEST.json
+│   ├── _train/, _pool/                                      ← intermediate (skip_backfill)
+│   └── pool_remainder/                                      ← audit trail
+├── tokenizers/<lang>_<arch>/                                ← one-shot per (lang, arch)
+├── tokenized/<cache_hash>/                                  ← content-addressed
+├── chunked/<cache_hash>/                                    ← content-addressed
+├── models/<run_id>/                                         ← in-flight training
+└── archive/<cell_id>/<ref_run_id>/                          ← cold reference-rep (post-eval)
+```
+
+**K8s volume mount block**:
+
+```yaml
+volumeMounts:
+- {name: data, mountPath: /mnt/data}
+volumes:
+- name: data
+  persistentVolumeClaim: {claimName: subject-drop-archive}
+```
 
 ## Cluster / GPU allocation (everything needed to land a pod on the right hardware)
 

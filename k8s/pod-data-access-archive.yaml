@@ -1,0 +1,33 @@
+---
+# Long-lived data-access pod for subject-drop-archive.
+#
+# Mount the primary PVC at /mnt/data (the canonical mount path per
+# CLAUDE.md §Storage architecture). Use this for:
+#   - `kubectl cp` uploads of raw corpora from a laptop
+#   - interactive inspection via `kubectl exec pod-archive -- sh`
+#   - ad-hoc shell scripting over the PVC contents
+#
+# Keeps itself alive for 6 hours. Delete with
+# `kubectl delete pod pod-archive` when you're done.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-archive
+  labels:
+    purpose: data-access
+    pvc: subject-drop-archive
+spec:
+  containers:
+  - name: shell
+    image: python:3.10-slim
+    command: ["sleep", "21600"]
+    resources:
+      requests: {memory: 1Gi, cpu: "200m"}
+      limits:   {memory: 1Gi, cpu: "500m"}
+    volumeMounts:
+    - {name: data, mountPath: /mnt/data}
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: subject-drop-archive
+  restartPolicy: Never
