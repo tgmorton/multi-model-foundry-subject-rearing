@@ -1,0 +1,22 @@
+name: lstm_es
+program: scripts/sweep_agent_lm.py
+method: bayes
+
+metric:
+  name: proxy/held_out_perplexity
+  goal: minimize
+
+early_terminate:
+  type: hyperband
+  min_iter: 500
+  eta: 3
+
+parameters:
+  arch: {value: lstm}
+  lang: {value: es}
+  base_config: {value: configs/sweeps/baselines/lstm_es.yaml}
+  learning_rate: {distribution: log_uniform_values, min: 1e-4, max: 1e-2}
+  warmup_ratio: {distribution: uniform, min: 0.03, max: 0.15}
+  dropout: {distribution: uniform, min: 0.0, max: 0.3}
+  effective_batch_size: {values: [128, 256, 512, 1024]}
+  adam_beta2: {values: [0.95, 0.99, 0.999]}
