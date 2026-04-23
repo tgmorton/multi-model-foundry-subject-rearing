@@ -185,14 +185,35 @@ def _apply_hp_overrides(cfg: dict, wc: dict) -> None:
             cfg["training"]["gradient_accumulation_steps"] = 1
         else:
             cfg["training"]["gradient_accumulation_steps"] = max(1, eff // phys)
-    if "dropout" in wc:
-        val = float(wc["dropout"])
+    # Dropout / attention_dropout may live at the flat top of the model
+    # block (legacy GPT-2 baseline shape) OR nested inside transformer/rnn/mamba
+    # (new canonical shape — see ModelConfig._backwards_compat_flat_config).
+    # The pydantic validator rewrites flat→nested, but it runs AFTER this
+    # overlay, so we must touch whichever shape the YAML is in.
+    _TRANSFORMER_FLAT_MARKERS = {"layers", "attention_heads", "intermediate_hidden_size"}
+    _RNN_FLAT_MARKERS = {"num_layers", "rnn_type"}
+    _MAMBA_FLAT_MARKERS = {"d_model", "n_layers", "d_state"}
+    model = cfg["model"]
+    def _apply_model_field(field: str, val: float) -> None:
+        nested_hit = False
         for block in ("transformer", "rnn", "mamba"):
-            if cfg["model"].get(block):
-                cfg["model"][block]["dropout"] = val
+            if isinstance(model.get(block), dict):
+                model[block][field] = val
+                nested_hit = True
+        if nested_hit:
+            return
+        # Flat shape: set directly on the model dict if this field applies.
+        # Only the transformer family carries attention_dropout.
+        if field == "attention_dropout":
+            if _TRANSFORMER_FLAT_MARKERS & model.keys():
+                model[field] = val
+        else:
+            if (_TRANSFORMER_FLAT_MARKERS | _RNN_FLAT_MARKERS | _MAMBA_FLAT_MARKERS) & model.keys():
+                model[field] = val
+    if "dropout" in wc:
+        _apply_model_field("dropout", float(wc["dropout"]))
     if "attention_dropout" in wc:
-        if cfg["model"].get("transformer"):
-            cfg["model"]["transformer"]["attention_dropout"] = float(wc["attention_dropout"])
+        _apply_model_field("attention_dropout", float(wc["attention_dropout"]))
 
 
 def _apply_sweep_overrides(cfg: dict, wandb_run_id: str) -> None:

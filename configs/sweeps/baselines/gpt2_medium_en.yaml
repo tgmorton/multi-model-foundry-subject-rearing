@@ -40,14 +40,16 @@ tokenizer:
   vocab_size: 50004
 
 model:
-  layers: 12
-  embedding_size: 768
-  hidden_size: 768
-  intermediate_hidden_size: 3072
-  attention_heads: 12
-  activation_function: "gelu"
-  dropout: 0.1
-  attention_dropout: 0.1
+  architecture: "gpt2"
+  transformer:
+    layers: 12
+    embedding_size: 768
+    hidden_size: 768
+    intermediate_hidden_size: 3072
+    attention_heads: 12
+    activation_function: "gelu"
+    dropout: 0.1                   # overridden per trial (model.transformer.dropout)
+    attention_dropout: 0.1         # overridden per trial (model.transformer.attention_dropout)
 
 training:
   output_dir: "models/sweeps/placeholder/"      # overridden per trial

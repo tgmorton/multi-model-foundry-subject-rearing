@@ -87,21 +87,28 @@ winner = next(r for r in iter_all_records()
 print(winner["hyperparameters"])
 ```
 
-## The 12 sweeps
+## The 8 sweeps
 
-Per the "separate sweeps per language" decision, 6 archs × 2 langs = 12
-sweeps total. Each has its own `<arch>_<lang>.yaml` + `baselines/<arch>_<lang>.yaml`:
+**Design decision** (2026-04-23): 4 arch-classes × 2 langs = **8 sweeps**.
 
-| Arch | en | es |
+GPT-2 small and GPT-2 large DO NOT get independent sweeps — they
+inherit the winning HPs from `gpt2_medium_<lang>`. Reason: H9 is a
+within-family scaling test that predicts quantitative-only differences
+(small < medium < large in speed/magnitude). Independent sweeps per size
+would conflate scaling effects with HP-choice effects. Matched HPs
+across sizes is the standard scaling-literature approach and gives a
+stronger scaling claim — if small < medium < large survives despite
+non-optimal HPs at the extremes, size is the cause.
+
+| Arch-class | en | es |
 |---|---|---|
-| gpt2_small | todo | todo |
-| gpt2_medium | **done** | todo |
-| gpt2_large | todo | todo |
+| gpt2_medium (→ applies to small + large too) | **done** | todo |
 | bert_large | todo | todo |
 | lstm | todo | todo |
 | mamba_370m | todo | todo |
 
-(n-gram models don't need HP sweeps.)
+(n-gram models don't need HP sweeps. GPT-2 small and large don't have
+their own sweeps — they're launched with gpt2_medium's frozen winner.)
 
 Adding a new (arch, lang) sweep is mostly copy+sed: duplicate both
 YAMLs, change the `arch`/`lang`/`base_config` constants, adjust the

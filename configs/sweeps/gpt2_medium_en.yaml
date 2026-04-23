@@ -12,6 +12,7 @@
 # We also log final_training_loss so we can cross-check rankings
 # post-sweep (per the "run A + B, decide from there" decision).
 
+name: gpt2_medium_en
 program: scripts/sweep_agent_lm.py
 method: bayes
 
