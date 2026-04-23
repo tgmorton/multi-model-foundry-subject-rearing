@@ -70,11 +70,26 @@ spec:
           # Symlink repo data/ tree into the PVC so CLI tools see the
           # canonical layout (matches what sweep/training pods see).
           mkdir -p /opt/repo/data
-          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          # git ships data/chunked/test_checkpoint_scheduling/ and some
+          # annotated corpora under data/, which turn /opt/repo/data/*
+          # into non-empty dirs — `ln -sfn` silently can't replace them
+          # and downstream writes land on pod-local emptyDir instead of
+          # the PVC. Nuke these before symlinking so the links always win.
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers
           mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
           ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
           ln -sfn /mnt/data/chunked /opt/repo/data/chunked
           ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          # Sanity: verify symlinks are real symlinks to the PVC
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers; do
+            target=$(readlink "$d" 2>/dev/null || echo "<not-a-symlink>")
+            echo "  symlink check: $d -> $target"
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink after setup"; exit 1; }
+          done
+          # Also: remove the test_checkpoint_scheduling stub from the
+          # cloned tree so no future save into /opt/repo/data/chunked/
+          # ever hits a stale fixture path.
 
           python -m model_foundry.cli validate-config $BASE
 

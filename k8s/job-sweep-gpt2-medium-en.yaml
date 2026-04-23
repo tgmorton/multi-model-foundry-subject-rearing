@@ -78,12 +78,20 @@ spec:
 
           cd /opt/repo
           mkdir -p /opt/repo/data
-          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          # git ships data/chunked/test_checkpoint_scheduling/ + annotated
+          # corpora under data/, so /opt/repo/data/* arrives populated.
+          # `ln -sfn` silently can't replace non-empty dirs → writes go to
+          # pod-local emptyDir, vanishing when the pod exits. Nuke first.
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
           mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
           ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
           ln -sfn /mnt/data/chunked /opt/repo/data/chunked
           ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
           ln -sfn /mnt/data/models /opt/repo/models
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models; do
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink after setup"; exit 1; }
+          done
 
           BASE=configs/sweeps/baselines/gpt2_medium_en.yaml
           python -m model_foundry.cli validate-config $BASE
