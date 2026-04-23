@@ -85,13 +85,39 @@ spec:
           ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
           ln -sfn /mnt/data/models /opt/repo/models
 
-          # Prep steps — tokenizer is pre-existing (one-shot), tokenize
-          # + chunk hit the hashed cache. Each trial then trains
-          # in-process.
           BASE=configs/sweeps/baselines/gpt2_medium_en.yaml
           python -m model_foundry.cli validate-config $BASE
-          python -m model_foundry.cli tokenize-dataset $BASE
-          python -m model_foundry.cli preprocess-data $BASE
+
+          # PRE-RUN DISCIPLINE (see memory/feedback_prerun_caches.md):
+          # tokenize-dataset + preprocess-data are one-shot pre-jobs
+          # run via k8s/job-prepare-dataset.yaml BEFORE launching the
+          # sweep. The sweep pods only READ from cache. If the cache
+          # is missing, fail loud — don't silently race.
+          CACHE_KEY=$(python -c "
+          import yaml, sys
+          sys.path.insert(0, '/opt/repo')
+          from model_foundry.cache_keys import compute_cache_key
+          cfg = yaml.safe_load(open('$BASE'))
+          corpus = cfg['data']['training_corpus']
+          if not corpus.startswith('/'): corpus = '/opt/repo/' + corpus
+          tok = cfg['tokenizer']['output_dir']
+          if not tok.startswith('/'): tok = '/opt/repo/' + tok
+          print(compute_cache_key(corpus, tok, cfg['data']['max_sequence_length'], cfg.get('dataset_manipulation') or []))
+          ")
+          test -n "$CACHE_KEY" || { echo "FAIL couldn't resolve cache_key"; exit 1; }
+          TOKENIZED=/mnt/data/tokenized/$CACHE_KEY/train/dataset_info.json
+          CHUNKED=/mnt/data/chunked/$CACHE_KEY/train/dataset_info.json
+          if [ ! -f "$TOKENIZED" ]; then
+            echo "FAIL missing tokenized cache: $TOKENIZED"
+            echo "  run k8s/job-prepare-dataset.yaml with TARGET_CONFIG=$BASE first"
+            exit 1
+          fi
+          if [ ! -f "$CHUNKED" ]; then
+            echo "FAIL missing chunked cache: $CHUNKED"
+            echo "  run k8s/job-prepare-dataset.yaml with TARGET_CONFIG=$BASE first"
+            exit 1
+          fi
+          echo "cache warm: $CACHE_KEY (tokenized + chunked both present)"
 
           # Sanity: WandB key present?
           test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
