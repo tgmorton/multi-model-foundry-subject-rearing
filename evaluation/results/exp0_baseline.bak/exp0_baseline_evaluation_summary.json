@@ -1,8 +1,0 @@
-{
-  "generation_time": "2025-08-10T01:00:31.837326",
-  "total_checkpoints": 1,
-  "successful_evaluations": 1,
-  "final_perplexity": 59693.32275220021,
-  "final_blimp_accuracy": 0.5370149253731343,
-  "final_overt_preference": 0.38
-}
