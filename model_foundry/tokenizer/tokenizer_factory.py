@@ -424,6 +424,9 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
 
     # Idempotency check: skip if a complete tokenizer already exists
     # (looks for the key artifact files each tokenizer type produces).
+    # Uses pathlib.Path and resolves symlinks explicitly so a symlinked
+    # output_dir (e.g. /opt/repo/tokenizers -> /mnt/data/tokenizers on
+    # K8s pods) is always treated as a real directory.
     _sentinel_files = {
         'sentencepiece': ['tokenizer.model'],
         'wordpiece':    ['tokenizer.json'],
@@ -431,12 +434,35 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
         'character':    ['tokenizer.json'],
     }
     sentinels = _sentinel_files.get(tokenizer_type, [])
-    if not force and os.path.isdir(output_dir) and sentinels:
-        if all(os.path.exists(os.path.join(output_dir, s)) for s in sentinels):
-            print(f"  - Tokenizer already exists at: {output_dir}")
-            print(f"  - Skipping re-training. Pass force=True (or --force on CLI) to override.")
-            print("----- Tokenizer Training Skipped (cached) -----")
-            return None
+    output_path = Path(output_dir)
+    try:
+        resolved_dir = output_path.resolve()
+    except (OSError, RuntimeError):
+        resolved_dir = output_path
+    # CephFS readdir/attr caching can return stale "not exists" results
+    # for a few seconds after a fresh PVC mount. A forced listdir on the
+    # parent invalidates that cache and is cheap.
+    try:
+        if resolved_dir.parent.exists():
+            os.listdir(resolved_dir.parent)
+    except OSError:
+        pass
+    dir_exists = resolved_dir.is_dir()
+    sentinel_paths = [resolved_dir / s for s in sentinels]
+    sentinels_present = sentinels and all(p.exists() for p in sentinel_paths)
+    if not force and dir_exists and sentinels_present:
+        print(f"  - Tokenizer already exists at: {output_dir}")
+        print(f"  - Skipping re-training. Pass force=True (or --force on CLI) to override.")
+        print("----- Tokenizer Training Skipped (cached) -----")
+        return None
+    if not force and dir_exists and sentinels and not sentinels_present:
+        # Directory exists but sentinel files are missing — usually a
+        # previous run crashed mid-write. Log which files are missing so
+        # someone debugging can see why the cache didn't hit.
+        missing = [str(p) for p in sentinel_paths if not p.exists()]
+        print(f"  - Cache check: output_dir exists but missing sentinel(s): {missing}; retraining.")
+    elif not force and not dir_exists:
+        print(f"  - Cache check: output_dir {resolved_dir} does not exist; will train.")
 
     # Find input files
     if not os.path.exists(training_corpus_path):

@@ -85,6 +85,16 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     # so we look for the canonical dataset_info.json sentinel — at either
     # the hashed path (new) or the legacy experiment_name path (runs that
     # predate 0.2, e.g. the in-flight baseline).
+    #
+    # CephFS attribute caching can briefly report fresh PVC entries as
+    # absent. A forced listdir on the parent of the cache directory
+    # invalidates the attr cache before we stat the sentinel.
+    for parent in (os.path.dirname(tokenized_data_dir), os.path.dirname(legacy_tokenized_data_dir)):
+        try:
+            if os.path.isdir(parent):
+                os.listdir(parent)
+        except OSError:
+            pass
     train_sentinel = os.path.join(tokenized_data_dir, 'train', 'dataset_info.json')
     legacy_train_sentinel = os.path.join(legacy_tokenized_data_dir, 'train', 'dataset_info.json')
     if not force and os.path.exists(train_sentinel):
@@ -92,6 +102,10 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
         print(f"  - Skipping re-tokenization. Pass force=True (or --force on CLI) to override.")
         print("----- Dataset Tokenization Skipped (cached) -----")
         return
+    if not force:
+        # Log why the cache check failed, to aid debugging.
+        print(f"  - Cache miss — hashed sentinel {train_sentinel} exists={os.path.exists(train_sentinel)}, "
+              f"legacy sentinel {legacy_train_sentinel} exists={os.path.exists(legacy_train_sentinel)}")
     if not force and os.path.exists(legacy_train_sentinel):
         print(f"  - Found legacy tokenized dataset at: {legacy_tokenized_data_dir}")
         print(f"  - Using legacy cache; new runs with the same inputs will reuse the hashed path {cache_key}.")

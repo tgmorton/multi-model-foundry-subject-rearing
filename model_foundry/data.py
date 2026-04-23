@@ -330,11 +330,29 @@ class DataProcessor:
             True if preprocessing was successful
         """
         print(f"--- Data Preprocessing: {self.config.experiment_name} ---")
-        
-        # Check if chunked data already exists
-        if not force_reprocess and os.path.exists(self.chunked_data_dir):
+
+        # Prime CephFS attr cache — freshly-mounted PVCs can report
+        # existing entries as absent for a few seconds.
+        try:
+            parent = os.path.dirname(self.chunked_data_dir)
+            if os.path.isdir(parent):
+                os.listdir(parent)
+        except OSError:
+            pass
+
+        # Check if chunked data already exists. The canonical sentinel is
+        # dataset_info.json inside the directory, not just the dir itself
+        # (a previous crash may have left an empty dir). But we also
+        # accept the dir-only case for backward compat with earlier
+        # chunked outputs that didn't write the sentinel at a consistent
+        # path.
+        chunked_sentinel = os.path.join(self.chunked_data_dir, 'dataset_info.json')
+        if not force_reprocess and (os.path.exists(chunked_sentinel) or os.path.exists(self.chunked_data_dir)):
             print(f"  - Chunked dataset already exists at: {self.chunked_data_dir}")
             return True
+        if not force_reprocess:
+            print(f"  - Cache miss — chunked dir {self.chunked_data_dir} exists={os.path.exists(self.chunked_data_dir)}, "
+                  f"sentinel exists={os.path.exists(chunked_sentinel)}")
         
         # Validate tokenized dataset
         if not self._validate_tokenized_dataset():
