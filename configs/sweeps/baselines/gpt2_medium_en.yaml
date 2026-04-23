@@ -21,16 +21,22 @@
 experiment_name: "sweep_baseline_gpt2_medium_en"
 
 data:
-  source_corpus: "data/raw/train_90M/"
-  training_corpus: "data/raw/train_90M/"
-  test_corpus: "data/raw/test_10M/"
+  # Paths are relative to /opt/repo; the training pod symlinks
+  # /opt/repo/data/raw -> /mnt/data/raw (on subject-drop-archive PVC).
+  # New canonical layout keeps each language under its own subdir.
+  source_corpus: "data/raw/en/train_90M/"
+  training_corpus: "data/raw/en/train_90M/"
+  test_corpus: "data/raw/en/test_10M/"
   batch_size: 16
   max_sequence_length: 1000
 
 dataset_manipulation: []
 
+# One tokenizer per (lang, arch) pair — trained once via
+# k8s/job-train-tokenizer.yaml on subject-drop-archive. This assumes
+# that job has already populated /mnt/data/tokenizers/en_gpt2_medium/.
 tokenizer:
-  output_dir: "tokenizers/exp0_baseline_90M_smoke/"
+  output_dir: "tokenizers/en_gpt2_medium/"
   vocab_size: 50004
 
 model:

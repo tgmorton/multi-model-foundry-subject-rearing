@@ -127,7 +127,7 @@ spec:
       - {name: repo, emptyDir: {}}
       - name: data
         persistentVolumeClaim:
-          claimName: corpus-analysis-data
+          claimName: subject-drop-archive   # new 40 TiB primary PVC per CLAUDE.md
       restartPolicy: Never
       tolerations:
       - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}
