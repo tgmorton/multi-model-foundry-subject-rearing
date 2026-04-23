@@ -117,6 +117,13 @@ spec:
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
         resources:
           requests: {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}
           limits:   {memory: 32Gi, cpu: "4", nvidia.com/gpu: 1}

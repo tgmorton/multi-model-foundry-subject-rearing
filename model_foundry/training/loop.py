@@ -5,12 +5,21 @@ This module contains the main training loop implementation with support for
 mixed precision training, gradient accumulation, and progress tracking.
 """
 
+import os
 import time
 import logging
 from typing import Optional, Set
 import torch
 import wandb
 from tqdm.auto import tqdm
+
+from .. import registry as _registry
+
+
+# How often to emit a registry heartbeat. A reaper marks runs PREEMPTED
+# after ~2h of no heartbeat, so 5 min gives plenty of margin and is
+# cheap (one ~2KB S3 PutObject per step block).
+_HEARTBEAT_INTERVAL_S = 300.0
 
 
 class TrainingLoop:
@@ -110,6 +119,12 @@ class TrainingLoop:
         oom_counter = 0
         gradient_overflow_counter = 0
 
+        # Registry heartbeat plumbing — resolved once; reused per step.
+        # Mirrors cli.py::_registry_identity so the pod and the CLI agree
+        # on which record to touch. Non-fatal everywhere.
+        registry_identity = self._registry_identity()
+        last_heartbeat_wall = time.time()
+
         self.model.train()
 
         self.logger.info("Starting training loop...")
@@ -184,6 +199,25 @@ class TrainingLoop:
                         # Memory monitoring
                         if self.global_step % 100 == 0 and torch.cuda.is_available():
                             max_memory_reserved = self._monitor_memory(max_memory_reserved)
+
+                        # Registry heartbeat. Gated on wall time rather
+                        # than step count so cadence is stable across
+                        # arches with very different step durations.
+                        # Reads the latest loss tensor without forcing a
+                        # sync (loss is already on device; .item() at the
+                        # heartbeat boundary is cheap vs. per-micro-batch).
+                        now_wall = time.time()
+                        if registry_identity is not None and now_wall - last_heartbeat_wall >= _HEARTBEAT_INTERVAL_S:
+                            try:
+                                loss_val = loss.item() if isinstance(loss, torch.Tensor) else float(loss)
+                            except Exception:
+                                loss_val = None
+                            _registry.heartbeat(
+                                **registry_identity,
+                                current_step=self.global_step,
+                                current_loss=loss_val,
+                            )
+                            last_heartbeat_wall = now_wall
 
                         # Update progress bar
                         self._update_progress(
@@ -334,6 +368,30 @@ class TrainingLoop:
         # on every micro-batch; at gradient_accumulation_steps=16 that's
         # 16 syncs per optimizer step. Callers sync at their own cadence.
         return (loss.detach() * grad_accum), did_step
+
+    def _registry_identity(self):
+        """Build the dict of (arch, lang, condition, seed, run_id) that
+        keys a registry record for this run. Mirrors
+        ``cli.py::_registry_identity`` — launchers set REGISTRY_* env
+        vars, smoke/hand-run configs fall back to "unknown" so the
+        record still goes somewhere sensible. Returns ``None`` if the
+        config is missing the architecture field (shouldn't happen)."""
+        try:
+            arch = self.config.model.architecture
+        except Exception:
+            return None
+        return {
+            "arch": arch,
+            "lang": os.environ.get("REGISTRY_LANG")
+                    or getattr(self.config, "lang", None)
+                    or "unknown",
+            "condition": os.environ.get("REGISTRY_CONDITION")
+                         or getattr(self.config, "condition", None)
+                         or "unknown",
+            "run_id": os.environ.get("REGISTRY_RUN_ID")
+                      or getattr(self.config, "run_id", None)
+                      or self.config.experiment_name,
+        }
 
     @staticmethod
     def _mean_loss(losses: list) -> float:

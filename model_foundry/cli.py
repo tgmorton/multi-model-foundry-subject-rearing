@@ -21,8 +21,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from .config import ExperimentConfig
 from .trainer import Trainer
-from .utils import find_project_root, set_seed
+from .utils import find_project_root, set_seed, get_git_commit_hash
 from .logging_utils import setup_logging
+from . import registry as _registry
+from .cache_keys import compute_cache_key as _compute_cache_key
 
 app = typer.Typer(
     name="model-foundry",
@@ -305,6 +307,72 @@ def generate_checkpoints(
     logger.info(f"\n✓ Checkpoint schedule generation complete!")
 
 
+def _registry_identity(config) -> dict:
+    """Extract registry identity (run_id / arch / lang / condition / seed)
+    for a run. Launchers populate lang/condition/seed explicitly via env
+    vars; for hand-invoked runs (e.g. smokes) we default to "unknown" so
+    the record still goes somewhere sensible."""
+    arch = config.model.architecture
+    # Prefer explicit env from the launcher; fall back to optional config
+    # fields (not present on smoke configs today); fall back to defaults.
+    lang = (
+        os.environ.get("REGISTRY_LANG")
+        or getattr(config, "lang", None)
+        or "unknown"
+    )
+    condition = (
+        os.environ.get("REGISTRY_CONDITION")
+        or getattr(config, "condition", None)
+        or "unknown"
+    )
+    seed_env = os.environ.get("REGISTRY_SEED")
+    if seed_env is not None:
+        seed = int(seed_env)
+    else:
+        seed = int(getattr(config, "seed", None) or config.random_seed)
+    run_id = (
+        os.environ.get("REGISTRY_RUN_ID")
+        or getattr(config, "run_id", None)
+        or config.experiment_name
+    )
+    return {"run_id": run_id, "arch": arch, "lang": lang,
+            "condition": condition, "seed": seed}
+
+
+def _hyperparams_from_config(config) -> dict:
+    """Thin flat map of the HP vector that HP sweeps range over. Written
+    into the registry so the HP selector can later rank trials and pick
+    a winner without re-reading the YAML."""
+    t = config.training
+    d = config.data
+    hp = {
+        "learning_rate": t.learning_rate,
+        "adam_beta1": t.adam_beta1,
+        "adam_beta2": t.adam_beta2,
+        "adam_epsilon": t.adam_epsilon,
+        "warmup_ratio": t.warmup_ratio,
+        "gradient_accumulation_steps": t.gradient_accumulation_steps,
+        "effective_batch_size": d.batch_size * t.gradient_accumulation_steps,
+        "max_sequence_length": d.max_sequence_length,
+        "use_amp": t.use_amp,
+    }
+    # Optional transformer HPs
+    if config.model.transformer:
+        hp["dropout"] = config.model.transformer.dropout
+        hp["attention_dropout"] = config.model.transformer.attention_dropout
+    return hp
+
+
+def _config_hash(config) -> str:
+    """MD5 of the resolved config — matches CheckpointManager's hash so
+    registry records and checkpoint metadata.json agree."""
+    import hashlib
+    import json
+    return hashlib.md5(
+        json.dumps(config.model_dump(), sort_keys=True).encode()
+    ).hexdigest()
+
+
 @app.command()
 def run(
     config_path: str = typer.Argument(..., help="Path to the experiment's .yaml configuration file"),
@@ -312,20 +380,44 @@ def run(
 ):
     """
     Run the main training loop for the experiment.
-    
+
     This command loads the configuration, prepares the data and model, and executes
-    the training loop with the specified hyperparameters.
+    the training loop with the specified hyperparameters. Registry records are
+    written at start (status=RUNNING) and end (COMPLETE/FAILED/PREEMPTED). All
+    registry writes are non-fatal — an S3 hiccup doesn't kill training.
     """
     logger = logging.getLogger(__name__)
     logger.info(f"--- Running Training: {config_path} ---")
-    
+
     config = load_config(config_path)
     base_dir = find_project_root(__file__)
-    
+
     # Set the resume flag if requested
     if resume:
         config.training.resume_from_checkpoint = True
-    
+
+    # Registry: mark run as RUNNING before we touch the GPU. All writes
+    # are non-fatal (see registry._safe_*) so a registry outage never
+    # kills the training job.
+    identity = _registry_identity(config)
+    run_kind = os.environ.get("REGISTRY_RUN_KIND", "production")
+    cache_key = _safe_compute_cache_key(config, base_dir)
+    try:
+        _registry.register_run_start(
+            **identity,
+            run_kind=run_kind,
+            config_hash=_config_hash(config),
+            git_commit=get_git_commit_hash(),
+            cache_key=cache_key,
+            tokenizer_dir=config.tokenizer.output_dir,
+            docker_image=os.environ.get("DOCKER_IMAGE"),
+            hyperparameters=_hyperparams_from_config(config),
+            wandb_project=config.logging.wandb_project,
+            train_steps=config.training.train_steps,
+        )
+    except Exception as e:  # noqa: BLE001  — non-fatal
+        logger.warning(f"registry.register_run_start raised: {e}")
+
     # Create and run the trainer with proper cleanup
     trainer = None
     try:
@@ -333,14 +425,72 @@ def run(
         trainer.train()
     except KeyboardInterrupt:
         logger.info("Training interrupted by user")
+        _safe_register_run_end(identity, status="PREEMPTED",
+                               failure_reason="KeyboardInterrupt")
         if trainer and hasattr(trainer, '_cleanup_gpu'):
             trainer._cleanup_gpu()
         raise typer.Exit(0)
     except Exception as e:
         logger.error(f"Training failed: {e}")
+        _safe_register_run_end(identity, status="FAILED",
+                               failure_reason=str(e)[:500])
         if trainer and hasattr(trainer, '_cleanup_gpu'):
             trainer._cleanup_gpu()
         raise typer.Exit(1)
+
+    # Completion — pull final state off the trainer/loop.
+    _safe_register_run_end(identity, status="COMPLETE",
+                           trainer=trainer, config=config, base_dir=base_dir)
+
+
+def _safe_compute_cache_key(config, base_dir) -> Optional[str]:
+    """Compute the 0.2 content-addressed cache key if the tokenizer file
+    is already on disk; otherwise return None so the registry record
+    simply omits the field. ``compute_cache_key`` raises FileNotFoundError
+    when the tokenizer artefact is missing."""
+    corpus_path = config.data.training_corpus
+    if not os.path.isabs(corpus_path):
+        corpus_path = os.path.join(base_dir, corpus_path)
+    tok_dir = config.tokenizer.output_dir
+    if not os.path.isabs(tok_dir):
+        tok_dir = os.path.join(base_dir, tok_dir)
+    try:
+        return _compute_cache_key(
+            corpus_path, tok_dir, config.data.max_sequence_length,
+            config.dataset_manipulation or [],
+        )
+    except FileNotFoundError:
+        return None
+
+
+def _safe_register_run_end(identity: dict, *, status: str,
+                           trainer=None, config=None, base_dir=None,
+                           failure_reason: Optional[str] = None) -> None:
+    """Wrap the end-of-run registry write so nothing raised here can
+    interfere with the training job's own shutdown path."""
+    logger = logging.getLogger(__name__)
+    kwargs = dict(status=status, failure_reason=failure_reason,
+                  **identity)
+    if trainer is not None and getattr(trainer, "training_loop", None):
+        tl = trainer.training_loop
+        kwargs["steps_completed"] = getattr(tl, "global_step", None)
+        kwargs["epochs_completed"] = (getattr(tl, "epoch", 0) or 0) + 1
+    if trainer is not None and getattr(trainer, "checkpoint_manager", None):
+        # Enumerate actual checkpoint dirs on disk as the paths of record.
+        out_dir = trainer.checkpoint_manager.output_dir
+        try:
+            ckpt_dirs = sorted(
+                str(p) for p in out_dir.glob("checkpoint-*") if p.is_dir()
+            )
+            if ckpt_dirs:
+                kwargs["checkpoint_paths"] = ckpt_dirs
+                kwargs["checkpoint_count"] = len(ckpt_dirs)
+        except Exception:
+            pass
+    try:
+        _registry.register_run_end(**kwargs)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"registry.register_run_end raised: {e}")
 
 
 @app.command()
