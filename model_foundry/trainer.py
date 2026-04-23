@@ -61,6 +61,28 @@ class Trainer:
         # Setup memory management
         self._setup_memory_management()
 
+    def _registry_identity_for_wandb(self):
+        """Extract the (run_id, arch, lang, condition, seed, run_kind) dict
+        that ``wandb_init.init_wandb`` expects. Mirrors
+        ``cli.py::_registry_identity`` — launchers populate REGISTRY_*
+        env vars; hand-invoked runs fall back to defaults so the record
+        still goes somewhere sensible."""
+        arch = self.config.model.architecture
+        lang = os.environ.get("REGISTRY_LANG") or getattr(self.config, "lang", None) or "unknown"
+        condition = os.environ.get("REGISTRY_CONDITION") or getattr(self.config, "condition", None) or "unknown"
+        seed_env = os.environ.get("REGISTRY_SEED")
+        seed = int(seed_env) if seed_env is not None else int(getattr(self.config, "seed", None) or self.config.random_seed)
+        run_id = (
+            os.environ.get("REGISTRY_RUN_ID")
+            or getattr(self.config, "run_id", None)
+            or self.config.experiment_name
+        )
+        run_kind = os.environ.get("REGISTRY_RUN_KIND", "production")
+        return {
+            "run_id": run_id, "arch": arch, "lang": lang,
+            "condition": condition, "seed": seed, "run_kind": run_kind,
+        }
+
     def _setup_memory_management(self):
         """Configure CUDA memory management settings."""
         if not torch.cuda.is_available():
@@ -388,28 +410,24 @@ class Trainer:
         print("  - Preparing data...")
         self._prepare_data()
 
-        # Initialize W&B logging
+        # Initialize W&B logging via the shared helper (centralizes
+        # project/group/job_type/tags so the UI is consistent across
+        # cli.py, sweep agents, and any future launcher).
         if self.config.logging.use_wandb:
-            # Determine WandB run ID (reuse from checkpoint if resuming)
-            wandb_run_id = None
+            from .wandb_init import init_wandb
+            # Resume the same WandB run on restart — id lives in the
+            # prior checkpoint's metadata.
+            resume_id = None
             if global_step > 0:
                 import json
                 metadata_path = self.checkpoint_manager.output_dir / f"checkpoint-{global_step}" / "metadata.json"
                 if metadata_path.exists():
                     with open(metadata_path) as f:
                         metadata = json.load(f)
-                    wandb_run_id = metadata.get('wandb_run_id')
+                    resume_id = metadata.get('wandb_run_id')
 
-            if wandb_run_id is None:
-                wandb_run_id = wandb.util.generate_id()
-
-            wandb.init(
-                project=self.config.logging.wandb_project,
-                name=self.config.experiment_name,
-                config=self.config.model_dump(),
-                resume="allow",
-                id=wandb_run_id
-            )
+            identity = self._registry_identity_for_wandb()
+            init_wandb(self.config, identity, resume_id=resume_id)
 
         # Save environment snapshot
         self._save_environment_snapshot()

@@ -391,7 +391,9 @@ class LoggingConfig(BaseModel):
 
     # WandB integration
     use_wandb: bool = Field(default=False, description="Send logs to Weights & Biases")
-    wandb_project: Optional[str] = Field(default=None, description="WandB project name")
+    wandb_project: Optional[str] = Field(default=None, description="WandB project name for production runs (run_kind=production)")
+    wandb_project_sweeps: str = Field(default="subject-drop-sweeps", description="WandB project for HP-sweep trials (run_kind=hp_sweep)")
+    wandb_entity: Optional[str] = Field(default=None, description="WandB entity/team. None → user's personal entity.")
 
     # Log rotation
     max_log_files: int = Field(default=10, gt=0, description="Maximum log files to keep")
