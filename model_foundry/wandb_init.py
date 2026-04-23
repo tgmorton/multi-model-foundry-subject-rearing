@@ -98,9 +98,29 @@ def init_wandb(
     # can click between the WandB run and the registry JSON by identifier.
     name = identity["run_id"]
 
-    # If a sweep agent invoked this (wandb sweep), the WANDB_SWEEP_ID
-    # env var is set by the agent and wandb.init picks it up
-    # automatically — we don't need to pass it explicitly.
+    # If a sweep agent already called wandb.init() at the top of the
+    # trial, the Trainer's secondary init_wandb call would either
+    # orphan the sweep run (reinit=True) or raise (reinit=False).
+    # Reuse the existing run instead: stamp our group/tags/config onto
+    # it and return its id. WandB's controller still tracks the sweep
+    # run correctly.
+    if wandb.run is not None:
+        logger.info(
+            "wandb.run already active (id=%s) — reusing instead of re-initialising",
+            wandb.run.id,
+        )
+        try:
+            wandb.run.tags = tuple(set(list(wandb.run.tags or ()) + list(tags)))
+            wandb.run.config.update(
+                config.model_dump(), allow_val_change=True,
+            )
+            # Name/group cannot always be changed post-init in WandB;
+            # best-effort.
+            if not wandb.run.group:
+                wandb.run.group = group
+        except Exception as e:  # noqa: BLE001
+            logger.warning("could not stamp metadata on existing wandb.run: %s", e)
+        return wandb.run.id
 
     run = wandb.init(
         project=project,
