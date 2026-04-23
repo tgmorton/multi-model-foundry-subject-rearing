@@ -301,10 +301,18 @@ def _extract_final_training_loss(trainer: Trainer) -> float:
 
 
 def _compute_held_out_perplexity(trainer: Trainer, config: ExperimentConfig) -> float:
-    """One pass over the test corpus → exp(mean NLL). Uses the same
-    content-addressed cache paths as training, so the test split must
-    have been tokenized once (tokenize-dataset writes both train/ and
-    test/)."""
+    """One pass over the test corpus → exp(mean NLL).
+
+    Dispatches by architecture:
+    - Causal LMs (gpt2, lstm, rnn, gru, mamba): standard teacher-forcing
+      where labels=input_ids and every position contributes to the loss.
+    - Masked LMs (bert): deterministic 15% mask pattern (fixed seed so
+      every trial sees the same mask positions, making scores comparable
+      across the sweep), loss over masked positions only.
+
+    Note: these perplexities live on different scales across arch
+    families and are not directly comparable between-arch. The sweep
+    ranks trials within a single arch so that's fine."""
     if not config.data.test_corpus:
         logger.warning("no test_corpus in config; skipping held_out_perplexity")
         return float("nan")
@@ -318,7 +326,6 @@ def _compute_held_out_perplexity(trainer: Trainer, config: ExperimentConfig) -> 
     ds = load_from_disk(test_dir)
     chunk_size = config.data.max_sequence_length
 
-    # Chunk the test sequences the same way training does.
     buf: list[int] = []
     chunks: list[list[int]] = []
     for ex in ds:
@@ -331,31 +338,62 @@ def _compute_held_out_perplexity(trainer: Trainer, config: ExperimentConfig) -> 
 
     tensor = torch.tensor(chunks, dtype=torch.long)
     loader = DataLoader(tensor, batch_size=config.data.batch_size, shuffle=False)
-
     device = next(trainer.model.parameters()).device
+    amp_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
+    arch = config.model.architecture
+    is_mlm = arch == "bert"
+
+    if is_mlm:
+        mask_token_id = getattr(trainer.tokenizer, "mask_token_id", None)
+        if mask_token_id is None:
+            logger.warning("BERT tokenizer has no mask_token_id; skipping held_out_perplexity")
+            return float("nan")
+        # Deterministic mask: same seed → same masked positions for every
+        # trial in this sweep → rankings are noise-free on the mask axis.
+        g = torch.Generator()
+        g.manual_seed(20260423)
+        mlm_prob = getattr(config.training, "mlm_probability", 0.15) or 0.15
+
     trainer.model.eval()
     total_nll = 0.0
-    total_tokens = 0
-    amp_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    total_counts = 0
     with torch.no_grad():
         for batch in loader:
-            input_ids = batch.to(device, non_blocking=True)
-            inputs = {"input_ids": input_ids, "labels": input_ids}
+            input_ids = batch
+            if is_mlm:
+                mask = torch.zeros_like(input_ids, dtype=torch.bool)
+                mask.bernoulli_(mlm_prob, generator=g)
+                labels = input_ids.clone()
+                labels[~mask] = -100  # HF ignores -100 in the CE loss
+                masked_inputs = input_ids.clone()
+                masked_inputs[mask] = mask_token_id
+                masked_inputs = masked_inputs.to(device, non_blocking=True)
+                labels = labels.to(device, non_blocking=True)
+                n_contrib = int(mask.sum().item())
+                if n_contrib == 0:
+                    continue
+                fwd_kwargs = {"input_ids": masked_inputs, "labels": labels}
+            else:
+                ids = input_ids.to(device, non_blocking=True)
+                fwd_kwargs = {"input_ids": ids, "labels": ids}
+                n_contrib = int(ids.numel())
+
             if torch.cuda.is_available():
                 with torch.amp.autocast("cuda", dtype=amp_dtype):
-                    out = trainer.model(**inputs)
+                    out = trainer.model(**fwd_kwargs)
             else:
-                out = trainer.model(**inputs)
-            # outputs.loss is the mean-NLL over the batch's token positions
+                out = trainer.model(**fwd_kwargs)
+            # out.loss is mean NLL over the positions that contributed
+            # (all tokens for causal LM; masked-only for MLM thanks to -100).
             nll = out.loss.float().item()
-            ntok = input_ids.numel()
-            total_nll += nll * ntok
-            total_tokens += ntok
+            total_nll += nll * n_contrib
+            total_counts += n_contrib
     trainer.model.train()
 
-    if total_tokens == 0:
+    if total_counts == 0:
         return float("nan")
-    return math.exp(total_nll / total_tokens)
+    return math.exp(total_nll / total_counts)
 
 
 # ---------- helpers ----------
