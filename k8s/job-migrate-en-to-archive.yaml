@@ -38,40 +38,63 @@ spec:
           LSRC=/legacy
           DST=/data
 
-          copy_dir_if_missing() {
-            local src_dir="$1"
-            local dst_dir="$2"
-            local sentinel="$3"   # a file inside dst_dir that proves it's done
+          # Tar-stream transfer: streams the source tree through
+          # stdout → tar-extract on the destination. One atomic pass
+          # per dir, preserves perms/times/symlinks, avoids the
+          # cp -a per-file overhead on CephFS, and fails loud if
+          # either side breaks.
+          stream_dir_if_missing() {
+            local src_parent="$1"  # e.g. /legacy/raw
+            local src_name="$2"    # e.g. train_90M
+            local dst_dir="$3"     # e.g. /data/raw/en/train_90M
+            local sentinel="$4"    # a file inside dst_dir that proves it's done
+
             if [ -f "$dst_dir/$sentinel" ]; then
               echo "SKIP: $dst_dir/$sentinel already exists"
               return 0
             fi
-            if [ ! -d "$src_dir" ]; then
-              echo "FAIL: source $src_dir missing"
+            if [ ! -d "$src_parent/$src_name" ]; then
+              echo "FAIL: source $src_parent/$src_name missing"
               return 1
             fi
-            echo "COPY: $src_dir -> $dst_dir"
-            mkdir -p "$dst_dir"
-            # -a = archive (preserve perms/times), dotglob via . avoids
-            # creating an extra nested dir
-            cp -a "$src_dir"/. "$dst_dir"/
+
+            local dst_parent
+            dst_parent="$(dirname "$dst_dir")"
+            local dst_tail
+            dst_tail="$(basename "$dst_dir")"
+            mkdir -p "$dst_parent"
+            # Extract into a temp name first, then rename — so the
+            # sentinel only appears at its final path once the whole
+            # dir landed (makes the idempotency check race-safe on
+            # retries).
+            local staging="$dst_parent/.$dst_tail.staging.$$"
+            mkdir -p "$staging"
+            echo "STREAM: $src_parent/$src_name -> $dst_dir"
+            tar -C "$src_parent" -cf - "$src_name" \
+              | tar -C "$staging" -xf -
+            # staging/<src_name>/ now holds the files; move to final name
+            rm -rf "$dst_dir"
+            mv "$staging/$src_name" "$dst_dir"
+            rmdir "$staging" || true
             echo "    done: $(ls "$dst_dir" | wc -l) entries"
           }
 
+          # Legacy PVC layout: raw at /legacy/raw/, NOT /legacy/data/raw/.
           # 1. English training corpus
-          copy_dir_if_missing "$LSRC/data/raw/train_90M" \
-                              "$DST/raw/en/train_90M" \
-                              "childes.train"
+          stream_dir_if_missing "$LSRC/raw" "train_90M" \
+                                "$DST/raw/en/train_90M" \
+                                "childes.train"
 
           # 2. English held-out (test) corpus
-          copy_dir_if_missing "$LSRC/data/raw/test_10M" \
-                              "$DST/raw/en/test_10M" \
-                              "childes.test"
+          stream_dir_if_missing "$LSRC/raw" "test_10M" \
+                                "$DST/raw/en/test_10M" \
+                                "childes.test"
 
-          # 3. Baseline tokenizer → new canonical (lang, arch) path
-          copy_dir_if_missing "$LSRC/tokenizers/exp0_baseline_90M_smoke" \
-                              "$DST/tokenizers/en_gpt2_medium" \
-                              "tokenizer.model"
+          # 3. Baseline tokenizer → new canonical (lang, arch) path.
+          # Streamed then renamed to the canonical (lang, arch) name.
+          stream_dir_if_missing "$LSRC/tokenizers" "exp0_baseline_90M_smoke" \
+                                "$DST/tokenizers/en_gpt2_medium" \
+                                "tokenizer.model"
 
           echo ""
           echo "=========================================="

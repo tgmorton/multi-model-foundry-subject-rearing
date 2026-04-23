@@ -1,0 +1,40 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: explore-legacy-raw
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      containers:
+      - name: explore
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          echo "=== /legacy/raw/train_90M ==="
+          ls -la /legacy/raw/train_90M 2>&1 | head
+          echo ""
+          echo "=== /legacy/raw/test_10M ==="
+          ls -la /legacy/raw/test_10M 2>&1 | head
+          echo ""
+          echo "=== size of train_90M ==="
+          du -sh /legacy/raw/train_90M 2>&1
+          echo "=== size of test_10M ==="
+          du -sh /legacy/raw/test_10M 2>&1
+          echo ""
+          echo "=== /legacy/tokenizers/exp0_baseline_90M_smoke ==="
+          ls -la /legacy/tokenizers/exp0_baseline_90M_smoke 2>&1
+        resources:
+          requests: {memory: 256Mi, cpu: "100m"}
+          limits:   {memory: 256Mi, cpu: "100m"}
+        volumeMounts:
+        - {name: legacy, mountPath: /legacy, readOnly: true}
+      volumes:
+      - name: legacy
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      restartPolicy: Never
