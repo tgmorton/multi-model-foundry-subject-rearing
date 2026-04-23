@@ -19,7 +19,7 @@ linguistics vs information-theoretic accounts of subject-drop.
   optimizer step, not per micro-batch), save-policy split (last N
   checkpoints keep `training_state.pt`, rest are analysis-only),
   timing instrumentation, Inductor backend.
-- **Custom GitLab image** (`gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest`)
+- **Custom GitLab image** (details in "Container image" section below)
   ships torch + requirements + flash-attn + mamba-ssm + causal-conv1d
   pre-installed. Pod startup went from ~300 s (pip install) to 5 s.
 - **Registry substrate** in place: bucket, K8s secret, `registry.py`
@@ -61,6 +61,44 @@ picture. Summary:
   absolute.** Storage ceases to be a binding constraint during the
   active study. Post-publication migration is an institutional
   archiving question (Zenodo / OSF / UCSD service).
+
+## Container image (everything needed to launch a pod)
+
+| Field | Value |
+|---|---|
+| Image | `gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest` |
+| Registry | NRP-hosted GitLab registry, mirror of this repo |
+| Pull secret (K8s) | `gitlab-registry-cred-thomas` (type `dockerconfigjson`) |
+| Build trigger | pushes to `main` via `.gitlab-ci.yml` + `Dockerfile` (both in repo root) |
+| Pre-installed | torch 2.5.1+cu121, flash-attn 2.7.4, mamba-ssm 2.3.0, causal-conv1d 1.6.0, transformers 4.41.2, datasets 2.19.2, sentencepiece 0.2.0, wandb 0.17.0, boto3 1.42.93, pyarrow 24.0.0 |
+| Not in the image | the repo itself (cloned fresh at init), `/mnt/data` (PVC), tokenizer artefacts (PVC) |
+
+**Every K8s Job template that runs training or eval needs this block**:
+
+```yaml
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      containers:
+      - name: <...>
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always   # pick up newer :latest pushes
+```
+
+**Rebuild only when**: adding a Python dep, bumping torch / FA / mamba /
+transformers majors, or changing CUDA. Python code changes under
+`model_foundry/` do NOT need a rebuild — the clone-at-init pattern
+handles them.
+
+**Known friction**: cold image pull on a fresh node is ~10 min (image is
+~5-10 GB compressed). Subsequent launches on the same node are fast.
+If `gitlab-registry-cred-thomas` expires, all training stalls in
+`ImagePullBackOff` — rotate with `kubectl create secret docker-registry
+gitlab-registry-cred-thomas --docker-server=gitlab-registry.nrp-nautilus.io ...`.
+
+See `memory/reference_gitlab_ci.md` for the full operational detail.
 
 ## S3 details (everything needed to talk to the bucket)
 
