@@ -1,0 +1,59 @@
+---
+# The migrate-en-to-archive job's idempotency sentinel (tokenizer.model)
+# was populated by an earlier KILLED copy job that only copied 3 of 5
+# files — so the migrate job skipped the tokenizer stream. This
+# one-shot blows away the partial dir and re-streams completely.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fix-tokenizer
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      containers:
+      - name: fix
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          LSRC=/legacy/tokenizers/exp0_baseline_90M_smoke
+          DST=/data/tokenizers/en_gpt2_medium
+
+          echo "=== BEFORE ==="
+          ls -la "$DST" 2>&1 | head
+          echo ""
+
+          # Wipe partial state
+          rm -rf "$DST"
+          # Re-stream atomically into a staging dir, then rename
+          STAGING="$(dirname "$DST")/.en_gpt2_medium.staging.$$"
+          mkdir -p "$STAGING"
+          tar -C "$(dirname "$LSRC")" -cf - "$(basename "$LSRC")" \
+            | tar -C "$STAGING" -xf -
+          mv "$STAGING/$(basename "$LSRC")" "$DST"
+          rmdir "$STAGING" || true
+
+          echo "=== AFTER ==="
+          ls -la "$DST"
+          echo ""
+          echo "sizes:"
+          for f in "$DST"/*; do
+            echo "  $(basename "$f"): $(wc -c < "$f") bytes"
+          done
+        resources:
+          requests: {memory: 128Mi, cpu: "100m"}
+          limits:   {memory: 128Mi, cpu: "100m"}
+        volumeMounts:
+        - {name: legacy, mountPath: /legacy, readOnly: true}
+        - {name: data,   mountPath: /data}
+      volumes:
+      - name: legacy
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never

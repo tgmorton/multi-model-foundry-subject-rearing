@@ -1,0 +1,50 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-en-migration
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      containers:
+      - name: verify
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          echo "=== /mnt/data/raw/en/train_90M ==="
+          ls -la /mnt/data/raw/en/train_90M
+          echo ""
+          echo "=== /mnt/data/raw/en/test_10M ==="
+          ls -la /mnt/data/raw/en/test_10M
+          echo ""
+          echo "=== /mnt/data/tokenizers/en_gpt2_medium ==="
+          ls -la /mnt/data/tokenizers/en_gpt2_medium
+          echo ""
+          echo "=== staging dirs to clean ==="
+          ls -la /mnt/data/raw/en/.train_90M.staging.* 2>&1 | head -10 || echo "(no staging dirs found via glob)"
+          find /mnt/data/raw -maxdepth 3 -name '.*staging*' -type d 2>&1 | head -10
+          echo ""
+          echo "=== cleanup ==="
+          find /mnt/data/raw -maxdepth 3 -name '.*staging*' -type d -print -exec rm -rf {} + 2>&1 | head
+          echo ""
+          echo "=== final size / counts ==="
+          du -sh /mnt/data/raw/en/* /mnt/data/tokenizers/en_gpt2_medium 2>&1 | head
+          echo ""
+          echo "file counts:"
+          echo "  train_90M: $(ls /mnt/data/raw/en/train_90M | wc -l) entries"
+          echo "  test_10M:  $(ls /mnt/data/raw/en/test_10M | wc -l) entries"
+          echo "  tokenizer: $(ls /mnt/data/tokenizers/en_gpt2_medium | wc -l) entries"
+        resources:
+          requests: {memory: 256Mi, cpu: "100m"}
+          limits:   {memory: 256Mi, cpu: "100m"}
+        volumeMounts:
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
