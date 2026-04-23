@@ -37,6 +37,10 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
         config_path: Path to the experiment config YAML
         force: If True, re-tokenize even if a tokenized dataset already exists
     """
+    # Defensive: CLI path has been observed to pass force as the string
+    # "False" rather than the bool False. Coerce so idempotency works.
+    if isinstance(force, str):
+        force = force.strip().lower() in ("1", "true", "yes", "y")
     print(f"--- Tokenizing Dataset from Config: {config_path} ---")
 
     base_dir = find_project_root(__file__)

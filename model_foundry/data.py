@@ -331,6 +331,11 @@ class DataProcessor:
         """
         print(f"--- Data Preprocessing: {self.config.experiment_name} ---")
 
+        # Defensive: CLI path can pass force_reprocess as the string
+        # "False" instead of bool False, silently defeating the cache.
+        if isinstance(force_reprocess, str):
+            force_reprocess = force_reprocess.strip().lower() in ("1", "true", "yes", "y")
+
         # Prime CephFS attr cache — freshly-mounted PVCs can report
         # existing entries as absent for a few seconds.
         try:
