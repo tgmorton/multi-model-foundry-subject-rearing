@@ -518,16 +518,22 @@ class AblationPipeline:
     def _ablate_from_cache(self, source_path: Path) -> Tuple[str, int]:
         """Apply the ablation using pre-annotated DocBin + line map.
 
-        Reads cached Docs keyed by ``doc_idx`` from ``{stem}.spacy`` and
+        Streams Docs keyed by ``doc_idx`` from ``{stem}.spacy`` and
         iterates ``{stem}.linemap.jsonl`` in source-line order. Pass-through
         lines (empty / boundary markers; doc_idx is null) are written
         verbatim from ``raw_text``. Content lines are handed to the
         registered ablation function.
 
-        Requires ``preprocessing.annotate.load_annotated_file`` and a DocBin
-        produced with the same spaCy model currently loaded into self.nlp.
+        Uses :func:`preprocessing.annotate.iter_annotated_file` so memory
+        is O(1) in the number of docs — critical for large corpora like
+        Spanish ``europarl.train`` (1.24M docs → ~8 GB if materialized).
+        Output is accumulated in a list of chunks joined at the end to
+        avoid quadratic string-concatenation overhead.
+
+        Requires a DocBin produced with the same spaCy model currently
+        loaded into self.nlp (the vocab must match).
         """
-        from .annotate import load_annotated_file
+        from .annotate import iter_annotated_file
 
         annotated_dir = self.config.annotated_input_path
         stem = source_path.stem
@@ -537,27 +543,25 @@ class AblationPipeline:
             source_path.name,
             annotated_dir,
         )
-        docs, linemap = load_annotated_file(
+
+        output_chunks: List[str] = []
+        total_items_ablated = 0
+
+        for entry, doc in iter_annotated_file(
             annotated_dir=annotated_dir,
             file_stem=stem,
             vocab=self.nlp.vocab,
-        )
-
-        ablated_text = ""
-        total_items_ablated = 0
-
-        for entry in linemap:
-            doc_idx = entry.get("doc_idx")
+        ):
             raw_text = entry.get("raw_text", "")
-            if doc_idx is None:
+            if doc is None:
                 # Pass-through: empty line or document boundary marker.
-                ablated_text += raw_text
+                output_chunks.append(raw_text)
                 continue
 
-            doc = docs[doc_idx]
             try:
                 ablated_doc_text, num_items = self.ablation_fn(doc)
             except Exception as e:
+                doc_idx = entry.get("doc_idx")
                 line_idx = entry.get("line_idx")
                 self.logger.error(
                     "Ablation failed on cached doc_idx=%s (source line %s): "
@@ -580,10 +584,10 @@ class AblationPipeline:
                     trailing = raw_text[len(raw_text.rstrip("\r\n")):]
                     ablated_doc_text = ablated_doc_text + trailing
 
-            ablated_text += ablated_doc_text
+            output_chunks.append(ablated_doc_text)
             total_items_ablated += num_items
 
-        return ablated_text, total_items_ablated
+        return "".join(output_chunks), total_items_ablated
 
     def _rebuild_to_target_size(
         self,

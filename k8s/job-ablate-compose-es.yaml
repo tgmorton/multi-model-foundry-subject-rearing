@@ -181,9 +181,14 @@ spec:
         - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
         - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
         resources:
-          # requests == limits to satisfy NRP admission webhook
-          requests: {memory: 12Gi, cpu: "6"}
-          limits:   {memory: 12Gi, cpu: "6"}
+          # requests == limits to satisfy NRP admission webhook.
+          # 24Gi is oversized for most files but europarl.train carries
+          # 1.24M Docs in its DocBin (~2-3 GB loaded, plus ablated output
+          # + vocab + linemap). Streaming reader (iter_annotated_file)
+          # keeps Doc memory O(1), so peak should be ~4-6 GB; 24Gi gives
+          # comfortable headroom for the occasional spike.
+          requests: {memory: 24Gi, cpu: "6"}
+          limits:   {memory: 24Gi, cpu: "6"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

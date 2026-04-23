@@ -523,6 +523,12 @@ def load_annotated_file(
 
     ``docs`` is a list of ``Doc`` in DocBin order.
     ``linemap`` is a list of dicts (same ordering as source lines).
+
+    .. warning::
+        Materializes every ``Doc`` in memory. For large corpora (e.g.,
+        Spanish ``europarl.train`` — 1.24M docs) this can consume 5-10 GB
+        of RAM just for the Doc objects. Prefer :func:`iter_annotated_file`
+        for streaming access.
     """
     annotated_dir = Path(annotated_dir)
     docbin_path = annotated_dir / f"{file_stem}.spacy"
@@ -552,6 +558,79 @@ def load_annotated_file(
             linemap.append(json.loads(line))
 
     return docs, linemap
+
+
+def iter_annotated_file(
+    annotated_dir: Path,
+    file_stem: str,
+    vocab: Optional[spacy.vocab.Vocab] = None,
+):
+    """Stream ``(entry, doc_or_none)`` pairs for one annotated file.
+
+    Iterates the line map in source-line order and pulls Docs from the
+    DocBin generator as we hit content lines. Memory is O(1) in the
+    number of docs (vs. :func:`load_annotated_file` which materializes
+    every Doc upfront — prohibitive for large corpora like Spanish
+    ``europarl.train`` at 1.24M docs / ~8 GB of Doc objects).
+
+    Assumes the line map's ``doc_idx`` values are monotonically increasing
+    across content lines — true by construction of
+    :class:`DocBinCollector` (``_next_doc_idx`` increments once per
+    ``add_doc`` call, in the same order docs are stored in the DocBin).
+
+    Yields:
+        Tuples of ``(linemap_entry_dict, Doc | None)``. The Doc is ``None``
+        for pass-through lines (empty / boundary markers); otherwise it's
+        the deserialized spaCy Doc for that source line.
+    """
+    annotated_dir = Path(annotated_dir)
+    docbin_path = annotated_dir / f"{file_stem}.spacy"
+    linemap_path = annotated_dir / f"{file_stem}.linemap.jsonl"
+
+    if not docbin_path.exists():
+        raise FileNotFoundError(f"Missing DocBin for {file_stem}: {docbin_path}")
+    if not linemap_path.exists():
+        raise FileNotFoundError(f"Missing line map for {file_stem}: {linemap_path}")
+
+    if vocab is None:
+        vocab_path = annotated_dir / "vocab"
+        if not vocab_path.exists():
+            raise FileNotFoundError(
+                f"No vocab dir at {vocab_path}. Load the source spaCy model "
+                "explicitly and pass `vocab=nlp.vocab`."
+            )
+        vocab = spacy.blank("xx").vocab
+        vocab.from_disk(vocab_path)
+
+    docbin = DocBin().from_bytes(docbin_path.read_bytes())
+    doc_iter = docbin.get_docs(vocab)
+    next_expected_doc_idx = 0
+
+    with open(linemap_path, "r", encoding="utf-8") as f:
+        for raw in f:
+            entry = json.loads(raw)
+            doc_idx = entry.get("doc_idx")
+            if doc_idx is None:
+                yield entry, None
+                continue
+            # Guard against misordered linemap (shouldn't happen with
+            # DocBinCollector; the assumption is explicit in the docstring).
+            if doc_idx != next_expected_doc_idx:
+                raise RuntimeError(
+                    f"DocBin streaming invariant broken in {file_stem}: "
+                    f"expected doc_idx={next_expected_doc_idx} but linemap "
+                    f"entry has doc_idx={doc_idx}. Fall back to "
+                    "load_annotated_file for random access."
+                )
+            try:
+                doc = next(doc_iter)
+            except StopIteration:
+                raise RuntimeError(
+                    f"DocBin in {file_stem} exhausted at doc_idx={doc_idx} "
+                    "but linemap still references more docs."
+                )
+            next_expected_doc_idx += 1
+            yield entry, doc
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
