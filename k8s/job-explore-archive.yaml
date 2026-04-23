@@ -1,0 +1,55 @@
+---
+# One-shot throwaway: ls the subject-drop-archive PVC to see what the
+# other agent has set up + what we need to populate.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: explore-archive
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      containers:
+      - name: explore
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          echo "=== /mnt/data ==="
+          ls -la /mnt/data
+          echo ""
+          for d in raw annotated manipulations tokenizers tokenized chunked models archive; do
+            if [ -d /mnt/data/$d ]; then
+              echo "=== /mnt/data/$d ==="
+              ls -la /mnt/data/$d 2>&1 | head -30
+              echo ""
+            fi
+          done
+          # If raw exists, check each lang
+          for lang in en es; do
+            if [ -d /mnt/data/raw/$lang ]; then
+              echo "=== /mnt/data/raw/$lang ==="
+              ls -la /mnt/data/raw/$lang 2>&1 | head -30
+              for split in train_90M test_10M pull_10M; do
+                if [ -d /mnt/data/raw/$lang/$split ]; then
+                  echo "--- $lang/$split (first 5 files) ---"
+                  ls /mnt/data/raw/$lang/$split 2>&1 | head -5
+                  echo "    $(ls /mnt/data/raw/$lang/$split | wc -l) files total"
+                fi
+              done
+            fi
+          done
+          echo "=== disk usage ==="
+          du -sh /mnt/data/* 2>/dev/null | head -20
+        resources:
+          requests: {memory: 256Mi, cpu: "100m"}
+          limits:   {memory: 256Mi, cpu: "100m"}
+        volumeMounts:
+        - {name: data, mountPath: /mnt/data, readOnly: true}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never

@@ -1,0 +1,66 @@
+---
+# One-shot: copy the baseline GPT-2 tokenizer from the legacy PVC to
+# the new primary PVC at the new canonical path.
+#
+# Why: the baseline run (final loss 3.15) used the tokenizer at
+#   corpus-analysis-data:tokenizers/exp0_baseline_90M_smoke/
+# For HP-sweep results to be comparable to that baseline (and for
+# within-arch ablation validity per the "don't re-train the
+# tokenizer" rule — sentencepiece unigram has stochastic tie-
+# breaking), we copy the exact bytes rather than retraining.
+#
+# Destination follows the new convention: one tokenizer per
+# (lang, arch) pair, named tokenizers/<lang>_<arch>/ on the
+# subject-drop-archive PVC.
+#
+# Source: corpus-analysis-data:/legacy/tokenizers/exp0_baseline_90M_smoke/
+# Dest:   subject-drop-archive:/data/tokenizers/en_gpt2_medium/
+#
+# Idempotent: skips the copy if the destination already has
+# tokenizer.model.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: copy-tokenizer-en-gpt2-medium
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      containers:
+      - name: copy
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          SRC=/legacy/tokenizers/exp0_baseline_90M_smoke
+          DST=/data/tokenizers/en_gpt2_medium
+
+          echo "source: $SRC"
+          ls -la "$SRC" || { echo "FATAL: source missing"; exit 1; }
+
+          if [ -f "$DST/tokenizer.model" ]; then
+            echo "destination already has tokenizer.model — skipping (idempotent)"
+            ls -la "$DST"
+            exit 0
+          fi
+
+          mkdir -p "$DST"
+          cp -a "$SRC"/. "$DST"/
+          echo "copied:"
+          ls -la "$DST"
+        resources:
+          requests: {memory: 256Mi, cpu: "100m"}
+          limits:   {memory: 256Mi, cpu: "100m"}
+        volumeMounts:
+        - {name: legacy, mountPath: /legacy, readOnly: true}
+        - {name: data,   mountPath: /data}
+      volumes:
+      - name: legacy
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never

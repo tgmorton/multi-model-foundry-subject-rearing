@@ -1,0 +1,95 @@
+---
+# One-shot: migrate the English training/test corpora + the baseline
+# tokenizer from the legacy `corpus-analysis-data` PVC to the new
+# primary `subject-drop-archive` PVC at the new canonical layout.
+#
+# The other agent is populating Spanish on subject-drop-archive
+# (raw/es/{train_90M,pull_10M}/) — this job only touches raw/en/** and
+# tokenizers/en_gpt2_medium/ to avoid stepping on their work.
+#
+# Source paths on legacy PVC:
+#   corpus-analysis-data:/legacy/data/raw/train_90M/
+#   corpus-analysis-data:/legacy/data/raw/test_10M/
+#   corpus-analysis-data:/legacy/tokenizers/exp0_baseline_90M_smoke/
+#
+# Destination paths on archive PVC (new canonical layout):
+#   subject-drop-archive:/data/raw/en/train_90M/
+#   subject-drop-archive:/data/raw/en/test_10M/
+#   subject-drop-archive:/data/tokenizers/en_gpt2_medium/
+#
+# Idempotent — if a destination already has its sentinel file, the
+# block is skipped. Safe to re-apply.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-en-to-archive
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      containers:
+      - name: copy
+        image: alpine:3.19
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          LSRC=/legacy
+          DST=/data
+
+          copy_dir_if_missing() {
+            local src_dir="$1"
+            local dst_dir="$2"
+            local sentinel="$3"   # a file inside dst_dir that proves it's done
+            if [ -f "$dst_dir/$sentinel" ]; then
+              echo "SKIP: $dst_dir/$sentinel already exists"
+              return 0
+            fi
+            if [ ! -d "$src_dir" ]; then
+              echo "FAIL: source $src_dir missing"
+              return 1
+            fi
+            echo "COPY: $src_dir -> $dst_dir"
+            mkdir -p "$dst_dir"
+            # -a = archive (preserve perms/times), dotglob via . avoids
+            # creating an extra nested dir
+            cp -a "$src_dir"/. "$dst_dir"/
+            echo "    done: $(ls "$dst_dir" | wc -l) entries"
+          }
+
+          # 1. English training corpus
+          copy_dir_if_missing "$LSRC/data/raw/train_90M" \
+                              "$DST/raw/en/train_90M" \
+                              "childes.train"
+
+          # 2. English held-out (test) corpus
+          copy_dir_if_missing "$LSRC/data/raw/test_10M" \
+                              "$DST/raw/en/test_10M" \
+                              "childes.test"
+
+          # 3. Baseline tokenizer → new canonical (lang, arch) path
+          copy_dir_if_missing "$LSRC/tokenizers/exp0_baseline_90M_smoke" \
+                              "$DST/tokenizers/en_gpt2_medium" \
+                              "tokenizer.model"
+
+          echo ""
+          echo "=========================================="
+          echo "  FINAL STATE"
+          echo "=========================================="
+          du -sh "$DST/raw/en"/* 2>&1 | head
+          du -sh "$DST/tokenizers"/* 2>&1 | head
+        resources:
+          requests: {memory: 512Mi, cpu: "500m"}
+          limits:   {memory: 512Mi, cpu: "500m"}
+        volumeMounts:
+        - {name: legacy, mountPath: /legacy, readOnly: true}
+        - {name: data,   mountPath: /data}
+      volumes:
+      - name: legacy
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
