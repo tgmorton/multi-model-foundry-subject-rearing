@@ -113,8 +113,9 @@ spec:
           print(compute_cache_key(corpus, tok, cfg['data']['max_sequence_length'], cfg.get('dataset_manipulation') or []))
           ")
           test -n "$CACHE_KEY" || { echo "FAIL couldn't resolve cache_key"; exit 1; }
+          # Tokenized has train/ + test/ subdirs; chunked is saved flat.
           TOKENIZED=/mnt/data/tokenized/$CACHE_KEY/train/dataset_info.json
-          CHUNKED=/mnt/data/chunked/$CACHE_KEY/train/dataset_info.json
+          CHUNKED=/mnt/data/chunked/$CACHE_KEY/dataset_info.json
           if [ ! -f "$TOKENIZED" ]; then
             echo "FAIL missing tokenized cache: $TOKENIZED"
             echo "  run k8s/job-prepare-dataset.yaml with TARGET_CONFIG=$BASE first"
