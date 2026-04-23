@@ -12,7 +12,8 @@ data:
 dataset_manipulation: []
 
 tokenizer:
-  output_dir: "tokenizers/es_lstm/"
+  # Shared SentencePiece tokenizer across non-BERT Spanish archs.
+  output_dir: "tokenizers/es_gpt2_medium/"
   vocab_size: 50004
 
 model:

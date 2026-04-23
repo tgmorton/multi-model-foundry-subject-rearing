@@ -17,7 +17,11 @@ data:
 dataset_manipulation: []
 
 tokenizer:
-  output_dir: "tokenizers/en_lstm/"
+  # Shared SentencePiece tokenizer across non-BERT English archs
+  # (gpt2_medium / lstm / mamba_370m). Same tokenizer bytes + same corpus
+  # + same seq_len = same content-addressed cache_key → all three sweeps
+  # hit the existing tokenized+chunked cache with zero re-compute.
+  output_dir: "tokenizers/en_gpt2_medium/"
   vocab_size: 50004
 
 model:

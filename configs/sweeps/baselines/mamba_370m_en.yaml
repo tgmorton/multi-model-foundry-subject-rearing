@@ -19,7 +19,9 @@ data:
 dataset_manipulation: []
 
 tokenizer:
-  output_dir: "tokenizers/en_mamba_370m/"
+  # Shared SentencePiece tokenizer across non-BERT English archs.
+  # See lstm_en.yaml for rationale.
+  output_dir: "tokenizers/en_gpt2_medium/"
   vocab_size: 50004
 
 model:
