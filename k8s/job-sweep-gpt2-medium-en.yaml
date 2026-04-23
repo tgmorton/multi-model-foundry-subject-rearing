@@ -22,6 +22,11 @@ metadata:
 spec:
   backoffLimit: 1
   ttlSecondsAfterFinished: 86400
+  # 3 concurrent agent pods × 15 trials each = 45 total trials.
+  # Bayesian optimization with more than ~4 concurrent agents degrades
+  # toward random search (posterior stays stale across parallel samples).
+  parallelism: 3
+  completions: 3
   template:
     spec:
       imagePullSecrets:
@@ -101,9 +106,9 @@ spec:
         # Sweep controller ID (from `wandb sweep <config>`).
         # EDIT THIS before applying, or use `kubectl set env`.
         - name: SWEEP_ID
-          value: "REPLACE_WITH_SWEEP_ID"
+          value: "thmorton-uc-san-diego/subject-drop-sweeps/wq80aipb"
         - name: TRIAL_COUNT
-          value: "30"
+          value: "15"
         # WandB auth
         - name: WANDB_API_KEY
           valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}

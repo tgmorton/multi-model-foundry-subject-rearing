@@ -47,12 +47,21 @@ Copy the sweep ID, then launch N agents on the cluster:
 
 ```bash
 # Edit k8s/job-sweep-<arch>-<lang>.yaml: set SWEEP_ID to the value above.
+# spec.parallelism / completions controls concurrent agent count.
 # TRIAL_COUNT controls how many trials each pod runs sequentially.
+# Current default: parallelism=3, TRIAL_COUNT=15 → 45 total trials.
 kubectl apply -f k8s/job-sweep-gpt2-medium-en.yaml
-
-# For more parallelism: apply copies of the same job with different
-# metadata.name — each gets scheduled independently.
 ```
+
+**How many agents at once?** Bayesian optimization is sequential in
+theory — each trial's HP sample is drawn from a posterior informed by
+past trials. Running too many agents concurrently means most trials see
+a stale posterior and BO degrades toward random search. **3 concurrent
+agents is the standard sweet spot** for cluster-backed BO: still good
+wall-clock, posterior stays fresh enough to exploit.
+
+**How many total trials?** For 5-7 HPs (our space), ~30-50 trials is
+where BO typically converges. 45 (3×15) gives a safety margin.
 
 Monitor in WandB UI: `https://wandb.ai/<your-entity>/subject-drop-sweeps`
 under the sweep ID.
