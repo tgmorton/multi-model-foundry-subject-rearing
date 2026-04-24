@@ -186,9 +186,18 @@ spec:
         - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
         - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
         resources:
-          # requests == limits to satisfy NRP admission webhook
-          requests: {memory: 24Gi, cpu: "6"}
-          limits:   {memory: 24Gi, cpu: "6"}
+          # requests == limits to satisfy NRP admission webhook.
+          # Sizing note (2026-04-24): the earlier 24Gi/6CPU request on the
+          # Spanish pipeline had us running at ~10-20% utilization, which
+          # tripped NRP's "utilization too low" admission block. New sizing
+          # targets ~40-50% utilization for the streaming DocBin reader:
+          #   - observed memory peak: ~4-5 GiB (ES europarl, 1.24M docs)
+          #   - observed CPU peak:    ~2 active cores (single-process Python)
+          # 10Gi / 4 CPU is ~2x observed memory headroom (user preference:
+          # err toward over-request, not under-request — an OOM is worse
+          # than a cluster admission warning).
+          requests: {memory: 10Gi, cpu: "4"}
+          limits:   {memory: 10Gi, cpu: "4"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

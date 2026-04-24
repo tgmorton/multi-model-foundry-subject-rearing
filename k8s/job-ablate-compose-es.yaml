@@ -188,13 +188,15 @@ spec:
         - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
         resources:
           # requests == limits to satisfy NRP admission webhook.
-          # 24Gi is oversized for most files but europarl.train carries
-          # 1.24M Docs in its DocBin (~2-3 GB loaded, plus ablated output
-          # + vocab + linemap). Streaming reader (iter_annotated_file)
-          # keeps Doc memory O(1), so peak should be ~4-6 GB; 24Gi gives
-          # comfortable headroom for the occasional spike.
-          requests: {memory: 24Gi, cpu: "6"}
-          limits:   {memory: 24Gi, cpu: "6"}
+          # Sizing note (2026-04-24): first pass at 24Gi/6CPU ran at ~10-20%
+          # utilization across all pods and tripped NRP's "utilization too
+          # low" admission block. Streaming DocBin reader (iter_annotated_file)
+          # holds memory at ~4-5 GiB even for ES europarl (1.24M docs); CPU
+          # usage peaks around 2 active cores. 10Gi / 4 CPU gives ~40-50%
+          # utilization (cluster-friendly) plus 2x memory headroom for OOM
+          # safety (user preference: over-request > under-request).
+          requests: {memory: 10Gi, cpu: "4"}
+          limits:   {memory: 10Gi, cpu: "4"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

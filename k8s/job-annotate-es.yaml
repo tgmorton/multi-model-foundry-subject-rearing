@@ -141,15 +141,22 @@ spec:
         - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
         - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
         resources:
-          # requests == limits to satisfy NRP admission webhook
-          # (limit/request ratio must be ≤ 1.2).
+          # requests == limits to satisfy NRP admission webhook.
+          # Sizing note (2026-04-24): earlier 24Gi/6CPU runs hit ~10-20%
+          # utilization, tripping NRP's admission block. es_core_news_lg is
+          # CPU-only (no _trf variant exists for Spanish — verified against
+          # spacy-models GitHub API); observed peak RSS ~4-5 GiB, CPU ~4
+          # cores for parallel spaCy pipe. 10Gi / 4 CPU gives ~50% util and
+          # 2x headroom (user preference: over-request > under-request).
+          # GPU is unused for _lg — keeping the request for compatibility
+          # with the existing node-affinity block, but could be dropped.
           requests:
-            memory: 24Gi
-            cpu: "6"
+            memory: 10Gi
+            cpu: "4"
             nvidia.com/gpu: 1
           limits:
-            memory: 24Gi
-            cpu: "6"
+            memory: 10Gi
+            cpu: "4"
             nvidia.com/gpu: 1
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}

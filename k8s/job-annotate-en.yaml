@@ -158,13 +158,22 @@ spec:
         - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
         resources:
           # requests == limits to satisfy NRP admission webhook.
+          # Sizing note (2026-04-24): first pass at 24Gi/6CPU hit ~10-20%
+          # utilization across all 12 pods and tripped NRP's "utilization
+          # too low" admission block on subsequent dispatches. Observed with
+          # GPU-accelerated en_core_web_trf:
+          #   - RSS peak:   ~5-6 GiB (CPU-side Python + DocBin buffer)
+          #   - VRAM peak:  ~1.3 GiB (transformer + batch activations)
+          #   - CPU peak:   ~4 cores (parallel spaCy pipe + GPU dispatch)
+          # 12Gi / 4 CPU gives ~50% utilization and 2x headroom for OOM
+          # safety (user preference: over-request > under-request).
           requests:
-            memory: 24Gi
-            cpu: "6"
+            memory: 12Gi
+            cpu: "4"
             nvidia.com/gpu: 1
           limits:
-            memory: 24Gi
-            cpu: "6"
+            memory: 12Gi
+            cpu: "4"
             nvidia.com/gpu: 1
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
