@@ -1,0 +1,141 @@
+---
+# Production continuation: resume one sweep-winner checkpoint and train
+# it out to the full 30 epochs. Also launches a matched "fresh seed"
+# replica from scratch (per user plan: "sweep-run continued + 1 new-seed
+# replica from scratch").
+#
+# Before applying, set these env vars:
+#   BASE_CONFIG       = the sweep-baseline YAML for this (arch, lang)
+#                       (e.g. configs/sweeps/baselines/gpt2_medium_en.yaml)
+#   WINNER_CHECKPOINT = /mnt/data/models/sweeps/<wandb_run_id>/ (the
+#                       directory containing the last-state checkpoint
+#                       to resume from)
+#   HP_JSON           = JSON string of the winning HPs to overlay on the
+#                       baseline (same schema as the sweep agent uses)
+#   SEED_FRESH        = random seed for the paired fresh-from-scratch run
+#   MODE              = "continue" | "fresh" — controls whether this pod
+#                       resumes from WINNER_CHECKPOINT or starts fresh
+# Apply twice per winner: once with MODE=continue, once with MODE=fresh.
+#
+# Resume uses the existing `resume_from_checkpoint: true` pathway in the
+# Trainer: on startup, it picks the newest checkpoint in output_dir that
+# has a training_state.pt. The sweep's final checkpoint (at its 10-epoch
+# anchor) qualifies because we set save_resume_state_last_n=2.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-continue-PLACEHOLDER
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: continuation
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  PRODUCTION CONTINUATION ($MODE)"
+          echo "  arch: $BASE_CONFIG"
+          echo "  winner ckpt: $WINNER_CHECKPOINT"
+          echo "  seed: $SEED_FRESH"
+          echo "=========================================="
+
+          cd /opt/repo
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/raw        /opt/repo/data/raw
+          ln -sfn /mnt/data/tokenized  /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked    /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models     /opt/repo/models
+
+          # Run the continuation/replica script. It applies HP_JSON overlay,
+          # sets epochs=production_epochs (30), configures output_dir per
+          # MODE, and (for MODE=continue) pre-seeds the output dir with the
+          # winner checkpoint so the trainer's resume_from_checkpoint finds
+          # it.
+          test -n "${BASE_CONFIG:-}"       || { echo "FAIL BASE_CONFIG unset";       exit 1; }
+          test -n "${WINNER_CHECKPOINT:-}" || { echo "FAIL WINNER_CHECKPOINT unset"; exit 1; }
+          test -n "${HP_JSON:-}"           || { echo "FAIL HP_JSON unset";           exit 1; }
+          test -n "${MODE:-}"              || { echo "FAIL MODE unset";              exit 1; }
+          test -n "${SEED_FRESH:-}"        || { echo "FAIL SEED_FRESH unset";        exit 1; }
+
+          exec python scripts/continue_from_winner.py \
+            --base-config "$BASE_CONFIG" \
+            --winner-ckpt "$WINNER_CHECKPOINT" \
+            --hp-json "$HP_JSON" \
+            --mode "$MODE" \
+            --seed-fresh "$SEED_FRESH"
+        env:
+        - {name: PYTHONPATH,          value: "/opt/repo"}
+        - name: BASE_CONFIG
+          value: "REPLACE_BASE_CONFIG"
+        - name: WINNER_CHECKPOINT
+          value: "REPLACE_WINNER_CHECKPOINT"
+        - name: HP_JSON
+          value: 'REPLACE_HP_JSON'
+        - name: MODE
+          value: "continue"    # or "fresh"
+        - name: SEED_FRESH
+          value: "101"
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        - {name: REGISTRY_RUN_KIND,  value: "production"}
+        - {name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}
+        resources:
+          requests: {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
+          limits:   {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}

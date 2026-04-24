@@ -17,7 +17,7 @@ data:
 dataset_manipulation: []
 
 tokenizer:
-  output_dir: "tokenizers/en_bert_large/"
+  output_dir: "tokenizers/en_bert_wordpiece/"
   vocab_size: 50004
   tokenizer_type: "wordpiece"       # BERT-style WordPiece + NFD/StripAccents/Lowercase
   special_tokens:
@@ -49,7 +49,8 @@ training:
   train_steps: null
   warmup_steps: null
   epochs: 3                        # overridden to sweep_epochs
-  sweep_epochs: 3
+  sweep_epochs: 10
+  production_epochs: 30
 
   objective: "masked_lm"
   mlm_probability: 0.15
@@ -67,7 +68,7 @@ training:
 
 logging:
   use_wandb: true
-  wandb_project: "subject-drop-sweeps"
+  wandb_project: "subject-drop-prod-hp"
   level: "INFO"
   dir: "logs"
 

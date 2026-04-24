@@ -3,12 +3,12 @@ program: scripts/sweep_agent_lm.py
 method: bayes
 
 metric:
-  name: proxy/held_out_perplexity
+  name: proxy/min_held_out_perplexity
   goal: minimize
 
 early_terminate:
   type: hyperband
-  min_iter: 500
+  min_iter: 1
   eta: 3
 
 parameters:

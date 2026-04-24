@@ -13,7 +13,7 @@ data:
 dataset_manipulation: []
 
 tokenizer:
-  output_dir: "tokenizers/es_gpt2_medium/"
+  output_dir: "tokenizers/es_shared_unigram/"
   vocab_size: 50004
 
 model:
@@ -37,8 +37,9 @@ training:
   warmup_ratio: 0.1
   train_steps: null
   warmup_steps: null
-  epochs: 3
-  sweep_epochs: 3
+  epochs: 10
+  sweep_epochs: 10
+  production_epochs: 30
 
   use_amp: true
   gradient_accumulation_steps: 16
@@ -53,7 +54,7 @@ training:
 
 logging:
   use_wandb: true
-  wandb_project: "subject-drop-sweeps"
+  wandb_project: "subject-drop-prod-hp"
   level: "INFO"
   dir: "logs"
 

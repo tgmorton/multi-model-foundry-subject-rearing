@@ -7,7 +7,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-train-tokenizer-es-bert
+  name: thomas-train-tokenizer-en-shared
 spec:
   backoffLimit: 1
   ttlSecondsAfterFinished: 86400
@@ -39,7 +39,7 @@ spec:
         - |
           set -euo pipefail
           echo "=========================================="
-          echo "  BERT WORDPIECE TOKENIZER TRAINING — ES"
+          echo "  SHARED UNIGRAM TOKENIZER TRAINING — EN"
           echo "=========================================="
 
           cd /opt/repo
@@ -56,14 +56,14 @@ spec:
           # Build the combined training input: symlink every .train file
           # from baseline + each ablation into a single staging dir,
           # prefixing the filename with the source to avoid name clashes.
-          STAGE=/opt/repo/data/tokenizer_staging/es
+          STAGE=/opt/repo/data/tokenizer_staging/en
           mkdir -p "$STAGE"
           # Baseline
-          for f in /mnt/data/raw/es/train_90M/*.train; do
+          for f in /mnt/data/raw/en/train_90M/*.train; do
             ln -sfn "$f" "$STAGE/baseline__$(basename "$f")"
           done
           # Ablations
-          for d in /mnt/data/manipulations/es/*/; do
+          for d in /mnt/data/manipulations/en/*/; do
             slug=$(basename "$d")
             for f in "$d"*.train; do
               [ -f "$f" ] || continue
@@ -74,15 +74,15 @@ spec:
           ls "$STAGE" | head -10
 
           # Train the tokenizer. Idempotent: skips if already present.
-          python -m model_foundry.cli validate-config configs/tokenizer_training/es_bert_wordpiece.yaml
-          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/es_bert_wordpiece.yaml
+          python -m model_foundry.cli validate-config configs/tokenizer_training/en_shared_unigram.yaml
+          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/en_shared_unigram.yaml
 
           echo ""
           echo "=========================================="
           echo "  TOKENIZER ARTIFACT"
           echo "=========================================="
-          ls -la /mnt/data/tokenizers/es_bert_wordpiece/
-          du -sh  /mnt/data/tokenizers/es_bert_wordpiece/
+          ls -la /mnt/data/tokenizers/en_shared_unigram/
+          du -sh  /mnt/data/tokenizers/en_shared_unigram/
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         resources:

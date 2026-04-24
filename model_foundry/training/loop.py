@@ -8,12 +8,20 @@ mixed precision training, gradient accumulation, and progress tracking.
 import os
 import time
 import logging
-from typing import Optional, Set
+from typing import Callable, Optional, Set
 import torch
 import wandb
 from tqdm.auto import tqdm
 
 from .. import registry as _registry
+
+
+# Type alias for the end-of-epoch hook the sweep agent registers to
+# evaluate held-out perplexity, update the running minimum, and signal
+# early stopping. Signature:
+#   (epoch: int, total_tokens_processed: int) -> bool
+# Returning True terminates training after the current epoch.
+EpochEndCallback = Callable[[int, int], bool]
 
 
 # How often to emit a registry heartbeat. A reaper marks runs PREEMPTED
@@ -72,7 +80,8 @@ class TrainingLoop:
             )
             self.logger.info("AMP enabled with enhanced GradScaler settings")
 
-    def run(self, tokenizer, start_step: int = 0, start_epoch: int = 0):
+    def run(self, tokenizer, start_step: int = 0, start_epoch: int = 0,
+            on_epoch_end: Optional[EpochEndCallback] = None):
         """
         Execute the main training loop.
 
@@ -80,6 +89,10 @@ class TrainingLoop:
             tokenizer: Tokenizer instance (needed for checkpoint saving)
             start_step: Starting global step (for resuming)
             start_epoch: Starting epoch (for resuming)
+            on_epoch_end: Optional hook fired at the end of every epoch
+                with (epoch, total_tokens_processed). Returning True stops
+                training after the current epoch. Used by the sweep agent
+                for per-epoch held-out perplexity + early stopping.
 
         Returns:
             Final global step reached
@@ -286,6 +299,19 @@ class TrainingLoop:
             # Epoch cleanup
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
+
+            # End-of-epoch hook for the sweep agent: evaluate held-out
+            # perplexity, update BO's running-min metric, check early-stop
+            # patience. Returns True to terminate training early.
+            if on_epoch_end is not None:
+                try:
+                    should_stop = bool(on_epoch_end(epoch, total_tokens_processed))
+                except Exception as cb_err:  # noqa: BLE001
+                    self.logger.warning("on_epoch_end callback raised %s; continuing", cb_err)
+                    should_stop = False
+                if should_stop:
+                    self.logger.info("Early stop requested by epoch callback at epoch %d", epoch)
+                    break
 
         print("\n----- Training Complete -----")
 

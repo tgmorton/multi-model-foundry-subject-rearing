@@ -11,7 +11,7 @@ data:
   source_corpus: "data/raw/en/train_90M/"
   training_corpus: "data/raw/en/train_90M/"
   test_corpus: "data/raw/en/test_10M/"
-  batch_size: 32
+  batch_size: 16                 # dropped 32->16: 87% VRAM was too close on 24GB cards
   max_sequence_length: 1000
 
 dataset_manipulation: []
@@ -21,7 +21,7 @@ tokenizer:
   # (gpt2_medium / lstm / mamba_370m). Same tokenizer bytes + same corpus
   # + same seq_len = same content-addressed cache_key → all three sweeps
   # hit the existing tokenized+chunked cache with zero re-compute.
-  output_dir: "tokenizers/en_gpt2_medium/"
+  output_dir: "tokenizers/en_shared_unigram/"
   vocab_size: 50004
 
 model:
@@ -44,7 +44,8 @@ training:
   train_steps: null
   warmup_steps: null
   epochs: 3                        # overridden to sweep_epochs
-  sweep_epochs: 3
+  sweep_epochs: 10
+  production_epochs: 30
 
   objective: "causal_lm"
 
@@ -61,7 +62,7 @@ training:
 
 logging:
   use_wandb: true
-  wandb_project: "subject-drop-sweeps"
+  wandb_project: "subject-drop-prod-hp"
   level: "INFO"
   dir: "logs"
 

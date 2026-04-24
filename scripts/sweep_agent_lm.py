@@ -77,6 +77,25 @@ _SWEEP_HP_FIELDS = (
 )
 
 PROXY_METRIC_NAME = "held_out_perplexity"
+PROXY_MIN_METRIC_NAME = "min_held_out_perplexity"
+EARLY_STOP_PATIENCE = 3  # epochs of no held-out-ppl improvement before halting
+
+
+def _format_run_name(arch: str, lang: str, wc: dict) -> str:
+    """Build a deterministic, compact run name that exposes arch/lang +
+    the three most-informative HPs. Beats wandb's random adjective-names
+    when comparing runs across archs in the UI."""
+    lr = wc.get("learning_rate")
+    eb = wc.get("effective_batch_size")
+    dr = wc.get("dropout")
+    parts = [arch, lang]
+    if lr is not None:
+        parts.append(f"lr{float(lr):.1e}".replace("-0", "-"))
+    if eb is not None:
+        parts.append(f"eb{int(eb)}")
+    if dr is not None:
+        parts.append(f"d{float(dr):.2f}")
+    return "_".join(parts)
 
 
 def main() -> None:
@@ -86,6 +105,17 @@ def main() -> None:
     if run is None:
         raise RuntimeError("wandb.init returned None — no sweep context")
 
+    # Rename the run from wandb's random "polished-sweep-1" into something
+    # like "gpt2_medium_en_lr3.9e-5_eb256_d0.18" so runs are directly
+    # comparable across architectures in the UI.
+    try:
+        wc = dict(run.config)
+        new_name = _format_run_name(wc.get("arch", "?"), wc.get("lang", "?"), wc)
+        run.name = new_name
+        run.save()
+    except Exception as e:  # noqa: BLE001
+        logger.warning("could not set deterministic run name: %s", e)
+
     cfg_dict, identity = _prepare_config(run)
     config = ExperimentConfig(**cfg_dict)
 
@@ -93,17 +123,72 @@ def main() -> None:
 
     _register_start(config, identity, run, base_dir)
 
+    # Per-trial state that the epoch callback writes into and the
+    # post-training code reads.
+    trial_state = {
+        "min_ppl": float("inf"),
+        "best_epoch": -1,
+        "patience_counter": 0,
+        "last_ppl": float("nan"),
+        "last_epoch_tokens": 0,
+        "stopped_early": False,
+    }
+
+    trainer: Optional[Trainer] = None
+
+    def on_epoch_end(epoch_idx: int, total_tokens: int) -> bool:
+        """Fired at end of every epoch. Evaluates held-out perplexity,
+        updates running-min, decides whether to early-stop."""
+        try:
+            ppl = _compute_held_out_perplexity(trainer, config)
+        except Exception as e:  # noqa: BLE001
+            logger.exception("epoch %d perplexity eval failed: %s", epoch_idx, e)
+            return False
+
+        trial_state["last_ppl"] = ppl
+        trial_state["last_epoch_tokens"] = total_tokens
+
+        log_payload = {
+            f"proxy/{PROXY_METRIC_NAME}": float(ppl),
+            "proxy/epoch": epoch_idx + 1,         # 1-indexed for nicer plots
+            "proxy/tokens_seen": total_tokens,
+        }
+
+        if not math.isnan(ppl) and ppl < trial_state["min_ppl"]:
+            trial_state["min_ppl"] = ppl
+            trial_state["best_epoch"] = epoch_idx
+            trial_state["patience_counter"] = 0
+        else:
+            trial_state["patience_counter"] += 1
+
+        # Publish the running min every epoch so Hyperband sees a
+        # monotone-non-increasing score for cross-trial ranking.
+        log_payload[f"proxy/{PROXY_MIN_METRIC_NAME}"] = float(trial_state["min_ppl"])
+        wandb.log(log_payload)
+
+        logger.info(
+            "epoch %d: held_out_ppl=%.4f min=%.4f patience=%d/%d",
+            epoch_idx, ppl, trial_state["min_ppl"],
+            trial_state["patience_counter"], EARLY_STOP_PATIENCE,
+        )
+
+        if trial_state["patience_counter"] >= EARLY_STOP_PATIENCE:
+            trial_state["stopped_early"] = True
+            logger.info("early-stop: %d epochs without improvement; halting trial", EARLY_STOP_PATIENCE)
+            return True
+        return False
+
     # Train — on failure, record it and re-raise so WandB marks the
     # trial as crashed (not counted in the Bayes posterior).
-    trainer: Optional[Trainer] = None
     try:
         trainer = Trainer(config, base_dir)
-        trainer.train()
+        trainer.train(on_epoch_end=on_epoch_end)
     except Exception as e:  # noqa: BLE001
         logger.exception("trial failed during training")
         wandb.log({
             "proxy/final_training_loss": float("nan"),
             f"proxy/{PROXY_METRIC_NAME}": float("nan"),
+            f"proxy/{PROXY_MIN_METRIC_NAME}": float("nan"),
         })
         _registry.register_run_end(
             run_id=identity["run_id"], arch=identity["arch"],
@@ -112,25 +197,31 @@ def main() -> None:
         )
         raise
 
-    # Persist final weights FIRST, before any metric compute that might
-    # fail. This way post-hoc perplexity (or any later eval) is always
-    # possible even if _compute_held_out_perplexity errors below.
+    # Persist final weights so any later eval (post-hoc perplexity, BLiMP)
+    # is possible. The checkpoint_schedule also saved anchors along the
+    # way; this /final marker is what the production-continuation resume
+    # job looks for.
     final_ckpt_dir = _save_final_checkpoint(trainer, config, base_dir)
     logger.info("final checkpoint saved to %s", final_ckpt_dir)
 
     final_train_loss = _extract_final_training_loss(trainer)
-    held_out_ppl = _compute_held_out_perplexity(trainer, config)
+    final_ppl = trial_state["last_ppl"]
+    min_ppl = trial_state["min_ppl"]
 
     wandb.log({
         "proxy/final_training_loss": float(final_train_loss),
-        f"proxy/{PROXY_METRIC_NAME}": float(held_out_ppl),
+        f"proxy/{PROXY_METRIC_NAME}": float(final_ppl),
+        f"proxy/{PROXY_MIN_METRIC_NAME}": float(min_ppl),
+        "proxy/best_epoch": int(trial_state["best_epoch"]),
+        "proxy/stopped_early": bool(trial_state["stopped_early"]),
     })
     logger.info(
-        "trial DONE: train_loss=%.4f held_out_ppl=%.4f",
-        final_train_loss, held_out_ppl,
+        "trial DONE: train_loss=%.4f final_ppl=%.4f min_ppl=%.4f best_epoch=%d stopped_early=%s",
+        final_train_loss, final_ppl, min_ppl,
+        trial_state["best_epoch"], trial_state["stopped_early"],
     )
 
-    _register_end(identity, run, trainer, final_train_loss, held_out_ppl)
+    _register_end(identity, run, trainer, final_train_loss, min_ppl)
 
 
 def _save_final_checkpoint(trainer: Trainer, config: ExperimentConfig, base_dir: str) -> str:
@@ -243,14 +334,73 @@ def _apply_hp_overrides(cfg: dict, wc: dict) -> None:
 
 
 def _apply_sweep_overrides(cfg: dict, wandb_run_id: str) -> None:
-    """Force sweep-trial-specific settings that never vary."""
+    """Force sweep-trial-specific settings that never vary.
+
+    Also computes the 80-anchor checkpoint schedule in production-epochs
+    (30) STEP space and injects the subset that falls within the sweep's
+    10 epochs — so production continuation will simply resume and
+    complete the remaining anchors.
+    """
     cfg["experiment_name"] = f"sweep-{wandb_run_id}"
     cfg["training"]["output_dir"] = f"models/sweeps/{wandb_run_id}"
-    cfg["training"]["epochs"] = int(cfg["training"].get("sweep_epochs", 3))
+    cfg["training"]["epochs"] = int(cfg["training"].get("sweep_epochs", 10))
     cfg["training"]["train_steps"] = None  # auto from epochs
-    cfg["training"]["checkpoint_schedule"] = []
+
+    cfg["training"]["checkpoint_schedule"] = _compute_token_anchor_schedule(cfg)
     cfg["training"]["auto_generate_checkpoints"] = False
     cfg["training"]["resume_from_checkpoint"] = False
+
+    # Reduce disk churn: only the last 2 checkpoints carry full
+    # resume-state (optimizer/RNG/scaler) so the production-continuation
+    # job can resume cleanly. Earlier anchors are analysis-only.
+    cfg["training"]["save_resume_state_last_n"] = 2
+
+
+def _compute_token_anchor_schedule(cfg: dict) -> list[int]:
+    """Return the 80-anchor checkpoint schedule in OPTIMIZER-STEP space,
+    sized against the full 30-epoch production run. Anchors that fall
+    past the sweep's 10-epoch horizon simply won't be hit during
+    training — the production-continuation job will catch them after
+    resume.
+
+    The first 11 anchors are fixed log-style: 0, 1, 2, 4, 8, 16, 32, 64,
+    128, 256, 512. The remaining slots (target 80 total) are log-spaced
+    from 512 to total_production_steps.
+
+    Step counts depend on (corpus_chunks, effective_batch_size). Without
+    a live dataloader we estimate chunks from the English 90M corpus
+    (~127K chunks at seq_len=1000). Off by ~10% is fine — the trainer
+    saves whenever global_step hits any anchor, regardless of the step
+    being slightly past/short of an epoch boundary.
+    """
+    # Conservative estimate: we know the tokenized/chunked corpus has
+    # roughly 127K chunks of length 1000 (from last night's prepare-
+    # dataset run). The exact chunk count depends on tokenizer +
+    # max_sequence_length; this estimate is good for schedule placement.
+    approx_chunks = 127_000
+
+    phys_batch = int(cfg["data"]["batch_size"])
+    grad_accum = int(cfg["training"].get("gradient_accumulation_steps", 1))
+    effective_batch = max(1, phys_batch * grad_accum)
+    steps_per_epoch = max(1, approx_chunks // effective_batch)
+    prod_epochs = int(cfg["training"].get("production_epochs", 30))
+    total_prod_steps = steps_per_epoch * prod_epochs
+
+    anchors = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+    target_total = 80
+    slots_left = target_total - len(anchors)
+    if total_prod_steps > anchors[-1] and slots_left > 0:
+        import math as _m
+        log_lo = _m.log(float(anchors[-1]))
+        log_hi = _m.log(float(total_prod_steps))
+        for i in range(1, slots_left + 1):
+            frac = i / slots_left
+            step = int(round(_m.exp(log_lo + (log_hi - log_lo) * frac)))
+            if step > anchors[-1]:
+                anchors.append(step)
+    # Dedup + cap at total_prod_steps
+    anchors = sorted({min(a, total_prod_steps) for a in anchors})
+    return anchors
 
 
 # ---------- registry plumbing ----------

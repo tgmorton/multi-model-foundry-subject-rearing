@@ -324,8 +324,14 @@ class Trainer:
         except Exception as e:
             print(f"  - Warning: Failed to save environment snapshot: {e}")
 
-    def train(self):
-        """Main training entry point."""
+    def train(self, on_epoch_end=None):
+        """Main training entry point.
+
+        Args:
+            on_epoch_end: Optional callable (epoch: int, tokens_seen: int) -> bool
+                fired at the end of each epoch. Return True to stop training
+                early (used by the sweep agent for patience-based early stop).
+        """
         logger = setup_logging(
             "trainer",
             experiment=self.config.experiment_name,
@@ -335,7 +341,7 @@ class Trainer:
         logger.info(f"--- Starting Training Run for: {self.config.experiment_name} ---")
 
         try:
-            return self._train_loop()
+            return self._train_loop(on_epoch_end=on_epoch_end)
         except Exception as e:
             logger.error(f"Training failed: {str(e)}")
             logger.error(f"Error type: {type(e).__name__}")
@@ -359,7 +365,7 @@ class Trainer:
             logger.debug("Full traceback:", exc_info=True)
             raise SystemExit(1)
 
-    def _train_loop(self):
+    def _train_loop(self, on_epoch_end=None):
         """Internal training loop implementation."""
         print("Starting training setup...")
 
@@ -448,7 +454,8 @@ class Trainer:
         final_step = self.training_loop.run(
             tokenizer=self.tokenizer,
             start_step=global_step,
-            start_epoch=epoch
+            start_epoch=epoch,
+            on_epoch_end=on_epoch_end,
         )
 
         return final_step

@@ -1,0 +1,62 @@
+# Config used only by train-tokenizer for the shared English SP-unigram
+# vocab (consumed by gpt2_small/medium/large + lstm + mamba_370m × en).
+# `data.training_corpus` points at a staging dir the k8s job populates
+# with symlinks to baseline + all ablated corpora, so the tokenizer
+# vocabulary covers both original and manipulated token streams.
+
+experiment_name: "es_shared_unigram_tokenizer_train"
+
+data:
+  source_corpus: "data/tokenizer_staging/es/"
+  training_corpus: "data/tokenizer_staging/es/"
+  test_corpus: null
+  batch_size: 1            # unused for tokenizer training
+  max_sequence_length: 1000
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/es_shared_unigram/"
+  tokenizer_type: "sentencepiece"
+  vocab_size: 50004
+
+# model/training/logging blocks are required by the ExperimentConfig
+# schema but ignored during tokenizer-only training.
+model:
+  architecture: "gpt2"
+  transformer:
+    layers: 1
+    embedding_size: 64
+    hidden_size: 64
+    intermediate_hidden_size: 128
+    attention_heads: 1
+    activation_function: "gelu"
+    dropout: 0.0
+    attention_dropout: 0.0
+
+training:
+  output_dir: "tmp/"
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_ratio: 0.1
+  train_steps: 1
+  warmup_steps: 0
+  epochs: 1
+  use_amp: false
+  gradient_accumulation_steps: 1
+  max_grad_norm: 1.0
+  use_tf32: false
+  use_gradient_checkpointing: false
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+
+logging:
+  use_wandb: false
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42

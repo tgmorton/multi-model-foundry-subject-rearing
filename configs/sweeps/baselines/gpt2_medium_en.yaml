@@ -34,9 +34,9 @@ dataset_manipulation: []
 
 # One tokenizer per (lang, arch) pair — trained once via
 # k8s/job-train-tokenizer.yaml on subject-drop-archive. This assumes
-# that job has already populated /mnt/data/tokenizers/en_gpt2_medium/.
+# that job has already populated /mnt/data/tokenizers/en_shared_unigram/.
 tokenizer:
-  output_dir: "tokenizers/en_gpt2_medium/"
+  output_dir: "tokenizers/en_shared_unigram/"
   vocab_size: 50004
 
 model:
@@ -77,7 +77,7 @@ training:
 
 logging:
   use_wandb: true                                # sweep agent owns wandb.init
-  wandb_project: "subject-drop-sweeps"
+  wandb_project: "subject-drop-prod-hp"
   level: "INFO"
   dir: "logs"
 

@@ -17,12 +17,12 @@ program: scripts/sweep_agent_lm.py
 method: bayes
 
 metric:
-  name: proxy/held_out_perplexity
+  name: proxy/min_held_out_perplexity
   goal: minimize
 
 early_terminate:
   type: hyperband
-  min_iter: 500         # start killing unpromising trials at step 500
+  min_iter: 1         # start killing unpromising trials at step 500
   eta: 3                # keep top 1/eta at each rung
   # Proxy horizon is 3 epochs (~1500 steps at effective batch 128
   # on 90M tokens); Hyperband will see metrics at ~500, ~1500,
