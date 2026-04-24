@@ -103,12 +103,17 @@ spec:
             save_format: "jsonl"
           YAML
 
-          python -m evaluation.runners.evaluation_runner --config /tmp/eval_config.yaml || {
-            echo "Runner failed; trying direct Python call."
-            exit 2
-          }
+          python -m evaluation.runners.evaluation_runner --config /tmp/eval_config.yaml
 
-          # Upload all output to S3
+          # --- Plot figures in-pod so we don't need pandas/matplotlib locally ---
+          FIG_DIR=/tmp/figures
+          mkdir -p "$FIG_DIR"
+          python scripts/plot_baseline_overt_preference.py \
+            --results-dir "$OUT" \
+            --out-dir     "$FIG_DIR" \
+            || echo "[warn] plotting failed; JSONLs still uploaded"
+
+          # --- Upload JSONL results + figures to S3 ---
           python -c "
           import os, boto3
           from pathlib import Path
@@ -117,15 +122,19 @@ spec:
               aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
               aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
           bucket = os.environ['REGISTRY_BUCKET']
-          out_dir = Path('/tmp/eval_results')
-          for f in out_dir.rglob('*'):
-              if f.is_file():
-                  key = f'eval_results/exp0_baseline_90M_full_v1/{f.relative_to(out_dir)}'
-                  s3.upload_file(str(f), bucket, key)
-                  print(f'uploaded {key}')
+          PREFIX = 'eval_results/exp0_baseline_90M_full_v1'
+          for base, sub in [('/tmp/eval_results', 'jsonl'), ('/tmp/figures', 'figures')]:
+              root = Path(base)
+              if not root.exists():
+                  continue
+              for f in root.rglob('*'):
+                  if f.is_file():
+                      key = f'{PREFIX}/{sub}/{f.relative_to(root)}'
+                      s3.upload_file(str(f), bucket, key)
+                      print(f'uploaded {key}')
           print('done')
           "
-          echo "Eval complete."
+          echo "Eval + figures complete."
         env:
         - {name: PYTHONUNBUFFERED, value: "1"}
         - {name: TOKENIZERS_PARALLELISM, value: "false"}
