@@ -112,6 +112,12 @@ def main() -> None:
         )
         raise
 
+    # Persist final weights FIRST, before any metric compute that might
+    # fail. This way post-hoc perplexity (or any later eval) is always
+    # possible even if _compute_held_out_perplexity errors below.
+    final_ckpt_dir = _save_final_checkpoint(trainer, config, base_dir)
+    logger.info("final checkpoint saved to %s", final_ckpt_dir)
+
     final_train_loss = _extract_final_training_loss(trainer)
     held_out_ppl = _compute_held_out_perplexity(trainer, config)
 
@@ -125,6 +131,26 @@ def main() -> None:
     )
 
     _register_end(identity, run, trainer, final_train_loss, held_out_ppl)
+
+
+def _save_final_checkpoint(trainer: Trainer, config: ExperimentConfig, base_dir: str) -> str:
+    """Save model + tokenizer to models/sweeps/<run>/final/ so any later
+    eval (post-hoc perplexity, BLiMP, etc.) can still be recomputed even
+    if this trial's in-process metric code errors out."""
+    output_dir = config.training.output_dir
+    if not os.path.isabs(output_dir):
+        output_dir = os.path.join(base_dir, output_dir)
+    final_dir = os.path.join(output_dir, "final")
+    os.makedirs(final_dir, exist_ok=True)
+    try:
+        trainer.model.save_pretrained(final_dir)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("model.save_pretrained failed: %s", e)
+    try:
+        trainer.tokenizer.save_pretrained(final_dir)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("tokenizer.save_pretrained failed: %s", e)
+    return final_dir
 
 
 # ---------- config preparation ----------

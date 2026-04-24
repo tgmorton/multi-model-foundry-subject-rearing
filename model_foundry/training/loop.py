@@ -294,8 +294,12 @@ class TrainingLoop:
             torch.cuda.synchronize()
             torch.cuda.empty_cache()
 
-        if self.config.logging.use_wandb:
-            wandb.finish()
+        # NOTE: do NOT call wandb.finish() here. In sweep contexts, the
+        # agent (scripts/sweep_agent_lm.py) needs the run OPEN after
+        # train() returns so it can stamp proxy/final_training_loss and
+        # proxy/held_out_perplexity on the same trial. wandb's SDK
+        # finalises the run automatically on process exit for standalone
+        # training runs, so this call is redundant there too.
 
         return self.global_step
 
