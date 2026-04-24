@@ -158,8 +158,8 @@ spec:
         - {name: REGISTRY_RUN_KIND,  value: "hp_sweep"}
         - {name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}
         resources:
-          requests: {memory: 8Gi, cpu: "4", nvidia.com/gpu: 1}
-          limits:   {memory: 8Gi, cpu: "4", nvidia.com/gpu: 1}
+          requests: {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
+          limits:   {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

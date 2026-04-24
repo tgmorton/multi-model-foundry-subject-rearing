@@ -90,8 +90,8 @@ spec:
           # or just edit this line and re-apply.
           value: "configs/sweeps/baselines/gpt2_medium_es.yaml"
         resources:
-          requests: {memory: 24Gi, cpu: "4"}
-          limits:   {memory: 24Gi, cpu: "4"}
+          requests: {memory: 16Gi, cpu: "2"}
+          limits:   {memory: 16Gi, cpu: "2"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

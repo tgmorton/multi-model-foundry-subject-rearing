@@ -90,8 +90,8 @@ spec:
           # or just edit this line and re-apply.
           value: "configs/sweeps/baselines/bert_large_en.yaml"
         resources:
-          requests: {memory: 8Gi, cpu: "4"}
-          limits:   {memory: 8Gi, cpu: "4"}
+          requests: {memory: 6Gi, cpu: "2"}
+          limits:   {memory: 6Gi, cpu: "2"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
