@@ -1,0 +1,200 @@
+---
+# ============================================================================
+# Ablate + compose English corpora (three-step workflow, steps 2 + 3)
+# ============================================================================
+#
+# For each of the 4 English ablations that operate on text corpora:
+#   remove_expletive_sentences_en, impoverish_case_en, lemmatize_verbs,
+#   enrich_verbal_morphology
+#
+# One indexed pod per ablation. Each pod:
+#   1. Finds the DocBin caches for train_90M + pull_10M under
+#      /mnt/data/annotated/<hash>/ (hash deterministic from input_dir +
+#      spacy_model, so no need to pass it explicitly).
+#   2. Runs AblationPipeline twice with skip_backfill=True:
+#         - train → /mnt/data/manipulations/en/<slug>/_train/
+#         - pool  → /mnt/data/manipulations/en/<slug>/_pool/
+#   3. Runs scripts/compose_corpus.py --allow-short to merge →
+#         /mnt/data/manipulations/en/<slug>/
+#
+# CPU-only — ablations are rule-based Python on cached docs; no spaCy parsing
+# in the hot path. Compose is pure file I/O.
+#
+# Prereq: annotate-en-v1 must have completed successfully.
+# Expected wall-clock: 15-60 min per ablation on CPU, depending on genre
+# (childes @135 MB dominates). Streaming DocBin reader introduced in the
+# Spanish run keeps memory manageable; 24Gi is headroom.
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ablate-compose-en-v1
+  labels:
+    study: subject-drop
+    lang: en
+    stage: ablate-compose
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 4
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        study: subject-drop
+        lang: en
+        stage: ablate-compose
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: ablator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+
+          ABLATIONS=(remove_expletive_sentences_en impoverish_case_en lemmatize_verbs enrich_verbal_morphology)
+          SLUGS=(remove_expletive_sentences       impoverish_case        lemmatize_verbs enrich_verbal_morphology)
+          IDX=${JOB_COMPLETION_INDEX}
+          ABLATION=${ABLATIONS[$IDX]}
+          SLUG=${SLUGS[$IDX]}
+
+          echo "============================================================"
+          echo "  Pod $IDX: ablation=$ABLATION slug=$SLUG"
+          echo "============================================================"
+
+          # en_core_web_trf is pre-installed in the GitLab image; no PVC cache
+          # needed for English (unlike Spanish, which had to precache _lg).
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          python -c "import en_core_web_trf; print('en_core_web_trf ready')"
+
+          cd /opt/repo
+
+          # Derive the DocBin cache paths. compute_annotation_cache_key
+          # lives in preprocessing.annotate; same computation as the annotate
+          # job so the hashes match up.
+          ANNOT_TRAIN=$(python -c "
+          from pathlib import Path
+          from preprocessing.annotate import default_annotation_output_dir
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/train_90M'), 'en_core_web_trf'))
+          ")
+          ANNOT_POOL=$(python -c "
+          from pathlib import Path
+          from preprocessing.annotate import default_annotation_output_dir
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/pull_10M'), 'en_core_web_trf'))
+          ")
+          echo "train cache: $ANNOT_TRAIN"
+          echo "pool cache:  $ANNOT_POOL"
+
+          if [ ! -d "$ANNOT_TRAIN" ] || [ ! -d "$ANNOT_POOL" ]; then
+            echo "ERROR: annotation caches missing. Run annotate-en-v1 first."
+            exit 1
+          fi
+
+          TRAIN_OUT=/mnt/data/manipulations/en/${SLUG}/_train
+          POOL_OUT=/mnt/data/manipulations/en/${SLUG}/_pool
+          FINAL_OUT=/mnt/data/manipulations/en/${SLUG}
+
+          mkdir -p "$TRAIN_OUT" "$POOL_OUT" "$FINAL_OUT"
+
+          # --- Step 2a: ablate train (skip_backfill=True) -------------------
+          python -c "
+          from pathlib import Path
+          import preprocessing.ablations  # register
+          from preprocessing.base import AblationPipeline
+          from preprocessing.config import AblationConfig
+
+          cfg = AblationConfig(
+              type='$ABLATION',
+              input_path=Path('/mnt/data/raw/en/train_90M/'),
+              output_path=Path('$TRAIN_OUT'),
+              annotated_input_path=Path('$ANNOT_TRAIN'),
+              skip_backfill=True,
+              spacy_model='en_core_web_trf',
+              skip_validation=True,
+              chunk_size=500,
+              verbose=False,
+          )
+          AblationPipeline(cfg).process_corpus()
+          "
+
+          # --- Step 2b: ablate pool (skip_backfill=True) --------------------
+          python -c "
+          from pathlib import Path
+          import preprocessing.ablations
+          from preprocessing.base import AblationPipeline
+          from preprocessing.config import AblationConfig
+
+          cfg = AblationConfig(
+              type='$ABLATION',
+              input_path=Path('/mnt/data/raw/en/pull_10M/'),
+              output_path=Path('$POOL_OUT'),
+              annotated_input_path=Path('$ANNOT_POOL'),
+              skip_backfill=True,
+              spacy_model='en_core_web_trf',
+              skip_validation=True,
+              chunk_size=500,
+              verbose=False,
+          )
+          AblationPipeline(cfg).process_corpus()
+          "
+
+          # --- Step 3: compose → final corpus ------------------------------
+          # --allow-short: line-removal ablations may exhaust small pools
+          # (mirrors the Spanish spoken/CORLEC fix). The resulting deficit
+          # is recorded in COMPOSE_MANIFEST.json for audit.
+          python scripts/compose_corpus.py \
+            --ablated-train "$TRAIN_OUT" \
+            --ablated-pool  "$POOL_OUT" \
+            --target-corpus /mnt/data/raw/en/train_90M/ \
+            --output        "$FINAL_OUT" \
+            --seed 42 \
+            --allow-short
+
+          python scripts/ablation_report.py \
+            --manifest "$TRAIN_OUT/ABLATION_MANIFEST.json" \
+            --output   "$FINAL_OUT/REPORT.md" || true
+
+          echo "Pod $IDX done — final corpus at $FINAL_OUT"
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        resources:
+          # requests == limits to satisfy NRP admission webhook
+          requests: {memory: 24Gi, cpu: "6"}
+          limits:   {memory: 24Gi, cpu: "6"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

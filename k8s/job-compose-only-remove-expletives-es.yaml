@@ -1,0 +1,101 @@
+---
+# ============================================================================
+# One-shot recovery Job: re-run compose step for remove_expletive_sentences_es.
+# ============================================================================
+#
+# Context: ablate-compose-es-v1 pod 0 completed the train + pool ablations
+# cleanly, but the compose step raised on the `spoken` genre because
+# line-removal ablation stripped enough of CORLEC (~1.1M words) that the
+# pool couldn't backfill. scripts/compose_corpus.py now supports
+# --allow-short; this job just re-runs compose on the already-persisted
+# _train and _pool outputs.
+#
+# Safe to re-run: composer overwrites <slug>/<stem>.train, pool_remainder/,
+# and COMPOSE_MANIFEST.json. _train and _pool are not touched.
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: compose-only-remove-expletives-es
+  labels:
+    study: subject-drop
+    lang: es
+    stage: compose-recovery
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        study: subject-drop
+        lang: es
+        stage: compose-recovery
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: composer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+
+          SLUG=remove_expletive_sentences
+          TRAIN_OUT=/mnt/data/manipulations/es/${SLUG}/_train
+          POOL_OUT=/mnt/data/manipulations/es/${SLUG}/_pool
+          FINAL_OUT=/mnt/data/manipulations/es/${SLUG}
+
+          echo "============================================================"
+          echo "  Compose-only recovery for $SLUG"
+          echo "============================================================"
+          echo "train: $TRAIN_OUT"
+          echo "pool:  $POOL_OUT"
+          echo "out:   $FINAL_OUT"
+
+          cd /opt/repo
+
+          python scripts/compose_corpus.py \
+            --ablated-train "$TRAIN_OUT" \
+            --ablated-pool  "$POOL_OUT" \
+            --target-corpus /mnt/data/raw/es/train_90M/ \
+            --output        "$FINAL_OUT" \
+            --seed 42 \
+            --allow-short
+
+          python scripts/ablation_report.py \
+            --manifest "$TRAIN_OUT/ABLATION_MANIFEST.json" \
+            --output   "$FINAL_OUT/REPORT.md" || true
+
+          echo "Compose recovery done."
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        resources:
+          requests: {memory: 4Gi, cpu: "2"}
+          limits:   {memory: 4Gi, cpu: "2"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

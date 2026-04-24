@@ -1,0 +1,35 @@
+---
+# Dual-PVC data-access pod: legacy corpus-analysis-data + subject-drop-archive.
+# For one-off migration of English pull_10M / train_100M from the legacy PVC
+# into the new primary PVC.
+#
+# Mount points:
+#   /mnt/legacy  → corpus-analysis-data (200 GiB, read legacy EN data from here)
+#   /mnt/data    → subject-drop-archive (40 TiB, write new copies here)
+#
+# Delete with `kubectl delete pod pod-archive-dual` when done.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-archive-dual
+  labels:
+    purpose: data-access-migration
+spec:
+  containers:
+  - name: shell
+    image: python:3.10-slim
+    command: ["sleep", "10800"]   # 3 hours
+    resources:
+      requests: {memory: 2Gi, cpu: "500m"}
+      limits:   {memory: 2Gi, cpu: "1"}
+    volumeMounts:
+    - {name: legacy, mountPath: /mnt/legacy}
+    - {name: data,   mountPath: /mnt/data}
+  volumes:
+  - name: legacy
+    persistentVolumeClaim:
+      claimName: corpus-analysis-data
+  - name: data
+    persistentVolumeClaim:
+      claimName: subject-drop-archive
+  restartPolicy: Never

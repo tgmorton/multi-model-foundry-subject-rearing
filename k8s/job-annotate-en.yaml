@@ -1,0 +1,163 @@
+---
+# ============================================================================
+# Annotate English corpora (train_90M + pull_10M) with en_core_web_trf
+# ============================================================================
+#
+# Parses each .train file once, writing DocBin + linemap to a content-addressed
+# cache under /mnt/data/annotated/<hash>/. Consumed by the English ablation
+# pipeline (three-step: annotate → ablate × 2 → compose).
+#
+# Fan-out: 12 pods (6 train genres + 6 pool genres), each parses one file.
+# parallelism capped at 10 to respect the open 24 GB Ampere/Ada pool.
+#
+# GPU: 1× RTX-3090 / A10 / L4 / L40 / L40S / RTX-4090 per pod. Open pool per
+# CLAUDE.md §Cluster/GPU allocation — ~400 GPUs available. No reservation
+# needed. en_core_web_trf is a transformer model → GPU matters.
+#
+# en_core_web_trf is pre-installed in the GitLab image (Dockerfile bakes in
+# `en_core_web_trf-3.7.3-py3-none-any.whl`), so no precache step is needed
+# for English (unlike Spanish, where we had to precache es_core_news_lg to
+# /mnt/data/_spacy-site because `python -m spacy download` is broken in the
+# image).
+#
+# Expected wall-clock: ~30-45 min dominated by childes.train (135 MB, ~30%
+# of corpus).
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: annotate-en-v1
+  labels:
+    study: subject-drop
+    lang: en
+    stage: annotate
+spec:
+  completionMode: Indexed
+  completions: 12
+  parallelism: 10
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800   # 7 days
+  template:
+    metadata:
+      labels:
+        study: subject-drop
+        lang: en
+        stage: annotate
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: annotator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+
+          # --- Compute which (corpus, file) this pod handles ---------------
+          # Fan-out scheme: indices 0-5 = train genres, 6-11 = pool genres.
+          # 6 BabyLM English sources (alphabetical; matches glob order).
+          GENRES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
+          IDX=${JOB_COMPLETION_INDEX}
+          if [ "$IDX" -lt 6 ]; then
+            CORPUS=train_90M
+            GENRE=${GENRES[$IDX]}
+          else
+            CORPUS=pull_10M
+            GENRE=${GENRES[$((IDX - 6))]}
+          fi
+          echo "Pod $IDX → CORPUS=$CORPUS GENRE=$GENRE"
+
+          INPUT_DIR=/mnt/data/raw/en/${CORPUS}
+          INPUT_FILE=${INPUT_DIR}/${GENRE}.train
+          if [ ! -f "$INPUT_FILE" ]; then
+            echo "[warn] $INPUT_FILE not found — skipping this cell"
+            exit 0
+          fi
+
+          # en_core_web_trf is baked into the image; just import to verify
+          # and set PYTHONPATH to pick up the cloned repo.
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          python -c "import en_core_web_trf; print('en_core_web_trf version:', en_core_web_trf.__version__)"
+
+          # --- Run the annotator on just this file ---------------------------
+          # Output path is content-addressed under /mnt/data/annotated/<hash>/.
+          # Computed from (abspath(input_dir), spacy_model, docbin_attrs) so
+          # train and pool get DIFFERENT cache dirs.
+          cd /opt/repo
+
+          # spacy_batch_size lower than _lg (64) because _trf is transformer-
+          # based: larger per-doc activation memory, smaller throughput-
+          # optimal batches. 32 is a reasonable starting point.
+          python -m preprocessing.annotate \
+            --input ${INPUT_DIR}/ \
+            --spacy-model en_core_web_trf \
+            --file ${GENRE} \
+            --chunk-size 500 \
+            --spacy-batch-size 32
+
+          echo "Pod $IDX done."
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          # requests == limits to satisfy NRP admission webhook.
+          requests:
+            memory: 24Gi
+            cpu: "6"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 24Gi
+            cpu: "6"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
