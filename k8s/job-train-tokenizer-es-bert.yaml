@@ -1,0 +1,103 @@
+---
+# One-shot tokenizer training. Train-tokenizer is explicitly NOT part of
+# the per-run training pipeline anymore — re-training the tokenizer
+# across runs would shift the vocabulary (sentencepiece unigram training
+# has stochastic tie-breaking) and break experimental validity for
+# within-(arch,lang) ablation comparisons. So you train the tokenizer
+# ONCE per (arch,lang) and then all training runs and all ablations use
+# that frozen artefact.
+#
+# Usage:
+#   1. Pick the experiment config whose `tokenizer.output_dir` names the
+#      directory you want to populate (e.g.
+#      configs/experiments/smoke_gpt2_medium.yaml currently points to
+#      tokenizers/exp0_baseline_90M_smoke/).
+#   2. Edit BASE below to that path.
+#   3. kubectl apply -f k8s/job-train-tokenizer.yaml
+#   4. Wait for the pod to finish (~5-10 min for the 90M corpus).
+#   5. Delete the job; all subsequent training pods will use the
+#      produced tokenizer.
+#
+# The pod uses our GitLab custom image so there's no pip install. No
+# GPU is requested — tokenizer training is CPU-only.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: train-tokenizer-es-bert
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: train-tokenizer-es-bert
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "==========================================
+            ONE-SHOT TOKENIZER TRAINING
+          =========================================="
+
+          # Pick the config whose tokenizer.output_dir you want to populate.
+          BASE=${TOKENIZER_CONFIG:-configs/experiments/smoke_gpt2_medium.yaml}
+          echo "Using config: $BASE"
+
+          cd /opt/repo
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+
+          mkdir -p /opt/repo/data
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          mkdir -p /mnt/data/tokenizers
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+
+          python -m model_foundry.cli validate-config $BASE
+          # If tokenizer artefact already exists, idempotency should skip.
+          # If that's broken (see known bug) the --force flag is the
+          # intentional override; we do NOT pass it here, so rerunning
+          # this job is a no-op when the tokenizer is already there.
+          python -m model_foundry.cli train-tokenizer $BASE
+
+          echo "=========================================="
+          echo "  Tokenizer artefacts:"
+          echo "=========================================="
+          TOK_DIR=$(python -c "import yaml; c=yaml.safe_load(open('$BASE'));print(c['tokenizer']['output_dir'])")
+          ls -la /opt/repo/$TOK_DIR/ || true
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - name: TOKENIZER_CONFIG
+          # Override at kubectl apply time with:
+          #   kubectl set env job/train-tokenizer TOKENIZER_CONFIG=configs/experiments/<path>
+          # or just edit this line and re-apply.
+          value: "configs/sweeps/baselines/bert_large_es.yaml"
+        resources:
+          requests: {memory: 8Gi, cpu: "4"}
+          limits:   {memory: 8Gi, cpu: "4"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never

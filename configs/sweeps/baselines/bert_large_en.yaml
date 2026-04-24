@@ -19,6 +19,7 @@ dataset_manipulation: []
 tokenizer:
   output_dir: "tokenizers/en_bert_large/"
   vocab_size: 50004
+  tokenizer_type: "wordpiece"       # BERT-style WordPiece + NFD/StripAccents/Lowercase
   special_tokens:
     cls_token: "[CLS]"
     sep_token: "[SEP]"
