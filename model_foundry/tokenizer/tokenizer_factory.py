@@ -68,7 +68,15 @@ class TokenizerFactory:
                 'pad_token': '<pad>'
             }
 
-        # Train SentencePiece model
+        # Train SentencePiece model.
+        # input_sentence_size caps how many sentences the trainer loads —
+        # essential when the combined corpus is 50M+ sentences (e.g. the
+        # shared-vocab tokenizer sees baseline + 4 ablations). Without it
+        # SentencePiece loads everything into RAM and OOMs even with
+        # 16 GiB. 5M is the authors' suggested ceiling for vocab learning;
+        # combined with shuffle_input_sentence that's a representative
+        # sample. We cap well above the native-baseline 8.8M to let
+        # tokenizers trained on ONLY the baseline still see all of it.
         training_input = ','.join(input_files)
         spm_args = {
             'input': training_input,
@@ -78,6 +86,12 @@ class TokenizerFactory:
             'max_sentence_length': 8192,
             'character_coverage': 1.0,
             'hard_vocab_limit': 'false',
+            'input_sentence_size': 5000000,
+            'shuffle_input_sentence': 'true',
+            # Keep training single-threaded so memory peak stays
+            # bounded — SentencePiece's internal structures scale with
+            # thread count too.
+            'num_threads': 2,
         }
         arg_string = ' '.join([f'--{key}={value}' for key, value in spm_args.items()])
 

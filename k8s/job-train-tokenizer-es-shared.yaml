@@ -86,8 +86,8 @@ spec:
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         resources:
-          requests: {memory: 16Gi, cpu: "2"}
-          limits:   {memory: 16Gi, cpu: "2"}
+          requests: {memory: 32Gi, cpu: "2"}
+          limits:   {memory: 32Gi, cpu: "2"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
