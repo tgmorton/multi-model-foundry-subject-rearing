@@ -141,7 +141,7 @@ spec:
         # Sweep controller ID (from `wandb sweep <config>`).
         # EDIT THIS before applying, or use `kubectl set env`.
         - name: SWEEP_ID
-          value: "REPLACE_WITH_SWEEP_ID"
+          value: "thmorton-uc-san-diego/subject-drop-prod-hp/iycthu7l"
         - name: TRIAL_COUNT
           value: "15"
         # WandB auth
