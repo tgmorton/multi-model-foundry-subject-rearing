@@ -48,7 +48,7 @@ spec:
           # Wipe any committed data/ and tokenizers/ so the symlinks to
           # /mnt/data win.
           rm -rf /opt/repo/data/raw /opt/repo/data/tokenizer_staging /opt/repo/data/manipulations /opt/repo/tokenizers
-          mkdir -p /opt/repo/data /opt/repo/tokenizers /mnt/data/tokenizers
+          mkdir -p /opt/repo/data /mnt/data/tokenizers
           ln -sfn /mnt/data/raw           /opt/repo/data/raw
           ln -sfn /mnt/data/manipulations /opt/repo/data/manipulations
           ln -sfn /mnt/data/tokenizers    /opt/repo/tokenizers
