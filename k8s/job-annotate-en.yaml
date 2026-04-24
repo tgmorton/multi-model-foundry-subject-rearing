@@ -112,14 +112,15 @@ spec:
 
           # cupy is NOT in the image (2026-04-23 bug: `spacy.prefer_gpu()`
           # silently returns False without cupy, and `en_core_web_trf` falls
-          # back to CPU — 100x slower). Inline-install cupy-cuda12x (matches
-          # the image's cu121 torch install).
+          # back to CPU — 100x slower). Inline-install cupy-cuda12x.
           #
-          # --no-deps is CRITICAL: cupy depends on numpy, and pip's default
-          # dep resolution drags in numpy 2.x, which breaks thinc's Cython-
-          # compiled binding (`numpy.dtype size changed`). The image already
-          # has a compatible numpy (pinned <2 by torch/thinc).
-          pip install --quiet --no-deps cupy-cuda12x \
+          # Pin to <14 because cupy 14.0.1 depends on cuda-pathfinder which
+          # is absent from the image, and --no-deps skipping it creates the
+          # error `ModuleNotFoundError: No module named 'cuda'` at import.
+          # cupy 13.x works with numpy 1.x (the image's baked numpy) — pin
+          # numpy<2 as well so nothing sneaks a 2.x upgrade past thinc's
+          # Cython bindings (`numpy.dtype size changed`).
+          pip install --quiet "cupy-cuda12x<14" "numpy<2" \
             || echo '[warn] cupy install failed; will run on CPU'
 
           # en_core_web_trf is baked into the image; just import to verify
