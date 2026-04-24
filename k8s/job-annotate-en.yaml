@@ -26,8 +26,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: annotate-en-v1
+  name: thomas-annotate-en-v1
   labels:
+    owner: thomas
     study: subject-drop
     lang: en
     stage: annotate
@@ -40,6 +41,7 @@ spec:
   template:
     metadata:
       labels:
+        owner: thomas
         study: subject-drop
         lang: en
         stage: annotate

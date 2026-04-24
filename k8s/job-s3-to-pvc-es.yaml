@@ -19,8 +19,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: s3-to-pvc-es
+  name: thomas-s3-to-pvc-es
   labels:
+    owner: thomas
     study: subject-drop
     lang: es
     stage: upload

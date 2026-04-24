@@ -1,7 +1,11 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: data-access
+  name: thomas-data-access
+  labels:
+    owner: thomas
+    purpose: data-access
+    pvc: corpus-analysis-data
 spec:
   containers:
   - name: shell

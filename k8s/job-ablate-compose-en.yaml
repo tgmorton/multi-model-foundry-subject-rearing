@@ -28,8 +28,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ablate-compose-en-v1
+  name: thomas-ablate-compose-en-v1
   labels:
+    owner: thomas
     study: subject-drop
     lang: en
     stage: ablate-compose
@@ -42,6 +43,7 @@ spec:
   template:
     metadata:
       labels:
+        owner: thomas
         study: subject-drop
         lang: en
         stage: ablate-compose

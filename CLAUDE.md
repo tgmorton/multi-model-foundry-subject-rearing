@@ -102,6 +102,60 @@ volumes:
 `kubectl config current-context` / `kubectl config view --minify -o
 jsonpath='{..namespace}'`).
 
+### Naming + ownership convention
+
+The `lemn-lab` namespace is shared with ~15 labmates. **All Jobs and
+Pods must be prefixed `thomas-` and labeled `owner: thomas`** so
+`kubectl get jobs -l owner=thomas` / `kubectl get pods -l owner=thomas`
+lists only ours, and dashboard views don't conflate our runs with
+others'. Apply both on the outer `metadata` and inside `spec.template.metadata`
+(so the pod inherits the label, not just the Job):
+
+```yaml
+metadata:
+  name: thomas-<verb>-<scope>-<version>    # e.g. thomas-ablate-compose-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    lang: en | es
+    stage: annotate | ablate-compose | precache | upload | sweep | ...
+spec:
+  template:
+    metadata:
+      labels:
+        owner: thomas                       # same label on the pod template
+        ...
+```
+
+Existing historical Jobs (e.g. `annotate-es-v1`, `annotate-en-v1`
+completed on 2026-04-23/24) are grandfathered in — don't rename them
+retroactively. The convention applies to anything dispatched going
+forward.
+
+### NRP admission webhook (resource utilization quota)
+
+The `job.nrp-nautilus.io` / `pod.nrp-nautilus.io` admission webhooks
+enforce a rolling-window utilization ratio: if recent pods used too
+little of their requested CPU/memory/GPU, new dispatches are denied
+with `Your pods resources utilization is too low`. Observed threshold
+is around 25-50% effective utilization.
+
+**Practical sizing (2026-04-24 lesson)**: our ablation/annotation pods
+running on 24Gi/6CPU used 4-5 GiB / 2-4 CPU (ratio ~0.15-0.20), which
+blocked all subsequent dispatches for ~1h. **Rule of thumb**:
+
+- size memory to **~2× observed peak** (keeps OOM off the table per
+  Thomas's preference — over-request > under-request)
+- size CPU to **observed peak + 1 core**
+- avoid generic "24Gi/6CPU" stamps; measure once and use real numbers
+
+Current right-sized values live in the K8s YAML comments —
+`k8s/job-ablate-compose-{en,es}.yaml` and `k8s/job-annotate-{en,es}.yaml`
+all document their observed peaks.
+
+If blocked, wait ~1h for the rolling window to age out; the webhook
+re-admits when historical util clears.
+
 **Scale check** (measured 2026-04 via `kubectl get nodes`): ~1,500 GPUs
 across 34 products on NRP. ~970 openly schedulable to us; another ~340
 behind reservation/hardware tolerations. Cluster-wide pod listing is

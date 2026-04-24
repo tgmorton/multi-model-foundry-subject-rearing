@@ -16,8 +16,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: compose-only-remove-expletives-es
+  name: thomas-compose-only-remove-expletives-es
   labels:
+    owner: thomas
     study: subject-drop
     lang: es
     stage: compose-recovery
@@ -27,6 +28,7 @@ spec:
   template:
     metadata:
       labels:
+        owner: thomas
         study: subject-drop
         lang: es
         stage: compose-recovery

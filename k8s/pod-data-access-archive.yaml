@@ -8,12 +8,13 @@
 #   - ad-hoc shell scripting over the PVC contents
 #
 # Keeps itself alive for 6 hours. Delete with
-# `kubectl delete pod pod-archive` when you're done.
+# `kubectl delete pod thomas-pod-archive` when you're done.
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-archive
+  name: thomas-pod-archive
   labels:
+    owner: thomas
     purpose: data-access
     pvc: subject-drop-archive
 spec:

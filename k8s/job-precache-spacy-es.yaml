@@ -21,8 +21,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: precache-spacy-es
+  name: thomas-precache-spacy-es
   labels:
+    owner: thomas
     study: subject-drop
     lang: es
     stage: precache

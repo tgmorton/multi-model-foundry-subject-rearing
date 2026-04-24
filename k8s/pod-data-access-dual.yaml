@@ -7,12 +7,13 @@
 #   /mnt/legacy  → corpus-analysis-data (200 GiB, read legacy EN data from here)
 #   /mnt/data    → subject-drop-archive (40 TiB, write new copies here)
 #
-# Delete with `kubectl delete pod pod-archive-dual` when done.
+# Delete with `kubectl delete pod thomas-pod-archive-dual` when done.
 apiVersion: v1
 kind: Pod
 metadata:
-  name: pod-archive-dual
+  name: thomas-pod-archive-dual
   labels:
+    owner: thomas
     purpose: data-access-migration
 spec:
   containers:
