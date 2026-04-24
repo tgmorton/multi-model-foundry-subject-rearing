@@ -196,7 +196,7 @@ def _impoverish_case(
     modified_parts = []
     num_replaced = 0
 
-    for tok in doc:
+    for i, tok in enumerate(doc):
         lower = tok.lower_
         if tok.pos_ in target_pos and lower in mapping:
             # Skip definite articles — PronType=Art distinguishes e.g.
@@ -210,9 +210,21 @@ def _impoverish_case(
             if nom == lower:
                 modified_parts.append(tok.text_with_ws)
             else:
-                modified_parts.append(
-                    _match_capitalization(nom, tok.text) + tok.whitespace_
-                )
+                replacement = _match_capitalization(nom, tok.text)
+                # Contraction-glue fix: if the original token is glued to a
+                # neighbour (e.g. Spanish "dímelo" = ["dí", "me", "lo"]
+                # with empty whitespace_ between them, or English "it's" =
+                # ["it", "'s"] — although impoverish_case doesn't touch
+                # "'s" since it's AUX not PRON), re-insert whitespace so
+                # the substituted form doesn't concatenate into a
+                # pseudo-token.
+                leading = ""
+                if i > 0 and doc[i - 1].whitespace_ == "":
+                    leading = " "
+                trailing = tok.whitespace_
+                if tok.whitespace_ == "":
+                    trailing = " "
+                modified_parts.append(leading + replacement + trailing)
                 num_replaced += 1
                 if tier_counter is not None and tier_map is not None:
                     tier = tier_map.get(lower, "other")

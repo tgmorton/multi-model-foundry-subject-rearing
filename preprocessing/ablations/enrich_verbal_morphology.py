@@ -141,7 +141,7 @@ def _enrich_verbal_morphology(
     modified_parts = []
     num_enriched = 0
 
-    for tok in doc:
+    for i, tok in enumerate(doc):
         if tok.pos_ in ("VERB", "AUX"):
             # Only enrich finite present-tense verbs — past tense lacks
             # agreement morphology (except suppletive was/were), and
@@ -153,19 +153,29 @@ def _enrich_verbal_morphology(
                 modified_parts.append(tok.text_with_ws)
                 continue
 
+            # Resolve the replacement form first (lemma+suffix or bare lemma)
+            # so we can apply the same contraction-glue fix used by
+            # lemmatize_verbs: English "it's", "we're", "wasn't" etc. have
+            # an empty whitespace_ on one side; substituting the clitic
+            # without re-inserting whitespace produces pseudo-tokens like
+            # "itbeat", "webeamus", "ben't". Detect and unglue.
+            replacement = tok.lemma_
             subj = _find_subject(tok)
             if subj is not None:
                 pn = _get_person_number(subj)
                 if pn is not None:
                     suffix = suffix_map.get(pn, "")
                     if suffix:
-                        enriched = tok.lemma_ + suffix
-                        modified_parts.append(enriched + tok.whitespace_)
+                        replacement = tok.lemma_ + suffix
                         num_enriched += 1
-                        continue
-
-            # Present tense but no subject or unknown person/number → bare lemma
-            modified_parts.append(tok.lemma_ + tok.whitespace_)
+            form_changed = replacement.lower() != tok.text.lower()
+            leading = ""
+            if form_changed and i > 0 and doc[i - 1].whitespace_ == "":
+                leading = " "
+            trailing = tok.whitespace_
+            if form_changed and tok.whitespace_ == "":
+                trailing = " "
+            modified_parts.append(leading + replacement + trailing)
         else:
             modified_parts.append(tok.text_with_ws)
 

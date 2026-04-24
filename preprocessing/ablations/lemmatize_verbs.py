@@ -38,13 +38,30 @@ def lemmatize_verbs_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
     modified_parts = []
     num_lemmatized = 0
 
-    for token in doc:
+    for i, token in enumerate(doc):
         if token.pos_ in _TARGET_POS:
             # Only count as lemmatized if the form actually changes —
             # e.g. "be" is its own lemma and "running" is not.
-            if token.lemma_.lower() != token.text.lower():
+            form_changed = token.lemma_.lower() != token.text.lower()
+            if form_changed:
                 num_lemmatized += 1
-            modified_parts.append(token.lemma_ + token.whitespace_)
+            # Contraction-glue fix: if the surface token is glued to its
+            # neighbours (e.g. "it's" = ["it" (ws=""), "'s"] or "wasn't" =
+            # ["was" (ws=""), "n't"]) and we're replacing it with a
+            # free-standing word ("be"/"have"/"will"/…), concatenation
+            # produces pseudo-tokens like "itbe", "ben't". Force leading
+            # and trailing spaces when unglung is needed.
+            leading = ""
+            if (
+                form_changed
+                and i > 0
+                and doc[i - 1].whitespace_ == ""
+            ):
+                leading = " "
+            trailing = token.whitespace_
+            if form_changed and token.whitespace_ == "":
+                trailing = " "
+            modified_parts.append(leading + token.lemma_ + trailing)
         else:
             modified_parts.append(token.text_with_ws)
 
@@ -74,15 +91,27 @@ class VerbLemmatizer:
         modified_parts = []
         num_lemmatized = 0
 
-        for token in doc:
+        for i, token in enumerate(doc):
             if token.pos_ in _TARGET_POS:
-                if token.lemma_.lower() != token.text.lower():
+                form_changed = token.lemma_.lower() != token.text.lower()
+                if form_changed:
                     num_lemmatized += 1
                     tier = "aux" if token.pos_ == "AUX" else "verb"
                     self._file_tier_counts[tier] = (
                         self._file_tier_counts.get(tier, 0) + 1
                     )
-                modified_parts.append(token.lemma_ + token.whitespace_)
+                # See contraction-glue fix in `lemmatize_verbs_doc`.
+                leading = ""
+                if (
+                    form_changed
+                    and i > 0
+                    and doc[i - 1].whitespace_ == ""
+                ):
+                    leading = " "
+                trailing = token.whitespace_
+                if form_changed and token.whitespace_ == "":
+                    trailing = " "
+                modified_parts.append(leading + token.lemma_ + trailing)
             else:
                 modified_parts.append(token.text_with_ws)
 
