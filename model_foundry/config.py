@@ -36,6 +36,12 @@ class TokenizerConfig(BaseModel):
         default=None,
         description="Special tokens for tokenizer (architecture-specific)"
     )
+    # WordPiece normalizer toggle: English BERT convention strips accents;
+    # Spanish must NOT (sí/si, él/el, sé/se, más/mas, año/ano are distinct).
+    strip_accents: bool = Field(
+        default=True,
+        description="WordPiece only — apply StripAccents in the normalizer.",
+    )
 
 class TransformerModelConfig(BaseModel):
     """Configuration for transformer-based models (GPT-2, BERT)."""

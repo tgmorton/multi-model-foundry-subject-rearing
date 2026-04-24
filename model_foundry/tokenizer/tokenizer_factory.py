@@ -121,7 +121,8 @@ class TokenizerFactory:
         input_files: List[str],
         output_dir: str,
         vocab_size: int,
-        special_tokens: Optional[Dict[str, str]] = None
+        special_tokens: Optional[Dict[str, str]] = None,
+        strip_accents: bool = True,
     ) -> PreTrainedTokenizerFast:
         """
         Train a WordPiece tokenizer (BERT-style).
@@ -131,6 +132,10 @@ class TokenizerFactory:
             output_dir: Directory to save tokenizer
             vocab_size: Target vocabulary size
             special_tokens: Special tokens dict (cls, sep, mask, unk, pad)
+            strip_accents: If True (default), apply NFD + StripAccents in the
+                normalizer (English-BERT convention). Set to False for
+                languages where diacritics carry meaning distinctions
+                (Spanish: sí/si, él/el, sé/se, más/mas, año/ano, etc.).
 
         Returns:
             HuggingFace fast tokenizer
@@ -150,8 +155,12 @@ class TokenizerFactory:
         # Create WordPiece tokenizer
         tokenizer = Tokenizer(models.WordPiece(unk_token=special_tokens['unk_token']))
 
-        # Set normalizer (lowercase + NFD + strip accents like BERT)
-        tokenizer.normalizer = NormalizerSequence([NFD(), Lowercase(), StripAccents()])
+        # Normalizer: always lowercase; NFD + StripAccents only if requested.
+        # Spanish preserves accents; English BERT strips by convention.
+        if strip_accents:
+            tokenizer.normalizer = NormalizerSequence([NFD(), Lowercase(), StripAccents()])
+        else:
+            tokenizer.normalizer = NormalizerSequence([NFD(), Lowercase()])
 
         # Set pre-tokenizer (split on whitespace and punctuation)
         tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
@@ -332,7 +341,8 @@ class TokenizerFactory:
         input_files: List[str],
         output_dir: str,
         vocab_size: int,
-        special_tokens: Optional[Dict[str, str]] = None
+        special_tokens: Optional[Dict[str, str]] = None,
+        strip_accents: bool = True,
     ) -> Optional[PreTrainedTokenizerFast]:
         """
         Train a tokenizer of the specified type.
@@ -343,6 +353,9 @@ class TokenizerFactory:
             output_dir: Directory to save tokenizer
             vocab_size: Target vocabulary size (ignored for character tokenizer)
             special_tokens: Special tokens dict (architecture-specific)
+            strip_accents: For WordPiece only — whether to include StripAccents
+                in the normalizer. English BERT default True; set False for
+                Spanish (diacritics carry meaning).
 
         Returns:
             Trained tokenizer or None if tokenizer type requires special handling
@@ -356,7 +369,8 @@ class TokenizerFactory:
             )
         elif tokenizer_type == 'wordpiece':
             return TokenizerFactory.train_wordpiece(
-                input_files, output_dir, vocab_size, special_tokens
+                input_files, output_dir, vocab_size, special_tokens,
+                strip_accents=strip_accents,
             )
         elif tokenizer_type == 'bpe':
             return TokenizerFactory.train_bpe(
@@ -493,13 +507,20 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
     print(f"  - Vocab Size: {vocab_size}")
     print(f"  - Output Dir: {output_dir}")
 
+    # For WordPiece, forward the strip_accents toggle from the config
+    # (defaults to True for parity with the English BERT convention; set
+    # to False in es_bert configs so Spanish accents aren't normalised
+    # away).
+    strip_accents = bool(config['tokenizer'].get('strip_accents', True))
+
     # Train tokenizer
     tokenizer = TokenizerFactory.train_tokenizer(
         tokenizer_type=tokenizer_type,
         input_files=input_files,
         output_dir=output_dir,
         vocab_size=vocab_size,
-        special_tokens=special_tokens
+        special_tokens=special_tokens,
+        strip_accents=strip_accents,
     )
 
     print(f"  - Successfully trained {tokenizer_type} tokenizer for '{experiment_name}'")

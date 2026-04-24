@@ -58,24 +58,32 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
                                                                                                       training_corpus_path_from_config)
     tokenizer_dir = tokenizer_dir_from_config if os.path.isabs(tokenizer_dir_from_config) else os.path.join(base_dir,
                                                                                                             tokenizer_dir_from_config)
-    tokenizer_model_path = os.path.join(tokenizer_dir, 'tokenizer.model')
 
-    if not os.path.exists(training_corpus_path):
+    # Detect tokenizer type by artefact present on disk. SentencePiece
+    # ships a binary `tokenizer.model`; WordPiece/BPE-via-HF ships
+    # `tokenizer.json`. This is also what cache_keys.compute_cache_key
+    # auto-detects, so the hash is stable for either.
+    sp_model_path = os.path.join(tokenizer_dir, 'tokenizer.model')
+    hf_model_path = os.path.join(tokenizer_dir, 'tokenizer.json')
+    if os.path.exists(sp_model_path):
+        tokenizer_kind = 'sentencepiece'
+        tokenizer_model_path = sp_model_path
+    elif os.path.exists(hf_model_path):
+        tokenizer_kind = 'wordpiece'
+        tokenizer_model_path = hf_model_path
+    else:
         raise FileNotFoundError(
-            f"Training corpus path not found at '{training_corpus_path}'."
-        )
-    if not os.path.exists(tokenizer_model_path):
-        # Tokenizer training is an explicit one-shot step, not something
-        # the per-run pipeline does — re-training on each launch would
-        # shift the vocabulary (sentencepiece unigram has stochastic
-        # tie-breaking) and break within-(arch,lang) ablation
-        # comparisons.
-        raise FileNotFoundError(
-            f"Tokenizer model not found at '{tokenizer_model_path}'.\n"
+            f"No tokenizer artefact in '{tokenizer_dir}' "
+            f"(expected tokenizer.model or tokenizer.json).\n"
             f"  Train it once with:\n"
             f"    kubectl apply -f k8s/job-train-tokenizer.yaml\n"
             f"  (edit TOKENIZER_CONFIG env if your config.tokenizer.output_dir "
             f"differs from the default)."
+        )
+
+    if not os.path.exists(training_corpus_path):
+        raise FileNotFoundError(
+            f"Training corpus path not found at '{training_corpus_path}'."
         )
 
     # 0.2 — content-addressed cache path so different experiments that
@@ -127,9 +135,23 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
         print("----- Dataset Tokenization Skipped (legacy cache) -----")
         return
 
-    tokenizer = spm.SentencePieceProcessor()
-    tokenizer.load(tokenizer_model_path)
-    print(f"  - Successfully loaded tokenizer with vocab size: {tokenizer.vocab_size()}")
+    if tokenizer_kind == 'sentencepiece':
+        tokenizer = spm.SentencePieceProcessor()
+        tokenizer.load(tokenizer_model_path)
+        vocab_size = tokenizer.vocab_size()
+        def tokenize_batch(texts):
+            return tokenizer.encode(texts, out_type=int)
+    else:
+        # WordPiece (BERT) via HuggingFace tokenizers. PreTrainedTokenizerFast
+        # wraps the tokenizer.json and exposes `.encode` for single texts +
+        # `.batch_encode_plus` for batches.
+        from transformers import PreTrainedTokenizerFast
+        tokenizer = PreTrainedTokenizerFast(tokenizer_file=tokenizer_model_path)
+        vocab_size = tokenizer.vocab_size
+        def tokenize_batch(texts):
+            enc = tokenizer(texts, add_special_tokens=False, truncation=False, padding=False)
+            return enc["input_ids"]
+    print(f"  - Successfully loaded {tokenizer_kind} tokenizer with vocab size: {vocab_size}")
 
     # Process training data
     print(f"\n  - Processing training data from '{training_corpus_path}'...")
@@ -150,7 +172,7 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     print(f"  - Found {len(raw_training_dataset):,} total lines in the training corpus.")
 
     def tokenize_function(examples):
-        return {'input_ids': tokenizer.encode(examples['text'], out_type=int)}
+        return {'input_ids': tokenize_batch(examples['text'])}
 
     # num_proc: respect cgroup CPU affinity (sched_getaffinity) rather than
     # host cpu_count. Under K8s limits like cpu=4, os.cpu_count() still
