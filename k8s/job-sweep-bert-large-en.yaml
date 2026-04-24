@@ -18,7 +18,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: sweep-bert-large-en
+  name: thomas-sweep-bert-large-en
 spec:
   backoffLimit: 1
   ttlSecondsAfterFinished: 86400
