@@ -1,0 +1,156 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-eval-baseline-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=main, "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+
+          # Find the baseline checkpoint dir on the legacy PVC.
+          BASELINE_DIR=$(ls -d /mnt/legacy/models/exp0_baseline_90M_full/checkpoint-* 2>/dev/null | head -1 | xargs -n1 dirname 2>/dev/null || true)
+          if [ -z "$BASELINE_DIR" ] || [ ! -d "$BASELINE_DIR" ]; then
+            echo "Searching for baseline model dir..."
+            find /mnt/legacy/models -maxdepth 3 -type d -name "checkpoint-*" 2>/dev/null | head -5
+            exit 1
+          fi
+          echo "Baseline dir: $BASELINE_DIR"
+
+          # Find tokenizer — try legacy then new PVC
+          TOK=/mnt/legacy/tokenizers/exp0_baseline_90M_full
+          if [ ! -f "$TOK/tokenizer.json" ] && [ ! -f "$TOK/vocab.json" ]; then
+            TOK=/mnt/legacy/tokenizers/exp0_baseline_90M
+          fi
+          if [ ! -f "$TOK/tokenizer.json" ] && [ ! -f "$TOK/vocab.json" ]; then
+            echo "Tokenizer not found; searching..."
+            find /mnt/legacy -maxdepth 4 -type d -name "*tokenizer*" 2>/dev/null | head -5
+            find /mnt/legacy -maxdepth 4 -type d -name "*exp0*" 2>/dev/null | head -5
+            exit 1
+          fi
+          echo "Tokenizer: $TOK"
+
+          # Write a transient eval config
+          OUT=/tmp/eval_results
+          mkdir -p "$OUT"
+          cat > /tmp/eval_config.yaml <<YAML
+          evaluation:
+            model_checkpoint_dir: "$BASELINE_DIR"
+            tokenizer_path: "$TOK"
+            test_corpus: "/opt/repo/evaluation/stimuli/"
+            blimp_dir: "/opt/repo/evaluation/stimuli/blimp/"
+            null_subject_dir: "/opt/repo/evaluation/stimuli/null-subj/"
+            batch_size: 16
+            device: "auto"
+            use_fp16: true
+            max_length: 512
+            run_perplexity: false
+            run_blimp: false
+            run_null_subject: true
+            num_workers: 2
+            output_dir: "$OUT"
+            save_detailed: true
+            save_format: "jsonl"
+          YAML
+
+          python -m evaluation.runners.evaluation_runner --config /tmp/eval_config.yaml || {
+            echo "Runner failed; trying direct Python call."
+            exit 2
+          }
+
+          # Upload all output to S3
+          python -c "
+          import os, boto3
+          from pathlib import Path
+          s3 = boto3.client('s3',
+              endpoint_url=os.environ['AWS_ENDPOINT_URL'],
+              aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+          bucket = os.environ['REGISTRY_BUCKET']
+          out_dir = Path('/tmp/eval_results')
+          for f in out_dir.rglob('*'):
+              if f.is_file():
+                  key = f'eval_results/exp0_baseline_90M_full_v1/{f.relative_to(out_dir)}'
+                  s3.upload_file(str(f), bucket, key)
+                  print(f'uploaded {key}')
+          print('done')
+          "
+          echo "Eval complete."
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: "3"
+            nvidia.com/gpu: 1
+          limits:
+            memory: 8Gi
+            cpu: "3"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - {name: repo,   mountPath: /opt/repo}
+        - {name: legacy, mountPath: /mnt/legacy, readOnly: true}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: legacy
+        persistentVolumeClaim:
+          claimName: corpus-analysis-data
