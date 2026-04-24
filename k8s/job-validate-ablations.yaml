@@ -1,0 +1,99 @@
+---
+# ============================================================================
+# Run scripts/validate_ablation.py --mode three-step for all 7 ablations.
+# Produces per-ablation TSVs for hand review + subagent review.
+#
+# TSVs land at /mnt/data/manipulations/<lang>/<slug>/validation_sample.tsv
+# ============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-validate-ablations-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: validate
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: validate
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: validator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+
+          # 3 ES + 4 EN = 7 ablations. Each --mode three-step call samples
+          # n_per_genre=30 lines per genre from both the train side and the
+          # pool-backfill, writing a TSV with a `source` column.
+          declare -A LANG_SLUGS
+          LANG_SLUGS[es]="remove_expletive_sentences impoverish_case lemmatize_verbs"
+          LANG_SLUGS[en]="remove_expletive_sentences impoverish_case lemmatize_verbs enrich_verbal_morphology"
+
+          for LANG in es en; do
+            for SLUG in ${LANG_SLUGS[$LANG]}; do
+              ORIG=/mnt/data/raw/${LANG}/train_90M/
+              COMP=/mnt/data/manipulations/${LANG}/${SLUG}/
+              POOL=/mnt/data/manipulations/${LANG}/${SLUG}/_pool/
+              OUT=/mnt/data/manipulations/${LANG}/${SLUG}/validation_sample.tsv
+
+              echo "============================================================"
+              echo "  [${LANG}/${SLUG}] sampling → ${OUT}"
+              echo "============================================================"
+
+              python scripts/validate_ablation.py \
+                --mode three-step \
+                --original "$ORIG" \
+                --composed "$COMP" \
+                --ablated-pool "$POOL" \
+                --n-per-genre 30 \
+                --seed 42 \
+                --output "$OUT"
+            done
+          done
+
+          echo "Validation sampling complete."
+        env:
+        - {name: PYTHONUNBUFFERED, value: "1"}
+        resources:
+          # Pure-Python stdlib, modest memory. Lean sizing (2Gi/1CPU) to
+          # keep NRP utilization ratio healthy.
+          requests: {memory: 2Gi, cpu: "1"}
+          limits:   {memory: 2Gi, cpu: "1"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
