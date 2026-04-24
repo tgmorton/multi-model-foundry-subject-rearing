@@ -209,14 +209,30 @@ class RNNLanguageModel(BaseLanguageModel):
         # Compute loss if labels provided
         loss = None
         if labels is not None:
-            # Flatten for cross-entropy
-            # logits: [batch*seq, vocab]
-            # labels: [batch*seq]
-            loss = F.cross_entropy(
-                logits.view(-1, self.vocab_size),
-                labels.view(-1),
-                ignore_index=-100  # Ignore positions with label -100
-            )
+            if self.bidirectional:
+                # Masked LM objective: no shift. Non-masked positions are
+                # marked with -100 in labels (handled by ignore_index).
+                loss = F.cross_entropy(
+                    logits.view(-1, self.vocab_size),
+                    labels.view(-1),
+                    ignore_index=-100,
+                )
+            else:
+                # Causal LM: logits[i] predicts labels[i+1]. Without the
+                # shift the model is asked to predict its own input at
+                # each position, which has a trivial identity shortcut
+                # (logits at position i have access to input_ids[i] via
+                # the RNN hidden state at i). This used to make LSTM
+                # "learn" near-zero loss by copying input to output —
+                # held_out_perplexity of ~9 on Spanish, ~86 on English.
+                # The shift matches HuggingFace's GPT-2 behaviour.
+                shift_logits = logits[..., :-1, :].contiguous()
+                shift_labels = labels[..., 1:].contiguous()
+                loss = F.cross_entropy(
+                    shift_logits.view(-1, self.vocab_size),
+                    shift_labels.view(-1),
+                    ignore_index=-100,
+                )
 
         return ModelOutput(
             loss=loss,

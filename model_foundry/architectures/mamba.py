@@ -370,11 +370,18 @@ class MambaModel(BaseLanguageModel):
         # Compute loss if labels provided
         loss = None
         if labels is not None:
-            # Flatten for cross-entropy
+            # Mamba is causal-only (state-space unidirectional). logits[i]
+            # must predict labels[i+1]; without shifting, the model can
+            # trivially "predict" its own current input because the SSM
+            # state at step i already depends on input_ids[i]. That produced
+            # degenerate losses ~5e-4 in the first sweep runs and
+            # meaningless perplexity.
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
             loss = F.cross_entropy(
-                logits.view(-1, self.vocab_size),
-                labels.view(-1),
-                ignore_index=-100
+                shift_logits.view(-1, self.vocab_size),
+                shift_labels.view(-1),
+                ignore_index=-100,
             )
 
         return ModelOutput(
