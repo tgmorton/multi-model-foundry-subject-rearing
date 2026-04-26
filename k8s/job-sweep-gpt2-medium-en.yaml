@@ -20,7 +20,7 @@ kind: Job
 metadata:
   name: thomas-sweep-gpt2-medium-en
 spec:
-  backoffLimit: 1
+  backoffLimit: 10
   ttlSecondsAfterFinished: 86400
   # 3 concurrent agent pods × 15 trials each = 45 total trials.
   # Bayesian optimization with more than ~4 concurrent agents degrades
@@ -29,6 +29,7 @@ spec:
   completions: 3
   template:
     spec:
+      priorityClassName: armada-default
       imagePullSecrets:
       - name: gitlab-registry-cred-thomas
       affinity:

@@ -26,10 +26,11 @@ kind: Job
 metadata:
   name: thomas-continue-PLACEHOLDER
 spec:
-  backoffLimit: 1
+  backoffLimit: 10
   ttlSecondsAfterFinished: 86400
   template:
     spec:
+      priorityClassName: armada-default
       imagePullSecrets:
       - name: gitlab-registry-cred-thomas
       affinity:
@@ -138,4 +139,4 @@ spec:
           claimName: subject-drop-archive
       restartPolicy: Never
       tolerations:
-      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}
