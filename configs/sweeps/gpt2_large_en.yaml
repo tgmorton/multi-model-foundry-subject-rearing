@@ -1,25 +1,40 @@
 name: gpt2_large_en
 program: scripts/sweep_agent_lm.py
 method: bayes
-
 metric:
-  # Per new plan: rank on the MINIMUM held_out_perplexity observed
-  # over the course of training (sweep_agent logs proxy/min_* each trial).
   name: proxy/min_held_out_perplexity
   goal: minimize
-
-early_terminate:
-  type: hyperband
-  min_iter: 1                    # one unit = one epoch's worth of perplexity log
-  eta: 3
-
 parameters:
-  arch: {value: gpt2_large}
-  lang: {value: en}
-  base_config: {value: configs/sweeps/baselines/gpt2_large_en.yaml}
-  learning_rate: {distribution: log_uniform_values, min: 1e-5, max: 1e-3}
-  warmup_ratio: {distribution: uniform, min: 0.03, max: 0.15}
-  dropout: {distribution: uniform, min: 0.0, max: 0.3}
-  attention_dropout: {distribution: uniform, min: 0.0, max: 0.3}
-  effective_batch_size: {values: [128, 256, 512, 1024]}
-  adam_beta2: {values: [0.95, 0.99, 0.999]}
+  arch:
+    value: gpt2_large
+  lang:
+    value: en
+  base_config:
+    value: configs/sweeps/baselines/gpt2_large_en.yaml
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  warmup_ratio:
+    distribution: uniform
+    min: 0.03
+    max: 0.15
+  dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  attention_dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  effective_batch_size:
+    values:
+    - 128
+    - 256
+    - 512
+    - 1024
+  adam_beta2:
+    values:
+    - 0.95
+    - 0.99
+    - 0.999

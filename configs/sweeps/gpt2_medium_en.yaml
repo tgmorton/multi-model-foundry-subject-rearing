@@ -1,43 +1,16 @@
-# WandB sweep config — GPT-2 medium, English, baseline corpus.
-#
-# Launch with:
-#   wandb sweep --entity <your-entity> --project subject-drop-sweeps \
-#               configs/sweeps/gpt2_medium_en.yaml
-# → returns SWEEP_ID
-#
-# Then launch agents via k8s/job-sweep-gpt2-medium-en.yaml, which runs
-# `wandb agent --count N <SWEEP_ID>` per pod.
-#
-# Proxy metric ranked on by the Bayes controller: held_out_perplexity.
-# We also log final_training_loss so we can cross-check rankings
-# post-sweep (per the "run A + B, decide from there" decision).
-
 name: gpt2_medium_en
 program: scripts/sweep_agent_lm.py
 method: bayes
-
 metric:
   name: proxy/min_held_out_perplexity
   goal: minimize
-
-early_terminate:
-  type: hyperband
-  min_iter: 1         # start killing unpromising trials at step 500
-  eta: 3                # keep top 1/eta at each rung
-  # Proxy horizon is 3 epochs (~1500 steps at effective batch 128
-  # on 90M tokens); Hyperband will see metrics at ~500, ~1500,
-  # etc. and cut the bottom 2/3 at each rung.
-
 parameters:
-  # Constants — Bayes does not sample these
   arch:
     value: gpt2_medium
   lang:
     value: en
   base_config:
     value: configs/sweeps/baselines/gpt2_medium_en.yaml
-
-  # Sampled HPs (ranges from memory/reference_hp_sweep_plan.md)
   learning_rate:
     distribution: log_uniform_values
     min: 1e-5
@@ -55,6 +28,13 @@ parameters:
     min: 0.0
     max: 0.3
   effective_batch_size:
-    values: [128, 256, 512, 1024]
+    values:
+    - 128
+    - 256
+    - 512
+    - 1024
   adam_beta2:
-    values: [0.95, 0.99, 0.999]
+    values:
+    - 0.95
+    - 0.99
+    - 0.999
