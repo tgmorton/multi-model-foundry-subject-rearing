@@ -19,15 +19,30 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: thomas-sweep-bert-large-es
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: sweep
+    arch: bert-large
+    lang: es
 spec:
-  backoffLimit: 10
+  backoffLimit: 100
   ttlSecondsAfterFinished: 86400
-  # 3 concurrent agent pods × 15 trials each = 45 total trials.
-  # Bayesian optimization with more than ~4 concurrent agents degrades
-  # toward random search (posterior stays stale across parallel samples).
+  activeDeadlineSeconds: 1209600   # 14d safety net — sweep dies if it goes haywire
+  # parallelism=3: at most 3 GPUs in flight at once (BO posterior
+  # gets stale beyond ~4 concurrent samples, so 3 is a sweet spot).
+  # completions=30: sweep ends when 30 trials have produced finite
+  # metrics. With TRIAL_COUNT=1 each pod = exactly one trial.
+  # backoffLimit=100: absorbs transient failures (CUDA-busy, OOM,
+  # node taint) without draining the trial budget.
   parallelism: 3
-  completions: 3
+  completions: 30
   template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: sweep
     spec:
       priorityClassName: armada-default
       imagePullSecrets:
@@ -79,6 +94,25 @@ spec:
           echo "  SWEEP AGENT — bert large es"
           echo "=========================================="
           cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+
+          # Phase 1 — GPU health probe. NRP shared GPU nodes occasionally
+          # hand us a device with a stale CUDA context from a previous
+          # tenant. Detect it in 5s here, before we spend ~5min loading
+          # the model + dataset, and exit 2 so the K8s Job creates a
+          # replacement pod on a different node.
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA available', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize()
+              x = torch.zeros(1024, device='cuda')
+              x.sum().item()  # forces a real allocation + kernel launch
+              print(f'  - GPU healthy: {torch.cuda.get_device_name(0)}')
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+
 
           cd /opt/repo
           mkdir -p /opt/repo/data
@@ -136,9 +170,20 @@ spec:
           test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
           test -n "${SWEEP_ID:-}" || { echo "FAIL SWEEP_ID missing"; exit 1; }
 
-          # The agent runs N trials sequentially in this pod. To go
-          # wider, apply more copies of this job (each gets a new ID).
-          exec wandb agent --count "${TRIAL_COUNT:-30}" "$SWEEP_ID"
+          # Phase 4 — run exactly one trial, then exit. The Job's
+          # completions:30 / parallelism:3 / backoffLimit:100 spec means
+          # successful pod = successful trial, transient failures get
+          # absorbed by Job retry, hard failures stop the sweep.
+          exit_code=0
+          wandb agent --count 1 "$SWEEP_ID" || exit_code=$?
+          # nvidia-smi probe after agent exit. Catches the rare path
+          # where wandb agent silently exits 0 on a broken GPU (the
+          # CUDA-busy false-complete bug). Unhealthy → exit 1, Job retries.
+          if ! nvidia-smi -q >/dev/null 2>&1; then
+            echo "FAIL nvidia-smi unhealthy after agent exit; signalling Job to retry on a different node"
+            exit 1
+          fi
+          exit $exit_code
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
@@ -147,7 +192,7 @@ spec:
         - name: SWEEP_ID
           value: "thmorton-uc-san-diego/subject-drop-prod-hp/heckencn"
         - name: TRIAL_COUNT
-          value: "15"
+          value: "1"
         # WandB auth
         - name: WANDB_API_KEY
           valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}

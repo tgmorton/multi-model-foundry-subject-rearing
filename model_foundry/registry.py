@@ -184,9 +184,21 @@ def _merge_record(arch: str, lang: str, condition: str, run_id: str,
                   updates: Dict[str, Any]) -> Dict[str, Any]:
     """Read-modify-write merge. Preserves keys the current writer doesn't
     set (e.g. training writer doesn't touch eval fields, and vice versa).
-    Always bumps ``updated_at``."""
+    Always bumps ``updated_at``.
+
+    Identifying fields (arch / lang / condition / run_id) are seeded into
+    the merged record even when no prior record exists. Without this
+    seeding, ``heartbeat()`` (whose ``updates`` only contains
+    ``last_heartbeat_at``) writes a record missing ``arch`` and the next
+    ``_run_key()`` call raises ``KeyError: 'arch'``. The KeyError was
+    swallowed by ``_safe_merge`` but every 5 min spammed:
+        WARNING registry heartbeat(<run_id>) failed: 'arch'
+    Seeding here is idempotent for the normal path (where ``current``
+    already has the keys) and corrects the heartbeat-without-prior-record
+    case."""
     current = _get_record(arch, lang, condition, run_id) or {}
-    merged = {**current, **updates}
+    identity = {"arch": arch, "lang": lang, "condition": condition, "run_id": run_id}
+    merged = {**identity, **current, **updates}
     merged["updated_at"] = _utcnow()
     _put_record(merged)
     return merged

@@ -7,6 +7,7 @@ data processing, checkpointing, and training loop components.
 
 import argparse
 import os
+import sys
 import yaml
 import logging
 import subprocess
@@ -84,9 +85,59 @@ class Trainer:
         }
 
     def _setup_memory_management(self):
-        """Configure CUDA memory management settings."""
+        """Configure CUDA memory management settings.
+
+        Begins with a fail-fast GPU health probe. On NRP's shared GPU
+        nodes a stale CUDA context from another tenant occasionally
+        renders the assigned device "busy" for our pod's lifetime. Every
+        downstream torch.cuda call then fails with the same opaque
+        "CUDA-capable device(s) is/are busy or unavailable". Catching
+        this here lets us exit with code 2 (specific signal: hardware
+        transient) so the K8s Job creates a replacement pod on a
+        different node, rather than letting the trial limp through
+        wandb-init then dying mid-trainer-setup.
+        """
         if not torch.cuda.is_available():
             return
+
+        try:
+            torch.cuda.synchronize()
+            # Force a real allocation + kernel launch — exercises both
+            # the memory allocator and the compute path. A stale context
+            # from another tenant fails one of these even when
+            # torch.cuda.is_available() returned True.
+            _probe = torch.zeros(1024, device='cuda')
+            _ = _probe.sum().item()
+            del _probe
+            torch.cuda.empty_cache()
+        except RuntimeError as e:
+            msg = str(e)
+            transient_markers = (
+                "CUDA-capable device",
+                "all CUDA-capable devices are busy",
+                "CUDA error: unknown error",
+                "CUDA driver version is insufficient",
+            )
+            if any(m in msg for m in transient_markers):
+                print(
+                    f"FATAL: GPU not healthy at trainer init: {msg}",
+                    file=sys.stderr,
+                )
+                print(
+                    "  Likely a transient NRP issue (stale CUDA context from a co-tenant",
+                    file=sys.stderr,
+                )
+                print(
+                    "  on the same physical GPU). Exiting with code 2 so the K8s Job",
+                    file=sys.stderr,
+                )
+                print(
+                    "  creates a replacement pod on a different node.",
+                    file=sys.stderr,
+                )
+                sys.exit(2)
+            # Not the transient pattern — re-raise so we get a real traceback.
+            raise
 
         # Set memory fraction to prevent OOM
         torch.cuda.set_per_process_memory_fraction(0.95)
@@ -99,7 +150,7 @@ class Trainer:
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
 
-        print("  - CUDA memory management configured (95% memory limit, max_split_size_mb:512, deterministic cuDNN)")
+        print("  - GPU healthy + CUDA memory configured (95% limit, max_split_size_mb:512, deterministic cuDNN)")
 
     def _calculate_training_parameters(self):
         """Calculate training parameters based on dataset size if not explicitly set."""

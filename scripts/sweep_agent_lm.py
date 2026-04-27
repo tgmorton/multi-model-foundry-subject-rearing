@@ -208,6 +208,34 @@ def main() -> None:
     final_ppl = trial_state["last_ppl"]
     min_ppl = trial_state["min_ppl"]
 
+    # NaN/Inf guard. A trial that "completed" with a non-finite metric
+    # (loss diverged, eval pass produced inf, etc.) is a failed trial
+    # from BO's perspective — it should not be sampled around. Mark it
+    # FAILED in the registry, surface inf to wandb (BO treats inf as
+    # worst-case rather than crashing), and raise so the wandb agent
+    # records the trial as failed and the K8s Job's backoffLimit
+    # absorbs it as a normal failure.
+    if not math.isfinite(min_ppl):
+        wandb.log({
+            "proxy/final_training_loss": float(final_train_loss)
+                if math.isfinite(final_train_loss) else float("inf"),
+            f"proxy/{PROXY_METRIC_NAME}": float("inf"),
+            f"proxy/{PROXY_MIN_METRIC_NAME}": float("inf"),
+            "proxy/best_epoch": int(trial_state["best_epoch"]),
+            "proxy/stopped_early": bool(trial_state["stopped_early"]),
+            "proxy/non_finite_metric": True,
+        })
+        _registry.register_run_end(
+            run_id=identity["run_id"], arch=identity["arch"],
+            lang=identity["lang"], condition=identity["condition"],
+            status="FAILED",
+            failure_reason=f"non-finite min_ppl: {min_ppl}",
+        )
+        raise RuntimeError(
+            f"trial produced non-finite min_held_out_perplexity ({min_ppl}); "
+            f"marking as failed so BO doesn't sample around this point"
+        )
+
     wandb.log({
         "proxy/final_training_loss": float(final_train_loss),
         f"proxy/{PROXY_METRIC_NAME}": float(final_ppl),
