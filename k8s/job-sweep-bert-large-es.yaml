@@ -40,15 +40,18 @@ spec:
               - key: nvidia.com/gpu.product
                 operator: In
                 values:
-                # 48 GB FA2-eligible tier — BERT-large (355M) has no FA2
-                # path (BertForMaskedLM falls back to standard attention),
-                # which materializes the full attention matrix. At
-                # effective_batch_size=1024 + seq_len=1000 this OOMs on
-                # 24 GB cards. L40/L40S nodes also tend to have more host
-                # RAM, which fixes the secondary cgroup OOM we hit on the
-                # 24 GB tier.
+                # Broad 24Gi+48Gi pool. BERT-large has no FA2 path
+                # (BertForMaskedLM falls back to standard attention),
+                # but the OOM we hit at 4Gi RAM was cgroup-level, not
+                # GPU VRAM — fixed by bumping container RAM to 8Gi
+                # (see resources block below), so we can keep the
+                # broad GPU pool and avoid queueing for L40/L40S only.
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
                 - NVIDIA-L40
                 - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
       initContainers:
       - name: clone-repo
         image: alpine/git
