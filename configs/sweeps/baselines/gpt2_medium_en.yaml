@@ -61,7 +61,7 @@ training:
   train_steps: null
   warmup_steps: null
   epochs: 3                                      # proxy horizon — overridden per trial from sweep_epochs
-  sweep_epochs: 3                                # read by _apply_sweep_overrides
+  sweep_epochs: 10                               # read by _apply_sweep_overrides
 
   use_amp: true
   gradient_accumulation_steps: 16                # overridden via effective_batch_size
