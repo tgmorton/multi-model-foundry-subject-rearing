@@ -28,11 +28,15 @@ parameters:
     min: 0.0
     max: 0.3
   effective_batch_size:
+    # BERT-large at seq_len=1000 has no FA2 path; the per-step cost is
+    # dominated by grad-accum count (eff_bs / micro_bs=4). Dropped 512
+    # and 1024 because at micro=4 they require 128 and 256 micro-steps
+    # per optimizer step, which yields trial walltimes of 9-17 days.
+    # 128 and 256 keep BERT trials in the 2-4 day range. Other archs
+    # sweep all four values.
     values:
     - 128
     - 256
-    - 512
-    - 1024
   adam_beta2:
     values:
     - 0.95

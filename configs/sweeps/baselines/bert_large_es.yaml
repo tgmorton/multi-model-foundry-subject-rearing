@@ -45,8 +45,12 @@ training:
   warmup_ratio: 0.1
   train_steps: null
   warmup_steps: null
-  epochs: 10
-  sweep_epochs: 10
+  epochs: 3                        # overridden to sweep_epochs
+  sweep_epochs: 6                  # BERT is slower per-step than other archs
+                                   # (BertForMaskedLM has no FA2; we use SDPA).
+                                   # Patience=3 fires after epoch 4-5 anyway,
+                                   # so 6 is a sufficient ceiling that ~halves
+                                   # compute on the rare non-plateau trial.
   production_epochs: 30
 
   objective: "masked_lm"

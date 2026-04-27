@@ -144,7 +144,7 @@ class Trainer:
         torch._dynamo.disable()
 
         try:
-            # Try Flash Attention 2 first
+            # Try Flash Attention 2 first (Ampere+ GPUs, supported by GPT-2 / Mamba)
             print("  - Attempting to create model with Flash Attention 2...")
             self.model = create_model(
                 self.config,
@@ -152,10 +152,23 @@ class Trainer:
             ).to(self.device)
             print("  - Successfully initialized model with Flash Attention 2")
         except (ImportError, ValueError) as e:
-            # Fall back to standard attention
-            print(f"  - Flash Attention 2 not available ({e}), falling back to standard attention")
-            self.model = create_model(self.config).to(self.device)
-            print("  - Model created with standard attention")
+            # FA2 unavailable — try PyTorch SDPA before giving up to eager.
+            # BertForMaskedLM (and a few others) doesn't accept FA2 in
+            # transformers 4.41, but supports SDPA from 4.36+. SDPA uses
+            # memory-efficient attention internally and is typically
+            # 1.5-2x faster than the eager (standard) attention path at
+            # seq_len=1000.
+            print(f"  - Flash Attention 2 not available ({e}); trying PyTorch SDPA")
+            try:
+                self.model = create_model(
+                    self.config,
+                    attn_implementation="sdpa"
+                ).to(self.device)
+                print("  - Successfully initialized model with PyTorch SDPA")
+            except (ImportError, ValueError, TypeError) as e2:
+                print(f"  - SDPA also unavailable ({e2}); falling back to eager attention")
+                self.model = create_model(self.config).to(self.device)
+                print("  - Model created with eager (standard) attention")
 
         # Apply torch.compile if configured
         self._apply_torch_compile()
