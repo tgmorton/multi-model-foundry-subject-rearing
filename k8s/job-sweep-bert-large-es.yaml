@@ -67,6 +67,15 @@ spec:
                 - NVIDIA-L40
                 - NVIDIA-L40S
                 - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                # Bad-node blocklist (see sub-agent classification 2026-04-28):
+                # rci-tide-gpu-03: 5 cuda-busy-probe + 1 DNS init-container-fail
+                # ry-gpu-10: 5 phase=Failed pods (logs GC'd, but per-node
+                # pattern across 3 different sweeps meets blacklist threshold)
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -170,20 +179,30 @@ spec:
           test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
           test -n "${SWEEP_ID:-}" || { echo "FAIL SWEEP_ID missing"; exit 1; }
 
-          # Phase 4 — run exactly one trial, then exit. The Job's
-          # completions:30 / parallelism:3 / backoffLimit:100 spec means
-          # successful pod = successful trial, transient failures get
-          # absorbed by Job retry, hard failures stop the sweep.
-          exit_code=0
-          wandb agent --count 1 "$SWEEP_ID" || exit_code=$?
-          # nvidia-smi probe after agent exit. Catches the rare path
-          # where wandb agent silently exits 0 on a broken GPU (the
-          # CUDA-busy false-complete bug). Unhealthy → exit 1, Job retries.
-          if ! nvidia-smi -q >/dev/null 2>&1; then
-            echo "FAIL nvidia-smi unhealthy after agent exit; signalling Job to retry on a different node"
+          # Phase 4 — run exactly one trial, then exit. We trust the
+          # sentinel file, not wandb agent's exit code. wandb agent's
+          # --count 1 returns 0 even when the trial subprocess crashed
+          # mid-training (CUDA driver error, segfault, etc) because its
+          # "budget" was attempted; relying on it caused false-complete
+          # pods that incremented Job.succeeded with zero real trials.
+          # The trial script writes /tmp/trial_succeeded only if it
+          # reaches the final registry-record step.
+          export TRIAL_SENTINEL=/tmp/trial_succeeded
+          rm -f "$TRIAL_SENTINEL"
+          wandb agent --count 1 "$SWEEP_ID" || true
+          if [ ! -f "$TRIAL_SENTINEL" ]; then
+            echo "FAIL trial sentinel absent — training did not complete cleanly (CUDA mid-training error, hard crash, OOM, NaN guard, etc); Job will retry"
             exit 1
           fi
-          exit $exit_code
+          # Belt and suspenders: even if sentinel exists, GPU could
+          # have just gone bad (rare). Catch it before reporting success.
+          if ! nvidia-smi -q >/dev/null 2>&1; then
+            echo "FAIL nvidia-smi unhealthy at pod exit"
+            exit 1
+          fi
+          echo "trial succeeded; sentinel:"
+          cat "$TRIAL_SENTINEL"
+          exit 0
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}

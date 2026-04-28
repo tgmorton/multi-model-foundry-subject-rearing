@@ -251,6 +251,26 @@ def main() -> None:
 
     _register_end(identity, run, trainer, final_train_loss, min_ppl)
 
+    # Trial succeeded with a finite metric and registry record written.
+    # Drop a sentinel file the K8s Job's bash wrapper checks before
+    # reporting pod success. This closes the false-complete channel
+    # where wandb agent's --count budget is satisfied (so it exits 0)
+    # even though the trial subprocess crashed mid-training (e.g.
+    # CUDA driver error during step 50). Reaching this line means we
+    # made it all the way through training + final logging + registry,
+    # so the trial is real.
+    sentinel_path = Path(os.environ.get("TRIAL_SENTINEL", "/tmp/trial_succeeded"))
+    try:
+        sentinel_path.write_text(
+            f"run_id={identity['run_id']}\n"
+            f"min_ppl={min_ppl}\n"
+            f"final_ppl={final_ppl}\n"
+            f"best_epoch={trial_state['best_epoch']}\n"
+            f"stopped_early={trial_state['stopped_early']}\n"
+        )
+    except OSError as e:
+        logger.warning("could not write trial sentinel %s: %s", sentinel_path, e)
+
 
 def _save_final_checkpoint(trainer: Trainer, config: ExperimentConfig, base_dir: str) -> str:
     """Save model + tokenizer to models/sweeps/<run>/final/ so any later

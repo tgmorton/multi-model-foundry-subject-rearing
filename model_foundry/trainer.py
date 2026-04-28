@@ -139,8 +139,11 @@ class Trainer:
             # Not the transient pattern — re-raise so we get a real traceback.
             raise
 
-        # Set memory fraction to prevent OOM
-        torch.cuda.set_per_process_memory_fraction(0.95)
+        # Set memory fraction to prevent OOM. 0.90 (vs 0.95) leaves a
+        # bit of GPU headroom for the driver itself + transient
+        # allocations from torch internals; the cost is negligible
+        # since our trials are not memory-bound at sampled batch sizes.
+        torch.cuda.set_per_process_memory_fraction(0.9)
 
         # Configure allocator for better performance
         if 'PYTORCH_CUDA_ALLOC_CONF' not in os.environ or not os.environ['PYTORCH_CUDA_ALLOC_CONF']:
