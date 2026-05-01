@@ -1,0 +1,109 @@
+genre	source	line_num	original	ablated	correct?	notes
+bnc_spoken	train-kept	26226	Blake.	Blake.		
+bnc_spoken	train-kept	31245	The what?	The what?		
+bnc_spoken	train-kept	33327	.	.		
+bnc_spoken	train-removed	91162	Yes, I see 	<REMOVED>		
+bnc_spoken	train-kept	98247	Yes?	Yes?		
+bnc_spoken	train-kept	107474	Oh	Oh		
+bnc_spoken	train-removed	116740	Now the pre-medication is a drug based on atropine which has erm  I'm not really Anti-something- or-other and er I can't pronounce the words concerned.	<REMOVED>		
+bnc_spoken	train-removed	146317	This morning they offer no alternatives other than to spend more.	<REMOVED>		
+bnc_spoken	train-removed	229259	When you think .	<REMOVED>		
+bnc_spoken	train-removed	234054	true, that is what I mean you, you'll be able to go away	<REMOVED>		
+bnc_spoken	train-kept	243963	and thirty five pence from Bessacarr into town.	and thirty five pence from Bessacarr into town.		
+bnc_spoken	train-removed	256788	Such a naked  isn't it?	<REMOVED>		
+bnc_spoken	train-kept	288390	Too right.	Too right.		
+bnc_spoken	train-kept	442418	Oh yeah 	Oh yeah 		
+bnc_spoken	train-kept	571859	Would the  newsagent live, they'd live in there wouldn't they?	Would the  newsagent live, they'd live in there wouldn't they?		
+bnc_spoken	train-kept	619177	They my friends.	They my friends.		
+bnc_spoken	train-removed	670488	Dianna's here for you.	<REMOVED>		
+bnc_spoken	train-removed	709571	D, otherwise we're not gonna have time to go on the computer	<REMOVED>		
+childes	train-kept	54516	"*CHI:	see dose crayons?"	"*CHI:	see dose crayons?"		
+childes	train-kept	222600	"*MOT:	which month you born Chi?"	"*MOT:	which month you born Chi?"		
+childes	train-kept	1304257	"*MOT:	if mom can do this right."	"*MOT:	if mom can do this right."		
+childes	train-kept	1339320	"*MOT:	can a man climb up this ladder to the top and look out?"	"*MOT:	can a man climb up this ladder to the top and look out?"		
+childes	train-removed	1667972	"*MOT:	not a pretend one there. "	<REMOVED>		
+childes	train-kept	1806183	"*CHI:	up here. "	"*CHI:	up here. "		
+childes	train-removed	1849190	"*INV:	I bet she likes that huh?"	<REMOVED>		
+childes	train-kept	2330954	"*CHI:	[nonspeech]. "	"*CHI:	[nonspeech]. "		
+childes	train-kept	2333633	"*MOT:	right here. "	"*MOT:	right here. "		
+childes	train-kept	2854229	"*PAR:	he hit Santa Claus. "	"*PAR:	he hit Santa Claus. "		
+childes	train-kept	3519188	"*CHI:	no. "	"*CHI:	no. "		
+childes	train-kept	3545147	"*MOT:	aitchoo! "	"*MOT:	aitchoo! "		
+childes	train-kept	3768239	"*MOT:	yeah. "	"*MOT:	yeah. "		
+childes	train-removed	4239228	"*CHI:	the squirrel is doing the washing. "	<REMOVED>		
+childes	train-removed	4571301	"*MOT:	you don't know her? "	<REMOVED>		
+childes	train-removed	4708065	"*MOT:	I've found your fire hoses as well. "	<REMOVED>		
+childes	train-kept	4943119	"*CHI:	two moneys. "	"*CHI:	two moneys. "		
+childes	train-kept	5050100	"*CHI:	he blew on a track. "	"*CHI:	he blew on a track. "		
+gutenberg	train-kept	45562	One beautiful spring day two men strolled into the public square of a well-known Chinese city. They were plainly dressed and looked like ordinary countrymen who had come in to see the sights. Judging by their faces, they were father and son. The elder, a wrinkled man of perhaps fifty, wore a scant grey beard. The younger had a small box on his shoulder.	One beautiful spring day two men strolled into the public square of a well-known Chinese city. They were plainly dressed and looked like ordinary countrymen who had come in to see the sights. Judging by their faces, they were father and son. The elder, a wrinkled man of perhaps fifty, wore a scant grey beard. The younger had a small box on his shoulder.		
+gutenberg	train-removed	82628	"""Well, sir,"" said I, ""it's not exactly private, but it's not a very easy thing to put straight before anybody, and if it don't make any difference, we'd rather not have to tell it twice."""	<REMOVED>		
+gutenberg	train-kept	97252	_One of Jack B. Yeats's Plays for the Miniature Stage_	_One of Jack B. Yeats's Plays for the Miniature Stage_		
+gutenberg	train-kept	101415	She reached up and twined her arms about his neck.	She reached up and twined her arms about his neck.		
+gutenberg	train-kept	107176	Mrs. Westbury had insisted upon one condition. He was to destroy her letter and never make any mention of it. For Laverne, with her ultra delicate notions, might resent being offered to another lover. He was to come as any friend might and learn for himself.	Mrs. Westbury had insisted upon one condition. He was to destroy her letter and never make any mention of it. For Laverne, with her ultra delicate notions, might resent being offered to another lover. He was to come as any friend might and learn for himself.		
+gutenberg	train-kept	130890	_Koassáti_, an Upper Creek town. Cf. special article on this tribe, pp. 89. 90.	_Koassáti_, an Upper Creek town. Cf. special article on this tribe, pp. 89. 90.		
+gutenberg	train-kept	277371	"""How did you get that slit in your lip?"" inquired Marten, who knew very well what this Indian really was."	"""How did you get that slit in your lip?"" inquired Marten, who knew very well what this Indian really was."		
+gutenberg	train-removed	307420	"No wonder that the Lord, seeking some form of speech to represent his power in human souls, says, ""I am the vine, ye are the branches.""  The tremendous life of infinite strength surges up through the vine and out into all branches that are really vitally attached.  No wonder that much fruit is expected, and that one who knew most of this imparted power said, ""I can do all things through Christ which strengtheneth me."""	<REMOVED>		
+gutenberg	train-removed	352945	"""It did not rise to the dignity of a regular naval engagement, though it took place on the waters of the bay,"" replied the captain. ""Perhaps if we call it a contest for superiority, it would cover the idea better. But this party are not prepared to understand what has taken place in Khrysoko Bay; and I must admit that I have concealed from you for the last three months certain features of our voyage, a knowledge of which would have rendered some of you very nervous and unhappy."	<REMOVED>		
+gutenberg	train-kept	360664	BUZZ.                                             75	BUZZ.                                             75		
+gutenberg	train-kept	376418	[Illustration]	[Illustration]		
+gutenberg	train-removed	379202	Peace Ceremonial (Kikuyu).—Seven elders from the clans or tribes at enmity each meet with a number of the warrior class, the different sides providing a ram or he-goat, which is slaughtered. An elder of one side then takes the intestines and cuts them with a razor and says: “Who breaks this peace may he be cut as this is cut.” An elder from the other side now takes the intestines from the animal provided by his side and goes through the same ceremonial. Both sides then eat the meat together.	<REMOVED>		
+gutenberg	train-removed	396923	"""I don't know,"" was her answer, as she looked full at Sid. ""It was a piece of impertinence, at any rate,"" and she began to tear up the newspaper item. ""Of course it wasn't you, Mr. Henderson. I should not have read it. I don't suppose you were within miles of the place where it happened. These newspaper reporters are so careless, sometimes. You weren't there, were you?"" she went on."	<REMOVED>		
+gutenberg	train-kept	398383	A ray of light came to Randall in this inning for, though Pete Backus struck out, Tom laid down a pretty two bagger and came home on what was intended as a sacrifice hit by Joe Jackson, only it was fumbled and Joe got to first. Then Jerry fanned and Dutch got out on an almost impossible foul that Stoddard grabbed, banging up against the grand stand to do it.	A ray of light came to Randall in this inning for, though Pete Backus struck out, Tom laid down a pretty two bagger and came home on what was intended as a sacrifice hit by Joe Jackson, only it was fumbled and Joe got to first. Then Jerry fanned and Dutch got out on an almost impossible foul that Stoddard grabbed, banging up against the grand stand to do it.		
+gutenberg	train-removed	481742	"""I don't know how I'm going to give up all this elegance and come down to earth, and Woodford again. Oh, dear--a little touch of high life is awfully unsettling!"""	<REMOVED>		
+gutenberg	train-removed	562276	"""We can't make the fort to-night, that's certain,"" said the old scout."	<REMOVED>		
+gutenberg	train-removed	578857	“Nonsense! nonsense!” and Julia laughed. “I’m positive that in three months you will rejoice that Miss Cain preferred some one else. But did you mean what you just said about your degree?”	<REMOVED>		
+gutenberg	train-kept	605398	"""Yes, I should like the buttermilk,"" returned Bunny's father, and soon he was drinking a large glass."	"""Yes, I should like the buttermilk,"" returned Bunny's father, and soon he was drinking a large glass."		
+open_subtitles	train-removed	192202	But while I do not die, drink, smoke, play and dance.	<REMOVED>		
+open_subtitles	train-removed	291736	We've been together for 56 years.	<REMOVED>		
+open_subtitles	train-kept	334672	Honey, don't look so worried.	Honey, don't look so worried.		
+open_subtitles	train-removed	423631	It's too late.	<REMOVED>		
+open_subtitles	train-removed	682221	He's in for a shock.	<REMOVED>		
+open_subtitles	train-kept	806517	- Blue!	- Blue!		
+open_subtitles	train-kept	955875	No.	No.		
+open_subtitles	train-kept	976396	We should have invited Ah Jung.	We should have invited Ah Jung.		
+open_subtitles	train-kept	1165906	Maybe traction would help.	Maybe traction would help.		
+open_subtitles	train-kept	1213782	Didn't Sylvia call you the night that Clayton died?	Didn't Sylvia call you the night that Clayton died?		
+open_subtitles	train-kept	1490114	_	_		
+open_subtitles	train-kept	1530218	He went to see Barletta to ask him a delay in the rent.	He went to see Barletta to ask him a delay in the rent.		
+open_subtitles	train-kept	1552652	Get Kimble here as quickly as possible.	Get Kimble here as quickly as possible.		
+open_subtitles	train-kept	1594365	You can't do anything about it.	You can't do anything about it.		
+open_subtitles	train-kept	1901741	Jeff?	Jeff?		
+open_subtitles	train-kept	2666254	Aunt, Where should I keep it?	Aunt, Where should I keep it?		
+open_subtitles	train-kept	2773540	Perhaps the professor hit his head when we landed.	Perhaps the professor hit his head when we landed.		
+open_subtitles	train-kept	2955189	Can't get away from it.	Can't get away from it.		
+simple_wiki	train-kept	33660				
+simple_wiki	train-kept	58656	Kapos could often help other prisoners by getting them into better barracks, or getting them assigned to easier work. Sometimes, kapos were even able to get other prisoners removed from transport lists when they were scheduled to be sent to death camps. Some kapos were also able to get prisoners new identities to protect them from persecution When kapos did these things, they usually did them only for people in their own group (for example, people from the same country or political party). Not every kapo did this, and the ones who did had to be very careful. If the kapos made the SS angry by helping other prisoners, they would lose their jobs and might even be sent to the gas chambers to be murdered. Heinrich Himmler described this in a speech:	Kapos could often help other prisoners by getting them into better barracks, or getting them assigned to easier work. Sometimes, kapos were even able to get other prisoners removed from transport lists when they were scheduled to be sent to death camps. Some kapos were also able to get prisoners new identities to protect them from persecution When kapos did these things, they usually did them only for people in their own group (for example, people from the same country or political party). Not every kapo did this, and the ones who did had to be very careful. If the kapos made the SS angry by helping other prisoners, they would lose their jobs and might even be sent to the gas chambers to be murdered. Heinrich Himmler described this in a speech:		
+simple_wiki	train-removed	74871	Barrow County is a county in the U.S. state of Georgia. It has a lot of woodlands. Most people that live here are originally from the deep south. The Latino and Hispanic population in the area is growing rapidly. The black population is also growing quickly. There are eight elementary schools, four middle schools and two high schools. The main cities are Bethlehem and Winder (which is also the county seat).	<REMOVED>		
+simple_wiki	train-kept	171340	Constant events of flooding in different parts of Nigeria had led to socioeconomic damage, injury, and loss of life.	Constant events of flooding in different parts of Nigeria had led to socioeconomic damage, injury, and loss of life.		
+simple_wiki	train-removed	179452	Sexorcism is an album from the Finnish hard rock/heavy metal band Lordi.	<REMOVED>		
+simple_wiki	train-removed	219685	Mother () is a 1926 Soviet silent drama movie directed by Vsevolod Pudovkin. It stars Vera Baranovskaya, Nikolai Batalov, and Aleksandr Chistyakov.	<REMOVED>		
+simple_wiki	train-kept	230284				
+simple_wiki	train-kept	240175	Government.	Government.		
+simple_wiki	train-kept	256703				
+simple_wiki	train-kept	279947				
+simple_wiki	train-removed	283061	"The Golden Team (; also known as the Mighty Magyars, the Magical Magyars, the Magnificent Magyars, or the Marvellous Magyars) refers to the Hungary national football team during the 1950s. It is associated with several notable matches, including the ""Match of the Century"" against England in 1953. The team inflicted notable defeats on then-footballing world powers England, Uruguay and the Soviet Union. The 1956 Hungarian Revolution caused the breakup of the side. The team is considered by many as one of the greatest Football teams of all time."	<REMOVED>		
+simple_wiki	train-kept	330777	= = = Mike Storen = = =	= = = Mike Storen = = =		
+simple_wiki	train-kept	340036	"The song gained more popularity during the COVID-19 pandemic because of the Centers for Disease Control and Prevention (CDC)'S recommendation to wear protective masks. Future and the FreeWishes Foundation donated more than 100,000 masks during the pandemic through his ""Mask On"" campaign."	"The song gained more popularity during the COVID-19 pandemic because of the Centers for Disease Control and Prevention (CDC)'S recommendation to wear protective masks. Future and the FreeWishes Foundation donated more than 100,000 masks during the pandemic through his ""Mask On"" campaign."		
+simple_wiki	train-removed	397888	Cape Conran Coastal Park is a coastal reserve near Marlo in East Gippsland, Victoria, Australia. It is 420 km east of Melbourne and 530 km south of Sydney. It covers an area of 11,700 hectares, and has 60 kilometres of coast line. Most of the area is covered in banksias and woodland which attracts many nectar feeding birds. Other birds seen in the area include the White-bellied Sea Eagles and Eastern Ground Parrots.	<REMOVED>		
+simple_wiki	train-removed	420652	Puzzles, such as wordsearches, crosswords and Sudoku grids are printed in newspapers and magazines, but puzzles can be with objects or even on computers..	<REMOVED>		
+simple_wiki	train-kept	484715	326||95||28||9||19||10||373||114	326||95||28||9||19||10||373||114		
+simple_wiki	train-removed	560087	Mazda Motor Corporation is a car manufacturer based in Hiroshima, Japan. Mazda is the 15th largest car maker in the world, and 12th largest in U.S. sales. The company was started in 1920. Today it has about 44,000 employees. Sales are 2,057,614,000,000 yen. 1920	<REMOVED>		
+simple_wiki	train-kept	584005	Biography.	Biography.		
+switchboard	train-removed	17351	"A:	And crab, they don't bite like that,"	<REMOVED>		
+switchboard	train-removed	36604	"A:	So, I mean, they are killing buffalos in it."	<REMOVED>		
+switchboard	train-removed	37453	"B:	I can't say I've checked them all out though."	<REMOVED>		
+switchboard	train-removed	55308	"B:	It's pretty sad to think, uh, about those who, even today, are graduating from school"	<REMOVED>		
+switchboard	train-removed	55739	"B:	You're, you're making me hungry here."	<REMOVED>		
+switchboard	train-kept	57494	"A:	Yeah."	"A:	Yeah."		
+switchboard	train-removed	64652	"A:	But I like SIXTY MINUTES, PRIME TIME LIVE."	<REMOVED>		
+switchboard	train-kept	68877	"A:	yeah."	"A:	yeah."		
+switchboard	train-kept	69437	"A:	and then we weren't too for from the Appalachian Trail,"	"A:	and then we weren't too for from the Appalachian Trail,"		
+switchboard	train-removed	70187	"A:	That's right."	<REMOVED>		
+switchboard	train-kept	82491	"A:	Yeah."	"A:	Yeah."		
+switchboard	train-kept	94896	"B:	Uh-huh."	"B:	Uh-huh."		
+switchboard	train-kept	103713	"A:	I wanted to see that program."	"A:	I wanted to see that program."		
+switchboard	train-removed	104701	"B:	Well, that's, that's a big one in my book,"	<REMOVED>		
+switchboard	train-removed	112312	"B:	My wife and I really, I guess are fortunate."	<REMOVED>		
+switchboard	train-kept	120286	"B:	Yeah."	"B:	Yeah."		
+switchboard	train-removed	130871	"A:	And I know as a middle class, uh, you know,"	<REMOVED>		
+switchboard	train-kept	141290	"A:	yes."	"A:	yes."		

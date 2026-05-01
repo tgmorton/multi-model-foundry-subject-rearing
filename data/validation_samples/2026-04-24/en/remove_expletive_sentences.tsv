@@ -1,0 +1,181 @@
+genre	source	line_num	original	ablated	correct?	notes
+bnc_spoken	train-kept	26226	Blake.	Blake.		
+bnc_spoken	train-kept	31245	The what?	The what?		
+bnc_spoken	train-kept	33327	.	.		
+bnc_spoken	train-kept	91162	Yes, I see 	Yes, I see 		
+bnc_spoken	train-kept	98247	Yes?	Yes?		
+bnc_spoken	train-kept	107474	Oh	Oh		
+bnc_spoken	train-kept	116740	Now the pre-medication is a drug based on atropine which has erm  I'm not really Anti-something- or-other and er I can't pronounce the words concerned.	Now the pre-medication is a drug based on atropine which has erm  I'm not really Anti-something- or-other and er I can't pronounce the words concerned.		
+bnc_spoken	train-kept	146317	This morning they offer no alternatives other than to spend more.	This morning they offer no alternatives other than to spend more.		
+bnc_spoken	train-kept	229259	When you think .	When you think .		
+bnc_spoken	train-kept	234054	true, that is what I mean you, you'll be able to go away	true, that is what I mean you, you'll be able to go away		
+bnc_spoken	train-kept	243963	and thirty five pence from Bessacarr into town.	and thirty five pence from Bessacarr into town.		
+bnc_spoken	train-kept	256788	Such a naked  isn't it?	Such a naked  isn't it?		
+bnc_spoken	train-kept	288390	Too right.	Too right.		
+bnc_spoken	train-kept	442418	Oh yeah 	Oh yeah 		
+bnc_spoken	train-kept	571859	Would the  newsagent live, they'd live in there wouldn't they?	Would the  newsagent live, they'd live in there wouldn't they?		
+bnc_spoken	train-kept	619177	They my friends.	They my friends.		
+bnc_spoken	train-kept	670488	Dianna's here for you.	Dianna's here for you.		
+bnc_spoken	train-kept	709571	D, otherwise we're not gonna have time to go on the computer	D, otherwise we're not gonna have time to go on the computer		
+bnc_spoken	pool-backfill	3650	<pool sample>	A greenbelt agreed in principle by the Secretary of State but yet to be defined statutorily, a general absence of consensus on where future development in Greater York should be located, and increasing intervention by the Secretary of State on planning applications in Greater York.		
+bnc_spoken	pool-backfill	6738	<pool sample>	I think because a the sense 		
+bnc_spoken	pool-backfill	27818	<pool sample>	I mean I'm sure it's the same claw cos it's never grown back  you see, when he's had it cut off but  what the vet was hoping was that the claw would grow back and the the top of  of the tissue, see what I mean?		
+bnc_spoken	pool-backfill	36482	<pool sample>	Oh right!		
+bnc_spoken	pool-backfill	36926	<pool sample>	Greece 		
+bnc_spoken	pool-backfill	41051	<pool sample>	It's my daddy's.		
+bnc_spoken	pool-backfill	47166	<pool sample>	Take your time, take your time, don't get annoyed with it		
+bnc_spoken	pool-backfill	47993	<pool sample>	so 		
+bnc_spoken	pool-backfill	51475	<pool sample>	you mean		
+bnc_spoken	pool-backfill	63087	<pool sample>	Did they sell Five Alive in		
+bnc_spoken	pool-backfill	68047	<pool sample>	While you worked, er er conversation was good, and the people were grand people.		
+bnc_spoken	pool-backfill	71879	<pool sample>	he's gone on his holidays to the States  Right then  okay, so that's point twelve.		
+childes	train-kept	364489	"*MOT:	the one with the m and ms on it."	"*MOT:	the one with the m and ms on it."		
+childes	train-kept	778009	"*MOT:	let 's try this."	"*MOT:	let 's try this."		
+childes	train-kept	811316	"*MOT:	you want your bottle?"	"*MOT:	you want your bottle?"		
+childes	train-kept	857402	"*MOT:	Edw where 's the car?"	"*MOT:	Edw where 's the car?"		
+childes	train-kept	1047118	"*MOT:	does it... "	"*MOT:	does it... "		
+childes	train-kept	1304257	"*MOT:	if mom can do this right."	"*MOT:	if mom can do this right."		
+childes	train-kept	1806183	"*CHI:	up here. "	"*CHI:	up here. "		
+childes	train-kept	2218962	[pours pot into cup]	[pours pot into cup]		
+childes	train-kept	2330954	"*CHI:	[nonspeech]. "	"*CHI:	[nonspeech]. "		
+childes	train-removed	2823560	"*PAR:	I watch there's sheep on the roof. "	<REMOVED>		
+childes	train-kept	2854229	"*PAR:	he hit Santa Claus. "	"*PAR:	he hit Santa Claus. "		
+childes	train-kept	2885310	"*CHI:	I'm waiting downstairs."	"*CHI:	I'm waiting downstairs."		
+childes	train-kept	3011338	"*MOT:	guess."	"*MOT:	guess."		
+childes	train-kept	3187062	"*FAT:	and everyone shouts."	"*FAT:	and everyone shouts."		
+childes	train-kept	3545147	"*MOT:	aitchoo! "	"*MOT:	aitchoo! "		
+childes	train-kept	3853936	"*CHI:	I don't know. "	"*CHI:	I don't know. "		
+childes	train-kept	4498208	"*MOT:	[gasps] yay [claps]. "	"*MOT:	[gasps] yay [claps]. "		
+childes	train-kept	5064422	"*MOT:	take the xxx."	"*MOT:	take the xxx."		
+childes	pool-backfill	8917	<pool sample>	"*CHI:	that Gail's."		
+childes	pool-backfill	180844	<pool sample>	"*CHI:	that."		
+childes	pool-backfill	242424	<pool sample>	"*MOT:	I don't think you can have that."		
+childes	pool-backfill	310143	<pool sample>	"*MOT:	one of the strings has got broken already hasn't it?"		
+childes	pool-backfill	356993	<pool sample>	"*MOT:	clever girl."		
+childes	pool-backfill	362753	<pool sample>	"*MOT:	I'm gonna look at the animals."		
+childes	pool-backfill	371101	<pool sample>	"*MOT:	are..."		
+childes	pool-backfill	400131	<pool sample>	"*CHI:	what?"		
+childes	pool-backfill	452341	<pool sample>	"*INV:	okay."		
+childes	pool-backfill	524223	<pool sample>	"*MOT:	what?"		
+childes	pool-backfill	563372	<pool sample>	"*DAD:	hello!"		
+childes	pool-backfill	630998	<pool sample>	"*DAD:	Lara no."		
+gutenberg	train-removed	48051	The next Sunday it was the same, for every Sunday fresh roses were put in the glass: yet the rose-tree bloomed on equally beautiful. The young sparrows had now feathers, and wanted much to fly with their mother; she, however, would not allow it, so they were forced to remain. Off she flew; but, however, it happened, before she was aware, she got entangled in a springe of horse-hair, which some boys had set upon a bough. The horse-hair drew itself tightly round her leg, so tightly as though it would cut it in two. That was an agony, a fright! The boys ran to the spot and caught hold of the bird, and that too in no very gentle manner.	<REMOVED>		
+gutenberg	train-kept	74871	Jim dragged himself up to his sister’s level as she sat down beside him, and his eyes rested very wistfully on her inquiring face. So long and sad was his gaze that the girl grew yet more uncomfortable, and repeated her question insistently.	Jim dragged himself up to his sister’s level as she sat down beside him, and his eyes rested very wistfully on her inquiring face. So long and sad was his gaze that the girl grew yet more uncomfortable, and repeated her question insistently.		
+gutenberg	train-kept	83668	ELIZABETH THORNTON TURNER.	ELIZABETH THORNTON TURNER.		
+gutenberg	train-kept	105908	"""And wing too, see? Better kill it."""	"""And wing too, see? Better kill it."""		
+gutenberg	train-kept	170556	Once, as the breeze veered a point or two, I thought she must have jibed, for the clew of the sail almost swung inboard; but it filled again.	Once, as the breeze veered a point or two, I thought she must have jibed, for the clew of the sail almost swung inboard; but it filled again.		
+gutenberg	train-kept	179452	CHAPTER XII.	CHAPTER XII.		
+gutenberg	train-kept	219685	"""Sure, an' he'll be brewin' trouble if he stays around, you can bank on that,"" O'Malley said."	"""Sure, an' he'll be brewin' trouble if he stays around, you can bank on that,"" O'Malley said."		
+gutenberg	train-kept	238969	"""The sunset, you ass!"""	"""The sunset, you ass!"""		
+gutenberg	train-kept	244099	"""Do you think so, Mr. Bradford?"""	"""Do you think so, Mr. Bradford?"""		
+gutenberg	train-kept	279947	"""You ought to have been through,"" said the King. ""When did you be-gin?"""	"""You ought to have been through,"" said the King. ""When did you be-gin?"""		
+gutenberg	train-kept	291477	"Johnnie Jones was very sorry indeed, but he answered: ""You said that one jar was mine."""	"Johnnie Jones was very sorry indeed, but he answered: ""You said that one jar was mine."""		
+gutenberg	train-removed	303446	“Look here, Kid, we’ll have to stick it out up here to-day, and if there’s any sign of clearing by afternoon we’ll move over through this clump where we can command the west.”	<REMOVED>		
+gutenberg	train-removed	372529	"""I wanted him to come here at once; but that cannot be, it seems. I do hope that Christmas will bring not only him, but your mother and sisters to Denesfield. With the whole family gathered round my fireside, Mildred, I should feel as though I belonged to somebody."""	<REMOVED>		
+gutenberg	train-kept	382555	Bart was in for any harmless sport, yet he fumbled the lighted piece of punk undecidedly.	Bart was in for any harmless sport, yet he fumbled the lighted piece of punk undecidedly.		
+gutenberg	train-kept	388163	Baseball Joe at Yale	Baseball Joe at Yale		
+gutenberg	train-kept	398592	Jack of the Pony Express _or The Young Rider of the Mountain Trail_	Jack of the Pony Express _or The Young Rider of the Mountain Trail_		
+gutenberg	train-removed	475436	"""Come, come; away wi' you--you stoopid grampusses!"" cried the captain, pushing the intruders out of the cabin, following them, and closing the door behind him.  ""This is no place for bunglers like you an' me.  We might have known that natur' would have her way, an' didn't need no help from the like o' us.  Let's on deck.  There's enough work there to look after that's better suited to us."""	<REMOVED>		
+gutenberg	train-kept	560087	Still keeping the blanket wrapped about the head and shoulders of the victim, they lifted him to his feet, held him fast, plunged through the bushes, and struck out across a rough open field in the direction of Turkey Hill. The captive staggered as he was forced along, but their firm hands sustained him, and they paid no heed to the muffled gasping and groaning which came from beneath the blanket. Over a fence and across a stone wall he was pushed and dragged, and finally the woods at the eastern base of Turkey Hill were reached. A short distance into the blackest of the night-shrouded timber they penetrated, halting at last in a small glade near a bubbling spring.	Still keeping the blanket wrapped about the head and shoulders of the victim, they lifted him to his feet, held him fast, plunged through the bushes, and struck out across a rough open field in the direction of Turkey Hill. The captive staggered as he was forced along, but their firm hands sustained him, and they paid no heed to the muffled gasping and groaning which came from beneath the blanket. Over a fence and across a stone wall he was pushed and dragged, and finally the woods at the eastern base of Turkey Hill were reached. A short distance into the blackest of the night-shrouded timber they penetrated, halting at last in a small glade near a bubbling spring.		
+gutenberg	pool-backfill	221	<pool sample>	"""We heard you,"" said Grace."		
+gutenberg	pool-backfill	2360	<pool sample>	"""Is it very far?"" asked Bunny again. He was not as tired as before he had eaten the bread and milk, but still he did not want to walk any more than he had to. Sue, also, looked weary."		
+gutenberg	pool-backfill	5962	<pool sample>	"""Caw, caw!"" he said.  ""What are you doing here?"""		
+gutenberg	pool-backfill	13261	<pool sample>	By GEORGE ETHELBERT WALSH		
+gutenberg	pool-backfill	24682	<pool sample>	Caligula, and his horse, 439		
+gutenberg	pool-backfill	26004	<pool sample>	Romford (Essex), 454		
+gutenberg	pool-backfill	27099	<pool sample>	[519] Spiers, _loc. cit._ (authorities given). Concerning the origin of the Christian basilica, see O. M. Dalton, _Guide to Early Christian and Byzantine Antiq._ (Brit. Mus.), 1903, pp. 32-5.		
+gutenberg	pool-backfill	31047	<pool sample>	Flamina was a full-fledged Wood Gatherer now. The brightest silver spark in the night of her eye, beneath those curly lashes, was a reflection of the fagot-ring upon her finger.		
+gutenberg	pool-backfill	31691	<pool sample>	"""Yas, suh, dat an' two more ob dem same. He drap it 'case he couldn't hold de lot, an' walk away too. Yuh see, suh, I war cleaning some fish dat de boys dey fotched in las' ebenin', an' which we nebber use foh breakfast dis mornin'. Den I tink I hyah some queer noise in de camp, an' I starts up dis a ways. 'Twar den dat de hairy ole critter steps outen de store tent, and jabbers at me. I was skeered nigh 'bout stiff, suh, 'clar tuh goodness I was."""		
+gutenberg	pool-backfill	33395	<pool sample>	“Perhaps you’re right, Teddy. Anyhow, we’ll risk it on your word. To tell the honest truth, I’m that hungry right now, I don’t care a continental where we camp, just so Amos gets one of his bully cooking fires going.”		
+gutenberg	pool-backfill	42620	<pool sample>	"Walter interrupted me with ""Nonsense, those fellows will know enough to keep hid or give the cape a wide berth after this.  But talking about the good times we have had, I have enjoyed our shooting best of all, and so has Ugly, I'll bet--haven't you, Ugly?"""		
+gutenberg	pool-backfill	51415	<pool sample>	“Yes,” and Cathalina was laughing by this time. “I can’t say that I’m proud of it now. I’d rather remember my French.”		
+open_subtitles	train-kept	134639	This is good.	This is good.		
+open_subtitles	train-kept	234621	What you never seen a screamin' woman with a bare boob?	What you never seen a screamin' woman with a bare boob?		
+open_subtitles	train-kept	277616	Just like the bosses in my agency.	Just like the bosses in my agency.		
+open_subtitles	train-kept	599247	This is Com-Q, Denver, go ahead.	This is Com-Q, Denver, go ahead.		
+open_subtitles	train-kept	884927	although, look at Furio.	although, look at Furio.		
+open_subtitles	train-kept	891821	What are you talking about?	What are you talking about?		
+open_subtitles	train-kept	960698	Previous experience, next to zero, yet he has a recommend letter from our board?	Previous experience, next to zero, yet he has a recommend letter from our board?		
+open_subtitles	train-kept	1122987	- We're good.	- We're good.		
+open_subtitles	train-kept	1319855	Stop pissing everywhere!	Stop pissing everywhere!		
+open_subtitles	train-kept	1323106	I just got scared, OK?	I just got scared, OK?		
+open_subtitles	train-kept	1659401	Malaga wine.	Malaga wine.		
+open_subtitles	train-kept	1682608	Sit down, sit.	Sit down, sit.		
+open_subtitles	train-kept	1924565	So, yes, I did agree with you at first.	So, yes, I did agree with you at first.		
+open_subtitles	train-kept	2093928	What were you going to say?	What were you going to say?		
+open_subtitles	train-kept	2378926	- Hi, Pi!	- Hi, Pi!		
+open_subtitles	train-removed	2696317	You know, at first it seemed like they took me for a reporter... instead of a census taker.	<REMOVED>		
+open_subtitles	train-kept	2749110	Anything related to your father.	Anything related to your father.		
+open_subtitles	train-kept	3011151	Game's about to start.	Game's about to start.		
+open_subtitles	pool-backfill	10250	<pool sample>	♪ So spread some sunshine around. ♪		
+open_subtitles	pool-backfill	11010	<pool sample>	Yeah, I guess they have.		
+open_subtitles	pool-backfill	22762	<pool sample>	You've examined him a dozen times yourself.		
+open_subtitles	pool-backfill	176288	<pool sample>	I agree to her 90%.		
+open_subtitles	pool-backfill	192317	<pool sample>	You have your cast off?		
+open_subtitles	pool-backfill	192547	<pool sample>	It's on repeat.		
+open_subtitles	pool-backfill	193444	<pool sample>	"""Mr. Barnhardt shows warning signs of delusion."		
+open_subtitles	pool-backfill	215095	<pool sample>	Well,now I'm ungiving it.		
+open_subtitles	pool-backfill	237723	<pool sample>	It's kind of not.		
+open_subtitles	pool-backfill	239538	<pool sample>	'Cause nina's picking a fight, right?		
+open_subtitles	pool-backfill	274452	<pool sample>	All things being equal, it wouldn't have been the worst thing in the world		
+open_subtitles	pool-backfill	302867	<pool sample>	Among many of them...		
+simple_wiki	train-kept	12039	= = = Lap steel guitar = = =	= = = Lap steel guitar = = =		
+simple_wiki	train-kept	49406	"Shrubby nightshade (""S. robustum"") flowers"	"Shrubby nightshade (""S. robustum"") flowers"		
+simple_wiki	train-kept	66614	= = = David M. Friedman = = =	= = = David M. Friedman = = =		
+simple_wiki	train-kept	95326	František Rajtoral (12 March 1986 – 23 April 2017) was a Czech football player. He last played for Turkish club Gaziantepspor. He was best known for his stint at Viktoria Plzeň. He was a member of the Czech Republic national football team. He won the Czech Cup with FC Viktoria Plzeň in 2010. Further trophies he won with the club include the Gambrinus Liga twice and the Czech Supercup.	František Rajtoral (12 March 1986 – 23 April 2017) was a Czech football player. He last played for Turkish club Gaziantepspor. He was best known for his stint at Viktoria Plzeň. He was a member of the Czech Republic national football team. He won the Czech Cup with FC Viktoria Plzeň in 2010. Further trophies he won with the club include the Gambrinus Liga twice and the Czech Supercup.		
+simple_wiki	train-kept	114976	Career.	Career.		
+simple_wiki	train-kept	120117	Matei died at a hospital in Iași, Romania on 18 November 2020 from a gastrointestinal hemorrhage, aged 87.	Matei died at a hospital in Iași, Romania on 18 November 2020 from a gastrointestinal hemorrhage, aged 87.		
+simple_wiki	train-kept	145052	Manal al-Sharif is a Saudi Arabian activist for women's rights in the kingdom. She helped start a women's right to drive campaign in 2011. A women's rights activist who had previously filmed herself driving, Wajeha al-Huwaider, filmed al-Sharif driving a car as part of the campaign. The video was posted on YouTube and Facebook.	Manal al-Sharif is a Saudi Arabian activist for women's rights in the kingdom. She helped start a women's right to drive campaign in 2011. A women's rights activist who had previously filmed herself driving, Wajeha al-Huwaider, filmed al-Sharif driving a car as part of the campaign. The video was posted on YouTube and Facebook.		
+simple_wiki	train-kept	160266				
+simple_wiki	train-kept	167754	Herstadberg is a locality in Norrköping Municipality in Östergötland County in Sweden. In 2010, 236 people lived there.	Herstadberg is a locality in Norrköping Municipality in Östergötland County in Sweden. In 2010, 236 people lived there.		
+simple_wiki	train-kept	263627	Summary.	Summary.		
+simple_wiki	train-kept	400157	Ted Lilly (born 4 January 1976, in Torrance, California) was a Major League Baseball pitcher. He played for the Montreal Expos, New York Yankees, Oakland Athletics, Toronto Blue Jays, Chicago Cubs, and Los Angeles Dodgers. He retired after the 2013 season.	Ted Lilly (born 4 January 1976, in Torrance, California) was a Major League Baseball pitcher. He played for the Montreal Expos, New York Yankees, Oakland Athletics, Toronto Blue Jays, Chicago Cubs, and Los Angeles Dodgers. He retired after the 2013 season.		
+simple_wiki	train-kept	403458	= = = Bernhard Riemann = = =	= = = Bernhard Riemann = = =		
+simple_wiki	train-kept	442667	The Rorschach Ink Blot Test was developed in the 1930s by a man named Hermann Rorschach. With this test, subjects were shown an ambiguous blot of ink on a page and were asked to describe what they see. Based on the response of the subject, they are then evaluated using a scale which can then provide inferences about their personality characteristics as well as emotional functioning. Based on the contributions of this test, it has been used in multiple court proceedings including but not limited to criminal, civil, domestic, and quasi-legal. 	The Rorschach Ink Blot Test was developed in the 1930s by a man named Hermann Rorschach. With this test, subjects were shown an ambiguous blot of ink on a page and were asked to describe what they see. Based on the response of the subject, they are then evaluated using a scale which can then provide inferences about their personality characteristics as well as emotional functioning. Based on the contributions of this test, it has been used in multiple court proceedings including but not limited to criminal, civil, domestic, and quasi-legal. 		
+simple_wiki	train-kept	490786				
+simple_wiki	train-kept	517489				
+simple_wiki	train-kept	534278	The Gaur is a bovine species, similar to the bison. Bos gaurus (or Indian bison) is the largest living bovine. It is native to South Asia and Southeast Asia. 	The Gaur is a bovine species, similar to the bison. Bos gaurus (or Indian bison) is the largest living bovine. It is native to South Asia and Southeast Asia. 		
+simple_wiki	train-kept	554817	In 2003, a Swiss archaeological team working in northern Sudan uncovered one of the most remarkable Egyptological finds in recent years. At the site known as Kerma, near the third cataract of the Nile, archaeologist Charles Bonnet and his team discovered a ditch within a temple from the ancient city of Pnoubs, which contained seven monumental black granite statues. Magnificently sculpted, and in an excellent state of preservation, they portrayed five pharaonic rulers, including Taharqa and Tanoutamon, the last two pharaohs of the 'Nubian' Dynasty, when Egypt was ruled by kings from the lands of modern-day Sudan. For over half a century, the Nubian pharaohs governed a combined kingdom of Egypt and Nubia, with an empire stretching from the Delta to the upper reaches of the Nile.	In 2003, a Swiss archaeological team working in northern Sudan uncovered one of the most remarkable Egyptological finds in recent years. At the site known as Kerma, near the third cataract of the Nile, archaeologist Charles Bonnet and his team discovered a ditch within a temple from the ancient city of Pnoubs, which contained seven monumental black granite statues. Magnificently sculpted, and in an excellent state of preservation, they portrayed five pharaonic rulers, including Taharqa and Tanoutamon, the last two pharaohs of the 'Nubian' Dynasty, when Egypt was ruled by kings from the lands of modern-day Sudan. For over half a century, the Nubian pharaohs governed a combined kingdom of Egypt and Nubia, with an empire stretching from the Delta to the upper reaches of the Nile.		
+simple_wiki	train-kept	580100	"The blue whale is not the largest ever whale, and perhaps by quite a long way. 39 million years ago ""Perucetus colossus"" was between 85 to 340 tons, so up to 3x heavier than the blue whale."	"The blue whale is not the largest ever whale, and perhaps by quite a long way. 39 million years ago ""Perucetus colossus"" was between 85 to 340 tons, so up to 3x heavier than the blue whale."		
+simple_wiki	pool-backfill	2102	<pool sample>	Individual		
+simple_wiki	pool-backfill	16449	<pool sample>	Hernán Gaviria (27 November 1969 – 24 October 2002) is a former Colombian football player. He has played for Colombia national team.		
+simple_wiki	pool-backfill	16605	<pool sample>	= = = Rocky Rapids, Alberta = = =		
+simple_wiki	pool-backfill	16822	<pool sample>	MLIA has received more than 100,000 stories. Most of the users are students in high school or college.		
+simple_wiki	pool-backfill	21107	<pool sample>	List.		
+simple_wiki	pool-backfill	21377	<pool sample>	World War II.		
+simple_wiki	pool-backfill	28672	<pool sample>	The Archbishopric of Salzburg was a state of the Holy Roman Empire Archbishop of Salzburg as a Prince-Bishop. This means the archbishop had his ecclesiatical (church) powers and also the powers of an he Archbishopric was about the same size as the modern state of Salzburg in Austria.		
+simple_wiki	pool-backfill	34853	<pool sample>	Biofuels have a limited ability to replace fossil fuels and should not be regarded as a ‘silver bullet’ to deal with transport emissions. Biofuels on their own cannot deliver a sustainable transport system and so must be developed as part of an integrated approach, which promotes other renewable energy options and energy efficiency, as well as reducing the overall demand and need for transport. The development of hybrid and fuel cell vehicles, public transport, and better urban and rural planning all need to be considered.		
+simple_wiki	pool-backfill	37042	<pool sample>	= = = Nanteuil-Notre-Dame = = =		
+simple_wiki	pool-backfill	42558	<pool sample>	A diving bell was an early system for underwater diving. The basic idea of a bell is that a hollow object, even with an open bottom, will hold air when put under water (this can be seen with a glass in a sink). If the bell is heavy enough it will sink below the water. A swimmer can be inside the bell and breathe, or hold his breath and swim outside the bell for a short time, and come back to the bell to breath again. The idea had been around for a long time, but became useful in the 1600s. Scuba diving has mostly replaced diving bells although they are still used sometimes.		
+simple_wiki	pool-backfill	52489	<pool sample>	= = = 1982 = = =		
+simple_wiki	pool-backfill	53066	<pool sample>	"As well as being a weather man, Winter also owned the company ""Big U Media"" with a friend who also worked at WFLA-TV. Big U Media was an advertising company. He was also a member of a local charitable organization and Mardi Gras krewe, The Rough Riders. They helped underprivileged and sick children by giving teddy bears at homeless shelters and in hospitals."		
+switchboard	train-kept	150	"A:	Uh, no,"	"A:	Uh, no,"		
+switchboard	train-kept	5106	"A:	Exactly."	"A:	Exactly."		
+switchboard	train-kept	27895	"B:	The second lady?"	"B:	The second lady?"		
+switchboard	train-kept	29326	"A:	and I haven't helped them out on the on men particularly,"	"A:	and I haven't helped them out on the on men particularly,"		
+switchboard	train-kept	40066	"A:	the ways our tax laws and stuff are structured, you can't ever catch a break until you can get into a house in a lot of ways,"	"A:	the ways our tax laws and stuff are structured, you can't ever catch a break until you can get into a house in a lot of ways,"		
+switchboard	train-kept	42350	"B:	so it's really not in town."	"B:	so it's really not in town."		
+switchboard	train-kept	52144	"A:	Is, is that close to Dallas?"	"A:	Is, is that close to Dallas?"		
+switchboard	train-kept	62771	"B:	And I don't think it was my fault because I, you know, I had made a point of like drying it off and cleaning it"	"B:	And I don't think it was my fault because I, you know, I had made a point of like drying it off and cleaning it"		
+switchboard	train-kept	78236	"A:	but I think they should also respect the sanctity of the American home, whether it be in a house or in an apartment."	"A:	but I think they should also respect the sanctity of the American home, whether it be in a house or in an apartment."		
+switchboard	train-kept	80613	"A:	Yeah,"	"A:	Yeah,"		
+switchboard	train-kept	84976	"B:	So then, you think it's, it's, you think it's Reagan and Bush have done this"	"B:	So then, you think it's, it's, you think it's Reagan and Bush have done this"		
+switchboard	train-kept	95154	"B:	A, a three twenty-eight G T S?"	"B:	A, a three twenty-eight G T S?"		
+switchboard	train-kept	98020	"A:	The church is in real close relationship with him."	"A:	The church is in real close relationship with him."		
+switchboard	train-kept	128086	"A:	Yeah"	"A:	Yeah"		
+switchboard	train-kept	133081	"A:	what do you do with your credit cards?"	"A:	what do you do with your credit cards?"		
+switchboard	train-kept	133086	"A:	Oh, jeez."	"A:	Oh, jeez."		
+switchboard	train-kept	139030	"B:	Now, does your husband usually go with you, then?"	"B:	Now, does your husband usually go with you, then?"		
+switchboard	train-kept	141395	"A:	It is."	"A:	It is."		
+switchboard	pool-backfill	104	<pool sample>	"B:	Okay,"		
+switchboard	pool-backfill	616	<pool sample>	"A:	and his parents are there."		
+switchboard	pool-backfill	1342	<pool sample>	"B:	So she's into this."		
+switchboard	pool-backfill	2011	<pool sample>	"A:	it was boneless"		
+switchboard	pool-backfill	2466	<pool sample>	"B:	I think the future of this whole thing is going to be what happens with the day care situation."		
+switchboard	pool-backfill	5526	<pool sample>	"B:	Don't you think they learned from the mistakes in Vietnam?"		
+switchboard	pool-backfill	9700	<pool sample>	"A:	No,"		
+switchboard	pool-backfill	9881	<pool sample>	"B:	Well, I think, uh, down here in Texas they don't have a waiting period on handguns."		
+switchboard	pool-backfill	11608	<pool sample>	"B:	And killed them,"		
+switchboard	pool-backfill	14064	<pool sample>	"A:	Huh."		
+switchboard	pool-backfill	14162	<pool sample>	"A:	basically, it's not who you know,"		
+switchboard	pool-backfill	15083	<pool sample>	"A:	Which some of the songs on K V I L can."		

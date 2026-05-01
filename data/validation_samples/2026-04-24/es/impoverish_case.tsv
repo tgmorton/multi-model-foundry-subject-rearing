@@ -1,0 +1,181 @@
+genre	source	line_num	original	ablated	correct?	notes
+child_narratives	train-kept	1640	que ella se cayera	que ella se cayera		
+child_narratives	train-kept	1740	aparte de eso este notaste alguna otra diferencia	aparte de eso este notaste alguna otra diferencia		
+child_narratives	train-kept	1953	él gano verdad	él gano verdad		
+child_narratives	train-kept	2083	y tienes un hermano también	y tienes un hermano también		
+child_narratives	train-kept	5698	haciendo casas	haciendo casas		
+child_narratives	train-removed	6141	porque le dio una lección a su mamá	<REMOVED>		
+child_narratives	train-removed	6718	porque nos pegó durísimo	<REMOVED>		
+child_narratives	train-kept	7297	mhm y ella está en la casa todo el día	mhm y ella está en la casa todo el día		
+child_narratives	train-removed	9145	que la Bulma me salga mucho mejor que Kitana	<REMOVED>		
+child_narratives	train-kept	13032	estás cansado de estar allí bueno	estás cansado de estar allí bueno		
+child_narratives	train-kept	14329	cuál es	cuál es		
+child_narratives	train-kept	14629	ella está en la casa	ella está en la casa		
+child_narratives	train-kept	15248	casi se iba	casi se iba		
+child_narratives	train-kept	16050	sí	sí		
+child_narratives	train-kept	18025	mhm	mhm		
+child_narratives	train-kept	27494	tú pasaste algo así	tú pasaste algo así		
+child_narratives	train-removed	27652	se la clavaron en la espalda así tiqui tiqui	<REMOVED>		
+child_narratives	train-kept	33119	sí	sí		
+childes	train-kept	3408	perrito ven	perrito ven		
+childes	train-kept	53588	aal Emperador	aal Emperador		
+childes	train-kept	81517	un chuchu están haciendo	un chuchu están haciendo		
+childes	train-kept	83708	guau	guau		
+childes	train-kept	112887	la pera no es	la pera no es		
+childes	train-kept	115575	debe tener la tripa malita eh	debe tener la tripa malita eh		
+childes	train-removed	145685	verde como tus flores	<REMOVED>		
+childes	train-kept	145853	sí	sí		
+childes	train-kept	176473	anda	anda		
+childes	train-kept	178390	ahí	ahí		
+childes	train-removed	221572	qué te ha pasado	<REMOVED>		
+childes	train-kept	235515	Alex así mira	Alex así mira		
+childes	train-kept	308945	oh que pena	oh que pena		
+childes	train-kept	366027	y esto qué es	y esto qué es		
+childes	train-kept	397834	y también iba	y también iba		
+childes	train-kept	400291	pelota	pelota		
+childes	train-kept	422482	eh	eh		
+childes	train-removed	424375	suyo	<REMOVED>		
+europarl	train-kept	91123	Realmente es importante que se adopten medidas para luchar contra la piratería, pero los reglamentos modificados van mucho más lejos.	Realmente es importante que se adopten medidas para luchar contra la piratería, pero los reglamentos modificados van mucho más lejos.		
+europarl	train-kept	145868	¿O encontrará la UE un contrapeso al dominio de los Estados Unidos?	¿O encontrará la UE un contrapeso al dominio de los Estados Unidos?		
+europarl	train-kept	165256	Vitorino de otro modo.	Vitorino de otro modo.		
+europarl	train-removed	194503	Para Lituania tiene una importancia trascendental - política y psicológicamente - que se mantenga el ambiente positivo, la postura positiva y por ello está justificado enviar a Lituania una señal que le demuestre que la UE aprecia los importantísimos avances en el desarrollo de reformas económicas, la calidad democrática y los progresos en el terreno administrativo, aunque aún queden tareas pendientes en este campo.	<REMOVED>		
+europarl	train-kept	202829	.	.		
+europarl	train-kept	261780	Birdal, ya que se trata de una verdadera provocación.	Birdal, ya que se trata de una verdadera provocación.		
+europarl	train-removed	403259	La pesca ha ocupado un lugar importante en nuestra economía y cultura durante siglos y sabemos bien lo complicada y delicada que es la cuestión.	<REMOVED>		
+europarl	train-kept	554741	Es necesario mejorar los puertos europeos, y esta mejora debe realizarse, por una parte, por medio de normas claras sobre la competencia entre puertos y dentro de cada puerto y, por otra parte, mediante un acceso transparente al mercado de los servicios portuarios.	Es necesario mejorar los puertos europeos, y esta mejora debe realizarse, por una parte, por medio de normas claras sobre la competencia entre puertos y dentro de cada puerto y, por otra parte, mediante un acceso transparente al mercado de los servicios portuarios.		
+europarl	train-kept	614840	Señor Presidente, Señorías, la Estrategia de Lisboa, particularmente tras la revisión intermedia, representa el compromiso estratégico más importante de la Unión Europea y finalmente va a estar acompañada de resultados concretos en términos de crecimiento y empleo.	Señor Presidente, Señorías, la Estrategia de Lisboa, particularmente tras la revisión intermedia, representa el compromiso estratégico más importante de la Unión Europea y finalmente va a estar acompañada de resultados concretos en términos de crecimiento y empleo.		
+europarl	train-removed	721328	La propuesta constituye un importante grado de armonización y nos proporcionará unas reglas de juego equitativas y eficaces sobre las sanciones y las reparaciones.	<REMOVED>		
+europarl	train-kept	752835	Es cierto que Rusia necesita un amplio apoyo en el proceso de reformas democráticas y económicas y en la superación de la catastrófica destrucción del medio ambiente del país, pero Rusia necesita ante todo una Europa abierta que esté dispuesta a crear una estructura de seguridad común y no practicar en realidad la división de Europa fomentando la confrontación mediante decisiones carentes de sensibilidad, como la ampliación de la OTAN y un nuevo trazado de fronteras en Schengen.	Es cierto que Rusia necesita un amplio apoyo en el proceso de reformas democráticas y económicas y en la superación de la catastrófica destrucción del medio ambiente del país, pero Rusia necesita ante todo una Europa abierta que esté dispuesta a crear una estructura de seguridad común y no practicar en realidad la división de Europa fomentando la confrontación mediante decisiones carentes de sensibilidad, como la ampliación de la OTAN y un nuevo trazado de fronteras en Schengen.		
+europarl	train-removed	758404	Sumemos nuestras felicitación a la expresada por el Presidente en ejercicio a John Hume.	<REMOVED>		
+europarl	train-kept	793845	El cuerpo humano no pertenece al dominio del tener, sino al del ser, del ser persona viviente y, en consecuencia, no se puede reducir a una máquina hecha de piezas y de engranajes, de tejidos y de funciones.	El cuerpo humano no pertenece al dominio del tener, sino al del ser, del ser persona viviente y, en consecuencia, no se puede reducir a una máquina hecha de piezas y de engranajes, de tejidos y de funciones.		
+europarl	train-removed	796766	(SV) Señor Presidente, señor Comisario, quiero comenzar dando las gracias a mis compañeros de comisión por su útil colaboración.	<REMOVED>		
+europarl	train-removed	963484	No, creo que este Parlamento y la Unión tienen el derecho y el deber de decir que no y, por consiguiente, de hacer todo lo posible para que se acepten las cláusulas de los derechos humanos, las reglas que nosotros nos hemos dado en nuestras relaciones con aquellos países con los que cooperamos.	<REMOVED>		
+europarl	train-kept	1124552	El informe contiene también un apartado sobre las relaciones con los residentes locales.	El informe contiene también un apartado sobre las relaciones con los residentes locales.		
+europarl	train-removed	1157714	Por último, y posiblemente lo más importante, obligará a cambiar de actitud a las navieras.	<REMOVED>		
+europarl	train-removed	1210796	Quiero expresar mi decepción al ver que la Comisión limita la cuestión de la migración en general a los problemas en el Mediterráneo y al espacio de Schengen.	<REMOVED>		
+grerli	train-kept	1502	qué es esto Sergio	qué es esto Sergio		
+grerli	train-kept	2340	sigue sigue	sigue sigue		
+grerli	train-removed	2615	y no te dan el palo nunca	<REMOVED>		
+grerli	train-kept	3310	y qué hiciste en el cumple	y qué hiciste en el cumple		
+grerli	train-kept	5330	que se levantó más gente	que se levantó más gente		
+grerli	train-kept	5608	John_Smith	John_Smith		
+grerli	train-kept	6866	no es que si no iban a estar muy apretados a qué sí	no es que si no iban a estar muy apretados a qué sí		
+grerli	train-kept	7468	dónde está el esto	dónde está el esto		
+grerli	train-kept	7629	qué es eso	qué es eso		
+grerli	train-removed	8749	y claro pues para que me aceptaran	<REMOVED>		
+grerli	train-removed	9109	y le preguntas	<REMOVED>		
+grerli	train-removed	9483	y del modo que te la explique	<REMOVED>		
+grerli	train-kept	11642	es que Koki ha ido a buscal a Boby	es que Koki ha ido a buscal a Boby		
+grerli	train-removed	11955	unos más que le empujaron	<REMOVED>		
+grerli	train-kept	12131	quien jugar	quien jugar		
+grerli	train-kept	12456	el lobo y qué quería el lobo	el lobo y qué quería el lobo		
+grerli	train-removed	14858	mira te voy a enseñar el éste como hace	<REMOVED>		
+grerli	train-kept	17503	que dijimos a la salida	que dijimos a la salida		
+gutenberg	train-kept	58656	era de lenta andadura, como quien anda con las nalgas encuadernadas en	era de lenta andadura, como quien anda con las nalgas encuadernadas en		
+gutenberg	train-removed	171340	de su rival, a quien adivinaba vencida. Sólo pensó	<REMOVED>		
+gutenberg	train-kept	230284	Durante el sobreparto, las mujeres de la vecindad	Durante el sobreparto, las mujeres de la vecindad		
+gutenberg	train-kept	240175	Pero como las noticias eran cada vez más alarmantes, esto produjo en	Pero como las noticias eran cada vez más alarmantes, esto produjo en		
+gutenberg	train-kept	256703	verdugo o va a morir ahorcado.	verdugo o va a morir ahorcado.		
+gutenberg	train-removed	283061	una confusión que me abruma. En ciertos momentos me siento inclinado a	<REMOVED>		
+gutenberg	train-kept	340036	—Si, dijo el anciano con un movimiento de cabeza.	—Si, dijo el anciano con un movimiento de cabeza.		
+gutenberg	train-kept	397888	¿Era posible que se despidiesen para siempre dentro de unas horas?...	¿Era posible que se despidiesen para siempre dentro de unas horas?...		
+gutenberg	train-kept	484715	equipajes, mustia y cabizbaja.	equipajes, mustia y cabizbaja.		
+gutenberg	train-kept	584005	—Señora—dijo un guacamayo—la libertad de la imprenta, según dijo	—Señora—dijo un guacamayo—la libertad de la imprenta, según dijo		
+gutenberg	train-removed	671089	ensayos suyos y de los de sus coetáneos, en la parte que sigue de la	<REMOVED>		
+gutenberg	train-kept	717871	comedor, y á quien habéis saludado hace un momento.	comedor, y á quien habéis saludado hace un momento.		
+gutenberg	train-removed	721591	Y los dos jóvenes se abrazaron en la entrada de la casucha, juntando sus	<REMOVED>		
+gutenberg	train-removed	764545	detrás de tu celosía. Si has visto al gitano de tan cerca, es que	<REMOVED>		
+gutenberg	train-removed	805636	ellos Luis Vélez de Santander, o sea nuestro Vélez de Guevara, y Lope de	<REMOVED>		
+gutenberg	train-kept	813695	esa hermosura que deslumbra á las mujeres...	esa hermosura que deslumbra á las mujeres...		
+gutenberg	train-kept	861723	130	130		
+gutenberg	train-removed	883795	con su mucho de fina hipocresía.	<REMOVED>		
+leipzig_web	train-removed	33660	Considero que hoy es mucho más que un día para recibir saludos, me parece que es una fecha que nos invita a recordar cómo se inició nuestra profesión.	<REMOVED>		
+leipzig_web	train-removed	69404	Reiteró su petición de no encerrarse en la indiferencia ante el drama de la migración y observó que «la Historia nos llama a una sacudida de conciencia para evitar un naufragio de la civilización».	<REMOVED>		
+leipzig_web	train-kept	146414	Por ejemplo en el consulado de México en Orlando convergieron varios abogados para responder dudas y calmar la ansiedad de los inmigrantes.	Por ejemplo en el consulado de México en Orlando convergieron varios abogados para responder dudas y calmar la ansiedad de los inmigrantes.		
+leipzig_web	train-kept	149812	De golpe creció mucho Facultad de Derecho y ya contábamos con tramos de Arquitectura, Agronomía, Veterinaria” recuerda.	De golpe creció mucho Facultad de Derecho y ya contábamos con tramos de Arquitectura, Agronomía, Veterinaria” recuerda.		
+leipzig_web	train-kept	221232	Hernando Guerra-García fue socio de Clientes y Organizaciones S.A.C.	Hernando Guerra-García fue socio de Clientes y Organizaciones S.A.C.		
+leipzig_web	train-kept	222956	“Increíble la cantidad de conocimiento que tiene este video de 15 segundos”, comentó otro chico.	“Increíble la cantidad de conocimiento que tiene este video de 15 segundos”, comentó otro chico.		
+leipzig_web	train-kept	258608	Dicho diario apunta que Estudio ATD fue creada en enero 2012 y recibió unos 200.000 euros entre 2013 y 2016 que aún no se habían computado, según fuentes de la investigación, y recibió esas cantidades a través de las compañías de Contreras.	Dicho diario apunta que Estudio ATD fue creada en enero 2012 y recibió unos 200.000 euros entre 2013 y 2016 que aún no se habían computado, según fuentes de la investigación, y recibió esas cantidades a través de las compañías de Contreras.		
+leipzig_web	train-kept	277747	A la hora de analizar la cámara de un móvil, es fácil caer en la trampa de pensar que una mayor resolución siempre se traduce en mejores fotografías.	A la hora de analizar la cámara de un móvil, es fácil caer en la trampa de pensar que una mayor resolución siempre se traduce en mejores fotografías.		
+leipzig_web	train-kept	280747	Para los dirigidos por Pablo Sánchez, recibirán de visita a la Universidad de Chile el domingo de la misma semana a las 18:00 horas.	Para los dirigidos por Pablo Sánchez, recibirán de visita a la Universidad de Chile el domingo de la misma semana a las 18:00 horas.		
+leipzig_web	train-kept	329964	A través de llamada telefónica con Radio Hogar, el padre Donaciano confirma que fue expulsado, pero no de manera violentada.	A través de llamada telefónica con Radio Hogar, el padre Donaciano confirma que fue expulsado, pero no de manera violentada.		
+leipzig_web	train-kept	330777	Fácil de instalar: rendimiento estable y alta fiabilidad.	Fácil de instalar: rendimiento estable y alta fiabilidad.		
+leipzig_web	train-kept	414851	“El corazón, al mandar más sangre en cada latido, necesita menos latidos por minuto para mandar la misma cantidad de sangre y, de esta manera, se consigue una mayor resistencia”, añade.	“El corazón, al mandar más sangre en cada latido, necesita menos latidos por minuto para mandar la misma cantidad de sangre y, de esta manera, se consigue una mayor resistencia”, añade.		
+leipzig_web	train-kept	420652	En el resto de plazas europeas también se han registrado caídas del 1,14% en Londres, del 1,03% en Fráncfort, del 0,91% en París y del 0,82% en Milán.	En el resto de plazas europeas también se han registrado caídas del 1,14% en Londres, del 1,03% en Fráncfort, del 0,91% en París y del 0,82% en Milán.		
+leipzig_web	train-kept	481142	Molina también es señalado por el robo de dos laptop, una caja con herramientas, una tablet y 10 mil pesos en efectivo que estaban en un auto en el lugar de los hechos y al cual impidió se ingresará por dichas cosas.	Molina también es señalado por el robo de dos laptop, una caja con herramientas, una tablet y 10 mil pesos en efectivo que estaban en un auto en el lugar de los hechos y al cual impidió se ingresará por dichas cosas.		
+leipzig_web	train-kept	523482	Esta es una unidad equivalente a una milmillonésima parte de un segundo.	Esta es una unidad equivalente a una milmillonésima parte de un segundo.		
+leipzig_web	train-kept	588638	El fiscal de Corte señaló que “cuando las críticas no tienen un sentido racional” son “innecesarias”.	El fiscal de Corte señaló que “cuando las críticas no tienen un sentido racional” son “innecesarias”.		
+leipzig_web	train-kept	594732	La periodista y escritora Ruth Baza ha presentado ante la policía española una denuncia por violación contra el actor francés Gérard Depardieu por unos hechos ocurridos en París en 1995.	La periodista y escritora Ruth Baza ha presentado ante la policía española una denuncia por violación contra el actor francés Gérard Depardieu por unos hechos ocurridos en París en 1995.		
+leipzig_web	train-removed	674080	Es lo que digo yo: los tiempos cambian.	<REMOVED>		
+opensubtitles	train-kept	395241	- Para arreglarlos bien.	- Para arreglarlos bien.		
+opensubtitles	train-kept	532910	Antes de comer conviene salir de este barrio horrible.	Antes de comer conviene salir de este barrio horrible.		
+opensubtitles	train-kept	762604	Sí.	Sí.		
+opensubtitles	train-removed	919804	A mí y a mis tontas cartas.	<REMOVED>		
+opensubtitles	train-removed	1160411	No te disculpes, alguien tiene que hacer el trabajo sucio.	<REMOVED>		
+opensubtitles	train-kept	1282126	- No hace falta esperar.	- No hace falta esperar.		
+opensubtitles	train-removed	1342027	Bueno, si nos manda una factura, tendré que descontarlo de tu sueldo, Birdee.	<REMOVED>		
+opensubtitles	train-kept	1839796	Ya podrías tutearme.	Ya podrías tutearme.		
+opensubtitles	train-kept	2204037	Estuvo muy bien.	Estuvo muy bien.		
+opensubtitles	train-removed	3036647	Sólo te haría ir más despacio.	<REMOVED>		
+opensubtitles	train-removed	3201255	Aire bueno, poco trabajo y, quién sabe, ¡quizá algún día también le hagan alcalde!	<REMOVED>		
+opensubtitles	train-kept	3227663	- ¡No tengo nada más, de verdad!	- ¡No tengo nada más, de verdad!		
+opensubtitles	train-removed	3350415	- No, sube tu pie.	<REMOVED>		
+opensubtitles	train-kept	3541335	Yo soy un senador.	Yo soy un senador.		
+opensubtitles	train-removed	3593964	3.000 estudiantes viendo su primera obra con actores en vivo.	<REMOVED>		
+opensubtitles	train-removed	4139911	Pero nada indica que fuera suyo.	<REMOVED>		
+opensubtitles	train-kept	4274217	Pensé en matarla.	Pensé en matarla.		
+opensubtitles	train-kept	4521270	No estás caliente.	No estás caliente.		
+qed	train-removed	3403	Y les permite controlar y colocar los patrones cimáticos y los reflejos que éstos provocan.	<REMOVED>		
+qed	train-kept	12039	Los dos que fueron a verlo eran de la oposición.	Los dos que fueron a verlo eran de la oposición.		
+qed	train-kept	111580	-Claro. -¡Nademos hasta el bote!	-Claro. -¡Nademos hasta el bote!		
+qed	train-removed	116971	lo que esto es es un modelo de sonido, de resonancia, de armónicos	<REMOVED>		
+qed	train-removed	120117	Sus abuelos fueron personas pacíficas.	<REMOVED>		
+qed	train-removed	165841	ĄConfía en mí! żCrees que sospecha la verdad del asunto?	<REMOVED>		
+qed	train-removed	187331	Incluso cuando me escondo brillo ¿Qué puede hacerse? me destaco completamente incluso cuando estoy envuelta en un velo brillo, es obvio sabes que brillo.	<REMOVED>		
+qed	train-removed	263627	Básicamente lo que dice es, ¿cómo consigo clientes?	<REMOVED>		
+qed	train-removed	276184	A diario mira a los ojos a las mismas personas abandona la base y sabe que esas personas le cubren las espaldas.	<REMOVED>		
+qed	train-kept	279787	Para Hem, el queso significaba ser alguien importante, en una mansion en la sima de la colina Camemberg.	Para Hem, el queso significaba ser alguien importante, en una mansion en la sima de la colina Camemberg.		
+qed	train-removed	307758	Lo cual nos conecta con las tendencias actuales del desarrollo de MOOCs.	<REMOVED>		
+qed	train-removed	356700	Y seré su anfitriona hoy.	<REMOVED>		
+qed	train-removed	455885	Muy bien, el Faraón los va a hechar.	<REMOVED>		
+qed	train-kept	475764	Un autobús tiene capacidad para 65 pasajeros o menos.	Un autobús tiene capacidad para 65 pasajeros o menos.		
+qed	train-removed	490786	Tenemos la suerte de contar con aliados influyentes y con una sola palabra mía te darán ciertos privilegios que te serían negados de otra forma	<REMOVED>		
+qed	train-kept	524903	Permanecer en esa bicicleta.	Permanecer en esa bicicleta.		
+qed	train-kept	532343	Se ha ido.	Se ha ido.		
+qed	train-kept	554817	Mientras que usted está tomando un descanso,	Mientras que usted está tomando un descanso,		
+spoken	train-removed	75	"""A"" por ""be"", que ya lo tengo calculado, era el de antes, ¿no?"	<REMOVED>		
+spoken	train-kept	2553	Y el área total, la suma de las dos: pi erre ge más pi erre cuadrado(Òrg + Òr2).	Y el área total, la suma de las dos: pi erre ge más pi erre cuadrado(Òrg + Òr2).		
+spoken	train-kept	14663	Es una necesidad física.	Es una necesidad física.		
+spoken	train-removed	20033	Entonces, allí patrocinado por [vacilación] la galería, que es una especie de museo pequeño, es una biblioteca na[palabra cortada]... podíamos decir... nacional, de la ciudad; y luego amparado por una serie de... de... de personas que integran un club, el Club de los Leones, perteneciente a [extranjerismo]Boston[fin de extranjerismo], pues fue un... bastante éxito fue aquello; me agradó muchísimo, muy... muy agradable.	<REMOVED>		
+spoken	train-kept	21175	H2: Bueno, yo creo que eso tiene mucho de... de cuento, ¿eh?	H2: Bueno, yo creo que eso tiene mucho de... de cuento, ¿eh?		
+spoken	train-kept	26072	"H3: Bueno, pues eh... vamos a ver eh... continúa desarrollándose el curso de... sobre la ""Seguridad en el Mediterráneo"", que lleva el exministro Fernando Morán, continúa también el curso este de la ""Actitud sobre... la actitud del hombre frente a los animales"", que hoy cuenta con la intervención del Padre Mario [extranjerismo]Canciani[fin de extranjerismo], que es rector de la Iglesia de San Juan Bautista de los Salentinos, y es profesor de teología de la Universidad [silencio] [ininteligible] de Roma, y... y... y va a desarrollar un tema sobre religión y animales, ""Una mirada a la Iglesia Católica"", yo no sé si va a ser aquí donde se va a... a tocar otra vez el... el tema recurrente que ya ha sido tocado pues muchas veces acerca de si los animales tienen o no tienen alma, que es una vieja disquisición, yo no sé si escolástica, eh... y hasta que punto... bueno... no quiero entrar en más profundidades en... en el tema este."	"H3: Bueno, pues eh... vamos a ver eh... continúa desarrollándose el curso de... sobre la ""Seguridad en el Mediterráneo"", que lleva el exministro Fernando Morán, continúa también el curso este de la ""Actitud sobre... la actitud del hombre frente a los animales"", que hoy cuenta con la intervención del Padre Mario [extranjerismo]Canciani[fin de extranjerismo], que es rector de la Iglesia de San Juan Bautista de los Salentinos, y es profesor de teología de la Universidad [silencio] [ininteligible] de Roma, y... y... y va a desarrollar un tema sobre religión y animales, ""Una mirada a la Iglesia Católica"", yo no sé si va a ser aquí donde se va a... a tocar otra vez el... el tema recurrente que ya ha sido tocado pues muchas veces acerca de si los animales tienen o no tienen alma, que es una vieja disquisición, yo no sé si escolástica, eh... y hasta que punto... bueno... no quiero entrar en más profundidades en... en el tema este."		
+spoken	train-kept	31386	H2: [ininteligible] unas fotos de aquí que estás tú.	H2: [ininteligible] unas fotos de aquí que estás tú.		
+spoken	train-kept	39118	[solapamiento de turnos] churras	[solapamiento de turnos] churras		
+spoken	train-removed	40307	"""Pues viene usted mañana"" Oye y cuando estaba en la corrida al empezar en eso que bajé y le digo: ""¡Ánimo matador!"	<REMOVED>		
+spoken	train-removed	42488	H2: ...de tensión por lo de hoy.	<REMOVED>		
+spoken	train-kept	47577	[solapamiento de turnos] ¿Ahí bien o...?	[solapamiento de turnos] ¿Ahí bien o...?		
+spoken	train-kept	49010	H2:Sí.	H2:Sí.		
+spoken	train-kept	64043	Cuando yo dije... yo creí que uno de los...	Cuando yo dije... yo creí que uno de los...		
+spoken	train-kept	66541	¿usted cree que la política represiva está siendo eficaz en España?	¿usted cree que la política represiva está siendo eficaz en España?		
+spoken	train-kept	69515	Una nueva medalla, en esta ocasión de bronce.	Una nueva medalla, en esta ocasión de bronce.		
+spoken	train-kept	70698	[publicidad][música]	[publicidad][música]		
+spoken	train-kept	78505	Bienhallado, Juan.	Bienhallado, Juan.		
+spoken	train-kept	79819	¡Ja!	¡Ja!		
+vikidia	train-kept	7593	↑ La República de Platón: resumen y análisis del libro	↑ La República de Platón: resumen y análisis del libro		
+vikidia	train-kept	9072	↑ «Maths on the Underground» . University of Cambridge , 3 de marzo de 2000.	↑ «Maths on the Underground» . University of Cambridge , 3 de marzo de 2000.		
+vikidia	train-kept	10323	Valdemaqueda	Valdemaqueda		
+vikidia	train-kept	11227	Luis Octavio de Toledo y Zulueta: 1924-1934,	Luis Octavio de Toledo y Zulueta: 1924-1934,		
+vikidia	train-kept	16484	Bosque; Demonte: Gramática descriptiva de la lengua española , Espasa, 1999, sec. 9.3, ISBN 84-239-7917-2.	Bosque; Demonte: Gramática descriptiva de la lengua española , Espasa, 1999, sec. 9.3, ISBN 84-239-7917-2.		
+vikidia	train-kept	16829	Tabla periódica de los elementos.	Tabla periódica de los elementos.		
+vikidia	train-kept	21644	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.		
+vikidia	train-kept	31572	Rubidio (Rb)	Rubidio (Rb)		
+vikidia	train-kept	34742	Crocidura foxi es una especie de musaraña . Suelen encontrarse en Burkina Faso , el Chad , la Costa de Marfil , Ghana , Guinea , Malí , Nigeria , el Senegal , el Sudán y, posiblemente también, Benin , la República Centroafricana , Gambia y Togo .	Crocidura foxi es una especie de musaraña . Suelen encontrarse en Burkina Faso , el Chad , la Costa de Marfil , Ghana , Guinea , Malí , Nigeria , el Senegal , el Sudán y, posiblemente también, Benin , la República Centroafricana , Gambia y Togo .		
+vikidia	train-removed	62297	↑ 20minutos. «El “Qué te vote Txapote” también salió en la Kings League: Agüero lo gritó y a Ibai no le hizo gracia» . 20minutos , 18 de julio de 2023.	<REMOVED>		
+vikidia	train-kept	63700	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.		
+vikidia	train-kept	69164	El Burj Khalifa tiene 24,348 ventanas. 36 trabajadores tardan 3 o 4 meses en limpiar todo el exterior.	El Burj Khalifa tiene 24,348 ventanas. 36 trabajadores tardan 3 o 4 meses en limpiar todo el exterior.		
+vikidia	train-kept	69823	Luis Martínez: 2, 0, 0, 2, 0, 1, 5 puntos, puesto 450, relativo 17,77%	Luis Martínez: 2, 0, 0, 2, 0, 1, 5 puntos, puesto 450, relativo 17,77%		
+vikidia	train-removed	72064	El tema central es el retrato de la infanta Margarita de Austria, colocada en primer plano, rodeada por sus sirvientes, «las meninas», aunque la pintura representa también otros personajes.	<REMOVED>		
+vikidia	train-kept	74365	ácido grado poliinsaturado : 287 mg	ácido grado poliinsaturado : 287 mg		
+vikidia	train-kept	79508	Es difícil definir con precisión qué es la vida. Podemos dar algunas características de los seres vivos.	Es difícil definir con precisión qué es la vida. Podemos dar algunas características de los seres vivos.		
+vikidia	train-kept	86475	Este artículo se refiere a la tercera generación de My Little Pony. Si quieres ver la franquicia, véase My Little Pony (franquicia) La tercera generación de My Little Pony dió comienzo en 2003, en donde se tuvieron que reducir el número de ponis, Pegasos y unicornios al mínimo, enfocándose al Core 7, un grupo de ponis donde se destacan Pinkie Pie, Rainbow Dash, Cheerilee, Scootaloo, Toola Roola, Sweetie Belle y StarSong.	Este artículo se refiere a la tercera generación de My Little Pony. Si quieres ver la franquicia, véase My Little Pony (franquicia) La tercera generación de My Little Pony dió comienzo en 2003, en donde se tuvieron que reducir el número de ponis, Pegasos y unicornios al mínimo, enfocándose al Core 7, un grupo de ponis donde se destacan Pinkie Pie, Rainbow Dash, Cheerilee, Scootaloo, Toola Roola, Sweetie Belle y StarSong.		
+vikidia	train-removed	95933	San Pedro Lagunillas es uno de los 20 municipios de Nayarit . Su población es de 8 000 habitantes.	<REMOVED>		

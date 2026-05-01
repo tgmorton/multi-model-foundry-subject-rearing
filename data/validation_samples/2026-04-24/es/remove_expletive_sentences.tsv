@@ -1,0 +1,301 @@
+genre	source	line_num	original	ablated	correct?	notes
+child_narratives	train-kept	1640	que ella se cayera	que ella se cayera		
+child_narratives	train-kept	1740	aparte de eso este notaste alguna otra diferencia	aparte de eso este notaste alguna otra diferencia		
+child_narratives	train-kept	1953	él gano verdad	él gano verdad		
+child_narratives	train-kept	2083	y tienes un hermano también	y tienes un hermano también		
+child_narratives	train-kept	5698	haciendo casas	haciendo casas		
+child_narratives	train-kept	6141	porque le dio una lección a su mamá	porque le dio una lección a su mamá		
+child_narratives	train-kept	6718	porque nos pegó durísimo	porque nos pegó durísimo		
+child_narratives	train-kept	7297	mhm y ella está en la casa todo el día	mhm y ella está en la casa todo el día		
+child_narratives	train-kept	9145	que la Bulma me salga mucho mejor que Kitana	que la Bulma me salga mucho mejor que Kitana		
+child_narratives	train-kept	13032	estás cansado de estar allí bueno	estás cansado de estar allí bueno		
+child_narratives	train-kept	14329	cuál es	cuál es		
+child_narratives	train-kept	14629	ella está en la casa	ella está en la casa		
+child_narratives	train-kept	15248	casi se iba	casi se iba		
+child_narratives	train-kept	16050	sí	sí		
+child_narratives	train-kept	18025	mhm	mhm		
+child_narratives	train-kept	27494	tú pasaste algo así	tú pasaste algo así		
+child_narratives	train-kept	27652	se la clavaron en la espalda así tiqui tiqui	se la clavaron en la espalda así tiqui tiqui		
+child_narratives	train-kept	33119	sí	sí		
+child_narratives	pool-backfill	150	<pool sample>	me me llevaron me dejaron allá con unas mascarilla		
+child_narratives	pool-backfill	906	<pool sample>	la pelotica se va para abajo		
+child_narratives	pool-backfill	1137	<pool sample>	entonces porqué ésta ésta te te sonó más como historia		
+child_narratives	pool-backfill	1146	<pool sample>	y al cine te llevan a_ver alguna película		
+child_narratives	pool-backfill	1509	<pool sample>	por la parte de Mérida		
+child_narratives	pool-backfill	1975	<pool sample>	que fue mejor su historia		
+child_narratives	pool-backfill	2236	<pool sample>	que tenía un herpes y tuvieron que sacármelo		
+child_narratives	pool-backfill	2525	<pool sample>	dónde		
+child_narratives	pool-backfill	2640	<pool sample>	este dijo		
+child_narratives	pool-backfill	2759	<pool sample>	y unos niños se mudan a una casa		
+child_narratives	pool-backfill	3227	<pool sample>	que si le puede ayudar		
+child_narratives	pool-backfill	3403	<pool sample>	sí y qué regalos recibiste		
+childes	train-kept	22781	ya está	ya está		
+childes	train-kept	41314	y va por el agua	y va por el agua		
+childes	train-kept	48626	mira	mira		
+childes	train-kept	50708	y qué están aprendiendo	y qué están aprendiendo		
+childes	train-kept	53588	aal Emperador	aal Emperador		
+childes	train-kept	65445	uy	uy		
+childes	train-kept	138686	la silla	la silla		
+childes	train-kept	153710	y balones	y balones		
+childes	train-kept	180332	mira tiene un dos y un cero	mira tiene un dos y un cero		
+childes	train-kept	188209	porque es verano	porque es verano		
+childes	train-kept	198462	mi papá es que no se puede quitar mira	mi papá es que no se puede quitar mira		
+childes	train-kept	199192	estos	estos		
+childes	train-kept	240871	uno dos tres cuatro cinco y seis y siete	uno dos tres cuatro cinco y seis y siete		
+childes	train-kept	281138	yo me estoy poniendo las zapas mirá	yo me estoy poniendo las zapas mirá		
+childes	train-kept	289429	es de esa chica	es de esa chica		
+childes	train-kept	316527	que decias	que decias		
+childes	train-kept	382590	eso es Bertita	eso es Bertita		
+childes	train-kept	423168	dónde está la bola	dónde está la bola		
+childes	pool-backfill	734	<pool sample>	este es español no es de Japón		
+childes	pool-backfill	2661	<pool sample>	eh		
+childes	pool-backfill	2954	<pool sample>	azul		
+childes	pool-backfill	4092	<pool sample>	nada más		
+childes	pool-backfill	17186	<pool sample>	ah		
+childes	pool-backfill	17635	<pool sample>	lili		
+childes	pool-backfill	21337	<pool sample>	seguimos trabajando un poco		
+childes	pool-backfill	29868	<pool sample>	sí		
+childes	pool-backfill	36744	<pool sample>	al hijito		
+childes	pool-backfill	42237	<pool sample>	y a mí me dijo mi amiga Esther que no sabía nadar y después bien que nadaba allí		
+childes	pool-backfill	44891	<pool sample>	mnn		
+childes	pool-backfill	45768	<pool sample>	tienes que hacer muchos deberes estas Navidades		
+europarl	train-kept	149742	Todos los Estados miembros deberían aprender esta lección, por ejemplo, Rumanía, donde la reducción de los costes de la burocracia en un 1 % generaría un ahorro de 1 000 millones de euros.	Todos los Estados miembros deberían aprender esta lección, por ejemplo, Rumanía, donde la reducción de los costes de la burocracia en un 1 % generaría un ahorro de 1 000 millones de euros.		
+europarl	train-kept	167336	No obstante, rechazamos las tendencias centralizadoras.	No obstante, rechazamos las tendencias centralizadoras.		
+europarl	train-kept	211816	el informe (A5-0255/2001) del Sr.	el informe (A5-0255/2001) del Sr.		
+europarl	train-kept	341111	Señor Presidente, Señorías, ya era hora de que el acervo de Schengen se aplicara plenamente en Bulgaria y Rumanía.	Señor Presidente, Señorías, ya era hora de que el acervo de Schengen se aplicara plenamente en Bulgaria y Rumanía.		
+europarl	train-kept	358904	Sin embargo, el número de secuestros de extranjeros en Iraq es en realidad muy pequeño si se compara con los millares de iraquíes secuestrados.	Sin embargo, el número de secuestros de extranjeros en Iraq es en realidad muy pequeño si se compara con los millares de iraquíes secuestrados.		
+europarl	train-kept	439369	en nombre del Grupo del PSE. - Señor Presidente, hablamos de conflictos enquistados.	en nombre del Grupo del PSE. - Señor Presidente, hablamos de conflictos enquistados.		
+europarl	train-kept	477938	Este informe contiene muchos puntos de vista buenos, pero en el fondo, sin embargo, rezuma falta de voluntad para reformar la política agrícola comunitaria.	Este informe contiene muchos puntos de vista buenos, pero en el fondo, sin embargo, rezuma falta de voluntad para reformar la política agrícola comunitaria.		
+europarl	train-kept	488198	La reciente inauguración del gasoducto Armenia-Irán no servirá precisamente para reducir esta dependencia, ya que naturalmente el gas y el propio gasoducto estarán controlados por Gazprom.	La reciente inauguración del gasoducto Armenia-Irán no servirá precisamente para reducir esta dependencia, ya que naturalmente el gas y el propio gasoducto estarán controlados por Gazprom.		
+europarl	train-kept	513406	Aunque los países candidatos no son todavía miembros de la Unión, poco les falta, pocos años faltan para que lo sean.	Aunque los países candidatos no son todavía miembros de la Unión, poco les falta, pocos años faltan para que lo sean.		
+europarl	train-kept	559894	Señor Presidente, Señorías, Comisaria Schreyer, no hace falta que nadie nos diga que existe mucha pobreza en el mundo.	Señor Presidente, Señorías, Comisaria Schreyer, no hace falta que nadie nos diga que existe mucha pobreza en el mundo.		
+europarl	train-kept	582953	El capítulo agrícola es uno de los mayores temas de negociación y, junto a la política regional y las cuestiones presupuestarias, es sin duda uno de los campos más delicados.	El capítulo agrícola es uno de los mayores temas de negociación y, junto a la política regional y las cuestiones presupuestarias, es sin duda uno de los campos más delicados.		
+europarl	train-kept	606891	Los pagos de las facturas de la UE deben entrar en la misma dinámica que existe en el mundo exterior.	Los pagos de las facturas de la UE deben entrar en la misma dinámica que existe en el mundo exterior.		
+europarl	train-kept	745057	Pregunta nº 17 formulada por María Izquierdo Rojo (H-0148/99):	Pregunta nº 17 formulada por María Izquierdo Rojo (H-0148/99):		
+europarl	train-kept	765109	Dicho principio no deberá emplearse para flecos sueltos, sino precisamente para conceder de nuevo la palabra a quienes acaban de intervenir y facilitar así las respuestas mutuas.	Dicho principio no deberá emplearse para flecos sueltos, sino precisamente para conceder de nuevo la palabra a quienes acaban de intervenir y facilitar así las respuestas mutuas.		
+europarl	train-removed	776326	Sin embargo, esta vez me parece que sería importante que la Comisión hiciera un seguimiento de las tendencias de los precios de los medicamentos, teniendo en cuenta las diferencias entre los distintos países.	<REMOVED>		
+europarl	train-removed	797183	Señor Presidente, veo que hay dos relojes en esta Cámara, pero parecen estar completamente desincronizados.	<REMOVED>		
+europarl	train-kept	950871	Finalmente, el tercer criterio se refiere al carácter duradero y sostenible del desarrollo iniciado.	Finalmente, el tercer criterio se refiere al carácter duradero y sostenible del desarrollo iniciado.		
+europarl	train-kept	1120173	Para terminar, desearía felicitar a la ponente.	Para terminar, desearía felicitar a la ponente.		
+europarl	pool-backfill	3940	<pool sample>	No obstante, se deben encontrar medios y vías para impedir un aumento simultáneo del esfuerzo pesquero.		
+europarl	pool-backfill	10484	<pool sample>	Por otra parte, usted mismo ya ha señalado que este aspecto no figura en el proyecto.		
+europarl	pool-backfill	29627	<pool sample>	En cuanto a los plazos de pago mi grupo parlamentario también quiere contribuir a una mejora.		
+europarl	pool-backfill	33063	<pool sample>	.		
+europarl	pool-backfill	47397	<pool sample>	Recientemente hemos logrado buenos resultados en la cumbre entre la Unión Europea y Estados Unidos.		
+europarl	pool-backfill	56759	<pool sample>	Ambas partes pueden desempeñar un papel en esta materia en las próximas negociaciones de la OMC.		
+europarl	pool-backfill	63519	<pool sample>	El acuerdo de las autoridades cubanas de incluir en el debate cuestiones relativas a la situación de los derechos humanos en Cuba debe ser una condición imprescindible para reabrir un diálogo pleno.		
+europarl	pool-backfill	63983	<pool sample>	Un elemento importante de la propuesta de la Comisión es la extensión de la transparencia y la mejora en el desarrollo del debate abierto.		
+europarl	pool-backfill	71859	<pool sample>	Además, hoy se está discutiendo en Bruselas el tema de la acción coordinada de la UE en una reunión extraordinaria del Grupo de trabajo para Asia-Oceanía de la PESC a la luz de las negociaciones de los ministros en el Consejo de Asuntos Generales celebrado esta misma semana, los días 15 y 16 de julio.		
+europarl	pool-backfill	91497	<pool sample>	el informe (A5-0208/2000) del Sr.		
+europarl	pool-backfill	105367	<pool sample>	Mi última observación versa sobre la idea de partenariado.		
+europarl	pool-backfill	121932	<pool sample>	Es un informe que nace de una propuesta que hice en 2005, cuando comprendí que era necesario establecer una base más firme para el intercambio de información preventiva por parte de cada Estado miembro que quisiera adoptar legítimamente iniciativas en el ámbito de la inmigración, cuando esas iniciativas tuvieran una repercusión sobre otros Estados miembros.		
+grerli	train-kept	2169	y ya no nos peleamos mas el y yo	y ya no nos peleamos mas el y yo		
+grerli	train-kept	4576	y sabes por qué	y sabes por qué		
+grerli	train-kept	4682	él quiere ir a la casa de las bestias tú crees	él quiere ir a la casa de las bestias tú crees		
+grerli	train-kept	6914	ah John_Smith	ah John_Smith		
+grerli	train-kept	6968	en la frente ponle el pelo	en la frente ponle el pelo		
+grerli	train-kept	8082	y vamos que lo que he escrito es	y vamos que lo que he escrito es		
+grerli	train-kept	8610	que los coches es una de mis pasiones	que los coches es una de mis pasiones		
+grerli	train-removed	8680	está ahí debajo me parece que no debajo no	<REMOVED>		
+grerli	train-kept	8774	un Street qué	un Street qué		
+grerli	train-kept	10312	las que yo pensaba	las que yo pensaba		
+grerli	train-kept	12965	no quería que me contaras el cuento porque yo no lo sé	no quería que me contaras el cuento porque yo no lo sé		
+grerli	train-kept	13146	entonces les dijimos a todas que sí	entonces les dijimos a todas que sí		
+grerli	train-kept	15036	ya ni pude coger nombres ni nada	ya ni pude coger nombres ni nada		
+grerli	train-kept	16359	digo	digo		
+grerli	train-kept	17662	o eres muy valiente	o eres muy valiente		
+grerli	train-kept	18395	y por_fin nos dejo	y por_fin nos dejo		
+grerli	train-kept	18586	y llegó un momento	y llegó un momento		
+grerli	train-kept	19156	me lo regalas	me lo regalas		
+grerli	pool-backfill	431	<pool sample>	o a gente		
+grerli	pool-backfill	979	<pool sample>	sí tú uno de éstos		
+grerli	pool-backfill	1010	<pool sample>	poque se convitió en malo		
+grerli	pool-backfill	1076	<pool sample>	qué te echó aquí pa curate		
+grerli	pool-backfill	1091	<pool sample>	ahí se acabó		
+grerli	pool-backfill	1195	<pool sample>	y etó por la puerta y se la comió así uam		
+grerli	pool-backfill	1559	<pool sample>	y todo el rato		
+grerli	pool-backfill	1697	<pool sample>	ése		
+grerli	pool-backfill	1772	<pool sample>	qué señora estaba allí en la Lloca		
+grerli	pool-backfill	1853	<pool sample>	y muy guapo		
+grerli	pool-backfill	1873	<pool sample>	ah pues es guapísimo me gusta mucho		
+grerli	pool-backfill	1970	<pool sample>	con ésa no se puede jugar aquí		
+gutenberg	train-kept	66614	con vehemancia=> con vehemencia {pg 196}	con vehemancia=> con vehemencia {pg 196}		
+gutenberg	train-kept	114976	MARTÍN	MARTÍN		
+gutenberg	train-kept	160266	veces en mi casa, porque tú los dejas desnudos y abandonaos en la calle	veces en mi casa, porque tú los dejas desnudos y abandonaos en la calle		
+gutenberg	train-kept	167754	ya había procurado tranquilizar su espíritu por medio de algunos	ya había procurado tranquilizar su espíritu por medio de algunos		
+gutenberg	train-kept	263627	todas se confesasen de unos mismos. A otros curas les he oído muchos	todas se confesasen de unos mismos. A otros curas les he oído muchos		
+gutenberg	train-kept	400157	—¿Qué más que escribir una sátira de la tal tertulia con mucha sal y	—¿Qué más que escribir una sátira de la tal tertulia con mucha sal y		
+gutenberg	train-kept	403458	Después de este llamamiento desesperado permaneció silenciosa unos	Después de este llamamiento desesperado permaneció silenciosa unos		
+gutenberg	train-kept	442667	duramente.—¿Por qué?... Pero no hables: no mientas. Te advierto que lo	duramente.—¿Por qué?... Pero no hables: no mientas. Te advierto que lo		
+gutenberg	train-kept	490786	Yo he oído a un capitán viejo de la Academia, que si en España existe el	Yo he oído a un capitán viejo de la Academia, que si en España existe el		
+gutenberg	train-kept	554817	habían oído hablar hacía unos quince años de un Juan de Aguirre,	habían oído hablar hacía unos quince años de un Juan de Aguirre,		
+gutenberg	train-kept	580100	nabio que Miçer Ambrosio metio en esta laguna, y la canoa grande de	nabio que Miçer Ambrosio metio en esta laguna, y la canoa grande de		
+gutenberg	train-kept	624835	coyá (collada) entre dos cuetus... vamos, al acabar de esta primera	coyá (collada) entre dos cuetus... vamos, al acabar de esta primera		
+gutenberg	train-kept	625381	little (one), little child.	little (one), little child.		
+gutenberg	train-kept	657925	la línea de flotación, está libre de la acción de las balas. El agua	la línea de flotación, está libre de la acción de las balas. El agua		
+gutenberg	train-kept	713537	dolores que presentan los músculos ó los tejidos blancos, lejos de	dolores que presentan los músculos ó los tejidos blancos, lejos de		
+gutenberg	train-kept	830556	Un ligero ruido a la espalda de la columna y algunas risas ahogadas me	Un ligero ruido a la espalda de la columna y algunas risas ahogadas me		
+gutenberg	train-kept	902593	devota más que una amante, pero tenía crisis de inexplicable tristeza,	devota más que una amante, pero tenía crisis de inexplicable tristeza,		
+gutenberg	train-kept	902932	—Eso es—mugía el discípulo—. Ellos a vivir de gorra, a comerse el	—Eso es—mugía el discípulo—. Ellos a vivir de gorra, a comerse el		
+gutenberg	pool-backfill	4147	<pool sample>	que nos cautiva; es la loca que firma riendo un contrato de igualdad,		
+gutenberg	pool-backfill	5583	<pool sample>	hacer cosecha de almas.		
+gutenberg	pool-backfill	7690	<pool sample>	los jóvenes según el mérito de apariencias superficiales y fútiles!		
+gutenberg	pool-backfill	8724	<pool sample>	hubiera gustado; lo que le chocaba es que le produjese		
+gutenberg	pool-backfill	27334	<pool sample>	con el hisopo en la diestra y el bonete en la izquierda aparando los		
+gutenberg	pool-backfill	37693	<pool sample>	hagan con voluntad, enviaba presentes á los señores naturales.		
+gutenberg	pool-backfill	42581	<pool sample>	objetos más duros.		
+gutenberg	pool-backfill	43509	<pool sample>	permite obrar según mi conciencia, con tal que no le moleste en sus		
+gutenberg	pool-backfill	55576	<pool sample>	viendo en todo su libro. Hora es ya de no colgar el sambenito de		
+gutenberg	pool-backfill	63651	<pool sample>	—¡Que os engañaba!		
+gutenberg	pool-backfill	96882	<pool sample>	860		
+gutenberg	pool-backfill	97563	<pool sample>	cardeníllo puro de manera que todas tres manos sean dadas con su azeyte		
+leipzig_web	train-removed	600	Hubo un tiempo en que Brock era joven y luchaba contra Eddie (Guerrero) y Big Show y Kurt Angle, y el tipo era fantástico.	<REMOVED>		
+leipzig_web	train-kept	111580	Ambas debutan en el cargo, aunque en el caso de la primera población, la socialista ejercía de vicealcaldesa.	Ambas debutan en el cargo, aunque en el caso de la primera población, la socialista ejercía de vicealcaldesa.		
+leipzig_web	train-kept	160264	Y qué ventajas aporta un material como el titanio.	Y qué ventajas aporta un material como el titanio.		
+leipzig_web	train-kept	169397	La herida está abierta porque las masacres siguen, y ya no solo dentro de la cárcel”.	La herida está abierta porque las masacres siguen, y ya no solo dentro de la cárcel”.		
+leipzig_web	train-kept	187331	Entre el 1 de enero al 30 de marzo, Infoca ha realizado 93 intervenciones en terrenos forestales (120 en 2022).	Entre el 1 de enero al 30 de marzo, Infoca ha realizado 93 intervenciones en terrenos forestales (120 en 2022).		
+leipzig_web	train-kept	208574	Powell no dijo nada que no se supiera ya, o que no se esperase en el primer día de su testimonio semestral ante los legisladores estadounidenses.	Powell no dijo nada que no se supiera ya, o que no se esperase en el primer día de su testimonio semestral ante los legisladores estadounidenses.		
+leipzig_web	train-kept	312943	Por el ensanche y la repavimentación de la avenida, el sentido ascendente continúa habilitado al tránsito, y, momentáneamente, funcionará como doble mano.	Por el ensanche y la repavimentación de la avenida, el sentido ascendente continúa habilitado al tránsito, y, momentáneamente, funcionará como doble mano.		
+leipzig_web	train-kept	339903	La Secretaría de Protección Civil de Veracruz informó que.	La Secretaría de Protección Civil de Veracruz informó que.		
+leipzig_web	train-kept	392078	Freiler alertó que «el atentado comenzó antes» y lo definió como «la parte de un todo»	Freiler alertó que «el atentado comenzó antes» y lo definió como «la parte de un todo»		
+leipzig_web	train-kept	512341	Los que organizaron la emboscada, nos dicen senadores de oposición, se quedaron con las ganas, pues doña Norma no asistió a la ceremonia solemne en la que se entregó la medalla Belisario Domínguez a la escritora y periodista Elena Poniatowska.	Los que organizaron la emboscada, nos dicen senadores de oposición, se quedaron con las ganas, pues doña Norma no asistió a la ceremonia solemne en la que se entregó la medalla Belisario Domínguez a la escritora y periodista Elena Poniatowska.		
+leipzig_web	train-kept	532324	A su vez, la Organización Panamericana de la Salud enviará a un especialista que será confirmado próximamente, sumando aún más perspectivas y experiencia en el abordaje de los desafíos relacionados con el agua y la salud.	A su vez, la Organización Panamericana de la Salud enviará a un especialista que será confirmado próximamente, sumando aún más perspectivas y experiencia en el abordaje de los desafíos relacionados con el agua y la salud.		
+leipzig_web	train-kept	532343	Esto le da al cirujano más espacio para ver y trabajar.	Esto le da al cirujano más espacio para ver y trabajar.		
+leipzig_web	train-removed	556117	"""Es importante no creer que hay una receta para todo el mundo, que hay un paso a paso, una forma que nos va a funcionar a todos."	<REMOVED>		
+leipzig_web	train-kept	565580	Ahora, el actor está libre de todos los cargos.	Ahora, el actor está libre de todos los cargos.		
+leipzig_web	train-kept	628039	Aunque no estuvo presente en el plató, ha dejado saber su gran felicidad a través de sus redes sociales.	Aunque no estuvo presente en el plató, ha dejado saber su gran felicidad a través de sus redes sociales.		
+leipzig_web	train-kept	638552	Acto seguido, se comunicará a la Presidencia del Congreso la decisión que tomó la agrupación «para que sepan que esos congresistas no pertenecen a la bancada”.	Acto seguido, se comunicará a la Presidencia del Congreso la decisión que tomó la agrupación «para que sepan que esos congresistas no pertenecen a la bancada”.		
+leipzig_web	train-kept	655675	El asesor del Comando de Campaña de la candidata unitaria señaló que “lo planteado en el TSJ es inadmisible”, ya que la solicitud formulada por el “que no tiene cualidad para solicitarla” busca suspender un acto que fue consumado.	El asesor del Comando de Campaña de la candidata unitaria señaló que “lo planteado en el TSJ es inadmisible”, ya que la solicitud formulada por el “que no tiene cualidad para solicitarla” busca suspender un acto que fue consumado.		
+leipzig_web	train-kept	669988	De la Cámara de Cuentas y la reforma necesaria.	De la Cámara de Cuentas y la reforma necesaria.		
+leipzig_web	pool-backfill	2843	<pool sample>	En 1994 saltó a la fama con el show de interpretó a Chandler Bing junto a otras celebridades como, Matt LeBlanc, entre otros.		
+leipzig_web	pool-backfill	12693	<pool sample>	Y así se le respetó a petición de ellos.		
+leipzig_web	pool-backfill	14074	<pool sample>	"Realmente la persona con la que te acuestas no existe y nunca ha existido"", ha llegado a denunciar la Comisión 8M del movimiento feminista de Madrid."		
+leipzig_web	pool-backfill	19718	<pool sample>	Agricultura recibe 2,073,990 € para impulsar el sector y apoyar a agricultores locales.		
+leipzig_web	pool-backfill	19826	<pool sample>	Txai exigió que los originarios tengan voz en los diversos mecanismos y se sienten en la mesa de negociaciones.		
+leipzig_web	pool-backfill	20524	<pool sample>	Por otro lado, Sebastián, contador, con una postura más conservadora, abogaba por la importancia de la libertad individual y una economía de mercado sólida.		
+leipzig_web	pool-backfill	21607	<pool sample>	Ya sabíamos de este repunte para Carnaval, sin embargo superó ampliamente las expectativas previas a este fin de semana extra largo” reconocieron desde sectores de la gastronomía y hoteleros de nuestra ciudad.		
+leipzig_web	pool-backfill	41587	<pool sample>	Directamente los dos primeros y de forma indirecta, el tercero.		
+leipzig_web	pool-backfill	42720	<pool sample>	"""No ha sido necesario recurrir a la perrera."		
+leipzig_web	pool-backfill	55574	<pool sample>	Luego se producirá la elección de la soberana local entre 30 postulantes que competirá en febrero en la Fiesta Nacional del Trigo de Leones.		
+leipzig_web	pool-backfill	63265	<pool sample>	Hemos tenido agendas en Dubái y en EEUU.		
+leipzig_web	pool-backfill	67685	<pool sample>	Se recuerda que el SNS suspendió al director de la maternindad de Los Mina, luego de que un programa de investigación periodística revelara que sólo en febrero de este año, 34 recién nacidos perdieron la vida por una supuesta infección.		
+opensubtitles	train-kept	1015057	No, aquí está muy tranquilo.	No, aquí está muy tranquilo.		
+opensubtitles	train-kept	1077026	¿La disciplina mental de su pueblo se desarrolló aquí?	¿La disciplina mental de su pueblo se desarrolló aquí?		
+opensubtitles	train-kept	1385186	¡Sube, vamos!	¡Sube, vamos!		
+opensubtitles	train-kept	1687378	Esto no es un adversário...	Esto no es un adversário...		
+opensubtitles	train-kept	1776693	Te trae de beber y a cambio te coge, ¿no?	Te trae de beber y a cambio te coge, ¿no?		
+opensubtitles	train-kept	2079584	Buscaré algún regalo por aquí si tú haces una travesura por mí.	Buscaré algún regalo por aquí si tú haces una travesura por mí.		
+opensubtitles	train-kept	2223457	¿Cómo estás, mi buen amigo?	¿Cómo estás, mi buen amigo?		
+opensubtitles	train-kept	2614866	- No.	- No.		
+opensubtitles	train-kept	3132479	Qué?	Qué?		
+opensubtitles	train-kept	3346990	Pero, por alguna razón, éste no lo hizo.	Pero, por alguna razón, éste no lo hizo.		
+opensubtitles	train-kept	3549539	¿Qué tal estás?	¿Qué tal estás?		
+opensubtitles	train-kept	3675050	Tengo otras cosas de qué ocuparme, pero mañana hablaré contigo y con Ray, eso si lo encuentras.	Tengo otras cosas de qué ocuparme, pero mañana hablaré contigo y con Ray, eso si lo encuentras.		
+opensubtitles	train-kept	3787341	¿Hiciste esa mierda?	¿Hiciste esa mierda?		
+opensubtitles	train-kept	3986958	2, 4...	2, 4...		
+opensubtitles	train-kept	4341741	Todos tienen.	Todos tienen.		
+opensubtitles	train-kept	4426449	Lo pensé mucho.	Lo pensé mucho.		
+opensubtitles	train-kept	4523944	Mira, cariño, no esperes que algo bueno suceda de la mañana a la noche.	Mira, cariño, no esperes que algo bueno suceda de la mañana a la noche.		
+opensubtitles	train-kept	4612087	Dijo que no era su abrigo.	Dijo que no era su abrigo.		
+opensubtitles	pool-backfill	7816	<pool sample>	¡Arriba, Barbara!		
+opensubtitles	pool-backfill	89128	<pool sample>	Hola, Doctor.		
+opensubtitles	pool-backfill	195205	<pool sample>	Energía nuclear.		
+opensubtitles	pool-backfill	204504	<pool sample>	¡Dímelo!		
+opensubtitles	pool-backfill	222668	<pool sample>	'¿Qué ha sido esa mirada?		
+opensubtitles	pool-backfill	253973	<pool sample>	Fiji.		
+opensubtitles	pool-backfill	282798	<pool sample>	Los veré en la cena.		
+opensubtitles	pool-backfill	375947	<pool sample>	Te digo, mis instintos estaban algo fuera de juego...		
+opensubtitles	pool-backfill	413981	<pool sample>	¡Cap.		
+opensubtitles	pool-backfill	429446	<pool sample>	- Eso no es justo, Elin.		
+opensubtitles	pool-backfill	471351	<pool sample>	"- ¿""Capitana""?"		
+opensubtitles	pool-backfill	513263	<pool sample>	Phoebe, tienes que llevártela.		
+qed	train-kept	32939	Muchos han dicho que Brasil se despertó, no es así, ya estábamos despiertos pero nos sentíamos impotentes.	Muchos han dicho que Brasil se despertó, no es así, ya estábamos despiertos pero nos sentíamos impotentes.		
+qed	train-kept	70675	Qué implica esto?	Qué implica esto?		
+qed	train-kept	74300	Modelo de trajes de baño.	Modelo de trajes de baño.		
+qed	train-kept	98908	¿Cuántas veces debo repetir eso?	¿Cuántas veces debo repetir eso?		
+qed	train-kept	101640	Excelente.	Excelente.		
+qed	train-kept	138740	lágrimas de balanceo en el coche: bonita, estoy cansado, ¿cómo puedo	lágrimas de balanceo en el coche: bonita, estoy cansado, ¿cómo puedo		
+qed	train-kept	199660	Entonces digo len(data) regresa 5	Entonces digo len(data) regresa 5		
+qed	train-kept	224644	"""Nos gustaría comenzar con esto"", yo dudé y dije:"	"""Nos gustaría comenzar con esto"", yo dudé y dije:"		
+qed	train-kept	240063	MA:	MA:		
+qed	train-kept	249566	La filosofía se hace alrededor de una fogata.	La filosofía se hace alrededor de una fogata.		
+qed	train-kept	254802	La Unión:	La Unión:		
+qed	train-kept	292005	Y de estos dos procesos al azar, he aquí que, obtendrá erizos de mar, aves del paraíso, ballenas grises y seres humanos.	Y de estos dos procesos al azar, he aquí que, obtendrá erizos de mar, aves del paraíso, ballenas grises y seres humanos.		
+qed	train-kept	346480	Puede ser peligroso dar...	Puede ser peligroso dar...		
+qed	train-kept	426834	Si pudiera, entonces el hombre o la obra de arte de sería	Si pudiera, entonces el hombre o la obra de arte de sería		
+qed	train-removed	495632	Caminamos hacia un futuro, en donde, solo habrá una ayuda esencial, pensión mínima, ayuda social..	<REMOVED>		
+qed	train-kept	495949	"Voy tirar un invocador y cansar 2 cartas para invocar ""El Guerrero de la Luz"" entonces el toma el lugar de Gabranth, pero llega cansado y... ahora empezare a atacar y pues Barret atacara"	"Voy tirar un invocador y cansar 2 cartas para invocar ""El Guerrero de la Luz"" entonces el toma el lugar de Gabranth, pero llega cansado y... ahora empezare a atacar y pues Barret atacara"		
+qed	train-kept	508994	Christophe Rossignon, productor y Hubert Koundé, actor.	Christophe Rossignon, productor y Hubert Koundé, actor.		
+qed	train-kept	539132	Y una conmigo.	Y una conmigo.		
+qed	pool-backfill	79	<pool sample>	-Es ...		
+qed	pool-backfill	2298	<pool sample>	Así que si digo 1.3 aquí, hacer un poco más alto, y que disminuye.		
+qed	pool-backfill	18567	<pool sample>	Ahora yo puedo acariciarlas en cualquier momento.		
+qed	pool-backfill	23050	<pool sample>	Durante cientos de años, a pesar de que la evidencia demostraba que esto era lo que hacían, no lo creímos.		
+qed	pool-backfill	23761	<pool sample>	Me temo que nos estamos cansando...		
+qed	pool-backfill	30278	<pool sample>	Tienen tanto miedo de los resultados de tu investigación.		
+qed	pool-backfill	32008	<pool sample>	Os estáis pasando con el análisis, viendo cosas donde no háy, etc.		
+qed	pool-backfill	37572	<pool sample>	Practica dos virtudes: el honor y la caridad.		
+qed	pool-backfill	41096	<pool sample>	No le hará sentirse mejor saber que su condición es muy rara.		
+qed	pool-backfill	41420	<pool sample>	¿Cuáles de ellas parecen impulsar esta manifestación de racismo... en este gran experimento nacional que realizamos el cuatro de noviembre?		
+qed	pool-backfill	53855	<pool sample>	En lugares como Argentina, Bolivia, Ecuador,		
+qed	pool-backfill	58774	<pool sample>	Porque las advertencias y promesas de Dios es la manera en que conquistamos las mentiras del Diablo		
+spoken	train-kept	1935	Tú Alejandro también tienes problemas, ya te lo dije ayer, con faltas, ¿eh?	Tú Alejandro también tienes problemas, ya te lo dije ayer, con faltas, ¿eh?		
+spoken	train-kept	6631	H5: [afirmación].	H5: [afirmación].		
+spoken	train-removed	9881	[vacilación] por ejempl[palabra cortada]... por ejemplo alguna, alguna señal que se haya colado[solapamiento de turnos]ya...	<REMOVED>		
+spoken	train-kept	12834	Todos: [ininteligible]	Todos: [ininteligible]		
+spoken	train-kept	18374	H1:El objetivo, veo que es hacer la vida lo más agradable posible al paciente, que se asemeje, ya sé que es difícil, pero, lo más posible a un hotel, ¿no?	H1:El objetivo, veo que es hacer la vida lo más agradable posible al paciente, que se asemeje, ya sé que es difícil, pero, lo más posible a un hotel, ¿no?		
+spoken	train-kept	24051	H1: ¿Boca abajo?	H1: ¿Boca abajo?		
+spoken	train-kept	24932	H1: enchufas la radio y ya verás qué bien.	H1: enchufas la radio y ya verás qué bien.		
+spoken	train-kept	25113	H1: Lo normal, ¿verdad?	H1: Lo normal, ¿verdad?		
+spoken	train-kept	32592	Como lo de la circundición que leímos en...	Como lo de la circundición que leímos en...		
+spoken	train-kept	32743	H2: Bueno, pues no sé.	H2: Bueno, pues no sé.		
+spoken	train-kept	36510	H2: ¿Ves?	H2: ¿Ves?		
+spoken	train-kept	55297	H1: Además es que, yo y otra chica, o sea, pero, hija, bueno, son cosas... mira, como esto de la sangre, oye, te puede dar un poco de así al principio y luego ya te acostumbras y bah, no es nada, ¿no?	H1: Además es que, yo y otra chica, o sea, pero, hija, bueno, son cosas... mira, como esto de la sangre, oye, te puede dar un poco de así al principio y luego ya te acostumbras y bah, no es nada, ¿no?		
+spoken	train-kept	58083	H2: Pues...	H2: Pues...		
+spoken	train-kept	58801	[duda] cualquier descuido de la persona que se ocupa de él puede... suponerle la muerte.	[duda] cualquier descuido de la persona que se ocupa de él puede... suponerle la muerte.		
+spoken	train-removed	60638	[fin de solapamiento de turnos] no sé si lo verá o no lo verá, pero hay un semáforo.	<REMOVED>		
+spoken	train-kept	70293	H2: Entra... entra Arlaukas por Rivas; pierde altura, o al menos, pierde potencial próximo a la canasta... que es la idea, yo no sé si ya un tanto desesperada de [ininteligible] [extranjerismo]Brown[fin de extranjerismo], que ve cómo su equipo se mantiene inoperante en defensa y ataque	H2: Entra... entra Arlaukas por Rivas; pierde altura, o al menos, pierde potencial próximo a la canasta... que es la idea, yo no sé si ya un tanto desesperada de [ininteligible] [extranjerismo]Brown[fin de extranjerismo], que ve cómo su equipo se mantiene inoperante en defensa y ataque		
+spoken	train-kept	70856	[extranjerismo]Luca[fin de extranjerismo] va a estar pegando el tirón; [extranjerismo]Luca[fin de extranjerismo] sabe que Carlos... es un hombre que va a hacer todo el mundial, no es como si tuviera un japonés delante...	[extranjerismo]Luca[fin de extranjerismo] va a estar pegando el tirón; [extranjerismo]Luca[fin de extranjerismo] sabe que Carlos... es un hombre que va a hacer todo el mundial, no es como si tuviera un japonés delante...		
+spoken	train-kept	72133	Le hicieron una mixta, porque estaba siendo el verdugo, y, a partir de la mixta, pues bueno, se erigieron en... lanzadores Olalla y [extranjerismo][ininteligible][fin de extranjerismo], eh... creo que hicieron seis o siete goles cada uno.	Le hicieron una mixta, porque estaba siendo el verdugo, y, a partir de la mixta, pues bueno, se erigieron en... lanzadores Olalla y [extranjerismo][ininteligible][fin de extranjerismo], eh... creo que hicieron seis o siete goles cada uno.		
+spoken	pool-backfill	599	<pool sample>	Todos: [aplausos]		
+spoken	pool-backfill	702	<pool sample>	H9: [solapamiento de turnos] Gracias.		
+spoken	pool-backfill	721	<pool sample>	Todos: [aplausos]		
+spoken	pool-backfill	785	<pool sample>	H5: Zéus.		
+spoken	pool-backfill	954	<pool sample>	[fin de solapamiento de turnos] Muy bien.		
+spoken	pool-backfill	955	<pool sample>	Le gusta bromear.		
+spoken	pool-backfill	1337	<pool sample>	H1: ...y hemos decidido... pues nada, dejarlo porque yo no me complico la vida por alquilar un piso para tres o cuatro años.		
+spoken	pool-backfill	2593	<pool sample>	¿a qué tiene miedo al gobierno a sacar adelante ese texto?		
+spoken	pool-backfill	3212	<pool sample>	Hb: ¿Yo podría comprar ese piso, o tendría problemas con los inquilinos?		
+spoken	pool-backfill	4270	<pool sample>	El mecanismo, el recurso de combate que el tercer mundo tiene, aunque sea tremendo y aunque sea una aberración y aunque sea un drama es incrementando los nacimientos.		
+spoken	pool-backfill	4709	<pool sample>	Recordáis como el modernismo, que vuelve a las escenas del dieciocho, a recoger... por ejemplo, Rubén Darío, escenas...		
+spoken	pool-backfill	5661	<pool sample>	H1:Sí.		
+vikidia	train-kept	283	Prevención de la sífilis congénita	Prevención de la sífilis congénita		
+vikidia	train-kept	7666	La minería genera impacto ambiental y es un reto encontrar un equilibrio sostenible.	La minería genera impacto ambiental y es un reto encontrar un equilibrio sostenible.		
+vikidia	train-kept	20290	Siglo XXI Madrid	Siglo XXI Madrid		
+vikidia	train-kept	24891	Si quieres leer la franquicia completa, véase Forza Horizon	Si quieres leer la franquicia completa, véase Forza Horizon		
+vikidia	train-kept	28535	↑ Dunning, John (1998). On the Air: The Encyclopedia of Old-Time Radio . Oxford University Press.	↑ Dunning, John (1998). On the Air: The Encyclopedia of Old-Time Radio . Oxford University Press.		
+vikidia	train-kept	34761	"Antología ""Abrojos y rimas: Alejandro Rejón Huchin"" en La Máscarada, enero 23 del 2017, Cd de México, México."	"Antología ""Abrojos y rimas: Alejandro Rejón Huchin"" en La Máscarada, enero 23 del 2017, Cd de México, México."		
+vikidia	train-kept	37389	Además existen otras lenguas minoritarias como el aragonés , el asturiano, la fala u otros, algunos de ellos en peligro de desaparición según algunos datos de la Unesco .	Además existen otras lenguas minoritarias como el aragonés , el asturiano, la fala u otros, algunos de ellos en peligro de desaparición según algunos datos de la Unesco .		
+vikidia	train-kept	38891	Catalina sufrió un derrame cerebral el 16 de noviembre [5 de noviembre] de 1796. Debido a la apoplejía, perdió el conocimiento. Murió en su cama a las 9:20 de la noche siguiente, mientras seguía inconsciente. Catalina fue enterrada en la catedral de Pedro y Pablo de San Petersburgo .	Catalina sufrió un derrame cerebral el 16 de noviembre [5 de noviembre] de 1796. Debido a la apoplejía, perdió el conocimiento. Murió en su cama a las 9:20 de la noche siguiente, mientras seguía inconsciente. Catalina fue enterrada en la catedral de Pedro y Pablo de San Petersburgo .		
+vikidia	train-kept	51174	Angel Alsina	Angel Alsina		
+vikidia	train-kept	55445	Datos importantes	Datos importantes		
+vikidia	train-kept	59639	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.		
+vikidia	train-kept	63789	En 2023 fue ganador de la Olimpiada Matemática Nacional de la Federación Española de Sociedades de Profesores de Matemáticas . [1]	En 2023 fue ganador de la Olimpiada Matemática Nacional de la Federación Española de Sociedades de Profesores de Matemáticas . [1]		
+vikidia	train-kept	72846	El blanco es un color, caracterizado por ser el más claro, y el único que no tiene oscuridad. Se obtiene al mezclar todos los colores del arcoiris (aunque también se puede obtener mezclando solamente el amarillo , el azul y el rojo , que son colores primarios).	El blanco es un color, caracterizado por ser el más claro, y el único que no tiene oscuridad. Se obtiene al mezclar todos los colores del arcoiris (aunque también se puede obtener mezclando solamente el amarillo , el azul y el rojo , que son colores primarios).		
+vikidia	train-removed	75915	En términos matemáticos, una variedad suave es similar. Cuando miras de cerca, parece un pedazo plano o curvado del espacio euclidiano, pero cuando la observas en su contexto más amplio, puede estar doblada, torcida o curvada de maneras más complicadas.	<REMOVED>		
+vikidia	train-kept	86753	Caja conteniendo almidón	Caja conteniendo almidón		
+vikidia	train-kept	91304	Referencias	Referencias		
+vikidia	train-kept	94164	La Tierra es hogar de millones de especies de plantas y animales , incluido el ser humano . Es el único lugar del universo en el que se conoce la existencia de vida. Algunos cálculos muestran que la Tierra se formó hace unos 4500 millones de años.	La Tierra es hogar de millones de especies de plantas y animales , incluido el ser humano . Es el único lugar del universo en el que se conoce la existencia de vida. Algunos cálculos muestran que la Tierra se formó hace unos 4500 millones de años.		
+vikidia	train-kept	95749	A diferencia del nazismo, la ideología racista que seguía Adolf Hitler, el «fascismo italiano» de Mussolini era diferente y menos destructivo. Aunque creía en la superioridad de la nación italiana y en la unidad nacional, Mussolini, a diferencia de Hitler, no hacía referencia a la « raza ». Es un sentimiento, no una realidad. Nada me hará creer que hoy puedan existir razas biológicamente puras » .	A diferencia del nazismo, la ideología racista que seguía Adolf Hitler, el «fascismo italiano» de Mussolini era diferente y menos destructivo. Aunque creía en la superioridad de la nación italiana y en la unidad nacional, Mussolini, a diferencia de Hitler, no hacía referencia a la « raza ». Es un sentimiento, no una realidad. Nada me hará creer que hoy puedan existir razas biológicamente puras » .		
+vikidia	pool-backfill	649	<pool sample>	Nacimientos		
+vikidia	pool-backfill	1382	<pool sample>	Este año puede que sea el último en cuanto nuevo contenido se refiere: Dejando a Midnight Muscle como la última serie unica, ya que empezando el 30 de enero, se volverá a repetir las series anteriores ya mencionadas mediante el voto de los jugadores, alegando de que Horizon 6 está a la vuelta de la esquina. Además, se ha confirmado que Forza Horizon 5 saldrá en PlayStation 5 esta primavera junto a Horizon Realms		
+vikidia	pool-backfill	3323	<pool sample>	Negro es la percepción visual de máxima oscuridad debido a la inexistencia total o parcial de la luz .		
+vikidia	pool-backfill	3647	<pool sample>	Una selección de juguetes romanos antiguos, en un museo. La muestra incluye varios juguetes que resultarían familiares a los niños de hoy en día, como una muñeca, sonajeros, dados y pequeños platos para jugar a las casitas.		
+vikidia	pool-backfill	3720	<pool sample>	Seychelles es un país ubicado en África . Su nombre oficial es República de Seychelles , y su capital es Victoria.		
+vikidia	pool-backfill	4648	<pool sample>	Nuevo México ( New Mexico en inglés ) es uno de los 50 estados de Estados Unidos . [1] Su capital es Santa Fé y su población es de 2.059.179 habitantes (según los datos del censo de 2009).		
+vikidia	pool-backfill	4698	<pool sample>	"Zheng He nació en Kunyang, Yunnan, en 1371. A la edad de diez años, fue capturado por las fuerzas Ming durante la reconquista de Yunnan y castrado, convirtiéndose en un eunuco al servicio del príncipe Zhu Di, quien más tarde se convertiría en el emperador Yongle. El príncipe le otorgó el nombre de Zheng He, y también se le conocía como ""Sanbao"", que significa ""Tres Joyas"" en referencia a su estatus y habilidades."		
+vikidia	pool-backfill	4818	<pool sample>	La política de Aragón se dirigió también hacia el mar Mediterráneo e Italia del Sur ( Sicilia ). Pedro III el Grande tuvo éxito contra la familia francesa de Anjou a quien el Papa había dado Sicilia. Pero el papa excomulgó a Pedro y un ejército francés invadió Cataluña. Para resistir, Pedro tuvo que otorgar el Privilegio General , texto que limitaba los poderes reales en beneficio de la nobleza .		
+vikidia	pool-backfill	6896	<pool sample>	El teorema de Futurama dice que dada una permutación de elementos, siempre es posible que cada elemento se reasigne a sí mismo usando como mucho dos elementos extra.		
+vikidia	pool-backfill	6983	<pool sample>	Cuadro que representa a unos alquimistas en su taller. Entre 1638 y 1670		
+vikidia	pool-backfill	8793	<pool sample>	Sistemas de Seguridad Avanzados : Mejora continua de tecnologías como el control de estabilidad y detección de colisiones.		
+vikidia	pool-backfill	9619	<pool sample>	Este artículo ha sido escrito por Vikidia . El texto está disponible bajo la licencia Creative Commons Attribution-Share Alike 3.0 . Pueden aplicarse cláusulas adicionales a los archivos multimedia.		
