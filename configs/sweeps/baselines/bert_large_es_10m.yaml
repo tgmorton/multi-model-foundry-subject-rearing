@@ -1,0 +1,76 @@
+# Sweep baseline for (bert_large, es). Mirror of bert_large_en with
+# Spanish corpus paths + Spanish tokenizer.
+
+experiment_name: "sweep_baseline_bert_large_es_10m"
+
+data:
+  source_corpus: "data/raw/es/train_10M/"
+  training_corpus: "data/raw/es/train_10M/"
+  test_corpus: "data/raw/es/test_10M/"
+  batch_size: 4
+  max_sequence_length: 1000
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/es_bert_wordpiece/"
+  vocab_size: 50004
+  tokenizer_type: "wordpiece"
+  strip_accents: false           # Spanish: preserve sí/si, él/el, sé/se, más/mas, etc.
+  special_tokens:
+    cls_token: "[CLS]"
+    sep_token: "[SEP]"
+    mask_token: "[MASK]"
+    unk_token: "[UNK]"
+    pad_token: "[PAD]"
+
+model:
+  architecture: "bert"
+  transformer:
+    layers: 24
+    embedding_size: 1024
+    hidden_size: 1024
+    intermediate_hidden_size: 4096
+    attention_heads: 16
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+
+training:
+  output_dir: "models/sweeps/placeholder/"
+  learning_rate: 0.0001
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-6
+  warmup_ratio: 0.1
+  train_steps: null
+  warmup_steps: null
+  epochs: 3                        # overridden to sweep_epochs
+  sweep_epochs: 10                  # bumped 6→10 for 10M sweep (10M trials fast enough to afford full budget)
+                                   # (BertForMaskedLM has no FA2; we use SDPA).
+                                   # Patience=3 fires after epoch 4-5 anyway,
+                                   # so 6 is a sufficient ceiling that ~halves
+                                   # compute on the rare non-plateau trial.
+  production_epochs: 30
+
+  objective: "masked_lm"
+  mlm_probability: 0.15
+
+  use_amp: true
+  gradient_accumulation_steps: 32              # locked: effective_batch_size=128 / micro_bs=4 (10M sweep matches batch size across archs)
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-prod-hp-10m"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42

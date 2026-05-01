@@ -1,0 +1,245 @@
+---
+# WandB sweep agent pod for gpt2_medium × English.
+#
+# One-time setup before launching this job:
+#   wandb sweep --entity <your-entity> --project subject-drop-sweeps \
+#               configs/sweeps/gpt2_medium_en.yaml
+#   # → returns an ID like "abc123"
+#   export SWEEP_ID=<that id>
+#
+# Launch N parallel agents by applying this YAML N times (or use
+# `kubectl apply -f <this> -l sweep_id=abc123` after editing the
+# SWEEP_ID env below to your ID). Each agent runs `--count 30` trials
+# and terminates when the sweep converges or its budget is exhausted.
+#
+# Trials do NOT save checkpoints (sweep YAML forces
+# auto_generate_checkpoints=false + checkpoint_schedule=[]). Proxy
+# metrics + registry record + env snapshot are the only outputs.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-sweep-bert-large-es-10m
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: sweep-10m
+    arch: bert-large
+    lang: es
+spec:
+  backoffLimit: 100
+  ttlSecondsAfterFinished: 86400
+  activeDeadlineSeconds: 604800    # 7d safety net (10M trials shorter than 90M)
+  # parallelism=2: at most 2 GPUs in flight at once. Lower than 90M's 3
+  # because total trial budget is smaller and we're being polite to cluster.
+  # completions=15: sweep ends when 15 trials have produced finite
+  # metrics. With TRIAL_COUNT=1 each pod = exactly one trial.
+  # 15 (vs 90M sweep's 30) because bs is locked → smaller HP search space.
+  # backoffLimit=100: absorbs transient failures (CUDA-busy, OOM,
+  # node taint) without draining the trial budget.
+  parallelism: 2
+  completions: 15
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: sweep-10m
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                # Broad 24Gi+48Gi pool. BERT-large has no FA2 path
+                # (BertForMaskedLM falls back to standard attention),
+                # but the OOM we hit at 4Gi RAM was cgroup-level, not
+                # GPU VRAM — fixed by bumping container RAM to 8Gi
+                # (see resources block below), so we can keep the
+                # broad GPU pool and avoid queueing for L40/L40S only.
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-L40
+                - NVIDIA-L40S
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                # Bad-node blocklist (see sub-agent classification 2026-04-28):
+                # rci-tide-gpu-03: 5 cuda-busy-probe + 1 DNS init-container-fail
+                # ry-gpu-10: 5 phase=Failed pods (logs GC'd, but per-node
+                # pattern across 3 different sweeps meets blacklist threshold)
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: sweep-agent
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  SWEEP AGENT — bert large es (10M)"
+          echo "=========================================="
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+
+          # Phase 1 — GPU health probe. NRP shared GPU nodes occasionally
+          # hand us a device with a stale CUDA context from a previous
+          # tenant. Detect it in 5s here, before we spend ~5min loading
+          # the model + dataset, and exit 2 so the K8s Job creates a
+          # replacement pod on a different node.
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA available', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize()
+              x = torch.zeros(1024, device='cuda')
+              x.sum().item()  # forces a real allocation + kernel launch
+              print(f'  - GPU healthy: {torch.cuda.get_device_name(0)}')
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+
+
+          cd /opt/repo
+          mkdir -p /opt/repo/data
+          # git ships data/chunked/test_checkpoint_scheduling/ + annotated
+          # corpora under data/, so /opt/repo/data/* arrives populated.
+          # `ln -sfn` silently can't replace non-empty dirs → writes go to
+          # pod-local emptyDir, vanishing when the pod exits. Nuke first.
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models /opt/repo/models
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models; do
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink after setup"; exit 1; }
+          done
+
+          BASE=configs/sweeps/baselines/bert_large_es_10m.yaml
+          python -m model_foundry.cli validate-config $BASE
+
+          # PRE-RUN DISCIPLINE (see memory/feedback_prerun_caches.md):
+          # tokenize-dataset + preprocess-data are one-shot pre-jobs
+          # run via k8s/job-prepare-dataset.yaml BEFORE launching the
+          # sweep. The sweep pods only READ from cache. If the cache
+          # is missing, fail loud — don't silently race.
+          CACHE_KEY=$(python -c "
+          import yaml, sys
+          sys.path.insert(0, '/opt/repo')
+          from model_foundry.cache_keys import compute_cache_key
+          cfg = yaml.safe_load(open('$BASE'))
+          corpus = cfg['data']['training_corpus']
+          if not corpus.startswith('/'): corpus = '/opt/repo/' + corpus
+          tok = cfg['tokenizer']['output_dir']
+          if not tok.startswith('/'): tok = '/opt/repo/' + tok
+          print(compute_cache_key(corpus, tok, cfg['data']['max_sequence_length'], cfg.get('dataset_manipulation') or []))
+          ")
+          test -n "$CACHE_KEY" || { echo "FAIL couldn't resolve cache_key"; exit 1; }
+          # Tokenized has train/ + test/ subdirs; chunked is saved flat.
+          TOKENIZED=/mnt/data/tokenized/$CACHE_KEY/train/dataset_info.json
+          CHUNKED=/mnt/data/chunked/$CACHE_KEY/dataset_info.json
+          if [ ! -f "$TOKENIZED" ]; then
+            echo "FAIL missing tokenized cache: $TOKENIZED"
+            echo "  run k8s/job-prepare-dataset.yaml with TARGET_CONFIG=$BASE first"
+            exit 1
+          fi
+          if [ ! -f "$CHUNKED" ]; then
+            echo "FAIL missing chunked cache: $CHUNKED"
+            echo "  run k8s/job-prepare-dataset.yaml with TARGET_CONFIG=$BASE first"
+            exit 1
+          fi
+          echo "cache warm: $CACHE_KEY (tokenized + chunked both present)"
+
+          # Sanity: WandB key present?
+          test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
+          test -n "${SWEEP_ID:-}" || { echo "FAIL SWEEP_ID missing"; exit 1; }
+
+          # Phase 4 — run exactly one trial, then exit. We trust the
+          # sentinel file, not wandb agent's exit code. wandb agent's
+          # --count 1 returns 0 even when the trial subprocess crashed
+          # mid-training (CUDA driver error, segfault, etc) because its
+          # "budget" was attempted; relying on it caused false-complete
+          # pods that incremented Job.succeeded with zero real trials.
+          # The trial script writes /tmp/trial_succeeded only if it
+          # reaches the final registry-record step.
+          export TRIAL_SENTINEL=/tmp/trial_succeeded
+          rm -f "$TRIAL_SENTINEL"
+          wandb agent --count 1 "$SWEEP_ID" || true
+          if [ ! -f "$TRIAL_SENTINEL" ]; then
+            echo "FAIL trial sentinel absent — training did not complete cleanly (CUDA mid-training error, hard crash, OOM, NaN guard, etc); Job will retry"
+            exit 1
+          fi
+          # Belt and suspenders: even if sentinel exists, GPU could
+          # have just gone bad (rare). Catch it before reporting success.
+          if ! nvidia-smi -q >/dev/null 2>&1; then
+            echo "FAIL nvidia-smi unhealthy at pod exit"
+            exit 1
+          fi
+          echo "trial succeeded; sentinel:"
+          cat "$TRIAL_SENTINEL"
+          exit 0
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        # Sweep controller ID (from `wandb sweep <config>`).
+        # EDIT THIS before applying, or use `kubectl set env`.
+        - name: SWEEP_ID
+          value: "REPLACE_SWEEP_ID"
+        - name: TRIAL_COUNT
+          value: "1"
+        # WandB auth
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        # Registry / S3 plumbing
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        - {name: REGISTRY_RUN_KIND,  value: "hp_sweep"}
+        - {name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}
+        resources:
+          # 6Gi (vs other archs' 4Gi) — BERT-large still needs more RAM than
+          # transformers with FA2, but with bs locked to 128 (no bs=1024 case)
+          # we can drop from 8Gi → 6Gi without retriggering OOMs.
+          requests: {memory: 6Gi, cpu: "2", nvidia.com/gpu: 1}
+          limits:   {memory: 6Gi, cpu: "2", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive   # new 40 TiB primary PVC per CLAUDE.md
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}

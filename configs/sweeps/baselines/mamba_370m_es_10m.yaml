@@ -1,0 +1,61 @@
+# Sweep baseline for (mamba_370m, es). Mirror of mamba_370m_en with Spanish.
+
+experiment_name: "sweep_baseline_mamba_370m_es_10m"
+
+data:
+  source_corpus: "data/raw/es/train_10M/"
+  training_corpus: "data/raw/es/train_10M/"
+  test_corpus: "data/raw/es/test_10M/"
+  batch_size: 4
+  max_sequence_length: 1000
+
+dataset_manipulation: []
+
+tokenizer:
+  # Shared SentencePiece tokenizer across non-BERT Spanish archs.
+  output_dir: "tokenizers/es_shared_unigram/"
+  vocab_size: 50004
+
+model:
+  architecture: "mamba"
+  mamba:
+    d_model: 1024
+    n_layers: 48
+    d_state: 16
+    d_conv: 4
+    expand: 2
+    dropout: 0.1
+
+training:
+  output_dir: "models/sweeps/placeholder/"
+  learning_rate: 0.0003
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-6
+  warmup_ratio: 0.1
+  train_steps: null
+  warmup_steps: null
+  epochs: 10
+  sweep_epochs: 10
+  production_epochs: 30
+
+  objective: "causal_lm"
+
+  use_amp: true
+  gradient_accumulation_steps: 32              # locked: effective_batch_size=128 / micro_bs=4 (10M sweep matches batch size across archs)
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-prod-hp-10m"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42

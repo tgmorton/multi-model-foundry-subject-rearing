@@ -1,0 +1,39 @@
+name: gpt2_small_es_10m
+program: scripts/sweep_agent_lm.py
+method: bayes
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch:
+    value: gpt2_small
+  lang:
+    value: es
+  base_config:
+    value: configs/sweeps/baselines/gpt2_small_es_10m.yaml
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  warmup_ratio:
+    distribution: uniform
+    min: 0.03
+    max: 0.15
+  dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  attention_dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  effective_batch_size:
+    # LOCKED at 128 across all 12 archs for the 10M sweep so trajectory
+    # comparisons are not confounded by per-arch batch size variation.
+    # See sensitivity discussion: trajectory-comparable = matched bs.
+    value: 128
+  adam_beta2:
+    values:
+    - 0.95
+    - 0.99
+    - 0.999

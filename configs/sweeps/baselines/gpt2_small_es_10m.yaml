@@ -1,0 +1,60 @@
+# Sweep baseline for (gpt2_small, es). Mirror of gpt2_small_en.
+
+experiment_name: "sweep_baseline_gpt2_small_es_10m"
+
+data:
+  source_corpus: "data/raw/es/train_10M/"
+  training_corpus: "data/raw/es/train_10M/"
+  test_corpus: "data/raw/es/test_10M/"
+  batch_size: 32
+  max_sequence_length: 1000
+
+dataset_manipulation: []
+
+tokenizer:
+  output_dir: "tokenizers/es_shared_unigram/"
+  vocab_size: 50004
+
+model:
+  architecture: "gpt2"
+  transformer:
+    layers: 6
+    embedding_size: 512
+    hidden_size: 512
+    intermediate_hidden_size: 2048
+    attention_heads: 8
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+
+training:
+  output_dir: "models/sweeps/placeholder/"
+  learning_rate: 0.0003
+  adam_beta1: 0.9
+  adam_beta2: 0.99
+  adam_epsilon: 1.0e-6
+  warmup_ratio: 0.1
+  train_steps: null
+  warmup_steps: null
+  epochs: 10
+  sweep_epochs: 10
+  production_epochs: 30
+
+  use_amp: true
+  gradient_accumulation_steps: 4              # locked: effective_batch_size=128 / micro_bs=32 (10M sweep matches batch size across archs)
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: true
+
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-prod-hp-10m"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42

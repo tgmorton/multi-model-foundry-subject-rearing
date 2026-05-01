@@ -1,0 +1,135 @@
+---
+# One-shot pre-run job: tokenize + chunk a dataset into the
+# content-addressed cache on the `subject-drop-archive` PVC.
+#
+# Run this ONCE per (arch, lang, corpus, seq_len, manipulation) before
+# launching any sweep or production training for that combination.
+# Both `tokenize-dataset` and `preprocess-data` are idempotent — safe
+# to re-apply; they no-op if the hashed sentinel exists.
+#
+# Why a pre-run task instead of inline: three parallel sweep agent
+# pods racing on the same PVC cache dir caused HF builder-lock
+# serialisation, wasting 2/3 of parallelism during tokenization.
+# Worse, it would repeat across every (arch, lang) sweep and every
+# 30-seed production run. Pre-running once means the cache is warm
+# for everything downstream: sweep trials, all 30 seeds of every
+# ablation, future cross-seed analyses.
+#
+# Usage:
+#   # 1. Set TARGET_CONFIG to the baseline YAML whose cache key you
+#   #    want populated. For sweep prep, that's
+#   #    configs/sweeps/baselines/<arch>_<lang>.yaml.
+#   # 2. kubectl apply -f k8s/job-prepare-dataset.yaml
+#   # 3. Wait ~10–20 min (depends on corpus size + PVC throughput).
+#   # 4. Launch the sweep / training job once the prepare job reports
+#   #    "PREPARE COMPLETE".
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-prepare-dataset-en-shared-10m
+spec:
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: prepare
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  PREPARE DATASET (pre-run pipeline)"
+          echo "=========================================="
+
+          BASE=${TARGET_CONFIG:?TARGET_CONFIG env var is required}
+          echo "Config: $BASE"
+
+          cd /opt/repo
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+
+          # Symlink repo data/ tree into the PVC so CLI tools see the
+          # canonical layout (matches what sweep/training pods see).
+          mkdir -p /opt/repo/data
+          # git ships data/chunked/test_checkpoint_scheduling/ and some
+          # annotated corpora under data/, which turn /opt/repo/data/*
+          # into non-empty dirs — `ln -sfn` silently can't replace them
+          # and downstream writes land on pod-local emptyDir instead of
+          # the PVC. Nuke these before symlinking so the links always win.
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers
+          ln -sfn /mnt/data/raw /opt/repo/data/raw
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          # Sanity: verify symlinks are real symlinks to the PVC
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers; do
+            target=$(readlink "$d" 2>/dev/null || echo "<not-a-symlink>")
+            echo "  symlink check: $d -> $target"
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink after setup"; exit 1; }
+          done
+          # Also: remove the test_checkpoint_scheduling stub from the
+          # cloned tree so no future save into /opt/repo/data/chunked/
+          # ever hits a stale fixture path.
+
+          python -m model_foundry.cli validate-config $BASE
+
+          # Step 1: tokenize-dataset writes to data/tokenized/<hash>/.
+          # Idempotent: skips if hashed sentinel already exists.
+          echo ""
+          echo "--- Step 1/2: tokenize-dataset ---"
+          python -m model_foundry.cli tokenize-dataset $BASE
+
+          # Step 2: preprocess-data (chunking) writes to data/chunked/<hash>/.
+          # Same idempotency.
+          echo ""
+          echo "--- Step 2/2: preprocess-data ---"
+          python -m model_foundry.cli preprocess-data $BASE
+
+          echo ""
+          echo "=========================================="
+          echo "  PREPARE COMPLETE"
+          echo "=========================================="
+          echo "tokenized/ contents:"
+          du -sh /mnt/data/tokenized/* 2>&1 | tail -10
+          echo "chunked/ contents:"
+          du -sh /mnt/data/chunked/*   2>&1 | tail -10
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        # Override at apply time via `kubectl set env` or by editing here.
+        - name: TARGET_CONFIG
+          value: "configs/sweeps/baselines/gpt2_medium_en_10m.yaml"
+        resources:
+          # Tokenization is CPU-bound (multiprocessing). 8 cores / 16 GiB
+          # is plenty for 90M-word corpora.
+          requests: {memory: 16Gi, cpu: "4"}
+          limits:   {memory: 16Gi, cpu: "4"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
