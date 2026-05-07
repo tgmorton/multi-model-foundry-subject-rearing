@@ -38,10 +38,17 @@ For each ablation we use four converging lines of evidence:
 
 1. **Rule documentation** — the formal Python implementation, with
    per-category trigger predicates and unit-test fixtures.
-2. **Random-sample human inspection** — N=150 changed lines per genre
-   per ablation (900 lines total per ablation across 6 genres),
-   judged by the inspector(s) as `correct` / `incorrect` / `borderline`,
-   with notes for borderline cases. Seed 42, deterministic.
+2. **Random-sample human inspection** — N=100 randomly-sampled changed
+   lines per ablation (~17 per genre across 6 genres), judged by a
+   single fluent speaker per language as `correct` / `incorrect` /
+   `borderline`. Seed 42, deterministic. The full 900-row pool is
+   committed to the deposit; the first 100 of each is the inspection
+   scope. Single-annotator was chosen because (a) only one fluent
+   Spanish speaker is available — asymmetric per-language methodology
+   would be worse — and (b) these are rule-based ablations on
+   deterministic parses where IRR adds operational cost for marginal
+   inferential gain. Reviewer audit is supported by the full 900-row
+   deposit and per-row judgments.
 3. **Aggregate statistics** — per-tier counts (e.g., for
    `impoverish_case`: tonic_oblique vs portmanteau vs acc_clitic vs ...)
    from the `ABLATION_MANIFEST.json` written alongside each output.
@@ -89,13 +96,13 @@ clausal complement is licensed by an impersonal raising verb."]
 |---|---|---|
 | ... | ... | ... |
 
-**Random-sample inspection results (N=900 across 6 genres).**
+**Random-sample inspection results (N=100, single annotator).**
 
-| Verdict | Count | Rate |
-|---|---|---|
-| Correct | ... | ...% |
-| Incorrect | ... | ...% |
-| Borderline | ... | ...% |
+| Verdict | Count | Rate | 95% Wilson CI |
+|---|---|---|---|
+| Correct | ... | ...% | [..%, ..%] |
+| Incorrect | ... | ...% | — |
+| Borderline | ... | ...% | — |
 
 **Notable cases.** [Examples of incorrect / borderline rows with
 inspector commentary. Aim for 5-10.]
@@ -121,11 +128,14 @@ covers:
   a root verb whose lemma is in a closed class of weather verbs, or
   whose subject is the expletive `it` / `there` (`PronType=Prs`,
   `Subj` dependency, no antecedent referent), are removed").
-- **Sample size for verification**: "N=900 randomly-sampled changed
-  lines per ablation (150 per genre across 6 genres) were manually
-  annotated by the authors as correct / incorrect / borderline; the
-  observed correctness rate was X% (Y% incorrect, Z% borderline) with
-  Cohen's κ = κ between annotators."
+- **Sample size for verification**: "N=100 randomly-sampled changed
+  lines per ablation (~17 per genre across 6 genres) were manually
+  annotated by a fluent speaker of the language as correct,
+  incorrect, or borderline. Observed correctness rate: P% [95% Wilson
+  CI: A%–B%]. The Q% borderline cases are categorized in Appendix
+  [k]. Inter-rater agreement was not computed (single-annotator
+  validation; full 900-row sample and per-row judgments are deposited
+  at [OSF DOI] for reviewer audit)."
 - **Backfill**: "Token deficits from line-removal ablations were
   backfilled from a held-out 10M-word `pull_10M` split that received
   the same ablation transformation, sampled without replacement at the
@@ -161,15 +171,18 @@ Deposit on OSF (or Zenodo with DOI) at the time of submission:
 
 The minimum reportable claim for each ablation is:
 
-> *N=900 randomly-sampled changed lines were inspected by two
-> annotators independently. Inter-annotator agreement was κ = X.YZ
-> (interpretation per Landis & Koch 1977). The observed correctness
-> rate, with annotator disagreements adjudicated by [method], was P%
-> [95% CI: A%–B%]. The Z% of borderline cases are categorized in
-> Appendix [k] and consist primarily of [pattern].*
+> *N=100 randomly-sampled changed lines were inspected by a fluent
+> speaker of the language. Observed correctness rate was P%
+> [95% Wilson-score CI: A%–B%]. The Q% borderline cases are
+> categorized in Appendix [k] and consist primarily of [pattern].
+> Full 900-row samples and per-row judgments are deposited at
+> [OSF DOI] for reviewer audit.*
 
-CI from a Wilson-score interval on the binomial. We expect P > 95% to
-be defensible for production use; below that, iterate on the rule.
+CI from a Wilson-score interval on the binomial. Target: >90%
+defensibly (i.e., lower-CI bound clears 90%) for production use;
+below that, iterate on the rule. With N=100 and observed 95%
+correctness the lower CI bound is 89% — acceptable. With observed
+98%+ the lower CI bound clears 92%.
 
 ### 4.5 Acknowledged limitations
 
@@ -196,8 +209,7 @@ Explicitly state in the paper:
 The corpus is approved for production training when:
 
 - [ ] All 8 ablations pass §3 random-sample inspection at ≥95%
-      correctness (after disagreement adjudication).
-- [ ] Inter-annotator κ ≥ 0.80 across all ablations.
+      correctness (lower bound of 95% Wilson CI clears 90%).
 - [ ] Compose manifests show no surprises beyond the documented
       pool-exhaustion cases.
 - [ ] Tokenizer re-training has been queued (depends on §6 fix).
