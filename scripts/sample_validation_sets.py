@@ -31,11 +31,11 @@ JOBS = [
      ["childes", "europarl", "opensubtitles", "vikidia", "qed", "child_narratives"]),
     ("en", "remove_expletive_sentences", True,
      ["bnc_spoken", "childes", "gutenberg", "open_subtitles", "simple_wiki", "switchboard"]),
-    # The 3 EN substitution ablations (impoverish_case, lemmatize_verbs,
-    # enrich_verbal_morphology) are re-sampled separately AFTER re-run #3
-    # completes — they need the contraction fix + past tense + suppletion
-    # to be reflected. Re-sampling those here would use stale data.
     ("en", "impoverish_case", False,
+     ["bnc_spoken", "childes", "gutenberg", "open_subtitles", "simple_wiki", "switchboard"]),
+    ("en", "lemmatize_verbs", False,
+     ["bnc_spoken", "childes", "gutenberg", "open_subtitles", "simple_wiki", "switchboard"]),
+    ("en", "enrich_verbal_morphology", False,
      ["bnc_spoken", "childes", "gutenberg", "open_subtitles", "simple_wiki", "switchboard"]),
 ]
 
