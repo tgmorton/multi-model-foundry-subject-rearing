@@ -78,6 +78,82 @@ DEFAULT_PAST_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
     ("3", "Plur"): "erunt",
 }
 
+
+# ---------------------------------------------------------------------------
+# Suppletive paradigms for high-frequency English verbs
+# ---------------------------------------------------------------------------
+#
+# Some English verbs collide with real English words when the regular
+# (lemma + suffix) rule is applied. Most notably:
+#
+#   be   + -at (3sg pres) → "beat"  (= past tense of the verb "to beat")
+#   go   + -at (3sg pres) → "goat"  (= the animal)
+#   go   + -o  (1sg pres) → "goo"   (informal noun)
+#
+# These collisions destroy the cleanness of the manipulation: a baseline
+# learner would see "beat" used in two completely different contexts.
+#
+# We additionally borrow from Romance, where the highest-frequency verbs
+# (be, have) historically resist morphological levelling and retain
+# suppletive paradigms (Spanish "soy / eres / es / somos / sois / son",
+# vs the regular "*sero / seres / sere / ..."). To better mimic that
+# property of natural Romance morphology, we apply hand-crafted Latin-
+# inspired paradigms to the four highest-frequency English verbs:
+# ``be`` (esse / fuisse), ``have`` (habere), ``do`` (facere), and
+# ``go`` (vadere).
+#
+# Each verb's IRREGULAR_PARADIGMS entry maps tense → (person, number) →
+# the full replacement word. The replacement REPLACES both the stem and
+# the suffix — it is not appended. None of the chosen forms collide
+# with high-frequency English content words (verified by hand against
+# the BabyLM corpus 2026-05-12).
+IRREGULAR_PARADIGMS: Dict[str, Dict[str, Dict[Tuple[str, str], str]]] = {
+    "be": {
+        "Pres": {
+            ("1", "Sing"): "sum",    ("2", "Sing"): "es",     ("3", "Sing"): "est",
+            ("1", "Plur"): "sumus",  ("2", "Plur"): "estis",  ("3", "Plur"): "sunt",
+        },
+        "Past": {
+            ("1", "Sing"): "fui",    ("2", "Sing"): "fuisti", ("3", "Sing"): "fuit",
+            ("1", "Plur"): "fuimus", ("2", "Plur"): "fuistis",("3", "Plur"): "fuerunt",
+        },
+    },
+    "have": {
+        # Regular Latin habere stem with the standard present/perfect endings.
+        "Pres": {
+            ("1", "Sing"): "habo",    ("2", "Sing"): "habas",   ("3", "Sing"): "habat",
+            ("1", "Plur"): "habamus", ("2", "Plur"): "habatis", ("3", "Plur"): "habant",
+        },
+        "Past": {
+            ("1", "Sing"): "habui",    ("2", "Sing"): "habuisti", ("3", "Sing"): "habuit",
+            ("1", "Plur"): "habuimus", ("2", "Plur"): "habuistis",("3", "Plur"): "habuerunt",
+        },
+    },
+    "do": {
+        # Latin facere ("to do/make") — suppletive present and past stems.
+        "Pres": {
+            ("1", "Sing"): "facio",   ("2", "Sing"): "facis",   ("3", "Sing"): "facit",
+            ("1", "Plur"): "facimus", ("2", "Plur"): "facitis", ("3", "Plur"): "faciunt",
+        },
+        "Past": {
+            ("1", "Sing"): "feci",    ("2", "Sing"): "fecisti", ("3", "Sing"): "fecit",
+            ("1", "Plur"): "fecimus", ("2", "Plur"): "fecistis",("3", "Plur"): "fecerunt",
+        },
+    },
+    "go": {
+        # Latin vadere stem (avoiding ire whose 3sg "it" collides with
+        # the English pronoun).
+        "Pres": {
+            ("1", "Sing"): "vado",    ("2", "Sing"): "vadas",   ("3", "Sing"): "vadat",
+            ("1", "Plur"): "vadamus", ("2", "Plur"): "vadatis", ("3", "Plur"): "vadant",
+        },
+        "Past": {
+            ("1", "Sing"): "vadi",    ("2", "Sing"): "vadisti", ("3", "Sing"): "vadit",
+            ("1", "Plur"): "vadimus", ("2", "Plur"): "vadistis",("3", "Plur"): "vaderunt",
+        },
+    },
+}
+
 # Fallback: infer person/number from English subject pronoun form when spaCy
 # morph features are missing or incomplete
 _PRONOUN_TO_PERSON_NUMBER: Dict[str, Tuple[str, str]] = {
@@ -158,6 +234,7 @@ def _enrich_verbal_morphology(
     doc: spacy.tokens.Doc,
     suffix_map: Dict[Tuple[str, str], str],
     past_suffix_map: Optional[Dict[Tuple[str, str], str]] = None,
+    irregular_paradigms: Optional[Dict[str, Dict[str, Dict[Tuple[str, str], str]]]] = None,
 ) -> Tuple[str, int]:
     """
     Apply synthetic agreement morphology to all finite verbs/auxiliaries.
@@ -166,11 +243,21 @@ def _enrich_verbal_morphology(
     (the default). Pass ``past_suffix_map=None`` to restore the
     present-tense-only behaviour (used by tests of the original rule).
 
+    If ``irregular_paradigms`` is provided, verbs whose lemma is a key
+    in the dict are rewritten using the suppletive forms in that dict
+    instead of the regular lemma+suffix rule. The default
+    ``IRREGULAR_PARADIGMS`` handles ``be``, ``have``, ``do``, ``go`` —
+    the four high-frequency English verbs where the regular rule
+    produces real-English homographs (notably ``be+at=beat``,
+    ``go+at=goat``).
+
     Returns:
         (modified_text, count_of_enriched_verbs)
     """
     if past_suffix_map is None:
         past_suffix_map = {}  # disables past-tense enrichment
+    if irregular_paradigms is None:
+        irregular_paradigms = {}  # disables suppletion
 
     modified_parts = []
     num_enriched = 0
@@ -188,29 +275,44 @@ def _enrich_verbal_morphology(
                 continue
 
             if "Pres" in tense:
+                tense_key = "Pres"
                 active_paradigm = suffix_map
             elif "Past" in tense:
+                tense_key = "Past"
                 active_paradigm = past_suffix_map
             else:
                 modified_parts.append(tok.text_with_ws)
                 continue
 
-            # Resolve the replacement form first (lemma+suffix or bare lemma)
-            # so we can apply the same contraction-glue fix used by
-            # lemmatize_verbs: English "it's", "we're", "wasn't" etc. have
-            # an empty whitespace_ on one side; substituting the clitic
-            # without re-inserting whitespace produces pseudo-tokens like
-            # "itbeat", "webeamus", "ben't". Detect and unglue.
             replacement = tok.lemma_
             subj = _find_subject(tok)
             if subj is not None:
                 pn = _get_person_number(subj)
                 if pn is not None:
-                    suffix = active_paradigm.get(pn, "")
-                    if suffix:
-                        replacement = tok.lemma_ + suffix
-                        num_enriched += 1
+                    # Suppletion takes precedence over the regular
+                    # lemma+suffix rule when the lemma is in the
+                    # irregular paradigm dict (e.g., be / have / do / go).
+                    irreg_lemma = irregular_paradigms.get(tok.lemma_.lower())
+                    if irreg_lemma is not None:
+                        irreg_form = irreg_lemma.get(tense_key, {}).get(pn)
+                        if irreg_form is not None:
+                            replacement = irreg_form
+                            num_enriched += 1
+                        else:
+                            # Lemma is in the irregular dict but we
+                            # don't have a form for this (person, number, tense).
+                            # Fall through to regular rule.
+                            suffix = active_paradigm.get(pn, "")
+                            if suffix:
+                                replacement = tok.lemma_ + suffix
+                                num_enriched += 1
+                    else:
+                        suffix = active_paradigm.get(pn, "")
+                        if suffix:
+                            replacement = tok.lemma_ + suffix
+                            num_enriched += 1
             form_changed = replacement.lower() != tok.text.lower()
+            # Contraction-glue fix: see lemmatize_verbs.
             leading = ""
             if form_changed and i > 0 and doc[i - 1].whitespace_ == "":
                 leading = " "
@@ -232,7 +334,10 @@ def enrich_verbal_morphology_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
     """
     Enrich English verbs with synthetic agreement morphology.
 
-    Uses the default Latin-style paradigm for both present and past tense.
+    Applies the default Latin-style paradigm for both present and past
+    tense, plus suppletive paradigms for the four high-frequency verbs
+    (be, have, do, go) where the regular rule would produce real-English
+    homographs.
 
     Args:
         doc: spaCy Doc to process
@@ -244,6 +349,7 @@ def enrich_verbal_morphology_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
         doc,
         suffix_map=DEFAULT_SUFFIX_MAP,
         past_suffix_map=DEFAULT_PAST_SUFFIX_MAP,
+        irregular_paradigms=IRREGULAR_PARADIGMS,
     )
 
 
