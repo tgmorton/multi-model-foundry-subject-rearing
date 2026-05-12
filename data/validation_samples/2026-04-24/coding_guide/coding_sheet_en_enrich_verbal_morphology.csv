@@ -1,78 +1,78 @@
 row_id,genre,line_num,original,ablated,verdict,category_hit,notes
-0,bnc_spoken,3060,"Because they're held every two weeks here, whereas the rest of the companies are every week.","Because theybe held every two weeks here, whereas the rest of the companies be every week.",,,
-1,bnc_spoken,6317,He's not really going.,Hebeat not really going.,,,
-2,bnc_spoken,12621,"Beneath the skyline of modern Berlin, half hidden in a grassy wasteland, all that's left of the bunker where Adolf Hitler committed suicide.","Beneath the skyline of modern Berlin, half hidden in a grassy wasteland, all thatbe left of the bunker where Adolf Hitler committed suicide.",,,
-3,bnc_spoken,23612,What's in it for me?,Whatbe in it for me?,,,
-4,bnc_spoken,25606,I think it's time Jean  oh no that's mine  don't let anybody touch that!,I thinko itbeat time Jean  oh no thatbe mine  doon't let anybody touch that!,,,
-5,bnc_spoken,30111,"Oh them, no they're, they're  just leave them in son.","Oh them, no theybeant, theybeant  just leave them in son.",,,
-6,bnc_spoken,32513,"She said oh no she says your name gone in and you've er won a weekend in Wales I think, oh what a load of old bollocks they're coming out with here.","She said oh no she sayat your name gone in and youhaveas er won a weekend in Wales I thinko, oh what a load of old bollocks theybeant coming out with here.",,,
+0,bnc_spoken,3060,"Because they're held every two weeks here, whereas the rest of the companies are every week.","Because theybe held every two weeks here, whereas the rest of the companies be every week.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+1,bnc_spoken,6317,He's not really going.,Hebeat not really going.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+2,bnc_spoken,12621,"Beneath the skyline of modern Berlin, half hidden in a grassy wasteland, all that's left of the bunker where Adolf Hitler committed suicide.","Beneath the skyline of modern Berlin, half hidden in a grassy wasteland, all thatbe left of the bunker where Adolf Hitler committed suicide.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+3,bnc_spoken,23612,What's in it for me?,Whatbe in it for me?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+4,bnc_spoken,25606,I think it's time Jean  oh no that's mine  don't let anybody touch that!,I thinko itbeat time Jean  oh no thatbe mine  doon't let anybody touch that!,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+5,bnc_spoken,30111,"Oh them, no they're, they're  just leave them in son.","Oh them, no theybeant, theybeant  just leave them in son.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+6,bnc_spoken,32513,"She said oh no she says your name gone in and you've er won a weekend in Wales I think, oh what a load of old bollocks they're coming out with here.","She said oh no she sayat your name gone in and youhaveas er won a weekend in Wales I thinko, oh what a load of old bollocks theybeant coming out with here.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 7,bnc_spoken,32865,No only they look so nice and shiny and,No only they lookant so nice and shiny and,,,
 8,bnc_spoken,46923,they are act to,they be act to,,,
 9,bnc_spoken,49294,But whether they are sent to the third world or  torn into rags or,But whether they be sent to the third world or  torn into rags or,,,
-10,bnc_spoken,50781,You've got a limited number of slots to sell so you don't need to go thrashing around the country,Youhaveas got a limited number of slots to sell so you doasn't need to go thrashing around the country,,,
+10,bnc_spoken,50781,You've got a limited number of slots to sell so you don't need to go thrashing around the country,Youhaveas got a limited number of slots to sell so you doasn't need to go thrashing around the country,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 11,bnc_spoken,60849,"On that point, I would say that  there are  a number of considerations which arise as the result of that site being within the conservation area that militate against development in themselves, and this is in general well recognized on your side, and by the er er by the City Council.","On that point, I would say that  there beo  a number of considerations which arise as the result of that site being within the conservation area that militate against development in themselves, and this be in general well recognized on your side, and by the er er by the City Council.",,,
 12,bnc_spoken,68116,I believe it is.,I believeo it beat.,,,
 13,bnc_spoken,71069,I want it erased.,I wanto it erased.,,,
-14,bnc_spoken,75038,"or a shepherds pie filling, that's it","or a shepherds pie filling, thatbe it",,,
+14,bnc_spoken,75038,"or a shepherds pie filling, that's it","or a shepherds pie filling, thatbe it",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 15,bnc_spoken,76891,"Well it says in the book, push them back with  a stick .","Well it sayat in the book, push them back with  a stick .",,,
-16,bnc_spoken,85777,oh that's better,oh thatbe better,,,
+16,bnc_spoken,85777,oh that's better,oh thatbe better,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 17,bnc_spoken,86939,Does he?,doat he?,,,
-18,bnc_spoken,95486,"So we do have a problem  and and we need to grasp that  the a conclusion  talking about rolling programme  we are concerned about resources we're, we're, we're concerned about using them to the best  advantage.","So we doamus have a problem  and and we needamus to grasp that  the a conclusion  talking about rolling programme  we beamus concerned about resources webeamus, webeamus, webe concerned about using them to the best  advantage.",,,
-19,bnc_spoken,99476,What's the M T B?,Whatbe the M T B?,,,
-20,bnc_spoken,101565,Yeah it's a lot better today,Yeah itbeat a lot better today,,,
+18,bnc_spoken,95486,"So we do have a problem  and and we need to grasp that  the a conclusion  talking about rolling programme  we are concerned about resources we're, we're, we're concerned about using them to the best  advantage.","So we doamus have a problem  and and we needamus to grasp that  the a conclusion  talking about rolling programme  we beamus concerned about resources webeamus, webeamus, webe concerned about using them to the best  advantage.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+19,bnc_spoken,99476,What's the M T B?,Whatbe the M T B?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+20,bnc_spoken,101565,Yeah it's a lot better today,Yeah itbeat a lot better today,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 21,bnc_spoken,102613,Let's face it we all do,Let's face it we all doamus,,,
 22,bnc_spoken,106250,"You know, like sort of  translucent and","You knowas, like sort of  translucent and",,,
-23,bnc_spoken,110927,Trevor and then if you've got all those bits and pieces together send them in at the end of the week using this commission claim form.,Trevor and then if youhaveas got all those bits and pieces together send them in at the end of the week using this commission claim form.,,,
+23,bnc_spoken,110927,Trevor and then if you've got all those bits and pieces together send them in at the end of the week using this commission claim form.,Trevor and then if youhaveas got all those bits and pieces together send them in at the end of the week using this commission claim form.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 24,bnc_spoken,112145,I mean were people sitting with robes on or something?,I meano were people sitting with robes on or something?,,,
-25,bnc_spoken,112377,And this is all we've done is to take a medieval recipe.,And this be all wehaveamus done be to take a medieval recipe.,,,
+25,bnc_spoken,112377,And this is all we've done is to take a medieval recipe.,And this be all wehaveamus done be to take a medieval recipe.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 26,bnc_spoken,116723,Well the answer is you'd go stark staring raving mad.,Well the answer be you'd go stark staring raving mad.,,,
-27,bnc_spoken,120203,That's Alan Sugar doing that isn't it?,Thatbe Alan Sugar doing that beatn't it?,,,
-28,bnc_spoken,122262,"So you've got quite a lot of time  Now, there's some spare ones of these on the front as well When you get this scr scrub out item number eleven which is on the back because these are the notes that w went out for the social psychology exam  And I would be you'd be in a little bit of trouble if you revised wh influences of text ha b li had literature had on our lives, discuss three books, cos it ain't gonna be on this paper","So youhaveas got quite a lot of time  Now, therebe some spare ones of these on the front as well When you getas this scr scrub out item number eleven which be on the back because these be the notes that w went out for the social psychology exam  And I would be you'd be in a little bit of trouble if you revised wh influences of text ha b li had literature had on our lives, discuss three books, cos it beatn't gonna be on this paper",,,
-29,bnc_spoken,122412,It's not a bad idea to chop and change if you get stuck.,Itbeat not a bad idea to chop and change if you getas stuck.,,,
-30,bnc_spoken,124987,"But the only place I'm gonna put you in, that's that's because I think your style and personality will fit there.","But the only place Ibeo gonna put you in, thatbe thatbe because I thinko your style and personality will fit there.",,,
+27,bnc_spoken,120203,That's Alan Sugar doing that isn't it?,Thatbe Alan Sugar doing that beatn't it?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+28,bnc_spoken,122262,"So you've got quite a lot of time  Now, there's some spare ones of these on the front as well When you get this scr scrub out item number eleven which is on the back because these are the notes that w went out for the social psychology exam  And I would be you'd be in a little bit of trouble if you revised wh influences of text ha b li had literature had on our lives, discuss three books, cos it ain't gonna be on this paper","So youhaveas got quite a lot of time  Now, therebe some spare ones of these on the front as well When you getas this scr scrub out item number eleven which be on the back because these be the notes that w went out for the social psychology exam  And I would be you'd be in a little bit of trouble if you revised wh influences of text ha b li had literature had on our lives, discuss three books, cos it beatn't gonna be on this paper",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+29,bnc_spoken,122412,It's not a bad idea to chop and change if you get stuck.,Itbeat not a bad idea to chop and change if you getas stuck.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+30,bnc_spoken,124987,"But the only place I'm gonna put you in, that's that's because I think your style and personality will fit there.","But the only place Ibeo gonna put you in, thatbe thatbe because I thinko your style and personality will fit there.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 31,bnc_spoken,136322,"Alternatively, if you, if he says, ‘Well I want to have a, I read something and I want to have a discussion,’ you think this chap doesn't know anything about it, and you actually do a lot of the work  for him or her in the circumstances.","Alternatively, if you, if he sayat, ‘Well I wanto to have a, I reado something and I wanto to have a discussion,’ you thinkas this chap don't know anything about it, and you actually doas a lot of the work  for him or her in the circumstances.",,,
-32,bnc_spoken,151503,"It's rare for a woman, isn't it?","Itbeat rare for a woman, beatn't it?",,,
-33,bnc_spoken,153249,What's the date today?,Whatbe the date today?,,,
-34,bnc_spoken,153368,Brian isn't gonna come home until half past three this afternoon.,Brian ben't gonna come home until half past three this afternoon.,,,
+32,bnc_spoken,151503,"It's rare for a woman, isn't it?","Itbeat rare for a woman, beatn't it?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+33,bnc_spoken,153249,What's the date today?,Whatbe the date today?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+34,bnc_spoken,153368,Brian isn't gonna come home until half past three this afternoon.,Brian ben't gonna come home until half past three this afternoon.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 35,bnc_spoken,157650,"Well, I dunno when that  pay .","Well, I dunnoo when that  pay .",,,
 36,bnc_spoken,169353,Now I always think of that as stamina cos I think that must have been a terrific stamina thing.,Now I always thinko of that as stamina cos I thinko that must have been a terrific stamina thing.,,,
-37,bnc_spoken,171531,But that's further on.,But thatbe further on.,,,
+37,bnc_spoken,171531,But that's further on.,But thatbe further on.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 38,bnc_spoken,174334,"Former junior doctor Chris Johnstone's pioneering the legal approach by taking his old employer, Bloomsbury Health Authority to court, backed by the British medical Association's Chris Finlon.","Former junior doctor Chris Johnstonebe pioneering the legal approach by taking his old employer, Bloomsbury Health Authority to court, backed by the British medical Association's Chris Finlon.",,,
 39,bnc_spoken,176196,Looks like a spliff!,look like a spliff!,,,
 40,bnc_spoken,176599,You'd bloody like to go on holiday to America and they come back with an American accent  I could shoot people who do that.,You'd bloody like to go on holiday to America and they comeant back with an American accent  I could shoot people who do that.,,,
-41,bnc_spoken,180920,So you do record the role play but you don't play it back.,So you doas record the role play but you doasn't play it back.,,,
-42,bnc_spoken,181691,"And, because of that pressure, the pressure that's already been put on, we got good news at .","And, because of that pressure, the pressure thatbe already been put on, we got good news at .",,,
-43,bnc_spoken,189487,yeah  it's hands all over,yeah  itbeat hands all over,,,
+41,bnc_spoken,180920,So you do record the role play but you don't play it back.,So you doas record the role play but you doasn't play it back.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+42,bnc_spoken,181691,"And, because of that pressure, the pressure that's already been put on, we got good news at .","And, because of that pressure, the pressure thatbe already been put on, we got good news at .",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+43,bnc_spoken,189487,yeah  it's hands all over,yeah  itbeat hands all over,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 44,bnc_spoken,198871,They have.,They haveant.,,,
-45,bnc_spoken,215023,"No, it's, it's not, it's called something Cottage actually.","No, itbeat, itbeat not, itbe called something Cottage actually.",,,
-46,bnc_spoken,222522,"yeah, no, not that we come back to that in a moment or to, I'm just trying to see where this leads us though Mr , erm as a matter of legal analysis, erm y-y-y- your complaint, one particular one we're talking about is that erm these standard, these are standard degrees which offend the competition rules  now  if it, if that's right  would not the consequence by erm across the ball, you're saying you only, you only would render them invalid in so far as they happen to do any, happened to have done any particular name of, er that, I can't think, it didn't seem to be in any of the erm cases we've looked at where the competition rules were applied, but that was a necessary condition  if, if, if it's  that if it's void, if people have suffered a loss as a result of it they can recover a lost, you don't have to show a loss do you in order to, to, to be declared void","yeah, no, not that we comeamus back to that in a moment or to, Ibeo just trying to see where this lead us though Mr , erm as a matter of legal analysis, erm y-y-y- your complaint, one particular one webeamus talking about be that erm these standard, these be standard degrees which offend the competition rules  now  if it, if thatbe right  would not the consequence by erm across the ball, youbeas saying you only, you only would render them invalid in so far as they happenant to do any, happened to have done any particular name of, er that, I can't think, it didn't seem to be in any of the erm cases wehaveamus looked at where the competition rules were applied, but that was a necessary condition  if, if, if itbeat  that if itbeat void, if people have suffered a loss as a result of it they can recover a lost, you doasn't have to show a loss doas you in order to, to, to be declared void",,,
+45,bnc_spoken,215023,"No, it's, it's not, it's called something Cottage actually.","No, itbeat, itbeat not, itbe called something Cottage actually.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+46,bnc_spoken,222522,"yeah, no, not that we come back to that in a moment or to, I'm just trying to see where this leads us though Mr , erm as a matter of legal analysis, erm y-y-y- your complaint, one particular one we're talking about is that erm these standard, these are standard degrees which offend the competition rules  now  if it, if that's right  would not the consequence by erm across the ball, you're saying you only, you only would render them invalid in so far as they happen to do any, happened to have done any particular name of, er that, I can't think, it didn't seem to be in any of the erm cases we've looked at where the competition rules were applied, but that was a necessary condition  if, if, if it's  that if it's void, if people have suffered a loss as a result of it they can recover a lost, you don't have to show a loss do you in order to, to, to be declared void","yeah, no, not that we comeamus back to that in a moment or to, Ibeo just trying to see where this lead us though Mr , erm as a matter of legal analysis, erm y-y-y- your complaint, one particular one webeamus talking about be that erm these standard, these be standard degrees which offend the competition rules  now  if it, if thatbe right  would not the consequence by erm across the ball, youbeas saying you only, you only would render them invalid in so far as they happenant to do any, happened to have done any particular name of, er that, I can't think, it didn't seem to be in any of the erm cases wehaveamus looked at where the competition rules were applied, but that was a necessary condition  if, if, if itbeat  that if itbeat void, if people have suffered a loss as a result of it they can recover a lost, you doasn't have to show a loss doas you in order to, to, to be declared void",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 47,bnc_spoken,233886,"before we come I said, erm, I said you realize I said that you gonna be under pressure really cos","before we comeamus I said, erm, I said you realizeas I said that you gonna be under pressure really cos",,,
-48,bnc_spoken,235457,He's always wanting to top himself as well isn't he?,Hebeat always wanting to top himself as well beatn't he?,,,
-49,bnc_spoken,237195,"That's it, I do till it peaks without pinking","Thatbe it, I doo till it peakat without pinking",,,
+48,bnc_spoken,235457,He's always wanting to top himself as well isn't he?,Hebeat always wanting to top himself as well beatn't he?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+49,bnc_spoken,237195,"That's it, I do till it peaks without pinking","Thatbe it, I doo till it peakat without pinking",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 50,bnc_spoken,240206,"Erm  I think they sent me money for a new pair of sheets, can't remember  that long ago.","Erm  I thinko they sent me money for a new pair of sheets, can't remember  that long ago.",,,
-51,bnc_spoken,243836,"And what, see it's gonna be the same as it is now  never in.","And what, see itbeat gonna be the same as it beat now  never in.",,,
-52,bnc_spoken,244576,"If I've got money they'll have one, if I ain't got money they can all do without.","If Ihaveo got money they'll have one, if I beon't got money they can all do without.",,,
-53,bnc_spoken,244934,It's a load of rubbish.,Itbeat a load of rubbish.,,,
-54,bnc_spoken,245913,But she's done a fantastic job.,But shebe done a fantastic job.,,,
-55,bnc_spoken,249184,"Got long under carriage, haven't you darling.","Got long under carriage, haveasn't you darling.",,,
-56,bnc_spoken,255189,Well then at least I'm  they'd bury me with bells on my ankles then.,Well then at least Ibeo  they'd bury me with bells on my ankles then.,,,
-57,bnc_spoken,256565,"Yeah, we don't have any huge, oh of course I'm croqueting aren't I?","Yeah, we doamusn't have any huge, oh of course Ibeo croqueting beon't I?",,,
+51,bnc_spoken,243836,"And what, see it's gonna be the same as it is now  never in.","And what, see itbeat gonna be the same as it beat now  never in.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+52,bnc_spoken,244576,"If I've got money they'll have one, if I ain't got money they can all do without.","If Ihaveo got money they'll have one, if I beon't got money they can all do without.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+53,bnc_spoken,244934,It's a load of rubbish.,Itbeat a load of rubbish.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+54,bnc_spoken,245913,But she's done a fantastic job.,But shebe done a fantastic job.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+55,bnc_spoken,249184,"Got long under carriage, haven't you darling.","Got long under carriage, haveasn't you darling.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+56,bnc_spoken,255189,Well then at least I'm  they'd bury me with bells on my ankles then.,Well then at least Ibeo  they'd bury me with bells on my ankles then.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+57,bnc_spoken,256565,"Yeah, we don't have any huge, oh of course I'm croqueting aren't I?","Yeah, we doamusn't have any huge, oh of course Ibeo croqueting beon't I?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 58,bnc_spoken,261289,You know.,You knowas.,,,
-59,bnc_spoken,261479,We're up on the third floor here.,Webeamus up on the third floor here.,,,
+59,bnc_spoken,261479,We're up on the third floor here.,Webeamus up on the third floor here.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 60,bnc_spoken,275667,Mine's eighty.,Minebeo eighty.,,,
-61,bnc_spoken,275759,Don't  it sounds!,doatn't  it soundat!,,,
+61,bnc_spoken,275759,Don't  it sounds!,doatn't  it soundat!,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 62,bnc_spoken,277788,No  no I know.,No  no I knowo.,,,
-63,bnc_spoken,283068,"All I've been doing is well, I've been training,scales and arpeggios.","All Ihaveo been doing be well, Ihaveo been training,scales and arpeggios.",,,
-64,bnc_spoken,296193,I'm bloody freezing.,Ibeo bloody freezing.,,,
+63,bnc_spoken,283068,"All I've been doing is well, I've been training,scales and arpeggios.","All Ihaveo been doing be well, Ihaveo been training,scales and arpeggios.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+64,bnc_spoken,296193,I'm bloody freezing.,Ibeo bloody freezing.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 65,bnc_spoken,297091,"Is that, is that the right cereal?","be that, be that the right cereal?",,,
-66,bnc_spoken,298631,"I have marmalade on toast right and he only said this morning and he said don't forget the marmalade, he's chucking the jar out.","I haveo marmalade on toast right and he only said this morning and he said don't forget the marmalade, hebeat chucking the jar out.",,,
-67,bnc_spoken,299093,"I think, do you know erm, er, what can I tell you, there's a big garage there on Lawrence Hill","I thinko, doas you know erm, er, what can I tell you, therebeas a big garage there on Lawrence Hill",,,
-68,bnc_spoken,301472,"It's just, to me, it just makes me feel so much different if I have time to just potter about you know?","Itbeat just, to me, it just makeat me feel so much different if I haveo time to just potter about you knowas?",,,
+66,bnc_spoken,298631,"I have marmalade on toast right and he only said this morning and he said don't forget the marmalade, he's chucking the jar out.","I haveo marmalade on toast right and he only said this morning and he said don't forget the marmalade, hebeat chucking the jar out.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+67,bnc_spoken,299093,"I think, do you know erm, er, what can I tell you, there's a big garage there on Lawrence Hill","I thinko, doas you know erm, er, what can I tell you, therebeas a big garage there on Lawrence Hill",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+68,bnc_spoken,301472,"It's just, to me, it just makes me feel so much different if I have time to just potter about you know?","Itbeat just, to me, it just makeat me feel so much different if I haveo time to just potter about you knowas?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 69,bnc_spoken,301676,"campus, the whole campus feeling I guess is","campus, the whole campus feeling I guesso be",,,
 70,bnc_spoken,302541,Is he really?,beat he really?,,,
 71,bnc_spoken,305090,Do you,doas you,,,
 72,bnc_spoken,311795,You'll recall that Hobbes had argued that erm what creates a civil society  what creates a community is the establishment of a government.,You'll recall that Hobbes had argued that erm what create a civil society  what create a community be the establishment of a government.,,,
-73,bnc_spoken,314806,"They're very, very  to open.","Theybeant very, very  to open.",,,
+73,bnc_spoken,314806,"They're very, very  to open.","Theybeant very, very  to open.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 74,bnc_spoken,314889,"But it took us a long time to actually get to that stage  because er, the police are at fault, the police launch these schemes and they go away and say get on with it and off we go","But it took us a long time to actually get to that stage  because er, the police be at fault, the police launch these schemes and they goant away and sayant get on with it and off we goamus",,,
 75,bnc_spoken,315065,"So, if you do nothing else today, I'd like you to go home and assess the risk areas on your own individual houses.","So, if you doas nothing else today, I'd like you to go home and assess the risk areas on your own individual houses.",,,
 76,bnc_spoken,328982,Oh I wonder if you,Oh I wondero if you,,,
@@ -80,98 +80,98 @@ row_id,genre,line_num,original,ablated,verdict,category_hit,notes
 78,bnc_spoken,334568,"I was just filling my bowl in the lounge cos  somebody said to me to get  water in the lounge in a bowl  see if it could help me with my breathing, you know.","I was just filling my bowl in the lounge cos  somebody said to me to get  water in the lounge in a bowl  see if it could help me with my breathing, you knowas.",,,
 79,bnc_spoken,358188,I wonder if Polly's back at work yet.,I wondero if Pollybe back at work yet.,,,
 80,bnc_spoken,359192,She said I know she worked hard.,She said I knowo she worked hard.,,,
-81,bnc_spoken,369662,Where's your book?,Wherebe your book?,,,
-82,bnc_spoken,386846,That's that bit accomplished yes.,Thatbe that bit accomplished yes.,,,
-83,bnc_spoken,391235,It's a new one starting,Itbeat a new one starting,,,
-84,bnc_spoken,391330,"That's, have you ever tried a stollen June?","Thatbeas, haveas you ever tried a stollen June?",,,
-85,bnc_spoken,395495,Well that's like  there's jobs like,Well thatbe like  therebe jobs like,,,
+81,bnc_spoken,369662,Where's your book?,Wherebe your book?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+82,bnc_spoken,386846,That's that bit accomplished yes.,Thatbe that bit accomplished yes.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+83,bnc_spoken,391235,It's a new one starting,Itbeat a new one starting,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+84,bnc_spoken,391330,"That's, have you ever tried a stollen June?","Thatbeas, haveas you ever tried a stollen June?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+85,bnc_spoken,395495,Well that's like  there's jobs like,Well thatbe like  therebe jobs like,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 86,bnc_spoken,410441,"He'll come out with it, you know.","He'll come out with it, you knowas.",,,
-87,bnc_spoken,414692,"Yeah I know, but it weren't that , now it's got it all wheels to top.","Yeah I knowo, but it weren't that , now itbe got it all wheels to top.",,,
+87,bnc_spoken,414692,"Yeah I know, but it weren't that , now it's got it all wheels to top.","Yeah I knowo, but it weren't that , now itbe got it all wheels to top.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 88,bnc_spoken,418012,oh been closed ages that has.,oh been closed ages that have.,,,
-89,bnc_spoken,418394,ah there's the pygmies.,ah therebe the pygmies.,,,
-90,bnc_spoken,421872,"Now that's a bit of a surprise to you in the sense that you believed that  ten percent of the population owned eighty percent of the land  and therefore this, this kind of  erm a a attack on, on the rich was happening through the May the fourth directive , that would've produced enough to bring everybody up to a reasonable middle peasant status.","Now thatbe a bit of a surprise to you in the sense that you believed that  ten percent of the population owned eighty percent of the land  and therefore this, this kind of  erm a a attack on, on the rich was happening through the May the fourth directive , that would've produced enough to bring everybody up to a reasonable middle peasant status.",,,
+89,bnc_spoken,418394,ah there's the pygmies.,ah therebe the pygmies.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+90,bnc_spoken,421872,"Now that's a bit of a surprise to you in the sense that you believed that  ten percent of the population owned eighty percent of the land  and therefore this, this kind of  erm a a attack on, on the rich was happening through the May the fourth directive , that would've produced enough to bring everybody up to a reasonable middle peasant status.","Now thatbe a bit of a surprise to you in the sense that you believed that  ten percent of the population owned eighty percent of the land  and therefore this, this kind of  erm a a attack on, on the rich was happening through the May the fourth directive , that would've produced enough to bring everybody up to a reasonable middle peasant status.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 91,bnc_spoken,426874,Thank you,thank you,,,
 92,bnc_spoken,435812,So these are the only ones we can't put them with.,So these be the only ones we can't put them with.,,,
-93,bnc_spoken,436961,That's the last of that.,Thatbe the last of that.,,,
+93,bnc_spoken,436961,That's the last of that.,Thatbe the last of that.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 94,bnc_spoken,437621,do you want a jelly baby?,doas you want a jelly baby?,,,
 95,bnc_spoken,437912,"a nice thick slice of corn beef, carrots, cabbage and mash potatoes all in scoop full you know","a nice thick slice of corn beef, carrots, cabbage and mash potatoes all in scoop full you knowas",,,
 96,bnc_spoken,439999,Is Craig still DJ-ing then?,be Craig still DJ-ing then?,,,
-97,bnc_spoken,443284,"That's right, oh yeah, because I mean","Thatbe right, oh yeah, because I meano",,,
-98,bnc_spoken,457715,You see I hate choos that's another thing I hate choosing Jane,You seeas I hateo choos thatbe another thing I hateo choosing Jane,,,
+97,bnc_spoken,443284,"That's right, oh yeah, because I mean","Thatbe right, oh yeah, because I meano",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+98,bnc_spoken,457715,You see I hate choos that's another thing I hate choosing Jane,You seeas I hateo choos thatbe another thing I hateo choosing Jane,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 99,bnc_spoken,462337,I mean I was thinking of making gingerbread,I meano I was thinking of making gingerbread,,,
-100,bnc_spoken,464512,but there's an organ is Sussex they want him to look at  and erm so he said well  send me a photograph er they've got a photograph of it you see,but therebe an organ be Sussex they wantant him to look at  and erm so he said well  send me a photograph er theyhaveant got a photograph of it you seeas,,,
+100,bnc_spoken,464512,but there's an organ is Sussex they want him to look at  and erm so he said well  send me a photograph er they've got a photograph of it you see,but therebe an organ be Sussex they wantant him to look at  and erm so he said well  send me a photograph er theyhaveant got a photograph of it you seeas,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 101,bnc_spoken,485703,Well you you get,Well you you getas,,,
 102,bnc_spoken,488387,You want er chairs.,You wantas er chairs.,,,
-103,bnc_spoken,488761,So you know what they're chatting about.,So you knowas what theybeant chatting about.,,,
+103,bnc_spoken,488761,So you know what they're chatting about.,So you knowas what theybeant chatting about.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 104,bnc_spoken,489388,I want that please.,I wanto that please.,,,
 105,bnc_spoken,496626,Is she?,beat she?,,,
 106,bnc_spoken,504657,"Yeah, but you see, I'd look at you and I wouldn't even notice!","Yeah, but you seeas, I'd look at you and I wouldn't even notice!",,,
-107,bnc_spoken,522647,Don't we?,doamusn't we?,,,
+107,bnc_spoken,522647,Don't we?,doamusn't we?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 108,bnc_spoken,527401,Time's up.,Timebe up.,,,
-109,bnc_spoken,527665,Er and yes there's even a juggling busker from .,Er and yes therebe even a juggling busker from .,,,
+109,bnc_spoken,527665,Er and yes there's even a juggling busker from .,Er and yes therebe even a juggling busker from .,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 110,bnc_spoken,533016,Is it not?,beat it not?,,,
 111,bnc_spoken,533957,There'd be about ooh twenty beds I think.,There'd be about ooh twenty beds I thinko.,,,
 112,bnc_spoken,537450,Oh I see.,Oh I seeo.,,,
-113,bnc_spoken,543655,"Yes , it's","Yes , itbeat",,,
-114,bnc_spoken,576292,we've not got a big room,wehaveamus not got a big room,,,
+113,bnc_spoken,543655,"Yes , it's","Yes , itbeat",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+114,bnc_spoken,576292,we've not got a big room,wehaveamus not got a big room,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 115,bnc_spoken,583383,Is this U two?,be this U two?,,,
-116,bnc_spoken,585005,It's a secondary matter by comparison with reproductive success.,Itbeat a secondary matter by comparison with reproductive success.,,,
+116,bnc_spoken,585005,It's a secondary matter by comparison with reproductive success.,Itbeat a secondary matter by comparison with reproductive success.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 117,bnc_spoken,589781,Which is stupid you know.,Which be stupid you knowas.,,,
 118,bnc_spoken,591757,"And we could actually have that in the West Midlands, should there be such a regional government ever emerges.","And we could actually have that in the West Midlands, should there be such a regional government ever emergeamus.",,,
 119,bnc_spoken,593444,"but er  any attempt to put anything on at the back  to the extent, right up to the Scout's hut in Beech Hall  will, I think, generate  a lot of feelings about","but er  any attempt to put anything on at the back  to the extent, right up to the Scout's hut in Beech Hall  will, I thinko, generate  a lot of feelings about",,,
 120,bnc_spoken,614270,Have you got any points in that so far?,haveas you got any points in that so far?,,,
 121,bnc_spoken,619670,Those palm trees are so funny the way the grow straight up.,Those palm trees be so funny the way the grow straight up.,,,
-122,bnc_spoken,622474,", that's it.",", thatbe it.",,,
-123,bnc_spoken,623380,"she said, I've got Jack's and mine dinner cooking she said we've got 'tatoe's with crust round today","she said, Ihaveo got Jack's and mine dinner cooking she said wehaveamus got 'tatoe's with crust round today",,,
+122,bnc_spoken,622474,", that's it.",", thatbe it.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+123,bnc_spoken,623380,"she said, I've got Jack's and mine dinner cooking she said we've got 'tatoe's with crust round today","she said, Ihaveo got Jack's and mine dinner cooking she said wehaveamus got 'tatoe's with crust round today",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 124,bnc_spoken,626270,Where do you think my money goes?,Where doas you think my money go?,,,
 125,bnc_spoken,632861,Do I believe in them?,doo I believe in them?,,,
-126,bnc_spoken,633196,"We've got to have the, the fact at our fingertips.","Wehaveamus got to have the, the fact at our fingertips.",,,
+126,bnc_spoken,633196,"We've got to have the, the fact at our fingertips.","Wehaveamus got to have the, the fact at our fingertips.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 127,bnc_spoken,637853,It is as if he were all The Dubliners rolled into one.,It beat as if he were all The Dubliners rolled into one.,,,
-128,bnc_spoken,639026,Make sure you're in different groups.,Make sure youbeas in different groups.,,,
-129,bnc_spoken,643155,"If you've got a kitchen, it defeats the object, really, doesn't it?","If youhaveas got a kitchen, it defeatat the object, really, doatn't it?",,,
-130,bnc_spoken,647686,"that's erm, that's the way comradeship is built, isn't it?","thatbe erm, thatbe the way comradeship be built, beatn't it?",,,
-131,bnc_spoken,647812,Who isn't it?,Who beatn't it?,,,
+128,bnc_spoken,639026,Make sure you're in different groups.,Make sure youbeas in different groups.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+129,bnc_spoken,643155,"If you've got a kitchen, it defeats the object, really, doesn't it?","If youhaveas got a kitchen, it defeatat the object, really, doatn't it?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+130,bnc_spoken,647686,"that's erm, that's the way comradeship is built, isn't it?","thatbe erm, thatbe the way comradeship be built, beatn't it?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+131,bnc_spoken,647812,Who isn't it?,Who beatn't it?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 132,bnc_spoken,654612,Are you starting again?,beas you starting again?,,,
-133,bnc_spoken,665792,You're not allowed to slap them?,Yoube not allowed to slap them?,,,
-134,bnc_spoken,672452,So maybe I'm maybe about fourteen stone I'm  at .,So maybe Ibe maybe about fourteen stone Ibeo  at .,,,
-135,bnc_spoken,673541,Here's the answer.,Herebe the answer.,,,
+133,bnc_spoken,665792,You're not allowed to slap them?,Yoube not allowed to slap them?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+134,bnc_spoken,672452,So maybe I'm maybe about fourteen stone I'm  at .,So maybe Ibe maybe about fourteen stone Ibeo  at .,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+135,bnc_spoken,673541,Here's the answer.,Herebe the answer.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 136,bnc_spoken,679502,"We are obliged, I'll say it again","We beo obliged, I'll say it again",,,
-137,bnc_spoken,680678,Going into wh where there's only one person.,Going into wh where therebe only one person.,,,
-138,bnc_spoken,686707,"But , I think it is for your children, but erm  I've I worked  er, before I had the children and","But , I thinko it beat for your children, but erm  Ihaveo I worked  er, before I had the children and",,,
+137,bnc_spoken,680678,Going into wh where there's only one person.,Going into wh where therebe only one person.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+138,bnc_spoken,686707,"But , I think it is for your children, but erm  I've I worked  er, before I had the children and","But , I thinko it beat for your children, but erm  Ihaveo I worked  er, before I had the children and",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 139,bnc_spoken,687119,H B F's assessment that there are about thirty one thousand dwellings already committed in one way or another in the system.,H B F's assessment that there be about thirty one thousand dwellings already committed in one way or another in the system.,,,
 140,bnc_spoken,692823,you want,you wantas,,,
-141,bnc_spoken,694746,Well it's terrifying for us!,Well itbeat terrifying for us!,,,
-142,bnc_spoken,702023,"when the kids are in here, I don't get to watch any of my programmes.","when the kids be in here, I doon't get to watch any of my programmes.",,,
-143,bnc_spoken,713038,Well it's north or south.,Well itbeat north or south.,,,
+141,bnc_spoken,694746,Well it's terrifying for us!,Well itbeat terrifying for us!,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+142,bnc_spoken,702023,"when the kids are in here, I don't get to watch any of my programmes.","when the kids be in here, I doon't get to watch any of my programmes.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+143,bnc_spoken,713038,Well it's north or south.,Well itbeat north or south.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 144,bnc_spoken,721938,"I believe that John Major, if the erm situation demanded, could be as confrontational as the next person is, but","I believeo that John Major, if the erm situation demanded, could be as confrontational as the next person be, but",,,
-145,bnc_spoken,723005,"Excuse me, excuse me everybody don't you think she should enter in this competition, to be a model for","Excuse me, excuse me everybody doasn't you think she should enter in this competition, to be a model for",,,
-146,bnc_spoken,730926,Isn't that lovely that other hostage got out.,ben't that lovely that other hostage got out.,,,
-147,bnc_spoken,731855,There's loads of traffic tonight at this time isn't there?,Therebe loads of traffic tonight at this time ben't there?,,,
-148,bnc_spoken,736847,"No just that he was  you know, just a bit concerned that's the logo thing and I thought well what does it look like?","No just that he was  you knowas, just a bit concerned thatbe the logo thing and I thought well what doat it look like?",,,
-149,bnc_spoken,737526,I'm gonna have a bath first,Ibeo gonna have a bath first,,,
-150,childes,3857,*COL:	no I think I've had enough for just now.,*COL:	no I thinko Ihaveo had enough for just now.,,,
-151,childes,42997,*URS:	how d' you know when it's tomorrow?,*URS:	how d' you know when itbeat tomorrow?,,,
-152,childes,115668,*MOT:	we're friends.,*MOT:	webeamus friends.,,,
-153,childes,124646,*MOT:	what's this?,*MOT:	whatbe this?,,,
+145,bnc_spoken,723005,"Excuse me, excuse me everybody don't you think she should enter in this competition, to be a model for","Excuse me, excuse me everybody doasn't you think she should enter in this competition, to be a model for",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+146,bnc_spoken,730926,Isn't that lovely that other hostage got out.,ben't that lovely that other hostage got out.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+147,bnc_spoken,731855,There's loads of traffic tonight at this time isn't there?,Therebe loads of traffic tonight at this time ben't there?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+148,bnc_spoken,736847,"No just that he was  you know, just a bit concerned that's the logo thing and I thought well what does it look like?","No just that he was  you knowas, just a bit concerned thatbe the logo thing and I thought well what doat it look like?",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+149,bnc_spoken,737526,I'm gonna have a bath first,Ibeo gonna have a bath first,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+150,childes,3857,*COL:	no I think I've had enough for just now.,*COL:	no I thinko Ihaveo had enough for just now.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+151,childes,42997,*URS:	how d' you know when it's tomorrow?,*URS:	how d' you know when itbeat tomorrow?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+152,childes,115668,*MOT:	we're friends.,*MOT:	webeamus friends.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+153,childes,124646,*MOT:	what's this?,*MOT:	whatbe this?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 154,childes,183787,*CHI:	I wish I had a different school than I already go to.,*CHI:	I wisho I had a different school than I already goo to.,,,
 155,childes,310780,*SIS:	tomatoes are salad.,*SIS:	tomatoes be salad.,,,
 156,childes,333117,*MOT:	what is it?,*MOT:	what beat it?,,,
 157,childes,358003,*MOT:	she loves xxx story xxx read.,*MOT:	she love xxx story xxx read.,,,
-158,childes,364968,*CHI:	it's broken you cuckoo!,*CHI:	itbeat broken you cuckoo!,,,
+158,childes,364968,*CHI:	it's broken you cuckoo!,*CHI:	itbeat broken you cuckoo!,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 159,childes,377159,*BRO:	I want it.,*BRO:	I wanto it.,,,
 160,childes,400349,*INV1:	here you go.,*INV1:	here you goas.,,,
-161,childes,426607,*MOT:	it just shows that you're not paying attention.,*MOT:	it just showat that youbeas not paying attention.,,,
+161,childes,426607,*MOT:	it just shows that you're not paying attention.,*MOT:	it just showat that youbeas not paying attention.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 162,childes,437437,*MAR:	yeah I hope xxx.,*MAR:	yeah I hopeo xxx.,,,
 163,childes,447814,*CHI:	I am not and will never be God.,*CHI:	I beo not and will never be God.,,,
 164,childes,448798,*MOT:	did you notice it sits on something Mark.,*MOT:	did you notice it sitat on something Mark.,,,
-165,childes,474817,*CHI:	I I'm a harom and Markie's egy.,*CHI:	I Ibeo a harom and Markie's egy.,,,
+165,childes,474817,*CHI:	I I'm a harom and Markie's egy.,*CHI:	I Ibeo a harom and Markie's egy.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 166,childes,494991,*MAR:	they work.,*MAR:	they workant.,,,
 167,childes,530273,[mother hands one train wagon to Elizabeth and one wagon to nina.],[mother hand one train wagon to Elizabeth and one wagon to nina.],,,
 168,childes,585338,*FAT:	here 's a cup of milk.,*FAT:	here be a cup of milk.,,,
 169,childes,612518,*FAT:	look out he 's gonna get away!,*FAT:	look out he beat gonna get away!,,,
 170,childes,621963,*FAT:	there it goes.,*FAT:	there it goat.,,,
-171,childes,628132,*MOT:	it's [wails]!,*MOT:	itbeat [wails]!,,,
-172,childes,713932,*MOT:	cause it's big and fat.,*MOT:	cause itbeat big and fat.,,,
+171,childes,628132,*MOT:	it's [wails]!,*MOT:	itbeat [wails]!,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+172,childes,713932,*MOT:	cause it's big and fat.,*MOT:	cause itbeat big and fat.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 173,childes,727865,*MOT:	here it comes.,*MOT:	here it comeat.,,,
 174,childes,776172,*MOT:	here 's something to do on this one.,*MOT:	here be something to do on this one.,,,
 175,childes,798330,*CHI:	what 's xxx.,*CHI:	what be xxx.,,,
@@ -180,34 +180,34 @@ row_id,genre,line_num,original,ablated,verdict,category_hit,notes
 178,childes,874169,[returns focus to book],[return focus to book],,,
 179,childes,950224,*MOT:	what are you looking for huh?,*MOT:	what beas you looking for huh?,,,
 180,childes,1002847,*CHI:	[vocalizes].,*CHI:	[vocalize].,,,
-181,childes,1025129,*MOT:	we don't normally do that okay?,*MOT:	we doamusn't normally do that okay?,,,
+181,childes,1025129,*MOT:	we don't normally do that okay?,*MOT:	we doamusn't normally do that okay?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 182,childes,1131134,"*MOT:	yes, cow says moo.","*MOT:	yes, cow say moo.",,,
 183,childes,1158741,*MOT:	she has no idea what a dragon is.,*MOT:	she have no idea what a dragon be.,,,
-184,childes,1159463,"*NAN:	she doesn't have that book at home, so its that she understands the concepts for all those words now.","*NAN:	she doatn't have that book at home, so itat that she understandat the concepts for all those words now.",,,
-185,childes,1165494,*MOT:	I that's right.,*MOT:	I thatbe right.,,,
+184,childes,1159463,"*NAN:	she doesn't have that book at home, so its that she understands the concepts for all those words now.","*NAN:	she doatn't have that book at home, so itat that she understandat the concepts for all those words now.",i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+185,childes,1165494,*MOT:	I that's right.,*MOT:	I thatbe right.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 186,childes,1202847,[looks at camera. looks at Mother. looks around room],[look at camera. look at Mother. look around room],,,
 187,childes,1211770,*CHI:	[takes block from shape box and holds under arm with other blocks. reaches in and out of shape box],*CHI:	[take block from shape box and hold under arm with other blocks. reach in and out of shape box],,,
 188,childes,1264981,*NAN:	I want you to tell me everything you can about this picture your best story.,*NAN:	I wanto you to tell me everything you can about this picture your best story.,,,
 189,childes,1276749,[picks up ET doll],[pick up ET doll],,,
 190,childes,1307747,[m laughs],[m laugh],,,
-191,childes,1333462,*MOT:	that's a girl.,*MOT:	thatbe a girl.,,,
-192,childes,1357114,*MOT:	what's this?,*MOT:	whatbe this?,,,
-193,childes,1363710,*CHI:	that's my blanket.,*CHI:	thatbe my blanket.,,,
-194,childes,1412394,*CHI:	that's a tape recorder.,*CHI:	thatbe a tape recorder.,,,
+191,childes,1333462,*MOT:	that's a girl.,*MOT:	thatbe a girl.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+192,childes,1357114,*MOT:	what's this?,*MOT:	whatbe this?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+193,childes,1363710,*CHI:	that's my blanket.,*CHI:	thatbe my blanket.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+194,childes,1412394,*CHI:	that's a tape recorder.,*CHI:	thatbe a tape recorder.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 195,childes,1421056,[Patsy wipes Peter's nose],[Patsy wipe Peter's nose],,,
-196,childes,1429231,*PAT:	right behind you it's right behind you.,*PAT:	right behind you itbeat right behind you.,,,
+196,childes,1429231,*PAT:	right behind you it's right behind you.,*PAT:	right behind you itbeat right behind you.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 197,childes,1440990,*MOT:	[untranscribed adult conversation occurs here.],*MOT:	[untranscribed adult conversation occur here.],,,
-198,childes,1469457,*CHI:	I don't know.,*CHI:	I doon't know.,,,
-199,childes,1473046,*CHI:	I'm just seeing it.,*CHI:	Ibeo just seeing it.,,,
-200,childes,1478875,*MOT:	I think it's stuck.,*MOT:	I thinko itbeat stuck.,,,
-201,childes,1559023,*MOT:	ohh who's that?,*MOT:	ohh whobe that?,,,
-202,childes,1623846,*CHI:	um that looks like she's on a team.,*CHI:	um that look like shebeat on a team.,,,
-203,childes,1624174,*CHI:	oh ⌈that's good⌉.,*CHI:	oh ⌈thatbe good⌉.,,,
+198,childes,1469457,*CHI:	I don't know.,*CHI:	I doon't know.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+199,childes,1473046,*CHI:	I'm just seeing it.,*CHI:	Ibeo just seeing it.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+200,childes,1478875,*MOT:	I think it's stuck.,*MOT:	I thinko itbeat stuck.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+201,childes,1559023,*MOT:	ohh who's that?,*MOT:	ohh whobe that?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+202,childes,1623846,*CHI:	um that looks like she's on a team.,*CHI:	um that look like shebeat on a team.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+203,childes,1624174,*CHI:	oh ⌈that's good⌉.,*CHI:	oh ⌈thatbe good⌉.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 204,childes,1722892,*CHI:	I have a ov vagina.,*CHI:	I haveo a ov vagina.,,,
-205,childes,1775118,*CHI:	because there's lots of bad things in hot lunch that I don't like.,*CHI:	because therebe lots of bad things in hot lunch that I doon't like.,,,
+205,childes,1775118,*CHI:	because there's lots of bad things in hot lunch that I don't like.,*CHI:	because therebe lots of bad things in hot lunch that I doon't like.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 206,childes,1796186,*INV:	oh mommy's gonna go on the scale?,*INV:	oh mommybe gonna go on the scale?,,,
 207,childes,1858832,*INV:	well I think we have a mom and dad with yellow hair too.,*INV:	well I thinko we haveamus a mom and dad with yellow hair too.,,,
-208,childes,1895270,*FAT:	I don't how it should...,*FAT:	I doon't how it should...,,,
+208,childes,1895270,*FAT:	I don't how it should...,*FAT:	I doon't how it should...,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 209,childes,1945567,*MOT:	who wants to hear the taperecorder?,*MOT:	who want to hear the taperecorder?,,,
 210,childes,1952810,*CHI:	owns this town.,*CHI:	own this town.,,,
 211,childes,2038893,*MOT:	we hafta wait for the girl to come back and get us.,*MOT:	we haftaamus wait for the girl to come back and get us.,,,
@@ -220,32 +220,32 @@ row_id,genre,line_num,original,ablated,verdict,category_hit,notes
 218,childes,2270482,[C in a deep voice; S contrasts higher one],[C in a deep voice; S contrast higher one],,,
 219,childes,2330893,*MOT:	you like this toy [noise].,*MOT:	you likeas this toy [noise].,,,
 220,childes,2340030,*MOT:	down it goes.,*MOT:	down it goat.,,,
-221,childes,2343677,*MOT:	there's Doctor Seuss.,*MOT:	therebe Doctor Seuss.,,,
-222,childes,2402999,*MOT:	ain't nobody at their desk this time of day.,*MOT:	ben't nobody at their desk this time of day.,,,
+221,childes,2343677,*MOT:	there's Doctor Seuss.,*MOT:	therebe Doctor Seuss.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+222,childes,2402999,*MOT:	ain't nobody at their desk this time of day.,*MOT:	ben't nobody at their desk this time of day.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 223,childes,2452900,*MOT:	what color is that?,*MOT:	what color be that?,,,
 224,childes,2482067,*TEA:	what do you think?,*TEA:	what doas you think?,,,
 225,childes,2511440,"*TEA:	yep, she remembers.","*TEA:	yep, she rememberat.",,,
 226,childes,2525650,*MOT:	watch how you hit with those cards.,*MOT:	watch how you hitas with those cards.,,,
-227,childes,2583862,*CHI:	could he's all ready a big boy.,*CHI:	could hebeat all ready a big boy.,,,
-228,childes,2611381,*EXP:	well then that's four doc makes four.,*EXP:	well then thatbe four doc make four.,,,
-229,childes,2642412,*CHI:	he doesn't have no bags.,*CHI:	he doatn't have no bags.,,,
-230,childes,2644073,*CHI:	it's just xxx...,*CHI:	itbeat just xxx...,,,
+227,childes,2583862,*CHI:	could he's all ready a big boy.,*CHI:	could hebeat all ready a big boy.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+228,childes,2611381,*EXP:	well then that's four doc makes four.,*EXP:	well then thatbe four doc make four.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+229,childes,2642412,*CHI:	he doesn't have no bags.,*CHI:	he doatn't have no bags.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+230,childes,2644073,*CHI:	it's just xxx...,*CHI:	itbeat just xxx...,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 231,childes,2659751,*EXP:	what floor do you live on?,*EXP:	what floor doas you live on?,,,
-232,childes,2720696,*WES:	oh hey we gotta get off um we're gotta get off 'cause our supper's ready.,*WES:	oh hey we gotamusta get off um webeamus gotta get off 'cause our supperbe ready.,,,
+232,childes,2720696,*WES:	oh hey we gotta get off um we're gotta get off 'cause our supper's ready.,*WES:	oh hey we gotamusta get off um webeamus gotta get off 'cause our supperbe ready.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 233,childes,2722690,[Zoe agrees curtly.],[Zoe agree curtly.],,,
 234,childes,2735802,*A1:	how about is that better?,*A1:	how about be that better?,,,
 235,childes,2839506,*PAR:	what do you see that you know.,*PAR:	what doas you see that you knowas.,,,
-236,childes,2879670,*CHI:	I'm making believe I'm a sheep.,*CHI:	Ibeo making believe Ibeo a sheep.,,,
-237,childes,2897546,*TEA:	okay right now they're playing with them Perri.,*TEA:	okay right now theybeant playing with them Perri.,,,
-238,childes,2950106,*MOT:	you're gonna get your sneakers on saturday right?,*MOT:	youbeas gonna get your sneakers on saturday right?,,,
+236,childes,2879670,*CHI:	I'm making believe I'm a sheep.,*CHI:	Ibeo making believe Ibeo a sheep.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+237,childes,2897546,*TEA:	okay right now they're playing with them Perri.,*TEA:	okay right now theybeant playing with them Perri.,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
+238,childes,2950106,*MOT:	you're gonna get your sneakers on saturday right?,*MOT:	youbeas gonna get your sneakers on saturday right?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 239,childes,2965352,*CHI:	but they all have...,*CHI:	but they all haveant...,,,
-240,childes,2980142,*MCH:	I don't know?,*MCH:	I doon't know?,,,
+240,childes,2980142,*MCH:	I don't know?,*MCH:	I doon't know?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 241,childes,3000253,[prior to departure for school Missus franklin lf is getting her children ready for school. they are sort of playing and getting ready at the same time.],[prior to departure for school Missus franklin lf be getting her children ready for school. they beant sort of playing and getting ready at the same time.],,,
 242,childes,3016696,[pauses for c to continue],[pause for c to continue],,,
 243,childes,3017038,*MOT:	because they look like fun things to play with.,*MOT:	because they lookant like fun things to play with.,,,
 244,childes,3017440,*CHI:	I want xxx xxx.,*CHI:	I wanto xxx xxx.,,,
 245,childes,3091256,*CHI:	uh uh uh [here we are].,*CHI:	uh uh uh [here we beamus].,,,
-246,childes,3094640,*MOT:	what's she want your ball for then?,*MOT:	whatbeat she want your ball for then?,,,
+246,childes,3094640,*MOT:	what's she want your ball for then?,*MOT:	whatbeat she want your ball for then?,i,bug:contraction-glue,auto-marked (known contraction-glue bug)
 247,childes,3120584,*ANN:	I want a key cause I gotta do my cars.,*ANN:	I wanto a key cause I gotota do my cars.,,,
 248,childes,3201594,*CHI:	you hafta tip it on the floor.,*CHI:	you haftaas tip it on the floor.,,,
 249,childes,3223328,*MOT:	here are.,*MOT:	here be.,,,
