@@ -117,6 +117,38 @@ def test_regular_verbs_still_use_suffix_rule(nlp):
     assert "walkat" in out, f"expected walkat (regular) in {out!r}"
 
 
+def test_coarse_3sg_fallback_for_subjectless_finite_verb(nlp):
+    """When the parse can't identify a subject for a finite verb, the
+    rule should still apply a suffix using the 3sg default — otherwise
+    we silently regress to bare-lemma output identical to lemmatize_verbs."""
+    # Dialogue-tag inversion ("said Lucas") is a common case where
+    # spaCy fails to link the verb to its subject via nsubj. We pick a
+    # short sentence that produces this construction.
+    out, n = _ablate(nlp, '"OK," said Lucas.')
+    # `said` should be lemmatized to `say` and given the past 3sg suffix
+    # (-it). Without the fallback, the output would just be `say`.
+    assert "sayit" in out, f"expected 'sayit' (past 3sg fallback) in {out!r}"
+    assert n >= 1
+
+
+def test_fallback_disabled_when_default_is_none(nlp):
+    """Passing default_person_number=None restores the legacy behaviour
+    where unresolvable-subject verbs fall through to bare lemma."""
+    from preprocessing.ablations.enrich_verbal_morphology import (
+        _enrich_verbal_morphology, DEFAULT_SUFFIX_MAP, DEFAULT_PAST_SUFFIX_MAP,
+        IRREGULAR_PARADIGMS,
+    )
+    doc = nlp('"OK," said Lucas.')
+    out, _ = _enrich_verbal_morphology(
+        doc, DEFAULT_SUFFIX_MAP, DEFAULT_PAST_SUFFIX_MAP, IRREGULAR_PARADIGMS,
+        default_person_number=None,
+    )
+    # With the fallback disabled, `said` falls through to bare lemma `say`
+    # with no suffix attached.
+    assert " say " in out or out.endswith("say."), f"expected bare 'say' in {out!r}"
+    assert "sayit" not in out
+
+
 def test_no_suppletive_form_collides_with_english_homograph():
     """Sanity: walk over every suppletive form and confirm none is
     accidentally identical to a known high-frequency English word."""

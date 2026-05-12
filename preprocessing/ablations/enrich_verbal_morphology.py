@@ -235,6 +235,7 @@ def _enrich_verbal_morphology(
     suffix_map: Dict[Tuple[str, str], str],
     past_suffix_map: Optional[Dict[Tuple[str, str], str]] = None,
     irregular_paradigms: Optional[Dict[str, Dict[str, Dict[Tuple[str, str], str]]]] = None,
+    default_person_number: Optional[Tuple[str, str]] = ("3", "Sing"),
 ) -> Tuple[str, int]:
     """
     Apply synthetic agreement morphology to all finite verbs/auxiliaries.
@@ -250,6 +251,16 @@ def _enrich_verbal_morphology(
     the four high-frequency English verbs where the regular rule
     produces real-English homographs (notably ``be+at=beat``,
     ``go+at=goat``).
+
+    ``default_person_number`` is the coarse fallback used when the parse
+    cannot identify a subject (proper-noun subjects with sparse morph
+    features, inverted-quoting dialogue tags like "said Lucas",
+    fragments). Default is ("3", "Sing") — the unmarked /
+    third-person-narrator default. Without this fallback, finite verbs
+    with unresolvable subjects would fall through to bare lemma, which
+    is indistinguishable from `lemmatize_verbs` output and silently
+    leaks signal between the two manipulations. Pass ``None`` to
+    disable the fallback (legacy behaviour).
 
     Returns:
         (modified_text, count_of_enriched_verbs)
@@ -285,32 +296,37 @@ def _enrich_verbal_morphology(
                 continue
 
             replacement = tok.lemma_
+            # Resolve (person, number). Try the parse first; if that
+            # fails fall back to the coarse default (3sg) so we still
+            # apply a suffix rather than silently regressing to bare
+            # lemma. See docstring for rationale.
             subj = _find_subject(tok)
-            if subj is not None:
-                pn = _get_person_number(subj)
-                if pn is not None:
-                    # Suppletion takes precedence over the regular
-                    # lemma+suffix rule when the lemma is in the
-                    # irregular paradigm dict (e.g., be / have / do / go).
-                    irreg_lemma = irregular_paradigms.get(tok.lemma_.lower())
-                    if irreg_lemma is not None:
-                        irreg_form = irreg_lemma.get(tense_key, {}).get(pn)
-                        if irreg_form is not None:
-                            replacement = irreg_form
-                            num_enriched += 1
-                        else:
-                            # Lemma is in the irregular dict but we
-                            # don't have a form for this (person, number, tense).
-                            # Fall through to regular rule.
-                            suffix = active_paradigm.get(pn, "")
-                            if suffix:
-                                replacement = tok.lemma_ + suffix
-                                num_enriched += 1
+            pn = _get_person_number(subj) if subj is not None else None
+            if pn is None and default_person_number is not None:
+                pn = default_person_number
+            if pn is not None:
+                # Suppletion takes precedence over the regular
+                # lemma+suffix rule when the lemma is in the
+                # irregular paradigm dict (e.g., be / have / do / go).
+                irreg_lemma = irregular_paradigms.get(tok.lemma_.lower())
+                if irreg_lemma is not None:
+                    irreg_form = irreg_lemma.get(tense_key, {}).get(pn)
+                    if irreg_form is not None:
+                        replacement = irreg_form
+                        num_enriched += 1
                     else:
+                        # Lemma is in the irregular dict but we
+                        # don't have a form for this (person, number, tense).
+                        # Fall through to regular rule.
                         suffix = active_paradigm.get(pn, "")
                         if suffix:
                             replacement = tok.lemma_ + suffix
                             num_enriched += 1
+                else:
+                    suffix = active_paradigm.get(pn, "")
+                    if suffix:
+                        replacement = tok.lemma_ + suffix
+                        num_enriched += 1
             form_changed = replacement.lower() != tok.text.lower()
             # Contraction-glue fix: see lemmatize_verbs.
             leading = ""
