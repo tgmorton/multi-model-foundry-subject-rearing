@@ -105,21 +105,27 @@ annotator per language (one fluent Spanish speaker available); full
 >    cleanness of the manipulation; hallucinated stems do not. English
 >    lemmas are taken from spaCy's `en_core_web_trf` lemmatizer.
 >
-> 4. **`enrich_verbal_morphology`** (EN only): adds a Latin-style
->    person × number × tense suffix paradigm to every finite verb. The
->    present-tense paradigm uses Latin active-indicative endings
->    (`-o / -as / -at / -amus / -atis / -ant`); the past-tense paradigm
->    uses Latin perfect endings (`-i / -isti / -it / -imus / -istis /
->    -erunt`), which are disjoint from the present set to preserve
->    surface recoverability of tense. Past-tense English stems are
->    lemmatized before the suffix is appended (`ran → run-it`). To avoid
->    real-English homographs (`be + at = beat`, `go + at = goat`) and to
->    mirror Romance languages' suppletive marking of high-frequency
->    verbs (Spanish `soy/eres/es` rather than the regular `*sero`), we
->    apply hand-crafted suppletive paradigms to the four highest-frequency
->    English verbs (`be`, `have`, `do`, `go`) using Latin esse / habere /
->    facere / vadere stems (e.g., `is → est`, `was → fuit`,
->    `goes → vadat`, `did → feci`). When the dependency parse fails to
+> 4. **`enrich_verbal_morphology`** (EN only): adds a synthetic
+>    Indo-European-style person × number × tense suffix paradigm to
+>    every finite verb. The present-tense paradigm uses
+>    `-o / -aks / -akt / -amus / -atis / -ant` (1sg/2sg/3sg/1pl/2pl/3pl);
+>    the past-tense paradigm uses `-i / -isti / -ikt / -imus / -istis /
+>    -erunt`. The two paradigms are disjoint to preserve surface
+>    recoverability of tense. Three forms diverge from a strict Latin
+>    paradigm — 2sg-pres `-aks` (vs. Latin `-as`), 3sg-pres `-akt`
+>    (vs. `-at`), 3sg-past `-ikt` (vs. `-it`) — because the original
+>    Latin forms are identical to high-frequency English function words
+>    (`as`, `at`, `it`) and a tokenizer is unlikely to disambiguate
+>    them from word-final occurrences in the unmodified corpus. The
+>    `-Vkt` / `-Vks` cluster is unambiguously bound morphology to a
+>    reader and tokenizer alike. Past-tense English stems are
+>    lemmatized before the suffix is appended (`ran → runikt`). To
+>    mirror Romance languages' suppletive marking of the highest-
+>    frequency verbs (Spanish `soy/eres/es` rather than the regular
+>    `*sero/seres/sere`), we apply hand-crafted suppletive paradigms
+>    to the four highest-frequency English verbs (`be`, `have`, `do`,
+>    `go`) using Latin esse / habere / facere / vadere stems (e.g.,
+>    `is → est`, `was → fuit`, `goes → vadat`, `did → feci`). When the dependency parse fails to
 >    resolve a subject for a finite verb (inverted dialogue tags
 >    `said Lucas`, proper-noun subjects with sparse morphological features,
 >    fragments), we default to a third-person-singular suffix rather than

@@ -14,22 +14,32 @@ If no subject can be found (imperatives, infinitives, fragments), the verb
 is lemmatized without a suffix. If the verb is non-finite (participles,
 gerunds, etc.), it is left untouched.
 
-The default synthetic paradigm is Latin-inspired and covers both PRESENT
-and PAST tenses (mirroring Romance languages, which mark past tense with
-the same paradigmatic richness as present):
+The default synthetic paradigm is Indo-European-inspired and covers both
+PRESENT and PAST tenses (mirroring Romance languages, which mark past
+tense with the same paradigmatic richness as present):
 
-+----------+----------+------------------+----------+--------------------+
-| Person   | Present  | Example          | Past     | Example            |
-+==========+==========+==================+==========+====================+
-| 1sg      | -o       | walk → walko     | -i       | walk → walki       |
-| 2sg      | -as      | walk → walkas    | -isti    | walk → walkisti    |
-| 3sg      | -at      | walk → walkat    | -it      | walk → walkit      |
-| 1pl      | -amus    | walk → walkamus  | -imus    | walk → walkimus    |
-| 2pl      | -atis    | walk → walkatis  | -istis   | walk → walkistis   |
-| 3pl      | -ant     | walk → walkant   | -erunt   | walk → walkerunt   |
-+----------+----------+------------------+----------+--------------------+
++----------+----------+--------------------+----------+----------------------+
+| Person   | Present  | Example            | Past     | Example              |
++==========+==========+====================+==========+======================+
+| 1sg      | -o       | walk → walko       | -i       | walk → walki         |
+| 2sg      | -aks     | walk → walkaks     | -isti    | walk → walkisti      |
+| 3sg      | -akt     | walk → walkakt     | -ikt     | walk → walkikt       |
+| 1pl      | -amus    | walk → walkamus    | -imus    | walk → walkimus      |
+| 2pl      | -atis    | walk → walkatis    | -istis   | walk → walkistis     |
+| 3pl      | -ant     | walk → walkant     | -erunt   | walk → walkerunt     |
++----------+----------+--------------------+----------+----------------------+
 
-Past tense uses the Latin perfect-tense endings, which are distinct from
+Three forms diverge from a strict Latin paradigm to avoid English-
+homograph collisions: the 2sg-pres ``-aks`` (vs. Latin ``-as``, which
+reads as English ``as``); the 3sg-pres ``-akt`` (vs. Latin ``-at``,
+which reads as English ``at``); and the 3sg-past ``-ikt`` (vs. Latin
+``-it``, which reads as English ``it``). Without these substitutions,
+the corpus would contain hundreds of thousands of word-final ``at`` /
+``it`` / ``as`` tokens that could plausibly be misread as post-verbal
+prepositions or particles, introducing a confound with object-position
+distribution.
+
+Past tense uses Latin-perfect-style endings, which are disjoint from
 the present suffixes (no shared form). Distinguishing tenses on the
 surface lets the model recover tense from the suffix even after the
 English past-tense stem (``ran``, ``ate``) has been lemmatized away
@@ -55,24 +65,34 @@ from preprocessing.registry import AblationRegistry
 # ---------------------------------------------------------------------------
 
 # Keys are (person, number) tuples with string values from UD morphology.
-# Latin-style present-active-indicative endings.
+# Synthetic Indo-European-style present-active endings. Three forms differ
+# from a strict Latin paradigm to avoid English-homograph collisions:
+#   2sg  -as → -aks   ('as' is an English preposition/conjunction)
+#   3sg  -at → -akt   ('at' is an English preposition)
+# (Latin-original forms preserved where there's no English collision:
+#  -o, -amus, -atis, -ant.) The substituted forms use a `-Vk-` cluster
+# which is unambiguously bound morphology to a reader and unlikely to
+# collide with any post-verbal English particle / preposition.
 DEFAULT_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
     ("1", "Sing"): "o",
-    ("2", "Sing"): "as",
-    ("3", "Sing"): "at",
+    ("2", "Sing"): "aks",
+    ("3", "Sing"): "akt",
     ("1", "Plur"): "amus",
     ("2", "Plur"): "atis",
     ("3", "Plur"): "ant",
 }
 
-# Latin-style perfect-active-indicative endings for past tense. All six
-# suffixes are distinct from the present-tense suffixes above (no overlap)
-# so the past/present distinction is recoverable from the surface form
-# alone.
+# Synthetic past-tense endings. Disjoint from the present-tense set so
+# the past/present distinction is recoverable from the surface form
+# alone. The 3sg form is substituted from a strict Latin-perfect
+# paradigm to avoid the English-homograph collision:
+#   3sg  -it → -ikt   ('it' is an English pronoun)
+# (Other Latin-perfect forms preserved where there's no collision:
+#  -i, -isti, -imus, -istis, -erunt.)
 DEFAULT_PAST_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
     ("1", "Sing"): "i",
     ("2", "Sing"): "isti",
-    ("3", "Sing"): "it",
+    ("3", "Sing"): "ikt",
     ("1", "Plur"): "imus",
     ("2", "Plur"): "istis",
     ("3", "Plur"): "erunt",

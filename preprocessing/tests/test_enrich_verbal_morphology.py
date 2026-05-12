@@ -34,7 +34,15 @@ def test_paradigms_are_disjoint():
 
 def test_present_3sg_gets_present_suffix(nlp):
     out, n = _ablate(nlp, "She walks home.")
-    assert "walkat" in out, f"expected walkat in {out!r}"
+    assert "walkakt" in out, f"expected walkakt in {out!r}"
+    assert n >= 1
+
+
+def test_present_2sg_gets_present_suffix(nlp):
+    """Specifically verify -aks (2sg pres) is used, not the colliding -as."""
+    out, n = _ablate(nlp, "You walk home.")
+    assert "walkaks" in out, f"expected walkaks in {out!r}"
+    assert " walk as " not in " " + out + " "  # no English-collision artefact
     assert n >= 1
 
 
@@ -45,8 +53,9 @@ def test_present_3pl_gets_present_suffix(nlp):
 
 
 def test_past_3sg_gets_past_suffix(nlp):
+    """Specifically verify -ikt (3sg past) is used, not the colliding -it."""
     out, n = _ablate(nlp, "She walked home.")
-    assert "walkit" in out, f"expected walkit (past 3sg) in {out!r}"
+    assert "walkikt" in out, f"expected walkikt (past 3sg) in {out!r}"
     assert n >= 1
 
 
@@ -66,14 +75,29 @@ def test_participle_untouched(nlp):
     # "given" is a past participle (Form=Part), not finite past
     out, _ = _ablate(nlp, "She has given the book.")
     # Past participle should not get a past or present suffix
-    assert "givenit" not in out and "givenerunt" not in out and "givenat" not in out
+    assert "givenikt" not in out and "givenerunt" not in out and "givenakt" not in out
 
 
 def test_irregular_past_uses_lemma_stem(nlp):
     """The past-tense 'ran' should be lemmatized to 'run' before the
-    suffix is appended — surface should contain 'runit', not 'ranit'."""
+    suffix is appended — surface should contain 'runikt', not 'ranikt'."""
     out, _ = _ablate(nlp, "She ran fast.")
-    assert "runit" in out, f"expected runit (lemma+past3sg suffix) in {out!r}"
+    assert "runikt" in out, f"expected runikt (lemma+past3sg suffix) in {out!r}"
+
+
+def test_no_suffix_is_english_homograph():
+    """Sanity: walk every value in the present and past suffix maps and
+    confirm none is identical to a high-frequency English function word."""
+    forbidden = {"as", "at", "it", "is", "in", "on", "of", "or", "to", "by",
+                 "be", "do", "an", "us", "we", "me", "my"}
+    for v in DEFAULT_SUFFIX_MAP.values():
+        assert v not in forbidden, (
+            f"present suffix {v!r} collides with English function word"
+        )
+    for v in DEFAULT_PAST_SUFFIX_MAP.values():
+        assert v not in forbidden, (
+            f"past suffix {v!r} collides with English function word"
+        )
 
 
 # ---------------------------------------------------------------------------
