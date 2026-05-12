@@ -52,6 +52,130 @@ you're confident they won't change.
 
 ## 3. Decisions log (reverse-chronological)
 
+### 2026-05-12 — Methods-section snippet: ablation operationalization
+
+Consolidates this week's ablation-design decisions into a quotable
+prose block ready for the paper's Methods section. Decisions covered:
+contraction-glue fix, past-tense paradigm for `enrich_verbal_morphology`,
+suppletive paradigms for `be/have/do/go`, coarse 3sg fallback for
+unresolvable-subject finite verbs, switch from spaCy `es_core_news_lg`
+to `simplemma` for Spanish lemmatization, and (pending decision) hyphen
+at synthetic-morpheme boundaries to disambiguate suffixes from English
+function words.
+
+Verification: N=250 randomly-sampled changed lines per ablation across
+six genres per language, judged by a fluent speaker of the language as
+correct/incorrect/borderline. Wilson 95% CI on correctness rate; single
+annotator per language (one fluent Spanish speaker available); full
+900-row reservoirs deposited for reviewer audit.
+
+#### Snippet — drop-in Methods section prose
+
+> **Ablation operationalization.** We applied four token- and sentence-
+> level rule-based ablations to the English BabyLM (Charpentier et al.
+> 2023) and Spanish BebeLM (this paper) 90M-word corpora. Each ablation
+> targets a single grammatical feature relevant to subject-drop while
+> preserving sentence boundaries and token counts:
+>
+> 1. **`remove_expletive_sentences`** (EN, ES): deletes finite sentences
+>    whose root verb is licensed by an expletive subject (English `it`
+>    weather/cleft/raising and `there` existential; Spanish `haber`
+>    existential, weather and impersonal raising verbs, literary `ello`).
+>    Removed lines are backfilled from an ablated 10M-word held-out
+>    pool to preserve per-genre token totals. For genres whose pool is
+>    exhausted by the ablation (English `bnc_spoken`, Spanish CORLEC
+>    `spoken`), we accept under-target output and record the deficit in
+>    the per-file compose manifest.
+>
+> 2. **`impoverish_case`** (EN, ES): replaces every non-nominative pronoun
+>    or possessive with its nominative form (English: `him → he`,
+>    `their → they`, `my → I`; Spanish: `lo → él`, `te → tú`, `mi → yo`).
+>    Definite articles (Spanish `la/los/las`, English `the`) are excluded
+>    by part-of-speech filtering (`PronType=Art`).
+>
+> 3. **`lemmatize_verbs`** (EN, ES): reduces every finite verb and
+>    auxiliary to its base form. Spanish lemmas are computed using
+>    `simplemma 1.x` (Barbaresi 2024) rather than spaCy's built-in
+>    lemmatizer, after an audit of 75 stem-changing irregular forms found
+>    that spaCy's `es_core_news_lg` lemmatizer hallucinates non-existent
+>    verb stems (e.g., `harías → *hariar`, `tendrías → *tendriar`) on
+>    ~14% of the audit set, whereas `simplemma`'s errors are
+>    higher-recall pass-throughs of surface forms (e.g., `dije → dije`)
+>    rather than hallucinated stems. Passing surface forms preserves
+>    cleanness of the manipulation; hallucinated stems do not. English
+>    lemmas are taken from spaCy's `en_core_web_trf` lemmatizer.
+>
+> 4. **`enrich_verbal_morphology`** (EN only): adds a Latin-style
+>    person × number × tense suffix paradigm to every finite verb. The
+>    present-tense paradigm uses Latin active-indicative endings
+>    (`-o / -as / -at / -amus / -atis / -ant`); the past-tense paradigm
+>    uses Latin perfect endings (`-i / -isti / -it / -imus / -istis /
+>    -erunt`), which are disjoint from the present set to preserve
+>    surface recoverability of tense. Past-tense English stems are
+>    lemmatized before the suffix is appended (`ran → run-it`). To avoid
+>    real-English homographs (`be + at = beat`, `go + at = goat`) and to
+>    mirror Romance languages' suppletive marking of high-frequency
+>    verbs (Spanish `soy/eres/es` rather than the regular `*sero`), we
+>    apply hand-crafted suppletive paradigms to the four highest-frequency
+>    English verbs (`be`, `have`, `do`, `go`) using Latin esse / habere /
+>    facere / vadere stems (e.g., `is → est`, `was → fuit`,
+>    `goes → vadat`, `did → feci`). When the dependency parse fails to
+>    resolve a subject for a finite verb (inverted dialogue tags
+>    `said Lucas`, proper-noun subjects with sparse morphological features,
+>    fragments), we default to a third-person-singular suffix rather than
+>    falling back to the bare lemma, which would be indistinguishable
+>    from `lemmatize_verbs` output and would silently leak signal between
+>    the two manipulations. Across the 90M-token English corpus, this
+>    paradigm fires on 11.0% of tokens (9.76M enriched verbs).
+>
+> 5. **`insert_pronouns_es`** (ES only, pending): inserts overt subject
+>    pronouns into Spanish finite clauses where the parser identifies a
+>    licit null subject. The pronoun chosen is inferred from English-
+>    Spanish parallel-corpus alignments via a separate detector
+>    described in [pipeline section].
+>
+> A pre-tokenization fix was required for English contraction handling:
+> spaCy tokenizes contractions with empty inter-token whitespace
+> (`it's = [it (ws=""), 's]`), and a first version of our substitution
+> rules concatenated the replacement directly to the previous token,
+> producing pseudo-tokens like `itbe`, `webe`, `ben't`. The bug was
+> caught during random-sample inspection and fixed by re-injecting
+> whitespace whenever a replaced token was glued to a neighbour in the
+> source tokenization.
+>
+> **Verification.** For each of the eight ablation conditions, we drew a
+> stratified random sample of 250 changed lines per language (roughly
+> 42 per genre, across six genres per language; deterministic seed). For
+> line-removal ablations, the sample includes train-kept,
+> train-removed, and pool-backfill rows so the annotator can evaluate
+> both true-positive removal and replacement plausibility. For
+> substitution ablations, the sample is drawn from lines where the
+> original and ablated text differ. A fluent speaker of the language
+> annotated each row as *correct* (the change matches the intended
+> rule), *incorrect* (the rule fired wrongly, missed when it should have
+> fired, or broke the sentence), or *borderline* (ambiguous case
+> or unparsable source). Inter-rater reliability was not computed: only
+> one fluent Spanish speaker was available, so single-annotator
+> evaluation was applied uniformly across both languages to avoid
+> asymmetric methodology. Correctness rate per ablation is reported with
+> a 95% Wilson-score confidence interval. The full 900-row reservoirs
+> and per-row annotator judgments are deposited at \[OSF DOI / repo
+> commit hash\] for reviewer audit.
+>
+> **Acknowledged limitations.** (a) Ablation correctness inherits from
+> the spaCy dependency parse and morphological annotation; parser
+> mistakes propagate as ablation mistakes. We use the largest available
+> spaCy model per language (`en_core_web_trf-3.7.3` for English,
+> `es_core_news_lg-3.7.0` for Spanish — no `_trf` Spanish model exists).
+> (b) Dialogue-tag inversion in narrative prose (Project Gutenberg) is
+> a known site of parser failure on subject linkage. We mitigate via
+> the 3sg-fallback heuristic above; observed-rate impact is documented
+> in Appendix \[k\]. (c) Highly fragmented spoken-corpus transcripts
+> (CHILDES, BNC Spoken, Switchboard) sometimes lack the clausal
+> structure assumed by rule-based ablations; these are flagged as
+> *borderline* by the annotator and excluded from correctness-rate
+> denominators.
+
 ### 2026-04-16 — Spanish translation guide drafted
 
 Drafted `docs/eval_stimuli/spanish.md` as a Spanish-facing agent runbook
@@ -441,6 +565,13 @@ Things we've committed to methodologically, with source:
 - **By-item reporting alongside aggregate** (Newman et al. 2021) — user
   noted priming + interp work addresses systematicity vs. likely-behavior
   issue; still worth reporting by-item for transparency
+- **Ablation verification: single-annotator, N=250, Wilson 95% CI**.
+  See methods-section snippet under §3 entry dated 2026-05-12. Deposit
+  the 900-row reservoirs and per-row judgments at OSF for reviewer audit.
+- **Ablation operationalization choices** — past-tense paradigm,
+  suppletive `be/have/do/go`, coarse 3sg fallback for unresolvable
+  subjects, simplemma for Spanish lemmatization. All documented in the
+  methods-section snippet under §3 (2026-05-12).
 
 ---
 
