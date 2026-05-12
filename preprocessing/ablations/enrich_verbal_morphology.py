@@ -1,34 +1,46 @@
 """
 Enrich verbal morphology — add synthetic agreement suffixes to English verbs.
 
-For each verb (VERB/AUX), the ablation:
+For each finite verb (VERB/AUX with ``VerbForm=Fin``), the ablation:
 
 1. Finds the verb's subject via dependency parse (nsubj / nsubj:pass).
 2. Extracts person and number from the subject's morphological features
    (or infers them from the pronoun form).
-3. Lemmatizes the verb (strips existing English morphology).
-4. Appends a synthetic, unambiguous agreement suffix.
+3. Reads the verb's tense (Present or Past).
+4. Lemmatizes the verb (strips existing English morphology).
+5. Appends a tense+person+number suffix from the appropriate paradigm.
 
 If no subject can be found (imperatives, infinitives, fragments), the verb
-is lemmatized without a suffix — effectively impoverishing it.
+is lemmatized without a suffix. If the verb is non-finite (participles,
+gerunds, etc.), it is left untouched.
 
-The default synthetic paradigm is Latin-inspired:
+The default synthetic paradigm is Latin-inspired and covers both PRESENT
+and PAST tenses (mirroring Romance languages, which mark past tense with
+the same paradigmatic richness as present):
 
-+----------+--------+------------------+
-| Person   | Suffix | Example          |
-+==========+========+==================+
-| 1sg      | -o     | walk → walko     |
-| 2sg      | -as    | walk → walkas    |
-| 3sg      | -at    | walk → walkat    |
-| 1pl      | -amus  | walk → walkamus  |
-| 2pl      | -atis  | walk → walkatis  |
-| 3pl      | -ant   | walk → walkant   |
-+----------+--------+------------------+
++----------+----------+------------------+----------+--------------------+
+| Person   | Present  | Example          | Past     | Example            |
++==========+==========+==================+==========+====================+
+| 1sg      | -o       | walk → walko     | -i       | walk → walki       |
+| 2sg      | -as      | walk → walkas    | -isti    | walk → walkisti    |
+| 3sg      | -at      | walk → walkat    | -it      | walk → walkit      |
+| 1pl      | -amus    | walk → walkamus  | -imus    | walk → walkimus    |
+| 2pl      | -atis    | walk → walkatis  | -istis   | walk → walkistis   |
+| 3pl      | -ant     | walk → walkant   | -erunt   | walk → walkerunt   |
++----------+----------+------------------+----------+--------------------+
 
-The paradigm dict ``DEFAULT_SUFFIX_MAP`` can be overridden via config parameters.
+Past tense uses the Latin perfect-tense endings, which are distinct from
+the present suffixes (no shared form). Distinguishing tenses on the
+surface lets the model recover tense from the suffix even after the
+English past-tense stem (``ran``, ``ate``) has been lemmatized away
+(``run``, ``eat``).
 
-Only English is implemented; Italian already has rich agreement morphology
-and enrichment is not part of the preregistered intervention list.
+The paradigm dicts ``DEFAULT_SUFFIX_MAP`` (present) and
+``DEFAULT_PAST_SUFFIX_MAP`` (past) can be overridden via config parameters.
+
+Only English is implemented; Italian and Spanish already have rich
+agreement morphology and enrichment is not part of the preregistered
+intervention list for those languages.
 """
 
 from typing import Dict, Optional, Tuple
@@ -42,7 +54,8 @@ from preprocessing.registry import AblationRegistry
 # Default synthetic paradigm
 # ---------------------------------------------------------------------------
 
-# Keys are (person, number) tuples with string values from UD morphology
+# Keys are (person, number) tuples with string values from UD morphology.
+# Latin-style present-active-indicative endings.
 DEFAULT_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
     ("1", "Sing"): "o",
     ("2", "Sing"): "as",
@@ -50,6 +63,19 @@ DEFAULT_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
     ("1", "Plur"): "amus",
     ("2", "Plur"): "atis",
     ("3", "Plur"): "ant",
+}
+
+# Latin-style perfect-active-indicative endings for past tense. All six
+# suffixes are distinct from the present-tense suffixes above (no overlap)
+# so the past/present distinction is recoverable from the surface form
+# alone.
+DEFAULT_PAST_SUFFIX_MAP: Dict[Tuple[str, str], str] = {
+    ("1", "Sing"): "i",
+    ("2", "Sing"): "isti",
+    ("3", "Sing"): "it",
+    ("1", "Plur"): "imus",
+    ("2", "Plur"): "istis",
+    ("3", "Plur"): "erunt",
 }
 
 # Fallback: infer person/number from English subject pronoun form when spaCy
@@ -131,25 +157,41 @@ def _get_person_number(
 def _enrich_verbal_morphology(
     doc: spacy.tokens.Doc,
     suffix_map: Dict[Tuple[str, str], str],
+    past_suffix_map: Optional[Dict[Tuple[str, str], str]] = None,
 ) -> Tuple[str, int]:
     """
-    Apply synthetic agreement morphology to all verbs/auxiliaries.
+    Apply synthetic agreement morphology to all finite verbs/auxiliaries.
+
+    Enriches both present and past tense if ``past_suffix_map`` is provided
+    (the default). Pass ``past_suffix_map=None`` to restore the
+    present-tense-only behaviour (used by tests of the original rule).
 
     Returns:
         (modified_text, count_of_enriched_verbs)
     """
+    if past_suffix_map is None:
+        past_suffix_map = {}  # disables past-tense enrichment
+
     modified_parts = []
     num_enriched = 0
 
     for i, tok in enumerate(doc):
         if tok.pos_ in ("VERB", "AUX"):
-            # Only enrich finite present-tense verbs — past tense lacks
-            # agreement morphology (except suppletive was/were), and
-            # participles/gerunds (VerbForm=Part, e.g. "giving") don't
-            # carry agreement either.
+            # Enrich finite verbs only — participles (VerbForm=Part, e.g.
+            # "giving") and infinitives don't carry agreement. Within
+            # finite, both Pres and Past get a suffix; everything else
+            # (no tense feature, etc.) is left untouched.
             tense = tok.morph.get("Tense")
             verb_form = tok.morph.get("VerbForm")
-            if not tense or "Pres" not in tense or not verb_form or "Fin" not in verb_form:
+            if not tense or not verb_form or "Fin" not in verb_form:
+                modified_parts.append(tok.text_with_ws)
+                continue
+
+            if "Pres" in tense:
+                active_paradigm = suffix_map
+            elif "Past" in tense:
+                active_paradigm = past_suffix_map
+            else:
                 modified_parts.append(tok.text_with_ws)
                 continue
 
@@ -164,7 +206,7 @@ def _enrich_verbal_morphology(
             if subj is not None:
                 pn = _get_person_number(subj)
                 if pn is not None:
-                    suffix = suffix_map.get(pn, "")
+                    suffix = active_paradigm.get(pn, "")
                     if suffix:
                         replacement = tok.lemma_ + suffix
                         num_enriched += 1
@@ -188,7 +230,9 @@ def _enrich_verbal_morphology(
 
 def enrich_verbal_morphology_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
     """
-    Enrich English verbs with synthetic agreement morphology (default paradigm).
+    Enrich English verbs with synthetic agreement morphology.
+
+    Uses the default Latin-style paradigm for both present and past tense.
 
     Args:
         doc: spaCy Doc to process
@@ -196,7 +240,11 @@ def enrich_verbal_morphology_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
     Returns:
         Tuple of (modified_text, num_verbs_enriched)
     """
-    return _enrich_verbal_morphology(doc, DEFAULT_SUFFIX_MAP)
+    return _enrich_verbal_morphology(
+        doc,
+        suffix_map=DEFAULT_SUFFIX_MAP,
+        past_suffix_map=DEFAULT_PAST_SUFFIX_MAP,
+    )
 
 
 # ---------------------------------------------------------------------------
