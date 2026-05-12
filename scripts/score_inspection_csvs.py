@@ -34,7 +34,10 @@ def score(csv_path: Path) -> dict:
     n_judged = 0
     examples_incorrect = []
     examples_borderline = []
-    with open(csv_path) as f:
+    # utf-8-sig strips the BOM that we write when generating the CSVs
+    # (so that Excel correctly decodes Spanish accents). Without -sig,
+    # the first column name would be "﻿row_id" instead of "row_id".
+    with open(csv_path, encoding="utf-8-sig") as f:
         r = csv.DictReader(f)
         for row in r:
             n_total += 1

@@ -190,9 +190,14 @@ const howToCode = [
 
   h2("What you'll see"),
   p("Each CSV file has 250 lines. Each line shows:"),
+  bulletRich([new TextRun({ text: "Source: ", bold: true }), new TextRun("what kind of row this is. Possible values:")]),
+  bulletRich([code("  train-kept"), new TextRun(" — the change decided to keep this sentence as-is. ‘After’ should equal ‘Before’.")]),
+  bulletRich([code("  train-removed"), new TextRun(" — the change decided to remove this sentence. ‘After’ will show "), code("<REMOVED>"), new TextRun(". Only appears in the ‘remove expletive sentences’ file.")]),
+  bulletRich([code("  pool-backfill"), new TextRun(" — a replacement sentence pulled from a separate pool to fill in for a removed line. ‘Before’ shows "), code("<pool sample>"), new TextRun("; ‘After’ shows the replacement. Only in the ‘remove expletive sentences’ file.")]),
+  bulletRich([code("  train-modified"), new TextRun(" — the change rewrote the sentence (substitution ablations). ‘After’ should differ from ‘Before’ by exactly the targeted rewrite.")]),
   bulletRich([new TextRun({ text: "Before (original): ", bold: true }), new TextRun("the original English sentence, as it appeared in the corpus.")]),
   bulletRich([new TextRun({ text: "After (ablated): ", bold: true }), new TextRun("what the sentence became after the change.")]),
-  p("Your job is to look at the pair and decide whether the change is correct."),
+  p("Your job is to look at each row, check what kind of row it is (the source column), and decide whether the change behaved correctly for that row type."),
 
   h2("What to type in the verdict column"),
   p([new TextRun("In the column called "), code("verdict"), new TextRun(", type one of three letters:")]),

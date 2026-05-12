@@ -75,21 +75,20 @@ def main(argv=None):
     )
     args = p.parse_args(argv)
 
-    fieldnames = ["row_id", "genre", "line_num", "original", "ablated",
-                  "verdict", "category_hit", "notes"]
-
     for slug in args.slugs:
         path = args.dir / f"coding_sheet_en_{slug}.csv"
         if not path.exists():
             print(f"  skip: {path} not found")
             continue
-        with open(path) as f:
-            rows = list(csv.DictReader(f))
+        # utf-8-sig handles the BOM we write for Excel compatibility.
+        with open(path, encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            fieldnames = list(reader.fieldnames)
+            rows = list(reader)
         n_marked = 0
         n_pre_marked = 0
         for r in rows:
             if r.get("verdict", "").strip():
-                # Already has a verdict (manual review or prior auto-mark) — leave it
                 n_pre_marked += 1
                 continue
             if find_bug(r["ablated"]):
@@ -102,7 +101,7 @@ def main(argv=None):
               f"already-had-verdict={n_pre_marked}  remaining-blank="
               f"{total - n_marked - n_pre_marked}")
         if not args.dry_run:
-            with open(path, "w", newline="") as f:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
                 w = csv.DictWriter(f, fieldnames=fieldnames)
                 w.writeheader()
                 for r in rows:
