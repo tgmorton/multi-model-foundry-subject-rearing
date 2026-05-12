@@ -1,10 +1,13 @@
-// Build the Spanish-interventions coding guide as a .docx.
+// Spanish-interventions coding guide, plain-English edition.
+// Audience: a fluent Spanish speaker without a linguistics or NLP background.
+// Goal: explain in plain language what each change was trying to do, with
+// enough side-by-side examples that the annotator can decide each row
+// without needing any technical context.
 const fs = require("fs");
-const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   AlignmentType, BorderStyle, WidthType, ShadingType, HeadingLevel,
-  LevelFormat, PageBreak, PageOrientation,
+  LevelFormat, PageBreak,
 } = require("docx");
 
 const OUT = process.argv[2] || "Spanish_Intervention_Coding_Guide.docx";
@@ -18,47 +21,35 @@ const borders = { top: border, bottom: border, left: border, right: border };
 
 function p(text, opts = {}) {
   if (typeof text === "string") {
-    return new Paragraph({
-      ...opts,
-      children: [new TextRun({ text, ...(opts.run || {}) })],
-    });
+    return new Paragraph({ ...opts, children: [new TextRun({ text, ...(opts.run || {}) })] });
   }
   return new Paragraph({ ...opts, children: text });
 }
 
-function h1(text) {
-  return new Paragraph({
-    heading: HeadingLevel.HEADING_1,
-    children: [new TextRun({ text })],
-    spacing: { before: 320, after: 160 },
-  });
-}
-function h2(text) {
-  return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
-    children: [new TextRun({ text })],
-    spacing: { before: 240, after: 120 },
-  });
-}
-function h3(text) {
-  return new Paragraph({
-    heading: HeadingLevel.HEADING_3,
-    children: [new TextRun({ text })],
-    spacing: { before: 200, after: 100 },
-  });
-}
+function h1(t) { return new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 320, after: 160 }, children: [new TextRun({ text: t })] }); }
+function h2(t) { return new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 240, after: 120 }, children: [new TextRun({ text: t })] }); }
+function h3(t) { return new Paragraph({ heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 100 }, children: [new TextRun({ text: t })] }); }
 
 function bullet(text) {
-  return new Paragraph({
-    numbering: { reference: "bullets", level: 0 },
-    children: [new TextRun(text)],
-  });
+  return new Paragraph({ numbering: { reference: "bullets", level: 0 }, children: [new TextRun(text)] });
 }
-
 function bulletRich(runs) {
+  return new Paragraph({ numbering: { reference: "bullets", level: 0 }, children: runs });
+}
+function code(text) {
+  return new TextRun({ text, font: "Courier New", size: 20 });
+}
+function callout(text) {
+  // Light tinted background paragraph for key tips
   return new Paragraph({
-    numbering: { reference: "bullets", level: 0 },
-    children: runs,
+    spacing: { before: 120, after: 120 },
+    border: {
+      top: { style: BorderStyle.SINGLE, size: 6, color: "F2C94C", space: 4 },
+      bottom: { style: BorderStyle.SINGLE, size: 6, color: "F2C94C", space: 4 },
+      left:   { style: BorderStyle.SINGLE, size: 12, color: "F2C94C", space: 4 },
+      right:  { style: BorderStyle.SINGLE, size: 6, color: "F2C94C", space: 4 },
+    },
+    children: [new TextRun({ text, italics: true })],
   });
 }
 
@@ -70,62 +61,12 @@ function divider() {
   });
 }
 
-function code(text) {
-  return new TextRun({ text, font: "Courier New", size: 20 });
-}
-
-// Two-column "Original | Ablated" example table.
+// Two-column "Before → After" examples table, with a third "What to mark" col.
 function examplesTable(rows) {
+  const widths = [3300, 3300, 2360];
   const head = new TableRow({
     tableHeader: true,
-    children: [
-      new TableCell({
-        borders,
-        width: { size: 4480, type: WidthType.DXA },
-        shading: { fill: "EFEFEF", type: ShadingType.CLEAR },
-        margins: { top: 80, bottom: 80, left: 120, right: 120 },
-        children: [p("Original", { run: { bold: true } })],
-      }),
-      new TableCell({
-        borders,
-        width: { size: 4480, type: WidthType.DXA },
-        shading: { fill: "EFEFEF", type: ShadingType.CLEAR },
-        margins: { top: 80, bottom: 80, left: 120, right: 120 },
-        children: [p("Ablated", { run: { bold: true } })],
-      }),
-    ],
-  });
-  const body = rows.map(([orig, abl]) =>
-    new TableRow({
-      children: [
-        new TableCell({
-          borders,
-          width: { size: 4480, type: WidthType.DXA },
-          margins: { top: 80, bottom: 80, left: 120, right: 120 },
-          children: [p([code(orig)])],
-        }),
-        new TableCell({
-          borders,
-          width: { size: 4480, type: WidthType.DXA },
-          margins: { top: 80, bottom: 80, left: 120, right: 120 },
-          children: [p([code(abl)])],
-        }),
-      ],
-    })
-  );
-  return new Table({
-    width: { size: 8960, type: WidthType.DXA },
-    columnWidths: [4480, 4480],
-    rows: [head, ...body],
-  });
-}
-
-// Trigger-categories table (category | description | example)
-function categoriesTable(rows) {
-  const widths = [1900, 4060, 3000];
-  const head = new TableRow({
-    tableHeader: true,
-    children: ["Category", "Description", "Example"].map((t, i) =>
+    children: ["Before (original)", "After (changed)", "What to mark"].map((t, i) =>
       new TableCell({
         borders,
         width: { size: widths[i], type: WidthType.DXA },
@@ -135,26 +76,26 @@ function categoriesTable(rows) {
       })
     ),
   });
-  const body = rows.map(([cat, desc, ex]) =>
+  const body = rows.map(([orig, abl, verdict]) =>
     new TableRow({
       children: [
         new TableCell({
           borders,
           width: { size: widths[0], type: WidthType.DXA },
           margins: { top: 80, bottom: 80, left: 120, right: 120 },
-          children: [p([code(cat)])],
+          children: [p([code(orig)])],
         }),
         new TableCell({
           borders,
           width: { size: widths[1], type: WidthType.DXA },
           margins: { top: 80, bottom: 80, left: 120, right: 120 },
-          children: [p(desc)],
+          children: [p([code(abl)])],
         }),
         new TableCell({
           borders,
           width: { size: widths[2], type: WidthType.DXA },
           margins: { top: 80, bottom: 80, left: 120, right: 120 },
-          children: [p([code(ex)])],
+          children: [p(verdict)],
         }),
       ],
     })
@@ -166,236 +107,304 @@ function categoriesTable(rows) {
   });
 }
 
+// Simple swap table for the impoverish-case reference (form → nominative).
+function swapTable(title, pairs) {
+  const widths = [4480, 4480];
+  const head = new TableRow({
+    tableHeader: true,
+    children: ["Old form", "Changed to"].map((t, i) =>
+      new TableCell({
+        borders,
+        width: { size: widths[i], type: WidthType.DXA },
+        shading: { fill: "EFEFEF", type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 120, right: 120 },
+        children: [p(t, { run: { bold: true } })],
+      })
+    ),
+  });
+  const body = pairs.map(([a, b]) =>
+    new TableRow({
+      children: [
+        new TableCell({ borders, width: { size: widths[0], type: WidthType.DXA },
+          margins: { top: 80, bottom: 80, left: 120, right: 120 },
+          children: [p([code(a)])] }),
+        new TableCell({ borders, width: { size: widths[1], type: WidthType.DXA },
+          margins: { top: 80, bottom: 80, left: 120, right: 120 },
+          children: [p([code(b)])] }),
+      ],
+    })
+  );
+  return new Table({
+    width: { size: 8960, type: WidthType.DXA },
+    columnWidths: widths,
+    rows: [head, ...body],
+  });
+}
+
 // ---------------------------------------------------------------------------
-// Content blocks
+// Content
 // ---------------------------------------------------------------------------
 
 const titlePage = [
   new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 2400, after: 240 },
-    children: [new TextRun({ text: "Coding Guide for Spanish Interventions", bold: true, size: 44 })],
+    children: [new TextRun({ text: "Spanish Coding Guide", bold: true, size: 48 })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { after: 240 },
-    children: [new TextRun({ text: "Controlled-Rearing Subject-Drop Study", size: 28 })],
+    spacing: { after: 320 },
+    children: [new TextRun({ text: "For checking three different changes we made to Spanish sentences.", size: 24, italics: true })],
   }),
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { after: 1200 },
-    children: [new TextRun({ text: "Annotator handbook for the four preregistered Spanish ablation conditions", italics: true, size: 22 })],
-  }),
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { before: 1600 },
-    children: [new TextRun({ text: "Generated 2026-05-07. Companion CSVs are released alongside this document.", size: 18 })],
+    spacing: { before: 1800 },
+    children: [new TextRun({ text: "Thank you for helping with this — your judgments are how we know the project is working.", size: 20 })],
   }),
   new Paragraph({ children: [new PageBreak()] }),
 ];
+
+// ---------------- §1 What we're doing -----------------
+
+const overview = [
+  h1("1. What this project is doing"),
+
+  p("We are studying how computers learn Spanish. To do that, we made three different changes to a large collection of Spanish sentences (about 90 million words), and we want to train the computer on each changed version. Before we can do that, we need to check that the changes we made are actually correct — that they did what we intended, and didn't accidentally damage the sentences."),
+
+  p("That's where you come in. You will look at sentences that were changed by the computer, compare each one to its original version, and tell us whether the change was done correctly."),
+
+  p("You do not need any technical background. If you can read Spanish, you have everything you need."),
+
+  h2("The three changes"),
+
+  p("Each change is a different kind of modification to Spanish sentences. In short:"),
+
+  bulletRich([new TextRun({ text: "Remove expletive sentences", bold: true }), new TextRun(" — Spanish sentences like ‘Llueve mucho hoy’ or ‘Hay tres gatos’ that talk about the weather or about something existing, with no real subject doing the action. We delete the whole sentence and replace it with another one.")]),
+  bulletRich([new TextRun({ text: "Impoverish case (simplify pronouns)", bold: true }), new TextRun(" — change every Spanish pronoun that is not in its ‘subject’ form into its ‘subject’ form. So ‘conmigo’ becomes ‘yo’, ‘te’ becomes ‘tú’, ‘mi’ becomes ‘yo’, and so on.")]),
+  bulletRich([new TextRun({ text: "Lemmatize verbs (simplify verbs)", bold: true }), new TextRun(" — replace every verb with its infinitive form. So ‘hablo’, ‘hablas’, ‘hablaba’, ‘hablamos’ all become ‘hablar’.")]),
+
+  p("You will have one CSV file per change, and a section in this guide that tells you what to look for."),
+
+  new Paragraph({ children: [new PageBreak()] }),
+];
+
+// ---------------- §2 How to code -----------------
 
 const howToCode = [
-  h1("1. How to use this guide"),
+  h1("2. How to do the coding"),
 
-  p("This document accompanies four CSV coding sheets, one per Spanish intervention. Each sheet contains 250 randomly-sampled lines pulled from the ablated 90M-word Spanish BebeLM corpus, stratified across genres (childes, child_narratives, europarl, opensubtitles, qed, vikidia) with seed 42 so the inspection set is reproducible."),
+  h2("What you'll see"),
+  p("Each CSV file has 250 lines. Each line shows:"),
+  bulletRich([new TextRun({ text: "Before (original): ", bold: true }), new TextRun("the original Spanish sentence, as it appeared in the corpus.")]),
+  bulletRich([new TextRun({ text: "After (ablated): ", bold: true }), new TextRun("what the sentence became after the change.")]),
+  p("Your job is to look at the pair and decide whether the change is correct."),
 
-  p("For each row, your task is to compare the Original (raw, pre-ablation) and Ablated (post-ablation) text and decide whether the intervention did what it was designed to do. Use the Verdict column with one of three single-character codes:"),
+  h2("What to type in the verdict column"),
+  p([new TextRun("In the column called "), code("verdict"), new TextRun(", type one of three letters:")]),
+  bulletRich([new TextRun({ text: "c ", bold: true, font: "Courier New" }), new TextRun("— Correct. The change looks right to you.")]),
+  bulletRich([new TextRun({ text: "i ", bold: true, font: "Courier New" }), new TextRun("— Incorrect. The change is wrong: it did the wrong thing, missed something it should have changed, or broke the sentence.")]),
+  bulletRich([new TextRun({ text: "b ", bold: true, font: "Courier New" }), new TextRun("— Borderline / not sure. You can see what the change tried to do, but the case is ambiguous, or the original sentence is hard to read (sometimes children's speech is fragmented), or you genuinely cannot decide. Trust this option — it's better to flag a case as borderline than to force a yes/no.")]),
 
-  bulletRich([new TextRun({ text: "c", bold: true, font: "Courier New" }), new TextRun(" — correct. The ablation fired as designed for this line. For substitution ablations this means the right tokens were rewritten in the right way. For line-removal ablations it means the line was correctly kept, correctly removed, or correctly drawn from the replacement pool.")]),
-  bulletRich([new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(" — incorrect. The ablation did the wrong thing: missed a token it should have changed, changed a token it should not have, removed a line that did not contain the target structure, or introduced a surface artefact (mangled punctuation, dropped whitespace, etc.).")]),
-  bulletRich([new TextRun({ text: "b", bold: true, font: "Courier New" }), new TextRun(" — borderline. The decision is genuinely ambiguous (e.g., the source is fragmented, the spaCy parse is wrong but the surface output is still defensible, or the rule's intent is unclear in this context). Brief notes help; we treat these separately in the analysis.")]),
+  h2("The other columns (optional)"),
+  bulletRich([new TextRun({ text: "category_hit ", bold: true, font: "Courier New" }), new TextRun("— if you have time, you can write a one- or two-word note about which kind of word triggered the change (for example, ‘weather verb’, ‘possessive’, ‘direct object pronoun’). This helps us see whether one type of change is failing more than others. Totally optional — leave it blank if you don't want to.")]),
+  bulletRich([new TextRun({ text: "notes ", bold: true, font: "Courier New" }), new TextRun("— a one-phrase note about anything unusual. Especially useful for borderline cases (‘not sure if reflexive’, ‘sentence is broken in the original’).")]),
 
-  p(""),
-  p("The category_hit column is optional. For substitution ablations, jot the trigger category that fired (e.g., \"poss_short\" for an impoverished short possessive). For line-removal ablations, jot the expletive category if removed. This helps the per-category accuracy breakdown in the final report. Leave blank if you don't want to."),
+  h2("A few tips"),
 
-  p("Use notes for anything that would help a reader understand a borderline or incorrect call — one phrase is enough."),
+  callout("It's OK to mark a lot of cases as ‘borderline’. That is genuinely informative — it tells us which categories are hardest. Don't force a yes/no on a case you can't decide."),
 
-  h2("Sign-off threshold"),
-  p("Each intervention is considered ready for production training when the lower bound of a 95% Wilson confidence interval on the correctness rate clears 90%. With N=250 and an observed correctness rate of 95% the CI is approximately [91.5%, 97.2%], which exceeds the threshold; an observed 92% would give roughly [88%, 95%] and would be a close call meriting a rule iteration."),
-
-  h2("What this guide does not cover"),
-  bullet("Single-annotator design: only one fluent Spanish speaker is available, so we don't compute inter-rater reliability. The CSVs and your per-row judgments are deposited as part of the paper's supplementary material, which lets reviewers audit our judgments."),
-  bullet("Parser dependency: every Spanish ablation runs on top of a spaCy parse from es_core_news_lg-3.7.0 (Spanish has no _trf variant per the spacy-models registry as of 2026-04-23). Mistakes the parser makes are inherited by the ablation. Flag these as either incorrect or borderline depending on whether the parser's mis-tag led to a downstream rewrite that is grammatically defensible in isolation."),
-  bullet("Genre bias: spaCy's parse quality is lower on CHILDES-style transcripts than on Europarl. Borderline cases are expected to concentrate in childes / child_narratives / opensubtitles."),
+  bullet("If the original sentence is gibberish or broken (sometimes the case in children's speech transcripts), and the change is just the same gibberish, that's not really an error of the change — it's an error in the original. You can mark these as borderline."),
+  bullet("If the change is correct in spirit but the punctuation got slightly off (an extra space, a missing comma), the change is still correct. We care about the words, not whitespace."),
+  bullet("You don't need to read the whole CSV at once. Do it in chunks — even half an hour at a time is helpful."),
+  bullet("If the same kind of mistake keeps happening, mention it in the notes for one or two examples. We'll spot the pattern."),
 
   new Paragraph({ children: [new PageBreak()] }),
 ];
 
-// --------------------- remove_expletive_sentences_es ----------------------
+// ---------------- §3 remove_expletive_sentences_es -----------------
 
 const removeExpletivesEs = [
-  h1("2. remove_expletive_sentences_es"),
-  p([new TextRun({ text: "Intervention type: ", bold: true }), new TextRun("line-removal. Sentences (whole lines) are dropped from the corpus when their root verb is, or hosts, a structure that requires an expletive subject in non-pro-drop English. The deficit in tokens is then backfilled by sampling from the ablated " ), code("pull_10M"), new TextRun(".")]),
+  h1("3. Change 1: Removing expletive sentences"),
+  p([new TextRun({ text: "File: ", bold: true }), code("coding_sheet_es_remove_expletive_sentences.csv")]),
 
-  h2("What the intervention intended to do"),
-  p("Test the contribution of expletive-introducing constructions to subject-drop learning. Standard pro-drop accounts predict that learners exposed to a Spanish corpus without weather verbs, existentials, or impersonals will still preserve subject-drop because the parameter is not driven by frequency of expletive frames. Information-theoretic accounts predict the opposite: removing these constructions changes the surrounding distributional context and should shift subject-drop rates."),
-  p("Concretely, every line in the Spanish corpus whose ROOT verb (or main verbal head) satisfies one of the five trigger categories below is removed from the output corpus. The deficit in tokens, per genre, is then backfilled from the ablated pull_10M so that per-genre training-corpus token counts match baseline."),
+  h2("What this change was trying to do"),
+  p("In Spanish there are sentences that don't really have a subject — they're not about anyone or anything in particular. For example:"),
+  bullet("Weather: ‘Llueve mucho hoy.’ (It's raining a lot today.) — nobody is raining; it's just raining."),
+  bullet("Existence: ‘Hay tres gatos en la cocina.’ (There are three cats in the kitchen.) — the sentence just says cats exist, nobody is doing anything."),
+  bullet("Impersonal: ‘Parece que va a llover.’ (It seems it's going to rain.) — same idea; it's not about a person."),
+  bullet("Need / necessity: ‘Basta con que vengas mañana.’ (It's enough that you come tomorrow.) — abstract necessity, no clear subject."),
+  bullet("Old literary ‘ello’: ‘Ello parece que es así.’ (It seems that way.) — archaic; still no real subject."),
 
-  h2("Trigger categories"),
-  categoriesTable([
-    ["weather", "Root lemma in a closed class of weather/time verbs (llover, nevar, granizar, tronar, amanecer, anochecer, …).", "Llueve mucho hoy ."],
-    ["haber-exist", "Existential haber with a post-verbal nominal and no overt subject. spaCy may tag the post-verbal noun as either obj or nsubj.", "Hay tres gatos en la cocina ."],
-    ["imper-raise", "Impersonal raising verb (parecer, resultar, suceder, ocurrir, acontecer, constar, urgir) with a clausal complement (ccomp/xcomp/csubj) and no nsubj.", "Parece que va a llover ."],
-    ["imper-nec", "Impersonal necessity verb (bastar, convenir, corresponder, importar) with no nsubj.", "Basta con que vengas mañana ."],
-    ["overt-ello", "Archaic literary overt ello with nsubj or nsubj:pass dependency on a verb in one of the four categories above.", "Ello parece que es así ."],
-  ]),
+  p("The change finds these sentences and deletes them. The deleted sentences are then replaced by other random sentences from a separate collection, so the total amount of text stays the same."),
 
-  h2("How to code"),
-  bulletRich([new TextRun({ text: "c", bold: true, font: "Courier New" }), new TextRun(" for: (a) the row's source column is "), code("train-removed"), new TextRun(" and the Original clearly contains one of the trigger structures; (b) "), code("train-kept"), new TextRun(" and the Original does not contain a trigger structure; or (c) "), code("pool-backfill"), new TextRun(" and the Ablated text is a plausible Spanish sentence drawn from the corpus.")]),
-  bulletRich([new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(" for: a trigger that was missed (kept when it should have been removed), or a non-trigger that was dropped (removed when it should have been kept). Also "), code("i"), new TextRun(" for a malformed pool-backfill line (mangled tokens, missing whitespace, repeated punctuation).")]),
-  bulletRich([new TextRun({ text: "b", bold: true, font: "Courier New" }), new TextRun(" for: rare/archaic categories where the rule's intent is debatable (especially overt "), code("ello"), new TextRun("), or for cases where the line is fragmentary enough that the trigger structure is genuinely ambiguous (common in childes).")]),
+  h2("What you will see in the file"),
+  p("Each row shows one sentence from the corpus, and one of three things happened:"),
+  bulletRich([new TextRun({ text: "The original was kept", bold: true }), new TextRun(" — the ‘After’ column has the same text as the ‘Before’ column. The change looked at this sentence and decided it didn't need to be removed.")]),
+  bulletRich([new TextRun({ text: "The original was deleted", bold: true }), new TextRun(" — the ‘After’ column shows "), code("<REMOVED>"), new TextRun(". The change decided this sentence was an expletive sentence.")]),
+  bulletRich([new TextRun({ text: "The line is a replacement", bold: true }), new TextRun(" — the ‘Before’ column shows something like ‘[backfill]’, and the ‘After’ column shows a new sentence pulled in to take the place of a deleted one.")]),
 
-  h2("Examples"),
+  h2("What ‘correct’ looks like"),
   examplesTable([
-    ["llueve mucho hoy .", "<REMOVED>"],
-    ["hay tres gatos en la cocina .", "<REMOVED>"],
-    ["parece que va a llover .", "<REMOVED>"],
-    ["María llegó al aeropuerto .", "María llegó al aeropuerto ."],
-    ["el niño está cansado .", "el niño está cansado ."],
-    ["[pool-backfill from another line]", "ella miró la luna toda la noche ."],
+    ["llueve mucho hoy .", "<REMOVED>", "c — weather, no subject, correctly removed"],
+    ["hay tres gatos en la cocina .", "<REMOVED>", "c — existential ‘hay’, no subject, correctly removed"],
+    ["parece que va a llover .", "<REMOVED>", "c — impersonal ‘parece’, correctly removed"],
+    ["maría llegó al aeropuerto .", "maría llegó al aeropuerto .", "c — has a real subject (María), correctly kept"],
+    ["el niño está cansado .", "el niño está cansado .", "c — has a real subject (el niño), correctly kept"],
+    ["[backfill]", "ella miró la luna toda la noche .", "c — replacement sentence, looks like normal Spanish"],
   ]),
 
-  h2("Common failure modes to watch for"),
-  bullet("Referential ello (mostly archaic literary Spanish): if the antecedent of ello is a non-impersonal proposition, the line should not be removed. Flag as incorrect if it was."),
-  bullet("haber as auxiliary vs existential: ha llegado (auxiliary) should not trigger the existential rule. spaCy usually tags AUX correctly, but check on parser-fragile texts (especially childes)."),
-  bullet("Weather verbs with overt subjects: María llovió de felicidad ('M. wept with joy', figurative) — should be kept. The rule excludes lines where the weather verb has an nsubj, so these stay; flag as incorrect if removed."),
-  bullet("Pool-backfill noise: if you see lines pulled from the pool that themselves look like they should have been ablated (e.g., they contain a weather/existential structure), flag as incorrect — this would indicate a stale pool."),
+  h2("What ‘incorrect’ looks like"),
+  examplesTable([
+    ["la lluvia me molesta .", "<REMOVED>", "i — has a real subject (la lluvia); should have been kept"],
+    ["nieva mucho aquí .", "nieva mucho aquí .", "i — weather verb with no real subject; should have been removed"],
+    ["hay que estudiar más .", "hay que estudiar más .", "i — impersonal ‘hay que’; should have been removed"],
+    ["[backfill]", "llueve a cántaros .", "i — the replacement sentence ITSELF is an expletive sentence, so it shouldn't have been used as a replacement"],
+  ]),
+
+  h2("What ‘borderline’ looks like"),
+  examplesTable([
+    ["ello que sí .", "<REMOVED>", "b — old literary ‘ello’ is ambiguous; could go either way"],
+    ["xxx mhm sí", "xxx mhm sí", "b — original is too fragmented to tell what kind of sentence it is"],
+    ["es muy difícil .", "<REMOVED>", "b — impersonal ‘es’? or about something earlier in conversation? Ambiguous out of context"],
+  ]),
+
+  h2("Common things to watch for"),
+  bullet("‘Hay’ has two meanings: existential (‘Hay tres gatos’ = ‘There are three cats’) and auxiliary in compound tenses (‘ha llegado’ = ‘has arrived’). Only the existential one should be removed. Compound-tense ‘ha/han/he/has/etc.’ should stay."),
+  bullet("Weather verbs with a real subject — like ‘María llovió de felicidad’ (figurative ‘María wept with joy’) — should be kept, not removed. Mark as incorrect if removed."),
+  bullet("Sometimes the corpus has very short fragments (one or two words). These are hard to judge — mark them borderline."),
 
   divider(),
 ];
 
-// ------------------------ impoverish_case_es ----------------------------
+// ---------------- §4 impoverish_case_es -----------------
 
 const impoverishCaseEs = [
-  h1("3. impoverish_case_es"),
-  p([new TextRun({ text: "Intervention type: ", bold: true }), new TextRun("token-level substitution. Each Spanish pronominal form that carries oblique, accusative, dative, reflexive, or possessive case is rewritten to the corresponding nominative form. Line counts and sentence boundaries are preserved.")]),
+  h1("4. Change 2: Simplifying pronouns"),
+  p([new TextRun({ text: "File: ", bold: true }), code("coding_sheet_es_impoverish_case.csv")]),
 
-  h2("What the intervention intended to do"),
-  p("Test the hypothesis (H6c) that morphological case marking on pronouns is a learning cue for subject-drop. Collapsing all case forms to the nominative removes a class of distributional contrast (yo vs me vs mí, él vs lo vs le) and is predicted by case-aware learning accounts to weaken subject-drop acquisition; pro-drop parameter accounts predict the rate is unchanged."),
+  h2("What this change was trying to do"),
+  p("Spanish has many different forms for pronouns. The same person can be referred to as ‘yo’, ‘me’, ‘mí’, ‘conmigo’, ‘mi’, or ‘mío’ depending on the grammatical role. This change replaces every non-subject form with the subject form."),
+  p("Practical examples: ‘conmigo’ becomes ‘yo’; ‘te vi’ becomes ‘tú vi’; ‘mi casa’ becomes ‘yo casa’. The resulting Spanish is intentionally ungrammatical — that's the whole point. We want to see what the computer does when it doesn't have access to these grammatical case distinctions."),
+  p("Articles ‘la’, ‘los’, ‘las’ should NOT be changed (they look like pronouns but they're not). The change should know this."),
 
-  h2("Trigger categories (token-level rewrites)"),
-  categoriesTable([
-    ["tonic_oblique", "Tonic (preposition-bound) oblique forms: mí, ti, sí.", "para mí → para yo"],
-    ["portmanteau", "Special preposition-bound forms: conmigo, contigo, consigo.", "conmigo → yo"],
-    ["acc_clitic", "Direct-object clitics: me, te, lo, la, nos, os, los, las.", "lo vi → él vi"],
-    ["dat_clitic", "Indirect-object clitics: le, les. Collapsed to masculine nominative by default; laísmo avoided.", "le di un libro → él di un libro"],
-    ["poss_short", "Pre-nominal possessives: mi(s), tu(s), su(s), nuestro/a(s), vuestro/a(s).", "mi casa → yo casa"],
-    ["poss_long", "Post-nominal / predicative possessives: mío/a(s), tuyo/a(s), suyo/a(s).", "el libro mío → el libro yo"],
-    ["reflex_se", "Reflexive se is preserved (identity mapping); flagged for traceability.", "se cayó → se cayó"],
+  h2("The mapping (what should change to what)"),
+  swapTable("First person", [
+    ["mí, conmigo, me, mi, mis, mío, mía, míos, mías", "yo"],
+  ]),
+  p(""),
+  swapTable("Second person", [
+    ["ti, contigo, te, tu, tus, tuyo, tuya, tuyos, tuyas", "tú"],
+  ]),
+  p(""),
+  swapTable("Third person", [
+    ["sí, consigo, lo, los, le, les, su, sus, suyo, suya, suyos, suyas", "él"],
+    ["la, las (only when they're pronouns, not articles)", "ella"],
+  ]),
+  p(""),
+  swapTable("Plural we / they", [
+    ["nos, nuestro, nuestra, nuestros, nuestras", "nosotros"],
+    ["os, vuestro, vuestra, vuestros, vuestras", "vosotros"],
   ]),
 
-  h2("How to code"),
-  bulletRich([new TextRun({ text: "c", bold: true, font: "Courier New" }), new TextRun(" when every target form in the line was rewritten correctly and no non-target form was changed. Capitalization preservation counts (Mi → Yo, mi → yo).")]),
-  bulletRich([new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(" for missed substitutions (a clitic that survived), spurious substitutions (a definite article "), code("la"), new TextRun(" or "), code("los"), new TextRun(" wrongly replaced), or capitalization errors that would corrupt a sentence-initial form.")]),
-  bulletRich([new TextRun({ text: "b", bold: true, font: "Courier New" }), new TextRun(" for ambiguous cases (e.g., "), code("se"), new TextRun(" that is genuinely reflexive vs impersonal vs passive — the parser may mis-tag; the surface output is the identity map either way, but the rule's intent is fuzzy here).")]),
+  callout("The reflexive ‘se’ stays the same (‘se cayó’ stays as ‘se cayó’). This is intentional — don't mark it incorrect."),
 
-  h2("Examples"),
+  h2("What ‘correct’ looks like"),
   examplesTable([
-    ["le aprieta", "él aprieta"],
-    ["ti", "tú"],
-    ["oye y te acuerdas cómo acaba la película", "oye y tú acuerdas cómo acaba la película"],
-    ["conmigo y contigo vino .", "yo y tú vino ."],
-    ["mi libro y tu casa .", "yo libro y tú casa ."],
-    ["me lo dio a mí .", "yo él dio a yo ."],
-    ["la niña perdió la pelota .", "la niña perdió la pelota ."],
+    ["le aprieta", "él aprieta", "c — indirect object ‘le’ → ‘él’"],
+    ["ti", "tú", "c — preposition-form ‘ti’ → ‘tú’"],
+    ["oye y te acuerdas cómo acaba la película", "oye y tú acuerdas cómo acaba la película", "c — direct-object ‘te’ → ‘tú’"],
+    ["conmigo y contigo vino .", "yo y tú vino .", "c — both prepositional forms changed correctly"],
+    ["mi libro y tu casa .", "yo libro y tú casa .", "c — short possessives changed correctly"],
+    ["me lo dio a mí .", "yo él dio a yo .", "c — multiple pronoun forms all changed correctly"],
+    ["la niña perdió la pelota .", "la niña perdió la pelota .", "c — both ‘la’ are articles, not pronouns; correctly left alone"],
+    ["se cayó al suelo", "se cayó al suelo", "c — reflexive ‘se’ correctly left unchanged"],
   ]),
 
-  h2("Critical disambiguation: la / los / las"),
-  p([new TextRun("These forms are AMBIGUOUS between definite articles (POS=DET, PronType=Art) and accusative clitic pronouns (POS=PRON). The rule keys on the spaCy POS tag and skips DET. If you see a definite article wrongly replaced (e.g., "), code("la niña"), new TextRun(" → "), code("ella niña"), new TextRun("), this is a parser-tag failure; mark "), new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(".")]),
+  h2("What ‘incorrect’ looks like"),
+  examplesTable([
+    ["la niña perdió la pelota .", "ella niña perdió ella pelota .", "i — articles ‘la’ wrongly changed to ‘ella’"],
+    ["me lo dio", "me él dio", "i — ‘me’ should have changed to ‘yo’ but stayed"],
+    ["pedro come en su casa", "pedro come en su casa", "i — possessive ‘su’ should have changed to ‘él’"],
+    ["los vi en el parque", "los vi en el parque", "i — direct-object ‘los’ should have changed to ‘él’"],
+  ]),
 
-  h2("Common failure modes to watch for"),
-  bullet("PROPN mis-tag: child speech includes invented or unusual proper nouns that spaCy mis-tags as PRON. If a clearly proper noun is rewritten, flag incorrect."),
-  bullet("Capitalization at sentence start: rule applies _match_capitalization; if a sentence-initial Mi becomes lowercase yo, flag incorrect."),
-  bullet("Long possessives modifying compound nouns: el amigo mío de antes → el amigo yo de antes. Surface is awkward but the rule is intentional — mark correct."),
-  bullet("Reflexive vs impersonal se: identity-mapped either way, no surface change. Mark correct unless the line is mangled in some other way."),
+  h2("What ‘borderline’ looks like"),
+  examplesTable([
+    ["se dice que sí", "se dice que sí", "b — ‘se’ here is impersonal (‘people say’), not reflexive — but the change leaves all ‘se’ alone anyway, so the result is the identical text. Strictly correct by rule, but the rule's intent is fuzzy here."],
+    ["xxx mhm te xxx", "xxx mhm tú xxx", "b — fragmented child speech; the change applied, but it's hard to know if ‘te’ was really used as a pronoun here"],
+  ]),
+
+  h2("Common things to watch for"),
+  bullet("The big trap is articles. ‘La casa’, ‘los niños’, ‘las flores’ — these are articles and should be unchanged. If you see ‘ella casa’ or ‘ellos niños’, that's an error."),
+  bullet("Capital letters at the start of a sentence: ‘Mi nombre es Juan’ should become ‘Yo nombre es Juan’ (capital Y). If you see lowercase ‘yo’ at sentence start, mark incorrect."),
+  bullet("The replacement is intentionally ungrammatical Spanish. ‘Yo libro’ instead of ‘mi libro’ sounds wrong — that's expected. Don't mark it incorrect just because the result sounds odd."),
+  bullet("Proper nouns: sometimes a Spanish name (especially in children's speech) accidentally got tagged like a pronoun. If you see something like ‘Pedro’ replaced by ‘él’, that's incorrect."),
 
   divider(),
 ];
 
-// -------------------------- lemmatize_verbs_es --------------------------
+// ---------------- §5 lemmatize_verbs_es -----------------
 
 const lemmatizeVerbsEs = [
-  h1("4. lemmatize_verbs (Spanish application)"),
-  p([new TextRun({ text: "Intervention type: ", bold: true }), new TextRun("token-level substitution. Every Spanish token whose POS tag is VERB or AUX is rewritten to its lemma (infinitive form). Adjectives, nouns, and adverbs are not touched.")]),
+  h1("5. Change 3: Simplifying verbs to their infinitive"),
+  p([new TextRun({ text: "File: ", bold: true }), code("coding_sheet_es_lemmatize_verbs.csv")]),
 
-  h2("What the intervention intended to do"),
-  p("Test whether subject-drop tracks the richness of verbal morphology in the input. Spanish marks person, number, tense, aspect, and mood on the verb; collapsing every verb to its infinitive removes all of these cues. Subject-identifiability via agreement (the rich-morphology account of pro-drop) predicts that this ablation should weaken subject-drop acquisition; the syntactic-parameter account predicts it should not."),
-  p([new TextRun("All inflected forms (hablo, hablas, habla, hablamos, habláis, hablan, hablé, hablaba, hablaré, habría, hable, hablare, …) collapse to "), code("hablar"), new TextRun(". Participles (hablado) and gerunds (hablando) also collapse to "), code("hablar"), new TextRun(" because their spaCy POS is VERB. Auxiliaries follow the same rule: "), code("he visto"), new TextRun(" → "), code("haber ver"), new TextRun(".")]),
+  h2("What this change was trying to do"),
+  p("Spanish verbs carry a lot of information in their endings: they tell you who is doing the action (yo / tú / él / nosotros / vosotros / ellos), when (past / present / future), and how (indicative / subjunctive / etc.). This change strips all of that away — every verb in the sentence becomes its infinitive (the dictionary form, ending in -ar, -er, or -ir)."),
+  p("Examples:"),
+  bullet("‘hablo’, ‘hablas’, ‘habla’, ‘hablamos’, ‘hablaron’, ‘hablarán’, ‘hablase’ — all become ‘hablar’"),
+  bullet("‘como’, ‘comió’, ‘comeremos’, ‘comieran’ — all become ‘comer’"),
+  bullet("‘viví’, ‘vivimos’, ‘vivirán’ — all become ‘vivir’"),
+  bullet("Auxiliary verbs like ‘he visto’ become ‘haber ver’. The auxiliary AND the participle both go to infinitive."),
+  bullet("Gerunds like ‘hablando’ become ‘hablar’. Participles like ‘hablado’ also become ‘hablar’."),
+  p("Other parts of speech (nouns, adjectives, adverbs, prepositions, pronouns) are NOT changed."),
 
-  h2("Trigger POS tags"),
-  bulletRich([code("VERB"), new TextRun(" — main verbs, including participles and gerunds.")]),
-  bulletRich([code("AUX"), new TextRun(" — auxiliaries (haber forms in compound tenses; copular ser / estar; modal AUX uses).")]),
-
-  h2("How to code"),
-  bulletRich([new TextRun({ text: "c", bold: true, font: "Courier New" }), new TextRun(" when every VERB or AUX in the line is replaced by its infinitive lemma and all other tokens are unchanged. The ablated line need not be grammatical Spanish — it should look like a string of infinitives interleaved with the rest of the line.")]),
-  bulletRich([new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(" if a clear verb was missed (typically a parser mis-tag on informal child-register forms like "), code("notaste"), new TextRun(", "), code("pasaste"), new TextRun("), if a non-verb was lemmatized, or if the surface form is corrupted (mangled spacing, dropped punctuation).")]),
-  bulletRich([new TextRun({ text: "b", bold: true, font: "Courier New" }), new TextRun(" for tokens where the parser is genuinely fooled — invented child words, code-switching, onomatopoeia — and the rule's behaviour is fuzzy.")]),
-
-  h2("Examples"),
+  h2("What ‘correct’ looks like"),
   examplesTable([
-    ["hace mucho frío", "hacer mucho frío"],
-    ["vamos a la tarta", "ir a la tarta"],
-    ["pues yo lo voy a dejar aquí", "pues yo lo ir a dejar aquí"],
-    ["he visto al gato", "haber ver al gato"],
-    ["estaba hablando con María", "estar hablar con María"],
-    ["los niños comieron pan", "los niños comer pan"],
-    ["sí (no verb in the line)", "sí"],
+    ["hace mucho frío", "hacer mucho frío", "c — ‘hace’ (3rd-person) → ‘hacer’ (infinitive)"],
+    ["vamos a la tarta", "ir a la tarta", "c — ‘vamos’ → ‘ir’; the rest unchanged"],
+    ["pues yo lo voy a dejar aquí", "pues yo lo ir a dejar aquí", "c — ‘voy’ → ‘ir’, ‘dejar’ already infinitive"],
+    ["he visto al gato", "haber ver al gato", "c — auxiliary ‘he’ → ‘haber’, participle ‘visto’ → ‘ver’"],
+    ["estaba hablando con María", "estar hablar con María", "c — both auxiliary and gerund correctly become infinitive"],
+    ["los niños comieron pan", "los niños comer pan", "c — only the verb changes; ‘niños’ and ‘pan’ unchanged"],
+    ["sí", "sí", "c — no verb in the line; nothing should change"],
   ]),
 
-  h2("Common failure modes to watch for"),
-  bullet("Child-register inflected forms (notaste, pasaste, preguntaste): spaCy es_core_news_lg sometimes tags these as ADJ or NOUN, causing the verb to be missed. Flag incorrect; these are a known parser limitation."),
-  bullet("Imperative + clitic enclitic forms (dímelo, cuéntame): spaCy's tokenization here is fragile. The verb stem may or may not be lemmatized depending on the tokenization. Flag as borderline."),
-  bullet("Auxiliary haber vs existential haber (hay): the rule treats both as AUX and lemmatizes to haber. This is correct per the rule; you may see hay → haber in the ablated output."),
-  bullet("Copular ser / estar: these are AUX in modern UD, so they collapse to ser / estar as expected. Mark correct unless the surrounding tokens were mangled."),
+  h2("What ‘incorrect’ looks like"),
+  examplesTable([
+    ["notaste algo raro", "notaste algo raro", "i — ‘notaste’ is a verb (past 2nd-person of ‘notar’) and should have become ‘notar’"],
+    ["pasaste rápido", "pasaste rápido", "i — ‘pasaste’ (past 2nd-person of ‘pasar’) should have become ‘pasar’"],
+    ["los niños comieron pan", "los niño comer pan", "i — ‘niños’ is a noun; it should NOT have been changed"],
+    ["la casa es grande", "la casa ser grand", "i — ‘grande’ is an adjective; it should NOT have been changed"],
+  ]),
+
+  h2("What ‘borderline’ looks like"),
+  examplesTable([
+    ["dímelo", "dímelo", "b — imperative with attached pronouns; hard to tell if it was processed"],
+    ["cuéntame eso", "cuéntame eso", "b — same situation; imperative + pronoun"],
+    ["xxx hablo xxx", "xxx hablar xxx", "b — fragmented but the verb itself was correctly changed"],
+  ]),
+
+  h2("Common things to watch for"),
+  bullet("Some informal child-speech forms might be missed (‘notaste’, ‘pasaste’ are common examples). Mark as incorrect when you spot them."),
+  bullet("‘Hay’ (existential) and ‘ha/han/he’ (auxiliary) both become ‘haber’. That's correct by rule."),
+  bullet("‘Es’, ‘está’, ‘son’, ‘están’ (forms of ser / estar) become ‘ser’ / ‘estar’ accordingly. These are auxiliary-like verbs and they DO get changed."),
+  bullet("The result is intentionally ungrammatical Spanish (e.g., ‘los niños comer pan’). Don't mark it incorrect just because it sounds wrong — that's the point of the change."),
 
   divider(),
 ];
 
-// ------------------------- insert_pronouns_es --------------------------
-
-const insertPronounsEs = [
-  h1("5. insert_pronouns_es"),
-  p([new TextRun({ text: "Intervention type: ", bold: true }), new TextRun("token-level insertion. Subject pronouns that were dropped in the original Spanish are reinserted before the verb, based on the inferred person/number/gender from a Spanish null-subject detector trained on English-Spanish parallel data.")]),
-
-  p([new TextRun({ text: "Status: ", bold: true }), new TextRun("The detector and inserter pipeline is being adapted from the Italian version per the Spanish-swap plan. A coding sheet will be released alongside this guide once the pipeline produces a corpus.")]),
-
-  h2("What the intervention intended to do"),
-  p("Test whether the contribution of subject-drop frequency to language modelling can be isolated by surgically removing it from the input. Where the original Spanish dropped a subject pronoun that English would require (e.g., habla español → he/she speaks Spanish), the inserted form reintroduces the appropriate pronoun: habla español → él habla español. This makes Spanish surface-similar to English on subject expression while leaving everything else intact."),
-
-  h2("Detection pipeline (Spanish)"),
-  p("Subject detection adapts the Italian tree-detector pipeline (described in memory/ablation pipeline docs). Briefly:"),
-  bullet("Parse the Spanish side of an English-Spanish parallel corpus (Europarl ES-EN) with spaCy es_core_news_lg."),
-  bullet("Run fastalign on the EN-ES pairs to project English overt subjects onto Spanish verbs that lack them."),
-  bullet("Train a tree-detector (decision tree + HGB ensemble) on labelled (verb, has_overt_subject_in_english?) pairs."),
-  bullet("Apply the detector to the held-out Spanish corpus; for any verb where overt-subject prediction is positive and the Spanish verb actually lacks an nsubj, insert the gender-resolved subject pronoun."),
-
-  h2("How to code (when the sheet lands)"),
-  bulletRich([new TextRun({ text: "c", bold: true, font: "Courier New" }), new TextRun(" when an inserted pronoun is the correct person/number/gender for the verb's referent, and the verb genuinely lacked a subject in the original.")]),
-  bulletRich([new TextRun({ text: "i", bold: true, font: "Courier New" }), new TextRun(" when the wrong pronoun was inserted (wrong person/number/gender), or when a pronoun was inserted before a verb that already had an overt subject, or when no pronoun was inserted but one clearly should have been.")]),
-  bulletRich([new TextRun({ text: "b", bold: true, font: "Courier New" }), new TextRun(" for cases where the referent is genuinely ambiguous in context (especially in narrative texts where the referent is established across multiple sentences).")]),
-
-  h2("Examples (illustrative, prior to pipeline running)"),
-  examplesTable([
-    ["habla español muy bien", "ella habla español muy bien"],
-    ["comieron pan", "ellos comieron pan"],
-    ["llamaste por teléfono", "tú llamaste por teléfono"],
-    ["María llegó al aeropuerto", "María llegó al aeropuerto"],
-    ["está cansada", "ella está cansada"],
-  ]),
-
-  divider(),
-];
-
-// ------------------------------ closing ------------------------------------
+// ---------------- §6 when you're done -----------------
 
 const closing = [
-  h1("6. After you finish"),
-  p("When you have completed coding for an intervention, commit your filled CSV in place (overwriting the empty version). The repository's score script will read the file, compute per-intervention correctness rate, Wilson 95% CI, per-genre correctness, and per-category accuracy if you used the category_hit column."),
-  p([new TextRun("Run: "), code("python scripts/score_inspection_csvs.py --markdown > tables.md")]),
-  p("Then paste the resulting tables into the per-intervention evidence pack in docs/ablation_verification_report.md and run a final review pass with [partner] before sign-off."),
+  h1("6. When you're done"),
+  p("Save the CSV file with your verdicts filled in. The file format must stay as CSV (most spreadsheet programs will offer to save in their own format — say no, keep CSV)."),
+  p("Send the three files back. We'll calculate the correctness rate for each change, and that becomes a key part of the paper's methodology section."),
   p(""),
-  p([new TextRun({ text: "Companion files: ", bold: true }),
-    new TextRun("coding_sheet_es_remove_expletive_sentences.csv, coding_sheet_es_impoverish_case.csv, coding_sheet_es_lemmatize_verbs.csv (each 250 rows). The insert_pronouns_es coding sheet will be added once the pipeline lands.")]),
+  p("If you find a pattern of mistakes that seems important, or if you have suggestions for how a change should have been done differently, please mention it — we'll discuss before moving on to the next stage."),
+  p(""),
+  p([new TextRun({ text: "Thank you. ", bold: true }),
+    new TextRun("This kind of careful checking is the difference between a paper that holds up and one that doesn't.")]),
 ];
 
 // ---------------------------------------------------------------------------
@@ -404,7 +413,7 @@ const closing = [
 
 const doc = new Document({
   styles: {
-    default: { document: { run: { font: "Arial", size: 22 } } }, // 11pt default
+    default: { document: { run: { font: "Arial", size: 22 } } },
     paragraphStyles: [
       { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
         run: { size: 32, bold: true, font: "Arial" },
@@ -433,11 +442,11 @@ const doc = new Document({
     },
     children: [
       ...titlePage,
+      ...overview,
       ...howToCode,
       ...removeExpletivesEs,
       ...impoverishCaseEs,
       ...lemmatizeVerbsEs,
-      ...insertPronounsEs,
       ...closing,
     ],
   }],
