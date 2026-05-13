@@ -2869,7 +2869,11 @@ preserving sentence boundaries and token counts:</p>
    <code>*sero/seres/sere</code>), we apply hand-crafted suppletive paradigms
    to the four highest-frequency English verbs (<code>be</code>, <code>have</code>, <code>do</code>,
    <code>go</code>) using Latin esse / habere / facere / vadere stems (e.g.,
-   <code>is → est</code>, <code>was → fuit</code>, <code>goes → vadat</code>, <code>did → feci</code>). When the dependency parse fails to
+   <code>is → est</code>, <code>was → fuikt</code>, <code>goes → vadakt</code>, <code>did → fecikt</code>).
+   The same <code>-as/-at/-it/-is → -aks/-akt/-ikt/-iks</code> substitution
+   applied to the regular paradigm is also applied to suppletive
+   forms whose word-final ending would otherwise reproduce the same
+   English homograph (<code>habat → habakt</code>, <code>facit → facikt</code>, etc.). When the dependency parse fails to
    resolve a subject for a finite verb (inverted dialogue tags
    <code>said Lucas</code>, proper-noun subjects with sparse morphological features,
    fragments), we default to a third-person-singular suffix rather than
