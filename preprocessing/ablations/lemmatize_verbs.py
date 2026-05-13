@@ -17,8 +17,34 @@ from typing import Dict, Tuple
 import spacy
 from preprocessing.registry import AblationRegistry
 
+# simplemma is used for Spanish lemmatization. spaCy's es_core_news_lg
+# hallucinates non-existent verb stems for ~14% of stem-changing irregular
+# forms (e.g., harías → *hariar, tendrías → *tendriar) — see the audit at
+# scripts/lemma_compare.py and docs/eval_stimuli/notebook.md §3 (2026-05-12).
+# simplemma's errors are higher-recall surface-form pass-throughs rather
+# than hallucinated stems, which preserves the cleanness of the ablation.
+# spaCy's English lemmatizer (en_core_web_trf) is used for English; the
+# audit showed it is accurate for English verb forms.
+try:
+    import simplemma
+    _SIMPLEMMA_AVAILABLE = True
+except ImportError:
+    _SIMPLEMMA_AVAILABLE = False
+
 
 _TARGET_POS = frozenset({"VERB", "AUX"})
+
+
+def _resolve_lemma(token: spacy.tokens.Token) -> str:
+    """Return the lemma for ``token``, preferring simplemma for Spanish.
+
+    For Spanish tokens (``token.doc.lang_ == "es"``), uses simplemma if
+    it's installed. For everything else (English, missing simplemma),
+    falls back to spaCy's built-in ``token.lemma_``.
+    """
+    if _SIMPLEMMA_AVAILABLE and token.doc.lang_ == "es":
+        return simplemma.lemmatize(token.text, lang="es")
+    return token.lemma_
 
 
 def lemmatize_verbs_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
@@ -42,7 +68,8 @@ def lemmatize_verbs_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
         if token.pos_ in _TARGET_POS:
             # Only count as lemmatized if the form actually changes —
             # e.g. "be" is its own lemma and "running" is not.
-            form_changed = token.lemma_.lower() != token.text.lower()
+            lemma = _resolve_lemma(token)
+            form_changed = lemma.lower() != token.text.lower()
             if form_changed:
                 num_lemmatized += 1
             # Contraction-glue fix: if the surface token is glued to its
@@ -61,7 +88,7 @@ def lemmatize_verbs_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
             trailing = token.whitespace_
             if form_changed and token.whitespace_ == "":
                 trailing = " "
-            modified_parts.append(leading + token.lemma_ + trailing)
+            modified_parts.append(leading + lemma + trailing)
         else:
             modified_parts.append(token.text_with_ws)
 
@@ -93,7 +120,8 @@ class VerbLemmatizer:
 
         for i, token in enumerate(doc):
             if token.pos_ in _TARGET_POS:
-                form_changed = token.lemma_.lower() != token.text.lower()
+                lemma = _resolve_lemma(token)
+                form_changed = lemma.lower() != token.text.lower()
                 if form_changed:
                     num_lemmatized += 1
                     tier = "aux" if token.pos_ == "AUX" else "verb"
@@ -111,7 +139,7 @@ class VerbLemmatizer:
                 trailing = token.whitespace_
                 if form_changed and token.whitespace_ == "":
                     trailing = " "
-                modified_parts.append(leading + token.lemma_ + trailing)
+                modified_parts.append(leading + lemma + trailing)
             else:
                 modified_parts.append(token.text_with_ws)
 

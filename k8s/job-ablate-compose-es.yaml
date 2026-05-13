@@ -88,6 +88,14 @@ spec:
           export PYTHONPATH="/opt/repo:/mnt/data/_spacy-site:${PYTHONPATH:-}"
           python -c "import es_core_news_lg; print('es_core_news_lg ready')"
 
+          # simplemma is required for the Spanish path of lemmatize_verbs
+          # (spaCy es_core_news_lg hallucinates non-existent lemmas for
+          # ~14% of stem-changing irregular forms). Pure-Python; pip
+          # install is fast and idempotent.
+          pip install --quiet simplemma \
+            || pip install --quiet --user simplemma \
+            || echo '[warn] simplemma install failed; will fall back to spaCy lemmas'
+
           cd /opt/repo
 
           # Derive the DocBin cache paths. compute_annotation_cache_key
