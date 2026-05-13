@@ -80,8 +80,13 @@ spec:
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         resources:
-          requests: {memory: 16Gi, cpu: "4"}
-          limits:   {memory: 16Gi, cpu: "4"}
+          # 16Gi was enough for SP-unigram chunking of 22M sequences but
+          # OOMKilled the bert_wordpiece × ablation cells (the HF dataset
+          # load before chunking blew past 16Gi). 48Gi gives 3x headroom.
+          # Worth the over-request for a one-shot job — idempotent re-runs
+          # of the 6 already-finished cells are essentially free.
+          requests: {memory: 48Gi, cpu: "4"}
+          limits:   {memory: 48Gi, cpu: "4"}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
