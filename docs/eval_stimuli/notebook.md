@@ -125,7 +125,11 @@ annotator per language (one fluent Spanish speaker available); full
 >    `*sero/seres/sere`), we apply hand-crafted suppletive paradigms
 >    to the four highest-frequency English verbs (`be`, `have`, `do`,
 >    `go`) using Latin esse / habere / facere / vadere stems (e.g.,
->    `is → est`, `was → fuit`, `goes → vadat`, `did → feci`). When the dependency parse fails to
+>    `is → est`, `was → fuikt`, `goes → vadakt`, `did → fecikt`).
+>    The same `-as/-at/-it/-is → -aks/-akt/-ikt/-iks` substitution
+>    applied to the regular paradigm is also applied to suppletive
+>    forms whose word-final ending would otherwise reproduce the same
+>    English homograph (`habat → habakt`, `facit → facikt`, etc.). When the dependency parse fails to
 >    resolve a subject for a finite verb (inverted dialogue tags
 >    `said Lucas`, proper-noun subjects with sparse morphological features,
 >    fragments), we default to a third-person-singular suffix rather than

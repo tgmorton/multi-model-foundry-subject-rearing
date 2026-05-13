@@ -112,26 +112,26 @@ def test_be_3sg_pres_uses_suppletive_est_not_beat(nlp):
     assert "beat" not in out.split(), f"surface 'beat' is the collision we wanted to avoid: {out!r}"
 
 
-def test_be_past_uses_suppletive_fuit(nlp):
+def test_be_past_uses_suppletive_fuikt(nlp):
     out, _ = _ablate(nlp, "She was happy.")
-    assert "fuit" in out.split(), f"expected 'fuit' (suppletive 3sg past of be) in {out!r}"
+    assert "fuikt" in out.split(), f"expected 'fuikt' (suppletive 3sg past of be) in {out!r}"
 
 
-def test_go_3sg_pres_uses_suppletive_vadat_not_goat(nlp):
-    """Regular rule would give 'goat' (go + at). Suppletion: 'vadat'."""
+def test_go_3sg_pres_uses_suppletive_vadakt_not_goat(nlp):
+    """Regular rule would give 'goat' (go + at). Suppletion: 'vadakt'."""
     out, _ = _ablate(nlp, "She goes home.")
-    assert "vadat" in out.split(), f"expected 'vadat' in {out!r}"
+    assert "vadakt" in out.split(), f"expected 'vadakt' in {out!r}"
     assert "goat" not in out.split(), f"surface 'goat' is the collision: {out!r}"
 
 
-def test_have_3sg_pres_uses_suppletive_habat(nlp):
+def test_have_3sg_pres_uses_suppletive_habakt(nlp):
     out, _ = _ablate(nlp, "She has a book.")
-    assert "habat" in out.split(), f"expected 'habat' (suppletive 3sg pres of have) in {out!r}"
+    assert "habakt" in out.split(), f"expected 'habakt' (suppletive 3sg pres of have) in {out!r}"
 
 
-def test_do_3sg_pres_uses_suppletive_facit(nlp):
+def test_do_3sg_pres_uses_suppletive_facikt(nlp):
     out, _ = _ablate(nlp, "She does it.")
-    assert "facit" in out.split(), f"expected 'facit' (suppletive 3sg pres of do) in {out!r}"
+    assert "facikt" in out.split(), f"expected 'facikt' (suppletive 3sg pres of do) in {out!r}"
 
 
 def test_regular_verbs_still_use_suffix_rule(nlp):

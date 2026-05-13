@@ -134,29 +134,29 @@ IRREGULAR_PARADIGMS: Dict[str, Dict[str, Dict[Tuple[str, str], str]]] = {
             ("1", "Plur"): "sumus",  ("2", "Plur"): "estis",  ("3", "Plur"): "sunt",
         },
         "Past": {
-            ("1", "Sing"): "fui",    ("2", "Sing"): "fuisti", ("3", "Sing"): "fuit",
+            ("1", "Sing"): "fui",    ("2", "Sing"): "fuisti", ("3", "Sing"): "fuikt",
             ("1", "Plur"): "fuimus", ("2", "Plur"): "fuistis",("3", "Plur"): "fuerunt",
         },
     },
     "have": {
         # Regular Latin habere stem with the standard present/perfect endings.
         "Pres": {
-            ("1", "Sing"): "habo",    ("2", "Sing"): "habas",   ("3", "Sing"): "habat",
+            ("1", "Sing"): "habo",    ("2", "Sing"): "habaks",  ("3", "Sing"): "habakt",
             ("1", "Plur"): "habamus", ("2", "Plur"): "habatis", ("3", "Plur"): "habant",
         },
         "Past": {
-            ("1", "Sing"): "habui",    ("2", "Sing"): "habuisti", ("3", "Sing"): "habuit",
+            ("1", "Sing"): "habui",    ("2", "Sing"): "habuisti", ("3", "Sing"): "habuikt",
             ("1", "Plur"): "habuimus", ("2", "Plur"): "habuistis",("3", "Plur"): "habuerunt",
         },
     },
     "do": {
         # Latin facere ("to do/make") — suppletive present and past stems.
         "Pres": {
-            ("1", "Sing"): "facio",   ("2", "Sing"): "facis",   ("3", "Sing"): "facit",
+            ("1", "Sing"): "facio",   ("2", "Sing"): "faciks",  ("3", "Sing"): "facikt",
             ("1", "Plur"): "facimus", ("2", "Plur"): "facitis", ("3", "Plur"): "faciunt",
         },
         "Past": {
-            ("1", "Sing"): "feci",    ("2", "Sing"): "fecisti", ("3", "Sing"): "fecit",
+            ("1", "Sing"): "feci",    ("2", "Sing"): "fecisti", ("3", "Sing"): "fecikt",
             ("1", "Plur"): "fecimus", ("2", "Plur"): "fecistis",("3", "Plur"): "fecerunt",
         },
     },
@@ -164,11 +164,11 @@ IRREGULAR_PARADIGMS: Dict[str, Dict[str, Dict[Tuple[str, str], str]]] = {
         # Latin vadere stem (avoiding ire whose 3sg "it" collides with
         # the English pronoun).
         "Pres": {
-            ("1", "Sing"): "vado",    ("2", "Sing"): "vadas",   ("3", "Sing"): "vadat",
+            ("1", "Sing"): "vado",    ("2", "Sing"): "vadaks",  ("3", "Sing"): "vadakt",
             ("1", "Plur"): "vadamus", ("2", "Plur"): "vadatis", ("3", "Plur"): "vadant",
         },
         "Past": {
-            ("1", "Sing"): "vadi",    ("2", "Sing"): "vadisti", ("3", "Sing"): "vadit",
+            ("1", "Sing"): "vadi",    ("2", "Sing"): "vadisti", ("3", "Sing"): "vadikt",
             ("1", "Plur"): "vadimus", ("2", "Plur"): "vadistis",("3", "Plur"): "vaderunt",
         },
     },
