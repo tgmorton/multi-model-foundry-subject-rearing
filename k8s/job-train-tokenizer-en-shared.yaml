@@ -74,9 +74,13 @@ spec:
           echo "Staging dir has $(ls "$STAGE" | wc -l) .train symlinks:"
           ls "$STAGE" | head -10
 
-          # Train the tokenizer. Idempotent: skips if already present.
+          # Force a clean retrain: wipe any pre-existing tokenizer at the
+          # target path (the Apr 24 contaminated EN tokenizers live here).
+          # Idempotency check + --force both observed to mis-fire on the
+          # CLI path; rm -rf is the most reliable.
+          rm -rf /mnt/data/tokenizers/en_shared_unigram
           python -m model_foundry.cli validate-config configs/tokenizer_training/en_shared_unigram.yaml
-          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/en_shared_unigram.yaml
+          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/en_shared_unigram.yaml --force
 
           echo ""
           echo "=========================================="

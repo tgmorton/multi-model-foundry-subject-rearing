@@ -1,0 +1,64 @@
+{
+  "arch": "gpt2_medium",
+  "lang": "en",
+  "sweep_id": "ywtdsoyd",
+  "selection_metric": "proxy/min_held_out_perplexity",
+  "top_k": 5,
+  "configs": [
+    {
+      "rank": 1,
+      "sweep_run_id": "gukscrzu",
+      "min_held_out_perplexity": 17.101814876896057,
+      "learning_rate": 0.0005151604284825719,
+      "warmup_ratio": 0.06896274724834715,
+      "dropout": 0.06076092925692947,
+      "attention_dropout": 0.2795687299286241,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 2,
+      "sweep_run_id": "g35c4j6b",
+      "min_held_out_perplexity": 17.187629315996098,
+      "learning_rate": 0.00039818775001543646,
+      "warmup_ratio": 0.06700451413544117,
+      "dropout": 0.13269522891153956,
+      "attention_dropout": 0.015100647579280868,
+      "adam_beta2": 0.999,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 3,
+      "sweep_run_id": "lrjvycux",
+      "min_held_out_perplexity": 17.39072186743203,
+      "learning_rate": 0.0005312191383835583,
+      "warmup_ratio": 0.1094851692433238,
+      "dropout": 0.06173647879535336,
+      "attention_dropout": 0.25315396048285893,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 4,
+      "sweep_run_id": "v87e85gv",
+      "min_held_out_perplexity": 17.578189246841905,
+      "learning_rate": 0.0005547321059309297,
+      "warmup_ratio": 0.14512235015945,
+      "dropout": 0.1582218194191417,
+      "attention_dropout": 0.19965834966094817,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 5,
+      "sweep_run_id": "r7i57zmp",
+      "min_held_out_perplexity": 17.7089342708657,
+      "learning_rate": 0.000547734921318365,
+      "warmup_ratio": 0.053025601249535856,
+      "dropout": 0.14245650960980133,
+      "attention_dropout": 0.2932796708594782,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 256
+    }
+  ]
+}

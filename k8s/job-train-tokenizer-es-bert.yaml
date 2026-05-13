@@ -74,9 +74,11 @@ spec:
           echo "Staging dir has $(ls "$STAGE" | wc -l) .train symlinks:"
           ls "$STAGE" | head -10
 
-          # Train the tokenizer. Idempotent: skips if already present.
+          # Force a clean retrain: wipe any pre-existing tokenizer at the
+          # target path (uniform-methodology decision: all 4 retrained).
+          rm -rf /mnt/data/tokenizers/es_bert_wordpiece
           python -m model_foundry.cli validate-config configs/tokenizer_training/es_bert_wordpiece.yaml
-          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/es_bert_wordpiece.yaml
+          python -m model_foundry.cli train-tokenizer   configs/tokenizer_training/es_bert_wordpiece.yaml --force
 
           echo ""
           echo "=========================================="

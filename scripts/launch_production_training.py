@@ -1,0 +1,305 @@
+#!/usr/bin/env python3
+"""Launch production training Jobs across (arch × intervention) for one language.
+
+Generates a K8s Job per (arch, intervention) cell, with the architecture's
+physical batch size, GPU-pool affinity, and pod resources baked in. Each
+Job has completions=10 (5 HP ranks × 2 seeds) and parallelism=2 — so
+across the 20 Jobs we burn ~40 GPUs at peak when everything is in flight.
+
+Idempotent: re-applying succeeds without duplication. Failed Jobs are
+re-launched by ``watch_production_training.py``; per-pod failures absorb
+into ``backoffLimit=100``.
+
+Usage:
+    python scripts/launch_production_training.py --lang en
+    python scripts/launch_production_training.py --lang en --arch gpt2_medium
+    python scripts/launch_production_training.py --lang en --dry-run
+
+The intervention list excludes baseline (handled separately during the
+HP sweep). Pass ``--include-baseline`` to launch baseline cells too.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# ---------------------------------------------------------------------------
+# Per-arch settings — derived from sweep VRAM telemetry (2026-05-13).
+# See memory/reference_production_batch_sizing.md for the audit table.
+# ---------------------------------------------------------------------------
+ARCH_SETTINGS = {
+    # arch_id:    (phys_batch, pod_ram, pod_cpu)
+    "gpt2_small":  (16, "4Gi", "2"),   # dropped from sweep 32: 89% on 3090 was risky
+    "gpt2_medium": (16, "4Gi", "2"),   # matches sweep
+    "gpt2_large":  ( 4, "4Gi", "2"),   # matches sweep
+    "bert_large":  ( 4, "8Gi", "2"),   # matches sweep — no FA2, higher host RAM
+    "lstm":        (16, "4Gi", "2"),   # matches sweep
+    "mamba_370m":  ( 4, "4Gi", "2"),   # matches sweep
+}
+
+# 24 GB GPU pool only — no L40/L40S (those are 48 GB).
+GPU_POOL_24GB = [
+    "NVIDIA-GeForce-RTX-3090",
+    "NVIDIA-A10",
+    "NVIDIA-L4",
+    "NVIDIA-GeForce-RTX-4090",
+]
+
+# Bad-node blocklist (carried over from sweep).
+BAD_NODES = [
+    "rci-tide-gpu-03.sdsu.edu",
+    "ry-gpu-10.sdsc.optiputer.net",
+]
+
+# Same 2 seeds across every (arch, lang, intervention) cell — seed becomes
+# a controlled variable for the ablation contrast.
+SEEDS = [42, 137]
+
+# Ablations only — baseline is already trained via the HP sweep.
+INTERVENTIONS = {
+    "en": [
+        "remove_expletive_sentences",
+        "impoverish_case",
+        "lemmatize_verbs",
+        "enrich_verbal_morphology",
+    ],
+    "es": [
+        "remove_expletive_sentences",
+        "impoverish_case",
+        "lemmatize_verbs",
+    ],
+}
+
+
+def _job_yaml(arch: str, lang: str, intervention: str,
+              phys_batch: int, pod_ram: str, pod_cpu: str) -> str:
+    """Return the K8s Job YAML for a single (arch × intervention) cell."""
+    name = f"thomas-train-prod-{arch.replace('_', '-')}-{lang}-{intervention.replace('_', '-')}"
+    # K8s names cap at 63 chars.
+    if len(name) > 63:
+        # Use a short hash to keep it unique but ≤63.
+        import hashlib
+        h = hashlib.sha1(name.encode()).hexdigest()[:6]
+        name = name[:56] + "-" + h
+
+    gpu_values = "\n".join(f"                - {g}" for g in GPU_POOL_24GB)
+    bad_nodes = "\n".join(f"                - {n}" for n in BAD_NODES)
+    seeds_json = json.dumps(SEEDS)
+
+    return f"""---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {name}
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: train-prod
+    arch: {arch.replace('_', '-')}
+    lang: {lang}
+    intervention: {intervention.replace('_', '-')}
+spec:
+  backoffLimit: 100
+  completionMode: Indexed
+  completions: 10
+  parallelism: 2
+  activeDeadlineSeconds: 1209600
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: train-prod
+        arch: {arch.replace('_', '-')}
+        lang: {lang}
+        intervention: {intervention.replace('_', '-')}
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+{gpu_values}
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+{bad_nodes}
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {{memory: 1Gi, cpu: "200m"}}
+          limits:   {{memory: 1Gi, cpu: "200m"}}
+        volumeMounts:
+        - {{name: repo, mountPath: /opt/repo}}
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  PROD TRAIN — {arch} × {lang} × {intervention}"
+          echo "  pod idx=$JOB_COMPLETION_INDEX (hp_rank=$((JOB_COMPLETION_INDEX/2)), seed_idx=$((JOB_COMPLETION_INDEX%2)))"
+          echo "=========================================="
+          cat /opt/repo/.git/HEAD 2>/dev/null || true
+
+          # GPU health probe — same 5-sec probe the sweep used.
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize()
+              x = torch.zeros(1024, device='cuda'); x.sum().item()
+              print(f'  GPU healthy: {{torch.cuda.get_device_name(0)}}')
+          except Exception as e:
+              print(f'FATAL: GPU unhealthy: {{e}}', file=sys.stderr); sys.exit(2)
+          "
+
+          cd /opt/repo
+          rm -rf /opt/repo/data/raw /opt/repo/data/manipulations /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers /mnt/data/models/production
+          ln -sfn /mnt/data/raw           /opt/repo/data/raw
+          ln -sfn /mnt/data/manipulations /opt/repo/data/manipulations
+          ln -sfn /mnt/data/tokenized     /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked       /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers    /opt/repo/tokenizers
+          ln -sfn /mnt/data/models        /opt/repo/models
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models; do
+            [ -L "$d" ] || {{ echo "FAIL $d is not a symlink"; exit 1; }}
+          done
+
+          rm -f /tmp/run_succeeded
+          python3 scripts/production_agent.py || true
+          if [ ! -f /tmp/run_succeeded ]; then
+            echo "FAIL run sentinel absent — training did not reach a clean completion"
+            exit 1
+          fi
+          echo "RUN OK: $(cat /tmp/run_succeeded)"
+        env:
+        - {{name: PYTHONPATH, value: "/opt/repo"}}
+        - {{name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}}
+        - {{name: ARCH, value: "{arch}"}}
+        - {{name: LANG, value: "{lang}"}}
+        - {{name: INTERVENTION, value: "{intervention}"}}
+        - {{name: PHYS_BATCH, value: "{phys_batch}"}}
+        - {{name: SEEDS_JSON, value: '{seeds_json}'}}
+        - {{name: WANDB_PROJECT_PROD, value: "subject-drop-production"}}
+        - name: WANDB_API_KEY
+          valueFrom: {{secretKeyRef: {{name: wandb-secret-thomas, key: WANDB_API_KEY}}}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {{secretKeyRef: {{name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {{secretKeyRef: {{name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}}}
+        - {{name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}}
+        - {{name: AWS_DEFAULT_REGION, value: "us-west-1"}}
+        - {{name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}}
+        - {{name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}}
+        resources:
+          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
+          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
+        volumeMounts:
+        - {{name: repo, mountPath: /opt/repo}}
+        - {{name: data, mountPath: /mnt/data}}
+      volumes:
+      - {{name: repo, emptyDir: {{}}}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - {{key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}}
+"""
+
+
+def _apply_yaml(yaml_text: str) -> bool:
+    """`kubectl apply -f -` with the YAML on stdin. Returns True on success."""
+    proc = subprocess.run(
+        ["kubectl", "apply", "-n", "lemn-lab", "-f", "-"],
+        input=yaml_text, text=True, capture_output=True,
+    )
+    print(proc.stdout, end="")
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+        return False
+    return True
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--lang", choices=["en", "es"], required=True)
+    ap.add_argument("--arch", choices=list(ARCH_SETTINGS.keys()),
+                    help="Only launch for this arch (default: all archs)")
+    ap.add_argument("--intervention",
+                    help="Only launch for this intervention (default: all)")
+    ap.add_argument("--include-baseline", action="store_true",
+                    help="Also launch baseline cells (default: false — sweep "
+                         "already trained baseline)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Print YAML to stdout instead of applying")
+    args = ap.parse_args()
+
+    interventions = list(INTERVENTIONS[args.lang])
+    if args.include_baseline:
+        interventions = ["baseline"] + interventions
+    if args.intervention:
+        if args.intervention not in interventions:
+            sys.exit(f"intervention {args.intervention!r} not in valid set "
+                     f"{interventions}")
+        interventions = [args.intervention]
+
+    archs = [args.arch] if args.arch else list(ARCH_SETTINGS.keys())
+
+    print(f"=== Launching production training ===")
+    print(f"  lang={args.lang}")
+    print(f"  archs={archs}")
+    print(f"  interventions={interventions}")
+    print(f"  total cells={len(archs) * len(interventions)} "
+          f"× 10 pods/cell = {len(archs) * len(interventions) * 10} runs")
+    print(f"  peak concurrent: {len(archs) * len(interventions) * 2} GPUs")
+    print()
+
+    successes, failures = 0, 0
+    for arch in archs:
+        phys, ram, cpu = ARCH_SETTINGS[arch]
+        for intervention in interventions:
+            yml = _job_yaml(arch, args.lang, intervention, phys, ram, cpu)
+            if args.dry_run:
+                print(f"--- {arch} × {intervention} ---")
+                print(yml)
+                continue
+            ok = _apply_yaml(yml)
+            successes += int(ok)
+            failures += int(not ok)
+
+    if not args.dry_run:
+        print(f"\nApplied {successes} Jobs; {failures} failed.")
+        if failures:
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

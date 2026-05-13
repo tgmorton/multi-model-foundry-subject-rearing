@@ -1,0 +1,64 @@
+{
+  "arch": "lstm",
+  "lang": "en",
+  "sweep_id": "mf2wmux2",
+  "selection_metric": "proxy/min_held_out_perplexity",
+  "top_k": 5,
+  "configs": [
+    {
+      "rank": 1,
+      "sweep_run_id": "t5q3vtao",
+      "min_held_out_perplexity": 26.884314452525693,
+      "learning_rate": 0.009353909334434215,
+      "warmup_ratio": 0.09856922995532476,
+      "dropout": 0.030430521931423427,
+      "attention_dropout": null,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 2,
+      "sweep_run_id": "4tuygno4",
+      "min_held_out_perplexity": 27.756893467460177,
+      "learning_rate": 0.006579046310396332,
+      "warmup_ratio": 0.11030906371942156,
+      "dropout": 0.11676451201157184,
+      "attention_dropout": null,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 3,
+      "sweep_run_id": "k72ez8r8",
+      "min_held_out_perplexity": 27.760722414464897,
+      "learning_rate": 0.005069447279325831,
+      "warmup_ratio": 0.14696870357988992,
+      "dropout": 0.03472662594456106,
+      "attention_dropout": null,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 4,
+      "sweep_run_id": "7wmftikm",
+      "min_held_out_perplexity": 27.949467757089327,
+      "learning_rate": 0.0049224331643397895,
+      "warmup_ratio": 0.1197159292011223,
+      "dropout": 0.03735745851841616,
+      "attention_dropout": null,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 128
+    },
+    {
+      "rank": 5,
+      "sweep_run_id": "vyxzzsnq",
+      "min_held_out_perplexity": 27.996558641687987,
+      "learning_rate": 0.00364887498987837,
+      "warmup_ratio": 0.030011225265342795,
+      "dropout": 0.07156032204270225,
+      "attention_dropout": null,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 128
+    }
+  ]
+}

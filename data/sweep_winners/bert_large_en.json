@@ -1,0 +1,64 @@
+{
+  "arch": "bert_large",
+  "lang": "en",
+  "sweep_id": "2pimhcbm",
+  "selection_metric": "proxy/min_held_out_perplexity",
+  "top_k": 5,
+  "configs": [
+    {
+      "rank": 1,
+      "sweep_run_id": "miezb619",
+      "min_held_out_perplexity": 336.5812614045782,
+      "learning_rate": 3.754215929557428e-05,
+      "warmup_ratio": 0.0658995111060421,
+      "dropout": 0.05833596104599522,
+      "attention_dropout": 0.021291629695896652,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 2,
+      "sweep_run_id": "luafibdl",
+      "min_held_out_perplexity": 337.6058313482382,
+      "learning_rate": 4.17591938220856e-05,
+      "warmup_ratio": 0.04162818406994598,
+      "dropout": 0.11895709240660476,
+      "attention_dropout": 0.10909397594603322,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 3,
+      "sweep_run_id": "em47164f",
+      "min_held_out_perplexity": 338.14665154844624,
+      "learning_rate": 3.8081579301021585e-05,
+      "warmup_ratio": 0.07179906322365286,
+      "dropout": 0.0980082998814251,
+      "attention_dropout": 0.13367157880010913,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 4,
+      "sweep_run_id": "ego08jrt",
+      "min_held_out_perplexity": 339.5286417071523,
+      "learning_rate": 3.4239314655553093e-05,
+      "warmup_ratio": 0.0460509897464593,
+      "dropout": 0.06272608036783611,
+      "attention_dropout": 0.06480016525618622,
+      "adam_beta2": 0.95,
+      "effective_batch_size": 256
+    },
+    {
+      "rank": 5,
+      "sweep_run_id": "579fda9h",
+      "min_held_out_perplexity": 341.7719693365272,
+      "learning_rate": 3.472193776717648e-05,
+      "warmup_ratio": 0.05412028185588953,
+      "dropout": 0.12008944190935676,
+      "attention_dropout": 0.10299033768804174,
+      "adam_beta2": 0.99,
+      "effective_batch_size": 256
+    }
+  ]
+}

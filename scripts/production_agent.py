@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+"""Production training agent (per-pod entrypoint).
+
+Reads (arch, lang, intervention, hp_rank, seed) from environment variables,
+overlays the corresponding sweep-winner HPs onto the per-(arch, lang)
+baseline config, swaps the training corpus for the intervention's
+pre-ablated path, computes the 80-anchor checkpoint schedule, writes the
+final config to /tmp/, and shells out to ``model_foundry.cli run``.
+
+This is the production analogue of ``sweep_agent_lm.py`` — no wandb.config
+sampling, just deterministic lookup of frozen HPs by rank.
+
+Required env:
+    ARCH                   one of gpt2_{small,medium,large}, bert_large,
+                           lstm, mamba_370m
+    LANG                   en | es
+    INTERVENTION           baseline | remove_expletive_sentences |
+                           impoverish_case | lemmatize_verbs |
+                           enrich_verbal_morphology
+    PHYS_BATCH             per-arch physical batch size (engineering)
+    SEEDS_JSON             JSON list of 2 seeds, e.g. "[42, 137]"
+    JOB_COMPLETION_INDEX   0..9 — set by K8s Indexed Job
+
+Optional env:
+    WANDB_PROJECT_PROD     defaults to "subject-drop-production"
+    APPROX_TRAIN_CHUNKS    for token-anchor schedule estimation
+                           (defaults to 127000 for EN 90M @ seq_len=1000)
+"""
+
+from __future__ import annotations
+
+import json
+import math
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SWEEP_WINNERS_DIR = REPO_ROOT / "data" / "sweep_winners"
+SWEEP_BASELINE_DIR = REPO_ROOT / "configs" / "sweeps" / "baselines"
+
+INTERVENTIONS_BY_LANG = {
+    "en": {
+        "baseline",
+        "remove_expletive_sentences",
+        "impoverish_case",
+        "lemmatize_verbs",
+        "enrich_verbal_morphology",
+    },
+    "es": {
+        "baseline",
+        "remove_expletive_sentences",
+        "impoverish_case",
+        "lemmatize_verbs",
+    },
+}
+
+
+def _required_env(key: str) -> str:
+    v = os.environ.get(key)
+    if not v:
+        sys.exit(f"FATAL: required env var {key} is unset")
+    return v
+
+
+def _training_corpus_path(lang: str, intervention: str) -> str:
+    """Return the on-pod path to the training corpus for this intervention."""
+    if intervention == "baseline":
+        return f"data/raw/{lang}/train_90M/"
+    return f"data/manipulations/{lang}/{intervention}/"
+
+
+def _compute_token_anchor_schedule(
+    phys_batch: int, grad_accum: int, prod_epochs: int,
+    approx_chunks: int,
+) -> list[int]:
+    """80 checkpoint anchors in optimizer-step space. First 11 are log-fixed
+    (0,1,2,...,512); rest are log-spaced from 512 to total_prod_steps.
+    Mirrors ``sweep_agent_lm._compute_token_anchor_schedule``.
+    """
+    effective_batch = max(1, phys_batch * grad_accum)
+    steps_per_epoch = max(1, approx_chunks // effective_batch)
+    total_prod_steps = steps_per_epoch * prod_epochs
+
+    anchors = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
+    target_total = 80
+    slots_left = target_total - len(anchors)
+    if total_prod_steps > anchors[-1] and slots_left > 0:
+        log_lo = math.log(float(anchors[-1]))
+        log_hi = math.log(float(total_prod_steps))
+        for i in range(1, slots_left + 1):
+            frac = i / slots_left
+            step = int(round(math.exp(log_lo + (log_hi - log_lo) * frac)))
+            if step > anchors[-1]:
+                anchors.append(step)
+    return sorted({min(a, total_prod_steps) for a in anchors})
+
+
+def _apply_model_field(model: dict, field: str, val: float) -> None:
+    """Set ``field`` on whichever model sub-block matches the YAML shape.
+    Mirrors sweep_agent_lm._apply_hp_overrides for dropout/attn_dropout."""
+    _TRANSFORMER_FLAT = {"layers", "attention_heads", "intermediate_hidden_size"}
+    _RNN_FLAT = {"num_layers", "rnn_type"}
+    _MAMBA_FLAT = {"d_model", "n_layers", "d_state"}
+    nested_hit = False
+    for block in ("transformer", "rnn", "mamba"):
+        if isinstance(model.get(block), dict):
+            model[block][field] = val
+            nested_hit = True
+    if nested_hit:
+        return
+    if field == "attention_dropout":
+        if _TRANSFORMER_FLAT & model.keys():
+            model[field] = val
+    else:
+        if (_TRANSFORMER_FLAT | _RNN_FLAT | _MAMBA_FLAT) & model.keys():
+            model[field] = val
+
+
+def _apply_hp_overrides(cfg: dict, hp: dict, phys_batch: int) -> None:
+    """Overlay sweep-winner HPs onto the baseline config in-place."""
+    cfg["training"]["learning_rate"] = float(hp["learning_rate"])
+    cfg["training"]["warmup_ratio"] = float(hp["warmup_ratio"])
+    cfg["training"]["adam_beta2"] = float(hp["adam_beta2"])
+
+    eff = int(hp["effective_batch_size"])
+    cfg["data"]["batch_size"] = phys_batch
+    cfg["training"]["gradient_accumulation_steps"] = max(1, eff // phys_batch)
+
+    _apply_model_field(cfg["model"], "dropout", float(hp["dropout"]))
+    if hp.get("attention_dropout") is not None:
+        _apply_model_field(
+            cfg["model"], "attention_dropout", float(hp["attention_dropout"])
+        )
+
+
+def main() -> None:
+    arch = _required_env("ARCH")
+    lang = _required_env("LANG")
+    intervention = _required_env("INTERVENTION")
+    phys_batch = int(_required_env("PHYS_BATCH"))
+    seeds = json.loads(_required_env("SEEDS_JSON"))
+    job_index = int(_required_env("JOB_COMPLETION_INDEX"))
+
+    if intervention not in INTERVENTIONS_BY_LANG.get(lang, set()):
+        sys.exit(f"FATAL: intervention {intervention!r} not valid for lang {lang!r}")
+
+    hp_rank, seed_idx = divmod(job_index, 2)  # 0..9 → (0..4, 0..1)
+    if hp_rank >= 5 or seed_idx >= len(seeds):
+        sys.exit(f"FATAL: JOB_COMPLETION_INDEX={job_index} out of range "
+                 f"(hp_rank={hp_rank}, seed_idx={seed_idx})")
+
+    seed = int(seeds[seed_idx])
+
+    # 1) Load baseline config.
+    base_cfg_path = SWEEP_BASELINE_DIR / f"{arch}_{lang}.yaml"
+    cfg = yaml.safe_load(base_cfg_path.read_text())
+
+    # 2) Load HP rank from sweep winners.
+    winners_path = SWEEP_WINNERS_DIR / f"{arch}_{lang}.json"
+    winners = json.loads(winners_path.read_text())
+    if hp_rank >= len(winners["configs"]):
+        sys.exit(f"FATAL: only {len(winners['configs'])} winners in "
+                 f"{winners_path}, but hp_rank={hp_rank}")
+    hp = winners["configs"][hp_rank]
+
+    # 3) Overlay HP.
+    _apply_hp_overrides(cfg, hp, phys_batch)
+
+    # 4) Swap training corpus.
+    cfg["data"]["training_corpus"] = _training_corpus_path(lang, intervention)
+    cfg["data"]["source_corpus"] = cfg["data"]["training_corpus"]
+    # test_corpus already points at /raw/<lang>/test_10M/ in the sweep base.
+
+    # 5) Production-mode training settings.
+    prod_epochs = int(cfg["training"].get("production_epochs", 30))
+    cfg["training"]["epochs"] = prod_epochs
+
+    approx_chunks = int(os.environ.get("APPROX_TRAIN_CHUNKS", "127000"))
+    schedule = _compute_token_anchor_schedule(
+        phys_batch, cfg["training"]["gradient_accumulation_steps"],
+        prod_epochs, approx_chunks,
+    )
+    cfg["training"]["checkpoint_schedule"] = schedule
+    cfg["training"]["auto_generate_checkpoints"] = False
+    cfg["training"]["resume_from_checkpoint"] = False
+    cfg["training"]["save_resume_state_last_n"] = 3
+
+    # 6) Seed + identity.
+    cfg["random_seed"] = seed
+    run_id = f"{arch}-{lang}-{intervention}-h{hp_rank}-s{seed}"
+    cfg["experiment_name"] = run_id
+    cfg["training"]["output_dir"] = f"models/production/{run_id}"
+
+    # 7) WandB project — split production from sweeps.
+    cfg["logging"]["wandb_project"] = os.environ.get(
+        "WANDB_PROJECT_PROD", "subject-drop-production"
+    )
+
+    # 8) Tell the registry plumbing about this run.
+    os.environ["REGISTRY_RUN_KIND"] = "production"
+    os.environ["REGISTRY_LANG"] = lang
+    os.environ["REGISTRY_CONDITION"] = intervention
+    os.environ["REGISTRY_SEED"] = str(seed)
+    os.environ["REGISTRY_RUN_ID"] = run_id
+
+    # 9) Fail-fast cache check — production pods only READ the cache.
+    # If it's missing, the prepare-caches Job hasn't completed yet;
+    # exit non-zero so the K8s Job retries, by which point the cache
+    # is hopefully populated. This is the same pattern the sweep used
+    # (see k8s/job-sweep-*-en.yaml) — letting cli.run trigger tokenize
+    # inline causes HF builder-lock races when multiple pods share a
+    # cache key (the sweep-1 race incident).
+    sys.path.insert(0, str(REPO_ROOT))
+    from model_foundry.cache_keys import compute_cache_key  # noqa: E402
+
+    corpus_abs = str(REPO_ROOT / cfg["data"]["training_corpus"])
+    tok_abs = str(REPO_ROOT / cfg["tokenizer"]["output_dir"])
+    cache_key = compute_cache_key(
+        corpus_abs, tok_abs, cfg["data"]["max_sequence_length"],
+        cfg.get("dataset_manipulation") or [],
+    )
+    tokenized = Path(f"/mnt/data/tokenized/{cache_key}/train/dataset_info.json")
+    chunked = Path(f"/mnt/data/chunked/{cache_key}/dataset_info.json")
+    if not tokenized.exists():
+        sys.exit(
+            f"FAIL: tokenized cache missing at {tokenized}. "
+            f"Run k8s/job-prepare-production-caches-{lang}.yaml first."
+        )
+    if not chunked.exists():
+        sys.exit(
+            f"FAIL: chunked cache missing at {chunked}. "
+            f"Run k8s/job-prepare-production-caches-{lang}.yaml first."
+        )
+
+    # 10) Write final config + invoke cli.run.
+    final_path = Path("/tmp/run_config.yaml")
+    final_path.write_text(yaml.safe_dump(cfg, sort_keys=False))
+
+    print(f"=== production_agent ===")
+    print(f"  arch={arch} lang={lang} intervention={intervention}")
+    print(f"  hp_rank={hp_rank} (ppl={hp.get('min_held_out_perplexity'):.3f})")
+    print(f"  seed={seed}  phys={phys_batch}  eff={hp['effective_batch_size']}")
+    print(f"  grad_accum={cfg['training']['gradient_accumulation_steps']}")
+    print(f"  epochs={prod_epochs}  schedule_anchors={len(schedule)}")
+    print(f"  run_id={run_id}")
+    print(f"  config -> {final_path}")
+    sys.stdout.flush()
+
+    cmd = [sys.executable, "-m", "model_foundry.cli", "run", str(final_path)]
+    rc = subprocess.call(cmd, cwd=str(REPO_ROOT))
+    if rc == 0:
+        Path("/tmp/run_succeeded").write_text(run_id + "\n")
+    sys.exit(rc)
+
+
+if __name__ == "__main__":
+    main()

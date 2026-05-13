@@ -1,0 +1,93 @@
+---
+# Pre-populate the 10 (tokenizer × condition) tokenized+chunked caches
+# needed by the English production training wave. Run ONCE before the
+# 20 production Jobs go in. Without this, several training pods sharing
+# the same cache key would race during tokenization and corrupt the
+# HuggingFace builder lock (the sweep-1 race incident, see
+# memory/feedback_prerun_caches.md).
+#
+# 10 indexed pods: 2 tokenizers × 5 conditions (baseline + 4 ablations).
+# CPU-only; ~10-20 min per cell on the 90M corpus.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-prepare-prod-caches-en
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: prepare-caches
+    lang: en
+spec:
+  backoffLimit: 30
+  completionMode: Indexed
+  completions: 10
+  parallelism: 10
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: prepare-caches
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: prepare
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=========================================="
+          echo "  PRODUCTION-PREP — EN  idx=$JOB_COMPLETION_INDEX"
+          echo "=========================================="
+
+          cd /opt/repo
+          cat /opt/repo/.git/HEAD 2>/dev/null || true
+
+          rm -rf /opt/repo/data/raw /opt/repo/data/manipulations /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/tokenizers
+          ln -sfn /mnt/data/raw           /opt/repo/data/raw
+          ln -sfn /mnt/data/manipulations /opt/repo/data/manipulations
+          ln -sfn /mnt/data/tokenized     /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked       /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers    /opt/repo/tokenizers
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers; do
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink"; exit 1; }
+          done
+
+          export LANG=en
+          python3 scripts/prepare_cache_for_cell.py
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        resources:
+          requests: {memory: 16Gi, cpu: "4"}
+          limits:   {memory: 16Gi, cpu: "4"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
