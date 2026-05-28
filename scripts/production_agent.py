@@ -149,10 +149,24 @@ def main() -> None:
     if intervention not in INTERVENTIONS_BY_LANG.get(lang, set()):
         sys.exit(f"FATAL: intervention {intervention!r} not valid for lang {lang!r}")
 
-    hp_rank, seed_idx = divmod(job_index, 2)  # 0..9 → (0..4, 0..1)
+    # Slot resolution. Default (full-grid) mode maps idx → (hp_rank, seed_idx)
+    # via divmod, so a completions=10 Indexed Job covers the 5×2 grid. The
+    # relaunch ("only missing slots") mode passes SLOT_MAP_JSON: an ordered
+    # list of [hp_rank, seed_idx] pairs, one per JOB_COMPLETION_INDEX, so a
+    # completions=N Indexed Job runs exactly the N slots that still need
+    # training and never recomputes a done seed.
+    slot_map_raw = os.environ.get("SLOT_MAP_JSON")
+    if slot_map_raw:
+        slot_map = json.loads(slot_map_raw)
+        if job_index >= len(slot_map):
+            sys.exit(f"FATAL: JOB_COMPLETION_INDEX={job_index} >= "
+                     f"len(SLOT_MAP_JSON)={len(slot_map)}")
+        hp_rank, seed_idx = slot_map[job_index]
+    else:
+        hp_rank, seed_idx = divmod(job_index, 2)  # 0..9 → (0..4, 0..1)
     if hp_rank >= 5 or seed_idx >= len(seeds):
-        sys.exit(f"FATAL: JOB_COMPLETION_INDEX={job_index} out of range "
-                 f"(hp_rank={hp_rank}, seed_idx={seed_idx})")
+        sys.exit(f"FATAL: slot out of range "
+                 f"(idx={job_index}, hp_rank={hp_rank}, seed_idx={seed_idx})")
 
     seed = int(seeds[seed_idx])
 
@@ -188,7 +202,12 @@ def main() -> None:
     cfg["training"]["checkpoint_schedule"] = schedule
     cfg["training"]["auto_generate_checkpoints"] = False
     cfg["training"]["resume_from_checkpoint"] = False
-    cfg["training"]["save_resume_state_last_n"] = 3
+    # Final n scheduled checkpoints that carry full training_state.pt (resume
+    # state). Env-driven so the relaunch can raise it (default 3) — higher n
+    # means a preempted run can resume from later in training instead of
+    # restarting. See loop.py: resume_state_steps = schedule[-n:].
+    cfg["training"]["save_resume_state_last_n"] = int(
+        os.environ.get("SAVE_RESUME_LAST_N", "3"))
 
     # 6) Seed + identity.
     cfg["random_seed"] = seed

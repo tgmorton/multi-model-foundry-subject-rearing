@@ -77,9 +77,29 @@ INTERVENTIONS = {
 }
 
 
+# Mamba kernel works on every 24 GB FA2 card per the 2026-05-28 probe
+# (3090 sm_86, A10 sm_86, RTX-4090 sm_89 all PASS; the one L4 failure was a
+# node-level torch._C._cuda_init() fault, not an sm_89 kernel-build gap). So
+# mamba is NOT pinned to a sub-pool — it keeps the full GPU_POOL_24GB. If a
+# future probe shows a real sm_89 break, set MAMBA_POOL to the Ampere subset
+# ["NVIDIA-GeForce-RTX-3090","NVIDIA-A10"] and select it for arch=="mamba_370m".
+MAMBA_POOL = GPU_POOL_24GB
+
+
 def _job_yaml(arch: str, lang: str, intervention: str,
-              phys_batch: int, pod_ram: str, pod_cpu: str) -> str:
-    """Return the K8s Job YAML for a single (arch × intervention) cell."""
+              phys_batch: int, pod_ram: str, pod_cpu: str,
+              slots: list | None = None,
+              parallelism: int = 2,
+              active_deadline_seconds: int = 2592000,
+              save_resume_last_n: int = 3) -> str:
+    """Return the K8s Job YAML for a single (arch × intervention) cell.
+
+    If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
+    Job is sized to ``completions=len(slots)`` and passes SLOT_MAP_JSON so the
+    agent runs exactly those slots — used by the relaunch to recompute only
+    missing/partial runs. If ``slots`` is None the legacy full-grid 10-pod
+    Job is emitted.
+    """
     name = f"thomas-train-prod-{arch.replace('_', '-')}-{lang}-{intervention.replace('_', '-')}"
     # K8s names cap at 63 chars.
     if len(name) > 63:
@@ -88,9 +108,19 @@ def _job_yaml(arch: str, lang: str, intervention: str,
         h = hashlib.sha1(name.encode()).hexdigest()[:6]
         name = name[:56] + "-" + h
 
-    gpu_values = "\n".join(f"                - {g}" for g in GPU_POOL_24GB)
+    pool = MAMBA_POOL if arch == "mamba_370m" else GPU_POOL_24GB
+    gpu_values = "\n".join(f"                - {g}" for g in pool)
     bad_nodes = "\n".join(f"                - {n}" for n in BAD_NODES)
     seeds_json = json.dumps(SEEDS)
+
+    if slots is not None:
+        completions = len(slots)
+        slot_map_env = (
+            f'\n        - {{name: SLOT_MAP_JSON, value: {json.dumps(json.dumps(slots))}}}'
+        )
+    else:
+        completions = 10
+        slot_map_env = ""
 
     return f"""---
 apiVersion: batch/v1
@@ -107,10 +137,21 @@ metadata:
 spec:
   backoffLimit: 100
   completionMode: Indexed
-  completions: 10
-  parallelism: 2
-  activeDeadlineSeconds: 1209600
+  completions: {completions}
+  parallelism: {min(parallelism, completions)}
+  activeDeadlineSeconds: {active_deadline_seconds}
   ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    # The GPU-health / kernel-import probe fast-fails with exit code 2 on a
+    # bad node (e.g. the L4 torch._C._cuda_init() fault). Don't burn the
+    # backoff budget on infrastructure faults — ignore that pod, let the
+    # index reschedule onto a healthy node.
+    - action: Ignore
+      onExitCodes:
+        containerName: trainer
+        operator: In
+        values: [2]
   template:
     metadata:
       labels:
@@ -162,7 +203,7 @@ spec:
           set -euo pipefail
           echo "=========================================="
           echo "  PROD TRAIN — {arch} × {lang} × {intervention}"
-          echo "  pod idx=$JOB_COMPLETION_INDEX (hp_rank=$((JOB_COMPLETION_INDEX/2)), seed_idx=$((JOB_COMPLETION_INDEX%2)))"
+          echo "  pod idx=$JOB_COMPLETION_INDEX  (slot resolved by production_agent: SLOT_MAP_JSON if set, else divmod(idx,2))"
           echo "=========================================="
           cat /opt/repo/.git/HEAD 2>/dev/null || true
 
@@ -206,7 +247,8 @@ spec:
         - {{name: LANG, value: "{lang}"}}
         - {{name: INTERVENTION, value: "{intervention}"}}
         - {{name: PHYS_BATCH, value: "{phys_batch}"}}
-        - {{name: SEEDS_JSON, value: '{seeds_json}'}}
+        - {{name: SEEDS_JSON, value: '{seeds_json}'}}{slot_map_env}
+        - {{name: SAVE_RESUME_LAST_N, value: "{save_resume_last_n}"}}
         - {{name: WANDB_PROJECT_PROD, value: "subject-drop-production"}}
         - name: WANDB_API_KEY
           valueFrom: {{secretKeyRef: {{name: wandb-secret-thomas, key: WANDB_API_KEY}}}}
@@ -260,7 +302,26 @@ def main() -> None:
                          "already trained baseline)")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print YAML to stdout instead of applying")
+    ap.add_argument("--slots-file",
+                    help="JSON map {'<arch>|<intervention>': [[hp_rank, "
+                         "seed_idx], ...]} of only the slots that still need "
+                         "training. Cells absent from the map are skipped; "
+                         "the per-cell Job is sized to len(slots) and passed "
+                         "SLOT_MAP_JSON so done seeds are never recomputed.")
+    ap.add_argument("--parallelism", type=int, default=2,
+                    help="Max concurrent pods per cell (capped at completions)")
+    ap.add_argument("--active-deadline-seconds", type=int, default=2592000,
+                    help="Job activeDeadlineSeconds (default 30d, was 14d)")
+    ap.add_argument("--save-resume-last-n", type=int, default=3,
+                    help="Final n of the 80 scheduled checkpoints that carry "
+                         "training_state.pt (resume state). Higher = a "
+                         "preempted run resumes from later in training instead "
+                         "of restarting. Default 3 (legacy).")
     args = ap.parse_args()
+
+    slots_map = {}
+    if args.slots_file:
+        slots_map = json.loads(Path(args.slots_file).read_text())
 
     interventions = list(INTERVENTIONS[args.lang])
     if args.include_baseline:
@@ -286,9 +347,21 @@ def main() -> None:
     for arch in archs:
         phys, ram, cpu = ARCH_SETTINGS[arch]
         for intervention in interventions:
-            yml = _job_yaml(arch, args.lang, intervention, phys, ram, cpu)
+            slots = None
+            if args.slots_file:
+                key = f"{arch}|{intervention}"
+                slots = slots_map.get(key)
+                if not slots:
+                    continue  # cell fully done — skip
+            yml = _job_yaml(
+                arch, args.lang, intervention, phys, ram, cpu,
+                slots=slots, parallelism=args.parallelism,
+                active_deadline_seconds=args.active_deadline_seconds,
+                save_resume_last_n=args.save_resume_last_n,
+            )
             if args.dry_run:
-                print(f"--- {arch} × {intervention} ---")
+                n = len(slots) if slots is not None else 10
+                print(f"--- {arch} × {intervention}  (completions={n}) ---")
                 print(yml)
                 continue
             ok = _apply_yaml(yml)
