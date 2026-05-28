@@ -35,12 +35,18 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # ---------------------------------------------------------------------------
 ARCH_SETTINGS = {
     # arch_id:    (phys_batch, pod_ram, pod_cpu)
+    # pod_ram is BOTH request and limit (NRP requires request==limit for GPU
+    # pods — docs/nrp-docs/tutorial/scheduling.md). 4Gi->8Gi on the resumeable
+    # archs: a preempted run torch.loads its multi-GB training_state.pt onto
+    # host RAM (peak ~6-7Gi for the 371M-param fused-AdamW state), which OOM'd
+    # at 4Gi (mamba h1-s42, 2026-05-28). 8Gi ~= 2x steady peak; GPU util keeps
+    # the NRP utilization webhook satisfied.
     "gpt2_small":  (16, "4Gi", "2"),   # dropped from sweep 32: 89% on 3090 was risky
-    "gpt2_medium": (16, "4Gi", "2"),   # matches sweep
-    "gpt2_large":  ( 4, "4Gi", "2"),   # matches sweep
-    "bert_large":  ( 4, "8Gi", "2"),   # matches sweep — no FA2, higher host RAM
-    "lstm":        (16, "4Gi", "2"),   # matches sweep
-    "mamba_370m":  ( 4, "4Gi", "2"),   # matches sweep
+    "gpt2_medium": (16, "8Gi", "2"),   # 4Gi->8Gi: resume-load headroom
+    "gpt2_large":  ( 4, "8Gi", "2"),   # 4Gi->8Gi: resume-load headroom (2.6Gi state)
+    "bert_large":  ( 4, "8Gi", "2"),   # already 8Gi — covers its 2.6Gi state resume
+    "lstm":        (16, "4Gi", "2"),   # matches sweep (done; not relaunched)
+    "mamba_370m":  ( 4, "8Gi", "2"),   # 4Gi->8Gi: resume-load OOM fix (2.8Gi state)
 }
 
 # 24 GB GPU pool only — no L40/L40S (those are 48 GB).
@@ -51,10 +57,11 @@ GPU_POOL_24GB = [
     "NVIDIA-GeForce-RTX-4090",
 ]
 
-# Bad-node blocklist (carried over from sweep).
+# Bad-node blocklist (rendered into nodeAffinity hostname NotIn).
 BAD_NODES = [
     "rci-tide-gpu-03.sdsu.edu",
     "ry-gpu-10.sdsc.optiputer.net",
+    "nautilus-it-gpu03.fullerton.edu",  # broken CUDA driver — soaked 252 exit-2 "FATAL: no CUDA" fast-fails (2026-05-28)
 ]
 
 # Same 2 seeds across every (arch, lang, intervention) cell — seed becomes
