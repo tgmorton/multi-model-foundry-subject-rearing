@@ -36,17 +36,23 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ARCH_SETTINGS = {
     # arch_id:    (phys_batch, pod_ram, pod_cpu)
     # pod_ram is BOTH request and limit (NRP requires request==limit for GPU
-    # pods — docs/nrp-docs/tutorial/scheduling.md). 4Gi->8Gi on the resumeable
-    # archs: a preempted run torch.loads its multi-GB training_state.pt onto
-    # host RAM (peak ~6-7Gi for the 371M-param fused-AdamW state), which OOM'd
-    # at 4Gi (mamba h1-s42, 2026-05-28). 8Gi ~= 2x steady peak; GPU util keeps
-    # the NRP utilization webhook satisfied.
-    "gpt2_small":  (16, "4Gi", "2"),   # dropped from sweep 32: 89% on 3090 was risky
-    "gpt2_medium": (16, "8Gi", "2"),   # 4Gi->8Gi: resume-load headroom
-    "gpt2_large":  ( 4, "8Gi", "2"),   # 4Gi->8Gi: resume-load headroom (2.6Gi state)
-    "bert_large":  ( 4, "8Gi", "2"),   # already 8Gi — covers its 2.6Gi state resume
-    "lstm":        (16, "4Gi", "2"),   # matches sweep (done; not relaunched)
-    "mamba_370m":  ( 4, "8Gi", "2"),   # 4Gi->8Gi: resume-load OOM fix (2.8Gi state)
+    # pods). Sized LEAN to MEASURED steady-state use (~2.9Gi gpt2/mamba,
+    # ~3.8Gi bert peak; observed via kubectl top 2026-06-02) so NRP's
+    # utilization webhook stays satisfied (~70% mem util). We deliberately do
+    # NOT add resume-load headroom: covering the resume transient (~7Gi to
+    # torch.load the training_state) would force request==limit so high that
+    # steady util drops to ~35% and the utilization webhook BLOCKS the whole
+    # namespace (this happened after an 8Gi bump on 2026-06-02). Instead we run
+    # with save_resume_state_last_n=0 (no resume; interrupted runs restart
+    # fresh) — cheap, because priorityClassName=armada-default is
+    # NON-preemptible, so mid-run pod death is rare. See
+    # memory/feedback_resource_sizing + feedback_mamba_node_cuda_fault_not_kernel.
+    "gpt2_small":  (16, "4Gi", "2"),
+    "gpt2_medium": (16, "4Gi", "2"),
+    "gpt2_large":  ( 4, "4Gi", "2"),
+    "bert_large":  ( 4, "5Gi", "2"),   # uses ~3.8Gi peak
+    "lstm":        (16, "4Gi", "2"),
+    "mamba_370m":  ( 4, "4Gi", "2"),
 }
 
 # 24 GB GPU pool only — no L40/L40S (those are 48 GB).
@@ -319,11 +325,15 @@ def main() -> None:
                     help="Max concurrent pods per cell (capped at completions)")
     ap.add_argument("--active-deadline-seconds", type=int, default=2592000,
                     help="Job activeDeadlineSeconds (default 30d, was 14d)")
-    ap.add_argument("--save-resume-last-n", type=int, default=3,
+    ap.add_argument("--save-resume-last-n", type=int, default=0,
                     help="Final n of the 80 scheduled checkpoints that carry "
-                         "training_state.pt (resume state). Higher = a "
-                         "preempted run resumes from later in training instead "
-                         "of restarting. Default 3 (legacy).")
+                         "training_state.pt. Default 0 = never save resume state / "
+                         "never resume (interrupted runs restart fresh). Kept 0 "
+                         "because resume-load headroom forces a high request==limit "
+                         "that trips NRP's utilization webhook; armada-default is "
+                         "non-preemptible so restarts are rare. Raise only if you "
+                         "also raise pod_ram to cover the ~7Gi resume spike AND "
+                         "accept the lower utilization.")
     args = ap.parse_args()
 
     slots_map = {}
