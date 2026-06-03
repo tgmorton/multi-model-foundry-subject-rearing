@@ -106,7 +106,8 @@ def _job_yaml(arch: str, lang: str, intervention: str,
               slots: list | None = None,
               parallelism: int = 2,
               active_deadline_seconds: int = 2592000,
-              save_resume_last_n: int = 3) -> str:
+              save_resume_last_n: int = 3,
+              resume: bool = False) -> str:
     """Return the K8s Job YAML for a single (arch × intervention) cell.
 
     If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
@@ -136,6 +137,12 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     else:
         completions = 10
         slot_map_env = ""
+
+    # RESUME=1 makes production_agent resume each run IN PLACE from its newest
+    # full-state checkpoint and emit a BACK-HALF-ONLY schedule (> resume_step).
+    # Required for the recovery of the 207 truncated runs; fresh launches omit
+    # it so production_agent computes the full schedule.
+    resume_env = '\n        - {name: RESUME, value: "1"}' if resume else ""
 
     return f"""---
 apiVersion: batch/v1
@@ -263,7 +270,7 @@ spec:
         - {{name: INTERVENTION, value: "{intervention}"}}
         - {{name: PHYS_BATCH, value: "{phys_batch}"}}
         - {{name: SEEDS_JSON, value: '{seeds_json}'}}{slot_map_env}
-        - {{name: SAVE_RESUME_LAST_N, value: "{save_resume_last_n}"}}
+        - {{name: SAVE_RESUME_LAST_N, value: "{save_resume_last_n}"}}{resume_env}
         - {{name: WANDB_PROJECT_PROD, value: "subject-drop-production"}}
         - name: WANDB_API_KEY
           valueFrom: {{secretKeyRef: {{name: wandb-secret-thomas, key: WANDB_API_KEY}}}}
@@ -327,6 +334,15 @@ def main() -> None:
                     help="Max concurrent pods per cell (capped at completions)")
     ap.add_argument("--active-deadline-seconds", type=int, default=2592000,
                     help="Job activeDeadlineSeconds (default 30d, was 14d)")
+    ap.add_argument("--resume", action="store_true",
+                    help="Resume each run IN PLACE from its newest full-state "
+                         "checkpoint (sets RESUME=1 → production_agent emits a "
+                         "back-half-only schedule > resume_step). Use for the "
+                         "recovery of truncated runs; omit for fresh launches.")
+    ap.add_argument("--seeds",
+                    help="JSON list overriding the default seeds [42, 137] "
+                         "(e.g. '[999]' for a throwaway validation run). "
+                         "SLOT_MAP_JSON seed_idx indexes into this list.")
     ap.add_argument("--save-resume-last-n", type=int, default=3,
                     help="LEGACY FALLBACK ONLY. production_agent now emits an "
                          "explicit resume_state_steps set ({ep7 waypoint, "
@@ -337,6 +353,10 @@ def main() -> None:
                          "consulted if resume_state_steps were ever unset. Kept "
                          "for backward compat; default 3.")
     args = ap.parse_args()
+
+    if args.seeds:
+        global SEEDS
+        SEEDS = json.loads(args.seeds)
 
     slots_map = {}
     if args.slots_file:
@@ -380,6 +400,7 @@ def main() -> None:
                 slots=slots, parallelism=args.parallelism,
                 active_deadline_seconds=args.active_deadline_seconds,
                 save_resume_last_n=args.save_resume_last_n,
+                resume=args.resume,
             )
             if args.dry_run:
                 n = len(slots) if slots is not None else 10
