@@ -38,6 +38,12 @@ class CheckpointManager:
         self.base_dir = base_dir
         self.git_commit_hash = git_commit_hash
         self.output_dir = Path(base_dir) / config.training.output_dir
+        # When resuming, load_checkpoint stashes the saved AMP GradScaler
+        # state here if no live scaler was passed in (the trainer's
+        # GradScaler is built inside TrainingLoop AFTER load_checkpoint
+        # runs). TrainingLoop applies it post-construction. None when not
+        # resuming or when the checkpoint had no scaler state.
+        self.pending_amp_scaler_state: Optional[Dict[str, Any]] = None
 
     def get_checkpoint_schedule(self) -> Set[int]:
         """
@@ -302,8 +308,17 @@ class CheckpointManager:
                 f"Unexpected missing key loading checkpoint: {k}"
             )
 
-        # Load training state
-        state = torch.load(Path(latest_checkpoint) / "training_state.pt", map_location="cpu")
+        # Load training state. mmap=True keeps the (potentially multi-GB)
+        # optimizer tensors backed by the file rather than copied wholesale
+        # into a peak RAM spike — load_state_dict below pulls only what it
+        # needs. weights_only=False is required because the state dict holds
+        # arbitrary Python objects (RNG tuples, numpy state) beyond tensors.
+        state = torch.load(
+            Path(latest_checkpoint) / "training_state.pt",
+            map_location="cpu",
+            mmap=True,
+            weights_only=False,
+        )
         global_step = state['global_step']
         epoch = state['epoch']
 
@@ -318,10 +333,21 @@ class CheckpointManager:
         if torch.cuda.is_available() and state['torch_cuda_random_state']:
             torch.cuda.set_rng_state_all(state['torch_cuda_random_state'])
 
-        # Restore AMP scaler state
-        if scaler is not None and state.get('amp_scaler') is not None:
-            scaler.load_state_dict(state['amp_scaler'])
-            print(f"  - Restored AMP scaler state")
+        # Restore AMP scaler state. The trainer calls load_checkpoint
+        # BEFORE the GradScaler exists (it's constructed in
+        # TrainingLoop.__init__), so ``scaler`` is typically None here. In
+        # that case, stash the saved state on the manager so TrainingLoop
+        # can apply it to the freshly-built scaler. If a live scaler IS
+        # passed (e.g. a future caller that builds it earlier, or tests),
+        # restore directly.
+        saved_scaler_state = state.get('amp_scaler')
+        if saved_scaler_state is not None:
+            if scaler is not None:
+                scaler.load_state_dict(saved_scaler_state)
+                print(f"  - Restored AMP scaler state")
+            else:
+                self.pending_amp_scaler_state = saved_scaler_state
+                print(f"  - Stashed AMP scaler state for post-construction restore")
 
         print(f"  - Resumed from step {global_step} at epoch {epoch}.")
 

@@ -23,14 +23,22 @@ Required env:
 
 Optional env:
     WANDB_PROJECT_PROD     defaults to "subject-drop-production"
-    APPROX_TRAIN_CHUNKS    for token-anchor schedule estimation
-                           (defaults to 127000 for EN 90M @ seq_len=1000)
+    SAVE_RESUME_LAST_N     legacy last-N resume-state fallback (default 3);
+                           unused now that resume_state_steps is explicit.
+    RESUME                 truthy → resume in place from the existing
+                           output_dir, emit a BACK-HALF-ONLY schedule of
+                           anchors strictly past the step already reached,
+                           null train_steps/warmup_steps, and save resume
+                           state on the full back-half list.
+
+The checkpoint schedule is computed by the shared helper
+``model_foundry.checkpoint_schedule`` off the REAL chunk count read from
+the content-addressed chunked cache (no hardcoded estimate).
 """
 
 from __future__ import annotations
 
 import json
-import math
 import os
 import subprocess
 import sys
@@ -74,30 +82,24 @@ def _training_corpus_path(lang: str, intervention: str) -> str:
     return f"data/manipulations/{lang}/{intervention}/"
 
 
-def _compute_token_anchor_schedule(
-    phys_batch: int, grad_accum: int, prod_epochs: int,
-    approx_chunks: int,
-) -> list[int]:
-    """80 checkpoint anchors in optimizer-step space. First 11 are log-fixed
-    (0,1,2,...,512); rest are log-spaced from 512 to total_prod_steps.
-    Mirrors ``sweep_agent_lm._compute_token_anchor_schedule``.
+def _latest_resume_step(output_dir: Path) -> int:
+    """Return the highest checkpoint-<N> step under ``output_dir`` that
+    carries a training_state.pt, or 0 if none. Mirrors the trainer's
+    resume-selection logic so the back-half-only schedule is filtered to
+    anchors strictly past where the run will actually resume.
     """
-    effective_batch = max(1, phys_batch * grad_accum)
-    steps_per_epoch = max(1, approx_chunks // effective_batch)
-    total_prod_steps = steps_per_epoch * prod_epochs
+    import re
 
-    anchors = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
-    target_total = 80
-    slots_left = target_total - len(anchors)
-    if total_prod_steps > anchors[-1] and slots_left > 0:
-        log_lo = math.log(float(anchors[-1]))
-        log_hi = math.log(float(total_prod_steps))
-        for i in range(1, slots_left + 1):
-            frac = i / slots_left
-            step = int(round(math.exp(log_lo + (log_hi - log_lo) * frac)))
-            if step > anchors[-1]:
-                anchors.append(step)
-    return sorted({min(a, total_prod_steps) for a in anchors})
+    if not output_dir.exists():
+        return 0
+    best = 0
+    for child in output_dir.glob("checkpoint-*"):
+        m = re.search(r"checkpoint-(\d+)$", child.name)
+        if not m:
+            continue
+        if (child / "training_state.pt").exists():
+            best = max(best, int(m.group(1)))
+    return best
 
 
 def _apply_model_field(model: dict, field: str, val: float) -> None:
@@ -194,26 +196,13 @@ def main() -> None:
     prod_epochs = int(cfg["training"].get("production_epochs", 30))
     cfg["training"]["epochs"] = prod_epochs
 
-    approx_chunks = int(os.environ.get("APPROX_TRAIN_CHUNKS", "127000"))
-    schedule = _compute_token_anchor_schedule(
-        phys_batch, cfg["training"]["gradient_accumulation_steps"],
-        prod_epochs, approx_chunks,
-    )
-    cfg["training"]["checkpoint_schedule"] = schedule
-    cfg["training"]["auto_generate_checkpoints"] = False
-    cfg["training"]["resume_from_checkpoint"] = False
-    # Final n scheduled checkpoints that carry full training_state.pt (resume
-    # state). Env-driven so the relaunch can raise it (default 3) — higher n
-    # means a preempted run can resume from later in training instead of
-    # restarting. See loop.py: resume_state_steps = schedule[-n:].
-    cfg["training"]["save_resume_state_last_n"] = int(
-        os.environ.get("SAVE_RESUME_LAST_N", "3"))
-
-    # 6) Seed + identity.
+    # 6) Seed + identity. (Resolved before the schedule so RESUME mode can
+    # inspect the existing output_dir for the step already reached.)
     cfg["random_seed"] = seed
     run_id = f"{arch}-{lang}-{intervention}-h{hp_rank}-s{seed}"
     cfg["experiment_name"] = run_id
-    cfg["training"]["output_dir"] = f"models/production/{run_id}"
+    output_dir_rel = f"models/production/{run_id}"
+    cfg["training"]["output_dir"] = output_dir_rel
 
     # 7) WandB project — split production from sweeps.
     cfg["logging"]["wandb_project"] = os.environ.get(
@@ -236,6 +225,10 @@ def main() -> None:
     # cache key (the sweep-1 race incident).
     sys.path.insert(0, str(REPO_ROOT))
     from model_foundry.cache_keys import compute_cache_key  # noqa: E402
+    from model_foundry.checkpoint_schedule import (  # noqa: E402
+        compute_checkpoint_schedule,
+        read_num_chunks,
+    )
 
     corpus_abs = str(REPO_ROOT / cfg["data"]["training_corpus"])
     tok_abs = str(REPO_ROOT / cfg["tokenizer"]["output_dir"])
@@ -244,7 +237,8 @@ def main() -> None:
         cfg.get("dataset_manipulation") or [],
     )
     tokenized = Path(f"/mnt/data/tokenized/{cache_key}/train/dataset_info.json")
-    chunked = Path(f"/mnt/data/chunked/{cache_key}/dataset_info.json")
+    chunked_dir = Path(f"/mnt/data/chunked/{cache_key}")
+    chunked = chunked_dir / "dataset_info.json"
     if not tokenized.exists():
         sys.exit(
             f"FAIL: tokenized cache missing at {tokenized}. "
@@ -256,7 +250,61 @@ def main() -> None:
             f"Run k8s/job-prepare-production-caches-{lang}.yaml first."
         )
 
-    # 10) Write final config + invoke cli.run.
+    # 10) Checkpoint schedule via the shared helper, off the REAL chunk
+    # count (read from the content-addressed cache — never the old
+    # hardcoded 127000 estimate).
+    num_chunks = read_num_chunks(str(chunked_dir))
+    grad_accum = int(cfg["training"]["gradient_accumulation_steps"])
+
+    resume_mode = os.environ.get("RESUME", "").strip().lower() in (
+        "1", "true", "yes", "y"
+    )
+    if resume_mode:
+        # RESUME IN PLACE: keep the existing output_dir, resume from its
+        # newest full-state checkpoint, and emit a BACK-HALF-ONLY schedule
+        # of anchors strictly past where the run left off. train_steps /
+        # warmup_steps are nulled so the trainer recomputes them from the
+        # (real) data + epochs at startup.
+        resume_step = _latest_resume_step(REPO_ROOT / output_dir_rel)
+        schedule, resume_state_steps = compute_checkpoint_schedule(
+            num_chunks=num_chunks,
+            phys_batch=phys_batch,
+            grad_accum=grad_accum,
+            epochs=prod_epochs,
+            seq_len=cfg["data"]["max_sequence_length"],
+            back_half_only=True,
+            resume_step=resume_step,
+        )
+        cfg["training"]["resume_from_checkpoint"] = True
+        cfg["training"]["train_steps"] = None
+        cfg["training"]["warmup_steps"] = None
+        # The full back-half list saves resume state (intersected with the
+        # schedule by the loop). resume_state_steps is the back-half subset
+        # strictly > resume_step.
+        cfg["training"]["resume_state_steps"] = resume_state_steps
+        print(f"  [RESUME] resume_step={resume_step} "
+              f"back_half_anchors={len(schedule)} "
+              f"resume_state_anchors={len(resume_state_steps)}")
+    else:
+        schedule, resume_state_steps = compute_checkpoint_schedule(
+            num_chunks=num_chunks,
+            phys_batch=phys_batch,
+            grad_accum=grad_accum,
+            epochs=prod_epochs,
+            seq_len=cfg["data"]["max_sequence_length"],
+        )
+        cfg["training"]["resume_from_checkpoint"] = False
+        # Fresh run: explicit {ep7 waypoint, midpoint, all back-half}.
+        cfg["training"]["resume_state_steps"] = resume_state_steps
+
+    cfg["training"]["checkpoint_schedule"] = schedule
+    cfg["training"]["auto_generate_checkpoints"] = False
+    # resume_state_steps takes precedence in the loop; keep the legacy
+    # last-N as a documented fallback (unused when resume_state_steps set).
+    cfg["training"]["save_resume_state_last_n"] = int(
+        os.environ.get("SAVE_RESUME_LAST_N", "3"))
+
+    # 11) Write final config + invoke cli.run.
     final_path = Path("/tmp/run_config.yaml")
     final_path.write_text(yaml.safe_dump(cfg, sort_keys=False))
 
@@ -265,7 +313,10 @@ def main() -> None:
     print(f"  hp_rank={hp_rank} (ppl={hp.get('min_held_out_perplexity'):.3f})")
     print(f"  seed={seed}  phys={phys_batch}  eff={hp['effective_batch_size']}")
     print(f"  grad_accum={cfg['training']['gradient_accumulation_steps']}")
-    print(f"  epochs={prod_epochs}  schedule_anchors={len(schedule)}")
+    print(f"  epochs={prod_epochs}  num_chunks={num_chunks}  "
+          f"schedule_anchors={len(schedule)}  "
+          f"resume_state_anchors={len(resume_state_steps)}  "
+          f"resume_mode={resume_mode}")
     print(f"  run_id={run_id}")
     print(f"  config -> {final_path}")
     sys.stdout.flush()

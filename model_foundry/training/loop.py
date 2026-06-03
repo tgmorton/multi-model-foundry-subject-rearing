@@ -80,6 +80,21 @@ class TrainingLoop:
             )
             self.logger.info("AMP enabled with enhanced GradScaler settings")
 
+            # Resume: apply the AMP scaler state the checkpoint manager
+            # stashed during load_checkpoint. load_checkpoint runs BEFORE
+            # this constructor (in Trainer._train_loop) so it couldn't
+            # restore the scaler directly — it had no scaler to restore
+            # into. Applying it here keeps the loss-scale continuous across
+            # a resume, preventing a spurious overflow/backoff cycle on the
+            # first post-resume optimizer step.
+            pending = getattr(
+                self.checkpoint_manager, "pending_amp_scaler_state", None
+            )
+            if pending is not None:
+                self.scaler.load_state_dict(pending)
+                self.checkpoint_manager.pending_amp_scaler_state = None
+                self.logger.info("Restored AMP scaler state from checkpoint")
+
     def run(self, tokenizer, start_step: int = 0, start_epoch: int = 0,
             on_epoch_end: Optional[EpochEndCallback] = None):
         """
@@ -108,9 +123,20 @@ class TrainingLoop:
         # scheduled steps save analysis-only (model + tokenizer + metadata),
         # which is ~3× smaller. ``None`` keeps the legacy behavior where
         # every checkpoint carries full resume state.
+        #
+        # Precedence:
+        #   1. resume_state_steps (explicit set from the schedule helper) —
+        #      intersected with the schedule so a non-scheduled step never
+        #      persists resume state.
+        #   2. save_resume_state_last_n is None → every checkpoint full.
+        #   3. otherwise the legacy "last N scheduled steps" suffix.
         last_n = self.config.training.save_resume_state_last_n
-        if last_n is None:
-            resume_state_steps: Optional[Set[int]] = None
+        explicit_resume_steps = self.config.training.resume_state_steps
+        resume_state_steps: Optional[Set[int]]
+        if explicit_resume_steps is not None:
+            resume_state_steps = set(explicit_resume_steps) & set(checkpoint_schedule)
+        elif last_n is None:
+            resume_state_steps = None
         else:
             sorted_schedule = sorted(checkpoint_schedule)
             resume_state_steps = (
@@ -126,6 +152,12 @@ class TrainingLoop:
         # Training metrics tracking
         total_tokens_processed = 0
         steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
+
+        # Endpoint guard bookkeeping (STEP 4). Track the last step we wrote
+        # a checkpoint at this run so the post-loop guard can avoid a
+        # redundant write when training happened to terminate exactly on a
+        # scheduled anchor.
+        last_saved_step: Optional[int] = None
 
         # Memory and error tracking
         max_memory_reserved = 0
@@ -261,6 +293,7 @@ class TrainingLoop:
                                 total_tokens_processed,
                                 save_resume_state=save_resume,
                             )
+                            last_saved_step = self.global_step
 
                         # Reset per-step timing after logging/saving so
                         # checkpoint save time doesn't pollute the next
@@ -312,6 +345,28 @@ class TrainingLoop:
                 if should_stop:
                     self.logger.info("Early stop requested by epoch callback at epoch %d", epoch)
                     break
+
+        # STEP 4 — endpoint guard. The final reached step is structurally
+        # unreachable by any computed schedule anchor: the dataloader
+        # iterates PHYSICAL batches (data.py) while train_steps is derived
+        # from the EFFECTIVE batch, and the in-loop save-check fires before
+        # the global_step increment. So whatever step training actually
+        # terminated on may never have been checkpointed. Guarantee an
+        # endpoint for BOTH fresh and resumed runs — with full resume state
+        # — unless we already saved at exactly this step this run.
+        # _save_checkpoint/save_checkpoint use exist_ok, so a redundant call
+        # is harmless and idempotent.
+        if last_saved_step != self.global_step:
+            self.logger.info(
+                "Endpoint guard: saving final checkpoint at step %d "
+                "(last scheduled save was at %s)",
+                self.global_step, last_saved_step,
+            )
+            self._save_checkpoint(
+                tokenizer,
+                total_tokens_processed,
+                save_resume_state=True,
+            )
 
         print("\n----- Training Complete -----")
 

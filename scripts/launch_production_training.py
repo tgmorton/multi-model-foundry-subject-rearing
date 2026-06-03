@@ -38,14 +38,16 @@ ARCH_SETTINGS = {
     # pod_ram is BOTH request and limit (NRP requires request==limit for GPU
     # pods). Sized LEAN to MEASURED steady-state use (~2.9Gi gpt2/mamba,
     # ~3.8Gi bert peak; observed via kubectl top 2026-06-02) so NRP's
-    # utilization webhook stays satisfied (~70% mem util). We deliberately do
-    # NOT add resume-load headroom: covering the resume transient (~7Gi to
-    # torch.load the training_state) would force request==limit so high that
-    # steady util drops to ~35% and the utilization webhook BLOCKS the whole
-    # namespace (this happened after an 8Gi bump on 2026-06-02). Instead we run
-    # with save_resume_state_last_n=0 (no resume; interrupted runs restart
-    # fresh) — cheap, because priorityClassName=armada-default is
-    # NON-preemptible, so mid-run pod death is rare. See
+    # utilization webhook stays satisfied (~70% mem util). The earlier reason
+    # for refusing resume entirely was the resume-load RAM transient (~7Gi to
+    # torch.load training_state), which would force request==limit so high
+    # that steady util drops below the webhook floor. That transient is now
+    # mitigated: load_checkpoint uses torch.load(..., mmap=True) so the
+    # optimizer tensors stay file-backed instead of spiking RAM. Combined with
+    # the explicit resume_state_steps the agents now emit (a small set:
+    # ep7 waypoint + midpoint + per-epoch back-half anchors), resume is cheap
+    # enough to leave ON at the lean pod_ram. priorityClassName=armada-default
+    # is still NON-preemptible, so mid-run pod death remains rare. See
     # memory/feedback_resource_sizing + feedback_mamba_node_cuda_fault_not_kernel.
     "gpt2_small":  (16, "4Gi", "2"),
     "gpt2_medium": (16, "4Gi", "2"),
@@ -325,15 +327,15 @@ def main() -> None:
                     help="Max concurrent pods per cell (capped at completions)")
     ap.add_argument("--active-deadline-seconds", type=int, default=2592000,
                     help="Job activeDeadlineSeconds (default 30d, was 14d)")
-    ap.add_argument("--save-resume-last-n", type=int, default=0,
-                    help="Final n of the 80 scheduled checkpoints that carry "
-                         "training_state.pt. Default 0 = never save resume state / "
-                         "never resume (interrupted runs restart fresh). Kept 0 "
-                         "because resume-load headroom forces a high request==limit "
-                         "that trips NRP's utilization webhook; armada-default is "
-                         "non-preemptible so restarts are rare. Raise only if you "
-                         "also raise pod_ram to cover the ~7Gi resume spike AND "
-                         "accept the lower utilization.")
+    ap.add_argument("--save-resume-last-n", type=int, default=3,
+                    help="LEGACY FALLBACK ONLY. production_agent now emits an "
+                         "explicit resume_state_steps set ({ep7 waypoint, "
+                         "midpoint, all back-half per-epoch anchors}) which the "
+                         "training loop prioritizes over this value — so runs "
+                         "DO write training_state.pt on those designated anchors "
+                         "regardless of this flag. This last-N suffix is only "
+                         "consulted if resume_state_steps were ever unset. Kept "
+                         "for backward compat; default 3.")
     args = ap.parse_args()
 
     slots_map = {}
@@ -357,7 +359,10 @@ def main() -> None:
     print(f"  interventions={interventions}")
     print(f"  total cells={len(archs) * len(interventions)} "
           f"× 10 pods/cell = {len(archs) * len(interventions) * 10} runs")
-    print(f"  peak concurrent: {len(archs) * len(interventions) * 2} GPUs")
+    # Per-cell parallelism is capped at completions (10), so peak concurrent
+    # GPUs per cell is min(parallelism, 10). (Cells run concurrently too, but
+    # this reports the per-cell ceiling the prior code conflated.)
+    print(f"  peak concurrent per cell: {min(args.parallelism, 10)} GPUs")
     print()
 
     successes, failures = 0, 0

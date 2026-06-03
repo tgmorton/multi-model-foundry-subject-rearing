@@ -365,6 +365,17 @@ class TrainingConfig(BaseModel):
         description="Only last N scheduled checkpoints save resume state. None keeps all as full resume.",
     )
 
+    # Explicit set of optimizer steps that save full resume state
+    # (training_state.pt). Takes PRECEDENCE over save_resume_state_last_n
+    # when set, and is intersected with checkpoint_schedule at runtime so a
+    # step never persists resume state unless it's also a scheduled
+    # checkpoint. The shared checkpoint-schedule helper emits this as
+    # {ep7 waypoint, midpoint, all back-half per-epoch anchors}.
+    resume_state_steps: Optional[List[int]] = Field(
+        default=None,
+        description="Explicit steps that save full resume state; overrides save_resume_state_last_n; intersected with checkpoint_schedule.",
+    )
+
     # Checkpoint generation parameters
     auto_generate_checkpoints: bool = False
 

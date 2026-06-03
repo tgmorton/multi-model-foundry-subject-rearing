@@ -36,6 +36,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import yaml
 import wandb
 
+from model_foundry.cache_keys import compute_cache_key, resolve_cached_path
+from model_foundry.checkpoint_schedule import (
+    compute_checkpoint_schedule,
+    read_num_chunks,
+)
 from model_foundry.config import ExperimentConfig
 from model_foundry.trainer import Trainer
 from model_foundry.utils import find_project_root
@@ -89,6 +94,41 @@ def _apply_hp_overlay(cfg: dict, hp: dict) -> None:
                 m["attention_dropout"] = val_adrop
 
 
+def _num_chunks_for_cfg(cfg: dict, base_dir: str) -> int:
+    """Resolve the real chunk count from the content-addressed chunked
+    cache for this config (same load_from_disk call data.py makes)."""
+    seq_len = int(cfg["data"]["max_sequence_length"])
+    corpus = cfg["data"]["training_corpus"]
+    if not os.path.isabs(corpus):
+        corpus = os.path.join(base_dir, corpus)
+    tok = cfg["tokenizer"]["output_dir"]
+    if not os.path.isabs(tok):
+        tok = os.path.join(base_dir, tok)
+    cache_key = compute_cache_key(
+        corpus, tok, seq_len, cfg.get("dataset_manipulation") or []
+    )
+    chunked_path, _kind, _is_fallback = resolve_cached_path(
+        base_dir, "chunked", cache_key, experiment_name=cfg.get("experiment_name")
+    )
+    return read_num_chunks(chunked_path)
+
+
+def _latest_resume_step(output_dir: str) -> int:
+    """Highest checkpoint-<N> under output_dir carrying a training_state.pt."""
+    import re
+    from pathlib import Path as _Path
+
+    p = _Path(output_dir)
+    if not p.exists():
+        return 0
+    best = 0
+    for child in p.glob("checkpoint-*"):
+        m = re.search(r"checkpoint-(\d+)$", child.name)
+        if m and (child / "training_state.pt").exists():
+            best = max(best, int(m.group(1)))
+    return best
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-config", required=True)
@@ -98,6 +138,10 @@ def main() -> None:
                     help="JSON string of winning HPs (same schema as sweep agent wc)")
     ap.add_argument("--mode", choices=["continue", "fresh"], required=True)
     ap.add_argument("--seed-fresh", type=int, required=True)
+    ap.add_argument("--condition", default="baseline",
+                    help="Registry/wandb condition label for this cell "
+                         "(default 'baseline'; set to an ablation slug to "
+                         "serve ablation cells).")
     args = ap.parse_args()
 
     base_dir = find_project_root(__file__)
@@ -111,6 +155,7 @@ def main() -> None:
     prod_epochs = int(cfg["training"].get("production_epochs", 30))
     cfg["training"]["epochs"] = prod_epochs
     cfg["training"]["train_steps"] = None  # recomputed from epochs
+    cfg["training"]["warmup_steps"] = None  # recomputed from warmup_ratio × steps
 
     # Derive a unique output dir per replica. continue-mode must be
     # DIFFERENT from the sweep's original output_dir so we don't clobber
@@ -122,6 +167,15 @@ def main() -> None:
     out_dir = os.path.join("models", "production", suffix)
     cfg["training"]["output_dir"] = out_dir
     cfg["experiment_name"] = f"prod_{suffix}"
+
+    # Resolve the real chunk count so the shared helper produces a
+    # loop-reachable schedule. Without this, continue_from_winner set
+    # NEITHER checkpoint_schedule NOR auto_generate_checkpoints, so the
+    # trainer inherited an empty schedule and saved ZERO checkpoints.
+    num_chunks = _num_chunks_for_cfg(cfg, base_dir)
+    phys_batch = int(cfg["data"]["batch_size"])
+    grad_accum = int(cfg["training"].get("gradient_accumulation_steps", 1))
+    seq_len = int(cfg["data"]["max_sequence_length"])
 
     if args.mode == "continue":
         # Seed the output dir with the winner's checkpoint state. The
@@ -142,9 +196,32 @@ def main() -> None:
         logger.info("seeded %s with winner checkpoint from %s", abs_out, args.winner_ckpt)
         cfg["training"]["resume_from_checkpoint"] = True
         cfg["random_seed"] = int(cfg.get("random_seed", 42))  # keep original seed
+
+        # Continue = resume: BACK-HALF-ONLY schedule, anchors strictly past
+        # the step the seeded winner checkpoint reached.
+        resume_step = _latest_resume_step(abs_out)
+        schedule, resume_state_steps = compute_checkpoint_schedule(
+            num_chunks=num_chunks, phys_batch=phys_batch, grad_accum=grad_accum,
+            epochs=prod_epochs, seq_len=seq_len,
+            back_half_only=True, resume_step=resume_step,
+        )
+        logger.info("continue schedule: resume_step=%d anchors=%d resume_state=%d",
+                    resume_step, len(schedule), len(resume_state_steps))
     else:
         cfg["training"]["resume_from_checkpoint"] = False
         cfg["random_seed"] = int(args.seed_fresh)
+
+        # Fresh = full schedule + {ep7 waypoint, midpoint, all back-half}.
+        schedule, resume_state_steps = compute_checkpoint_schedule(
+            num_chunks=num_chunks, phys_batch=phys_batch, grad_accum=grad_accum,
+            epochs=prod_epochs, seq_len=seq_len,
+        )
+        logger.info("fresh schedule: anchors=%d resume_state=%d",
+                    len(schedule), len(resume_state_steps))
+
+    cfg["training"]["checkpoint_schedule"] = schedule
+    cfg["training"]["auto_generate_checkpoints"] = False
+    cfg["training"]["resume_state_steps"] = resume_state_steps
 
     config = ExperimentConfig(**cfg)
 
@@ -154,7 +231,7 @@ def main() -> None:
         "run_id": config.experiment_name,
         "arch": hp.get("arch", "?"),
         "lang": hp.get("lang", "?"),
-        "condition": "baseline",
+        "condition": args.condition,
         "seed": config.random_seed,
         "run_kind": "production",
     }

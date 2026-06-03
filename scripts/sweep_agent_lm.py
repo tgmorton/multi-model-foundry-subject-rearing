@@ -52,7 +52,7 @@ import yaml
 from torch.utils.data import DataLoader
 
 from model_foundry import registry as _registry
-from model_foundry.cache_keys import compute_cache_key
+from model_foundry.cache_keys import compute_cache_key, resolve_cached_path
 from model_foundry.config import ExperimentConfig
 from model_foundry.trainer import Trainer
 from model_foundry.utils import find_project_root, get_git_commit_hash
@@ -311,7 +311,7 @@ def _prepare_config(run) -> tuple[dict, dict]:
         cfg_dict = yaml.safe_load(f)
 
     _apply_hp_overrides(cfg_dict, wc)
-    _apply_sweep_overrides(cfg_dict, run.id)
+    _apply_sweep_overrides(cfg_dict, run.id, base_dir)
 
     condition = wc.get("condition", "baseline")  # sweeps always run on baseline corpus
     seed = int(cfg_dict.get("random_seed", 0))
@@ -381,74 +381,74 @@ def _apply_hp_overrides(cfg: dict, wc: dict) -> None:
         _apply_model_field("attention_dropout", float(wc["attention_dropout"]))
 
 
-def _apply_sweep_overrides(cfg: dict, wandb_run_id: str) -> None:
+def _apply_sweep_overrides(cfg: dict, wandb_run_id: str, base_dir: str) -> None:
     """Force sweep-trial-specific settings that never vary.
 
-    Also computes the 80-anchor checkpoint schedule in production-epochs
-    (30) STEP space and injects the subset that falls within the sweep's
-    10 epochs — so production continuation will simply resume and
-    complete the remaining anchors.
+    Computes the checkpoint schedule via the SHARED helper
+    (``model_foundry.checkpoint_schedule``) sized to the sweep horizon,
+    off the REAL chunk count from the content-addressed chunked cache (no
+    hardcoded 127000 estimate).
     """
     cfg["experiment_name"] = f"sweep-{wandb_run_id}"
     cfg["training"]["output_dir"] = f"models/sweeps/{wandb_run_id}"
-    cfg["training"]["epochs"] = int(cfg["training"].get("sweep_epochs", 10))
+    sweep_epochs = int(cfg["training"].get("sweep_epochs", 10))
+    cfg["training"]["epochs"] = sweep_epochs
     cfg["training"]["train_steps"] = None  # auto from epochs
 
-    cfg["training"]["checkpoint_schedule"] = _compute_token_anchor_schedule(cfg)
+    schedule, resume_state_steps = _compute_anchor_schedule(
+        cfg, base_dir, epochs=sweep_epochs
+    )
+    cfg["training"]["checkpoint_schedule"] = schedule
     cfg["training"]["auto_generate_checkpoints"] = False
     cfg["training"]["resume_from_checkpoint"] = False
 
-    # Reduce disk churn: only the last 2 checkpoints carry full
-    # resume-state (optimizer/RNG/scaler) so the production-continuation
-    # job can resume cleanly. Earlier anchors are analysis-only.
-    cfg["training"]["save_resume_state_last_n"] = 2
+    # The shared helper's resume_state set ({ep7 waypoint, midpoint, all
+    # back-half anchors}) carries full optimizer/RNG/scaler state so the
+    # production-continuation job can resume cleanly; everything else is
+    # analysis-only. Takes precedence over save_resume_state_last_n.
+    cfg["training"]["resume_state_steps"] = resume_state_steps
 
 
-def _compute_token_anchor_schedule(cfg: dict) -> list[int]:
-    """Return the 80-anchor checkpoint schedule in OPTIMIZER-STEP space,
-    sized against the full 30-epoch production run. Anchors that fall
-    past the sweep's 10-epoch horizon simply won't be hit during
-    training — the production-continuation job will catch them after
-    resume.
+def _compute_anchor_schedule(
+    cfg: dict, base_dir: str, epochs: int
+) -> tuple[list[int], list[int]]:
+    """Return (schedule, resume_state_steps) via the shared helper.
 
-    The first 11 anchors are fixed log-style: 0, 1, 2, 4, 8, 16, 32, 64,
-    128, 256, 512. The remaining slots (target 80 total) are log-spaced
-    from 512 to total_production_steps.
-
-    Step counts depend on (corpus_chunks, effective_batch_size). Without
-    a live dataloader we estimate chunks from the English 90M corpus
-    (~127K chunks at seq_len=1000). Off by ~10% is fine — the trainer
-    saves whenever global_step hits any anchor, regardless of the step
-    being slightly past/short of an epoch boundary.
+    Reads the real chunk count from the content-addressed chunked cache
+    (same ``load_from_disk`` call data.py / generate_checkpoint_schedule.py
+    make). The cache is prepared up-front by the prepare-caches Job, so it
+    is present when the sweep agent runs.
     """
-    # Conservative estimate: we know the tokenized/chunked corpus has
-    # roughly 127K chunks of length 1000 (from last night's prepare-
-    # dataset run). The exact chunk count depends on tokenizer +
-    # max_sequence_length; this estimate is good for schedule placement.
-    approx_chunks = 127_000
+    from model_foundry.checkpoint_schedule import (
+        compute_checkpoint_schedule,
+        read_num_chunks,
+    )
 
     phys_batch = int(cfg["data"]["batch_size"])
     grad_accum = int(cfg["training"].get("gradient_accumulation_steps", 1))
-    effective_batch = max(1, phys_batch * grad_accum)
-    steps_per_epoch = max(1, approx_chunks // effective_batch)
-    prod_epochs = int(cfg["training"].get("production_epochs", 30))
-    total_prod_steps = steps_per_epoch * prod_epochs
+    seq_len = int(cfg["data"]["max_sequence_length"])
 
-    anchors = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512]
-    target_total = 80
-    slots_left = target_total - len(anchors)
-    if total_prod_steps > anchors[-1] and slots_left > 0:
-        import math as _m
-        log_lo = _m.log(float(anchors[-1]))
-        log_hi = _m.log(float(total_prod_steps))
-        for i in range(1, slots_left + 1):
-            frac = i / slots_left
-            step = int(round(_m.exp(log_lo + (log_hi - log_lo) * frac)))
-            if step > anchors[-1]:
-                anchors.append(step)
-    # Dedup + cap at total_prod_steps
-    anchors = sorted({min(a, total_prod_steps) for a in anchors})
-    return anchors
+    corpus = cfg["data"]["training_corpus"]
+    if not os.path.isabs(corpus):
+        corpus = os.path.join(base_dir, corpus)
+    tok = cfg["tokenizer"]["output_dir"]
+    if not os.path.isabs(tok):
+        tok = os.path.join(base_dir, tok)
+    cache_key = compute_cache_key(
+        corpus, tok, seq_len, cfg.get("dataset_manipulation") or []
+    )
+    chunked_path, _kind, _is_fallback = resolve_cached_path(
+        base_dir, "chunked", cache_key, experiment_name=cfg["experiment_name"]
+    )
+    num_chunks = read_num_chunks(chunked_path)
+
+    return compute_checkpoint_schedule(
+        num_chunks=num_chunks,
+        phys_batch=phys_batch,
+        grad_accum=grad_accum,
+        epochs=epochs,
+        seq_len=seq_len,
+    )
 
 
 # ---------- registry plumbing ----------
