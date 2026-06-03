@@ -107,7 +107,8 @@ def _job_yaml(arch: str, lang: str, intervention: str,
               parallelism: int = 2,
               active_deadline_seconds: int = 2592000,
               save_resume_last_n: int = 3,
-              resume: bool = False) -> str:
+              resume: bool = False,
+              job_suffix: str = "") -> str:
     """Return the K8s Job YAML for a single (arch × intervention) cell.
 
     If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
@@ -117,6 +118,8 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     Job is emitted.
     """
     name = f"thomas-train-prod-{arch.replace('_', '-')}-{lang}-{intervention.replace('_', '-')}"
+    if job_suffix:
+        name = f"{name}-{job_suffix}"
     # K8s names cap at 63 chars.
     if len(name) > 63:
         # Use a short hash to keep it unique but ≤63.
@@ -343,6 +346,12 @@ def main() -> None:
                     help="JSON list overriding the default seeds [42, 137] "
                          "(e.g. '[999]' for a throwaway validation run). "
                          "SLOT_MAP_JSON seed_idx indexes into this list.")
+    ap.add_argument("--job-suffix", default="",
+                    help="Append '-<suffix>' to each Job name so two launches "
+                         "of the SAME (arch, intervention) cell don't collide "
+                         "(e.g. --job-suffix resume for recoverable slots vs "
+                         "--job-suffix fresh for the unrecoverable/missing "
+                         "slots of the same cell).")
     ap.add_argument("--save-resume-last-n", type=int, default=3,
                     help="LEGACY FALLBACK ONLY. production_agent now emits an "
                          "explicit resume_state_steps set ({ep7 waypoint, "
@@ -401,6 +410,7 @@ def main() -> None:
                 active_deadline_seconds=args.active_deadline_seconds,
                 save_resume_last_n=args.save_resume_last_n,
                 resume=args.resume,
+                job_suffix=args.job_suffix,
             )
             if args.dry_run:
                 n = len(slots) if slots is not None else 10
