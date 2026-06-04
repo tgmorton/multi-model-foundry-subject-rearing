@@ -132,6 +132,15 @@ The "can a reader reproduce this result in 2031?" set.
 State machine: `QUEUED → RUNNING → COMPLETE | FAILED | PREEMPTED`.
 `QUEUED` is optional (only the orchestrator writes it — see §7).
 
+One additional administrative state: **`SUPERSEDED`** — a run whose
+COMPLETE record predates a correctness fix and whose artifacts are
+being regenerated (set by a one-off migration, never by the training
+writers; carries `superseded_at` + `superseded_reason`). Used
+2026-06-04 for the 112 pre-fix truncated-checkpoint-schedule runs being
+recovered by the v2 resume wave. Analysis readers filter
+`status == COMPLETE` and therefore exclude these automatically; the
+record flips back through `RUNNING → COMPLETE` as its recovery runs.
+
 | Field | Type | Notes |
 |---|---|---|
 | `status` | str | Current training state. |

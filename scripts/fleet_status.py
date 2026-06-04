@@ -137,7 +137,12 @@ def fetch_pods() -> dict[str, dict]:
 
 
 def classify(rid: str, rec: dict | None, pod: dict | None, since: str) -> str:
-    """One of: done, live, podbad, failed, queued."""
+    """One of: done, live, podbad, failed, queued.
+
+    SUPERSEDED (pre-fix truncated wave, awaiting its v2 resume) counts as
+    queued. The --since gate on COMPLETE is kept as belt-and-suspenders for
+    any stale COMPLETE record the migration missed.
+    """
     if rec and rec.get("status") == "COMPLETE" and (rec.get("updated_at") or "") >= since:
         return "done"
     if pod:
@@ -145,6 +150,28 @@ def classify(rid: str, rec: dict | None, pod: dict | None, since: str) -> str:
     if rec and rec.get("status") == "FAILED":
         return "failed"
     return "queued"
+
+
+def _hb_is_fresh(rec: dict, pod: dict) -> bool:
+    """True iff last_heartbeat_at is a REAL heartbeat from this pod's
+    attempt. register_run_start seeds last_heartbeat_at without touching
+    current_step/current_loss, so for the first ~5 min of an attempt the
+    record can pair a fresh timestamp with the PREVIOUS attempt's step.
+    Require the heartbeat to postdate both the pod and the attempt's
+    started_at by a margin that clears the run-start seed."""
+    hb = rec.get("last_heartbeat_at") or ""
+    if not hb or hb < pod["created"]:
+        return False
+    started = rec.get("started_at") or ""
+    if started:
+        try:
+            from datetime import timedelta
+            s = datetime.fromisoformat(started.replace("Z", "+00:00"))
+            h = datetime.fromisoformat(hb.replace("Z", "+00:00"))
+            return h >= s + timedelta(seconds=90)
+        except ValueError:
+            pass
+    return True
 
 
 SYMBOL = {"done": "✓", "live": "◐", "podbad": "!", "failed": "✗", "queued": "·"}
@@ -190,18 +217,34 @@ def main() -> None:
             print(f"{a + '/' + COND_SHORT[c]:<22} {row}")
     print(f"\nlegend: ✓ done  ◐ pod live  ! pod not-running  ✗ failed  · queued")
 
-    # Live-pod detail with heartbeat progress.
+    # Live-pod detail with heartbeat progress. NOTE the field semantics:
+    # epochs_completed / steps_completed are END-OF-RUN fields — for a
+    # resumed run they hold the PREVIOUS attempt's final values until the
+    # run re-completes. Live progress is current_step / current_loss from
+    # the 5-min heartbeat, and only counts if the heartbeat is newer than
+    # this pod (otherwise it's the prior attempt's heartbeat).
     live = [(rid, pods[rid]) for rid in sorted(pods) if rid in states]
     if live:
-        print(f"\n{'run':<48} {'pod state':<18} {'epoch':>7} {'steps':>9} {'ckpts':>6} {'att':>4}")
+        print(f"\n{'run':<48} {'pod state':<18} {'step':>8} {'loss':>8} "
+              f"{'hb age':>7} {'att':>4}")
         for rid, pod in live:
             rec = records.get(rid) or {}
-            ep = rec.get("epochs_completed")
-            ep = f"{ep}/{EPOCHS}" if ep is not None else "-"
+            fresh = _hb_is_fresh(rec, pod)
+            step = rec.get("current_step") if fresh else None
+            loss = rec.get("current_loss") if fresh else None
+            if fresh:
+                hb_at = rec["last_heartbeat_at"]
+                age_s = (datetime.now(timezone.utc)
+                         - datetime.fromisoformat(hb_at.replace("Z", "+00:00"))
+                         ).total_seconds()
+                hb = f"{int(age_s // 60)}m"
+            else:
+                hb = "await"  # no heartbeat from THIS pod yet (~5 min cadence)
             state = pod["phase"] + (f"/{pod['reason']}" if pod["reason"] else "")
-            print(f"{rid:<48} {state:<18} {ep:>7} "
-                  f"{rec.get('steps_completed') if rec.get('steps_completed') is not None else '-':>9} "
-                  f"{rec.get('checkpoint_count') if rec.get('checkpoint_count') is not None else '-':>6} "
+            print(f"{rid:<48} {state:<18} "
+                  f"{step if step is not None else '-':>8} "
+                  f"{f'{loss:.3f}' if loss is not None else '-':>8} "
+                  f"{hb:>7} "
                   f"{rec.get('attempt_count') if rec.get('attempt_count') is not None else '-':>4}")
 
     if args.all:
