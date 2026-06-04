@@ -3179,6 +3179,14 @@ missing fields deserialize as <code>null</code> from the compacted Parquet.</p>
 <h3 id="44-training-lifecycle">4.4 Training lifecycle<a class="headerlink" href="#44-training-lifecycle" title="Permanent link">&para;</a></h3>
 <p>State machine: <code>QUEUED → RUNNING → COMPLETE | FAILED | PREEMPTED</code>.
 <code>QUEUED</code> is optional (only the orchestrator writes it — see §7).</p>
+<p>One additional administrative state: <strong><code>SUPERSEDED</code></strong> — a run whose
+COMPLETE record predates a correctness fix and whose artifacts are
+being regenerated (set by a one-off migration, never by the training
+writers; carries <code>superseded_at</code> + <code>superseded_reason</code>). Used
+2026-06-04 for the 112 pre-fix truncated-checkpoint-schedule runs being
+recovered by the v2 resume wave. Analysis readers filter
+<code>status == COMPLETE</code> and therefore exclude these automatically; the
+record flips back through <code>RUNNING → COMPLETE</code> as its recovery runs.</p>
 <table>
 <thead>
 <tr>
