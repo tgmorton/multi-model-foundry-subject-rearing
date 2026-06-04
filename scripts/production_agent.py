@@ -260,6 +260,27 @@ def main() -> None:
         "1", "true", "yes", "y"
     )
     if resume_mode:
+        # RESUME=1 means "resume if possible, fresh if new, refuse if
+        # ambiguous" — so one Job can mix resumable and never-ran slots.
+        _out_dir = REPO_ROOT / output_dir_rel
+        if _latest_resume_step(_out_dir) == 0:
+            stale = sorted(p.name for p in _out_dir.glob("checkpoint-*")) \
+                if _out_dir.exists() else []
+            if stale:
+                # Checkpoints exist but NONE carries training_state.pt
+                # (e.g. a pre-fix truncated run). Starting fresh here would
+                # silently interleave new checkpoints with stale ones —
+                # refuse and require a manual wipe of the run dir.
+                sys.exit(
+                    f"[FATAL] RESUME=1 but {output_dir_rel} has "
+                    f"{len(stale)} checkpoint(s) and none is restartable "
+                    f"(no training_state.pt). Wipe the dir to rerun fresh: "
+                    f"{stale[:3]}..."
+                )
+            print("  [RESUME] no prior run for this slot — falling back "
+                  "to a fresh start (full schedule incl. step 0)")
+            resume_mode = False
+    if resume_mode:
         # RESUME IN PLACE: keep the existing output_dir, resume from its
         # newest full-state checkpoint, and emit a BACK-HALF-ONLY schedule
         # of anchors strictly past where the run left off. train_steps /

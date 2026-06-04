@@ -1,0 +1,62 @@
+{
+ "gpt2_small|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_medium|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_large|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "bert_large|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "lstm|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "mamba_370m|baseline": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ]
+}

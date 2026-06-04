@@ -1,0 +1,238 @@
+{
+ "gpt2_small|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_small|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_small|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_small|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_medium|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_medium|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_medium|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_medium|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_large|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_large|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_large|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "gpt2_large|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "bert_large|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "bert_large|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "bert_large|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "bert_large|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "lstm|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "lstm|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "lstm|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "lstm|enrich_verbal_morphology": [
+  [
+   0,
+   1
+  ]
+ ],
+ "mamba_370m|remove_expletive_sentences": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "mamba_370m|impoverish_case": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "mamba_370m|lemmatize_verbs": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ],
+ "mamba_370m|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ]
+ ]
+}
