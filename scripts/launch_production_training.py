@@ -120,12 +120,14 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     name = f"thomas-train-prod-{arch.replace('_', '-')}-{lang}-{intervention.replace('_', '-')}"
     if job_suffix:
         name = f"{name}-{job_suffix}"
-    # K8s names cap at 63 chars.
-    if len(name) > 63:
-        # Use a short hash to keep it unique but ≤63.
+    # K8s DNS labels cap at 63 chars — and Indexed Job PODS are named
+    # "<job>-<index>" (validated at Job creation), so the Job name must
+    # leave room for "-<maxIndex>". Cap at 60 (room for 2-digit indices).
+    if len(name) > 60:
+        # Use a short hash to keep it unique but ≤60.
         import hashlib
         h = hashlib.sha1(name.encode()).hexdigest()[:6]
-        name = name[:56] + "-" + h
+        name = name[:53] + "-" + h
 
     pool = MAMBA_POOL if arch == "mamba_370m" else GPU_POOL_24GB
     gpu_values = "\n".join(f"                - {g}" for g in pool)
