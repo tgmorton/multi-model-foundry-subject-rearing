@@ -348,7 +348,7 @@ def main() -> None:
         top = fetch_top()
         running_pods = [pod["pod"] for _, pod in live if pod["phase"] == "Running"]
         gpu = {} if args.fast else fetch_gpu(running_pods)
-        print(f"\n{'run':<48} {'state':<12} {'step':>8} {'loss':>7} "
+        print(f"\n{'run':<50} {'state':<12} {'step':>8} {'loss':>7} "
               f"{'epoch':>6}  {'progress':<22} {'gpu':<11} {'cpu':<11} "
               f"{'mem':<11} {'hb':>6} {'att':>4}")
         for rid, pod in live:
@@ -393,7 +393,7 @@ def main() -> None:
             gpu_pct = gpu.get(pod["pod"])
             gpu_bar = util_bar(gpu_pct / 100 if gpu_pct is not None else None,
                                invert=True)
-            print(f"{rid:<48} {state[:12]:<12} "
+            print(f"{rid:<50} {state[:12]:<12} "
                   f"{step if step is not None else '-':>8} "
                   f"{f'{loss:.2f}' if loss is not None else '-':>7} "
                   f"{ep:>6}  {prog:<22} {gpu_bar}  {cpu_bar}  {mem_bar}  {hb:>6} "
@@ -406,7 +406,7 @@ def main() -> None:
                 for h, si in SLOTS:
                     rid = _run_id(a, c, h, si)
                     rec = records.get(rid) or {}
-                    print(f"{SYMBOL[states[rid]]} {rid:<48} "
+                    print(f"{SYMBOL[states[rid]]} {rid:<50} "
                           f"reg={rec.get('status', '-'):<10} "
                           f"updated={rec.get('updated_at', '-')}")
 
