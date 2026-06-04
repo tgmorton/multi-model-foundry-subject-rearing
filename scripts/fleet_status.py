@@ -225,8 +225,8 @@ def main() -> None:
     # this pod (otherwise it's the prior attempt's heartbeat).
     live = [(rid, pods[rid]) for rid in sorted(pods) if rid in states]
     if live:
-        print(f"\n{'run':<48} {'pod state':<18} {'step':>8} {'loss':>8} "
-              f"{'hb age':>7} {'att':>4}")
+        print(f"\n{'run':<48} {'pod state':<18} {'step':>8} {'loss':>7} "
+              f"{'epoch':>6}  {'progress':<22} {'hb':>6} {'att':>4}")
         for rid, pod in live:
             rec = records.get(rid) or {}
             fresh = _hb_is_fresh(rec, pod)
@@ -240,11 +240,30 @@ def main() -> None:
                 hb = f"{int(age_s // 60)}m"
             else:
                 hb = "await"  # no heartbeat from THIS pod yet (~5 min cadence)
+
+            # Per-run step budget. Preference order:
+            #   1. train_steps — written by the heartbeat (attempt-invariant,
+            #      so no freshness gate needed).
+            #   2. steps_completed — a resumed run's PRIOR attempt ran the
+            #      same 30 epochs, so its end step ≈ this run's total.
+            total = rec.get("train_steps") or rec.get("steps_completed")
+            epoch = rec.get("current_epoch") if fresh else None
+            if epoch is None and step is not None and total:
+                # Uniform steps/epoch; derive when the heartbeat predates
+                # the current_epoch field.
+                epoch = min(EPOCHS, int(step / (total / EPOCHS)) + 1)
+            ep = f"{epoch}/{EPOCHS}" if epoch is not None else "-"
+            if step is not None and total:
+                frac = min(1.0, step / total)
+                bar = "█" * round(frac * 16) + "░" * (16 - round(frac * 16))
+                prog = f"{bar} {frac * 100:3.0f}%"
+            else:
+                prog = ""
             state = pod["phase"] + (f"/{pod['reason']}" if pod["reason"] else "")
             print(f"{rid:<48} {state:<18} "
                   f"{step if step is not None else '-':>8} "
-                  f"{f'{loss:.3f}' if loss is not None else '-':>8} "
-                  f"{hb:>7} "
+                  f"{f'{loss:.2f}' if loss is not None else '-':>7} "
+                  f"{ep:>6}  {prog:<22} {hb:>6} "
                   f"{rec.get('attempt_count') if rec.get('attempt_count') is not None else '-':>4}")
 
     if args.all:

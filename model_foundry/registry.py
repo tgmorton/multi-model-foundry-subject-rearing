@@ -387,15 +387,25 @@ def register_run_start(
 
 def heartbeat(arch: str, lang: str, condition: str, run_id: str,
               current_step: Optional[int] = None,
-              current_loss: Optional[float] = None) -> None:
+              current_loss: Optional[float] = None,
+              current_epoch: Optional[int] = None,
+              train_steps: Optional[int] = None) -> None:
     """Light-touch update to prove the run is still alive. Called on a
     ~5-minute cadence from the training loop. Non-fatal — a missed
-    heartbeat is just a stale ``last_heartbeat_at``."""
+    heartbeat is just a stale ``last_heartbeat_at``.
+
+    ``current_epoch`` / ``train_steps`` let dashboards render epoch and
+    progress bars without re-deriving the per-run step budget (which
+    depends on the chunked-cache row count only pods can see)."""
     updates = {"last_heartbeat_at": _utcnow()}
     if current_step is not None:
         updates["current_step"] = current_step
     if current_loss is not None:
         updates["current_loss"] = float(current_loss)
+    if current_epoch is not None:
+        updates["current_epoch"] = int(current_epoch)
+    if train_steps is not None:
+        updates["train_steps"] = int(train_steps)
     _safe_merge(arch, lang, condition, run_id, updates, op="heartbeat")
 
 

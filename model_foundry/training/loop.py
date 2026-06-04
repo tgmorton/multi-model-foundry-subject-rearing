@@ -261,6 +261,8 @@ class TrainingLoop:
                                 **registry_identity,
                                 current_step=self.global_step,
                                 current_loss=loss_val,
+                                current_epoch=self.epoch + 1,
+                                train_steps=self.config.training.train_steps,
                             )
                             last_heartbeat_wall = now_wall
 
