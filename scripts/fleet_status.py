@@ -177,6 +177,31 @@ def _hb_is_fresh(rec: dict, pod: dict) -> bool:
 SYMBOL = {"done": "✓", "live": "◐", "podbad": "!", "failed": "✗", "queued": "·"}
 
 
+def scrape_totals(pods_needing: dict[str, str]) -> dict[str, int]:
+    """run_id -> total steps, scraped from pod logs.
+
+    The trainer prints ``Current global_step: X, target: N`` at startup
+    (loop.py), and the target is the full-run total even in resume mode.
+    Third fallback for runs whose registry record carries neither
+    train_steps (heartbeat) nor steps_completed (prior attempt).
+    The line sits in the first few KB of output, so --limit-bytes keeps
+    the scrape cheap."""
+    import re
+
+    def scrape(item):
+        rid, pod = item
+        # errors="replace": --limit-bytes can cut a multibyte UTF-8 char
+        # (tqdm's bar glyphs) mid-sequence.
+        out = subprocess.run(
+            ["kubectl", "logs", pod, "--limit-bytes=200000"],
+            capture_output=True, text=True, errors="replace")
+        m = re.search(r"target: (\d+)", out.stdout)
+        return (rid, int(m.group(1))) if m else None
+
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        return dict(r for r in ex.map(scrape, pods_needing.items()) if r)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default=DEFAULT_SINCE,
@@ -225,6 +250,14 @@ def main() -> None:
     # this pod (otherwise it's the prior attempt's heartbeat).
     live = [(rid, pods[rid]) for rid in sorted(pods) if rid in states]
     if live:
+        # Registry-blind totals: scrape the trainer's startup "target: N"
+        # line from pod logs (runs whose record has neither train_steps
+        # nor a prior attempt's steps_completed).
+        needing = {rid: pod["pod"] for rid, pod in live
+                   if pod["phase"] == "Running"
+                   and not ((records.get(rid) or {}).get("train_steps")
+                            or (records.get(rid) or {}).get("steps_completed"))}
+        scraped = scrape_totals(needing) if needing else {}
         print(f"\n{'run':<48} {'pod state':<18} {'step':>8} {'loss':>7} "
               f"{'epoch':>6}  {'progress':<22} {'hb':>6} {'att':>4}")
         for rid, pod in live:
@@ -246,7 +279,8 @@ def main() -> None:
             #      so no freshness gate needed).
             #   2. steps_completed — a resumed run's PRIOR attempt ran the
             #      same 30 epochs, so its end step ≈ this run's total.
-            total = rec.get("train_steps") or rec.get("steps_completed")
+            total = (rec.get("train_steps") or rec.get("steps_completed")
+                     or scraped.get(rid))
             epoch = rec.get("current_epoch") if fresh else None
             if epoch is None and step is not None and total:
                 # Uniform steps/epoch; derive when the heartbeat predates
