@@ -51,7 +51,7 @@ ARCH_SETTINGS = {
     # memory/feedback_resource_sizing + feedback_mamba_node_cuda_fault_not_kernel.
     "gpt2_small":  (16, "4Gi", "2"),
     "gpt2_medium": (16, "4Gi", "2"),
-    "gpt2_large":  ( 4, "4Gi", "2"),
+    "gpt2_large":  ( 4, "5Gi", "2"),  # was 4Gi; fresh-run spike OOMKilled at 4Gi (2026-06-04, baseline-h0-s42 on L4) — steady ~2.9Gi, spike headroom needed like bert
     "bert_large":  ( 4, "5Gi", "2"),   # uses ~3.8Gi peak
     "lstm":        (16, "4Gi", "2"),
     "mamba_370m":  ( 4, "4Gi", "2"),

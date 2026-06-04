@@ -264,21 +264,51 @@ def main() -> None:
         # ambiguous" — so one Job can mix resumable and never-ran slots.
         _out_dir = REPO_ROOT / output_dir_rel
         if _latest_resume_step(_out_dir) == 0:
-            stale = sorted(p.name for p in _out_dir.glob("checkpoint-*")) \
-                if _out_dir.exists() else []
-            if stale:
-                # Checkpoints exist but NONE carries training_state.pt
-                # (e.g. a pre-fix truncated run). Starting fresh here would
-                # silently interleave new checkpoints with stale ones —
-                # refuse and require a manual wipe of the run dir.
-                sys.exit(
-                    f"[FATAL] RESUME=1 but {output_dir_rel} has "
-                    f"{len(stale)} checkpoint(s) and none is restartable "
-                    f"(no training_state.pt). Wipe the dir to rerun fresh: "
-                    f"{stale[:3]}..."
+            import re as _re
+            stale_steps = sorted(
+                int(m.group(1))
+                for p in (_out_dir.glob("checkpoint-*") if _out_dir.exists() else [])
+                if (m := _re.search(r"checkpoint-(\d+)$", p.name))
+            )
+            if stale_steps:
+                # Weights-only checkpoints, no training_state anywhere.
+                # Two very different causes:
+                #   (a) a FRESH run died before reaching its first
+                #       designated resume anchor (~ep7 waypoint) — only
+                #       early weights-only anchors exist. Restarting fresh
+                #       is safe and deterministic: the same seed re-walks
+                #       the same trajectory and overwrites the same
+                #       anchors (live-validated on the lstm fresh test,
+                #       which restarted from 0 once and finished perfect).
+                #   (b) a stale PRE-FIX truncated run — it ran PAST where
+                #       the current schedule designates resume state, yet
+                #       carries none. Interleaving a fresh run into that
+                #       dir would silently mix schedules — refuse.
+                _, _fresh_rss = compute_checkpoint_schedule(
+                    num_chunks=num_chunks,
+                    phys_batch=phys_batch,
+                    grad_accum=grad_accum,
+                    epochs=prod_epochs,
+                    seq_len=cfg["data"]["max_sequence_length"],
                 )
-            print("  [RESUME] no prior run for this slot — falling back "
-                  "to a fresh start (full schedule incl. step 0)")
+                first_resume_anchor = min(_fresh_rss) if _fresh_rss else 0
+                if stale_steps[-1] >= first_resume_anchor:
+                    sys.exit(
+                        f"[FATAL] RESUME=1 but {output_dir_rel} has "
+                        f"{len(stale_steps)} checkpoint(s) reaching step "
+                        f"{stale_steps[-1]} (>= first resume anchor "
+                        f"{first_resume_anchor}) and none is restartable "
+                        f"(no training_state.pt) — stale pre-fix run. "
+                        f"Wipe the dir to rerun fresh."
+                    )
+                print(f"  [RESUME] only pre-waypoint weights-only "
+                      f"checkpoints found (max step {stale_steps[-1]} < "
+                      f"first resume anchor {first_resume_anchor}) — "
+                      f"restarting fresh; they'll be overwritten "
+                      f"deterministically")
+            else:
+                print("  [RESUME] no prior run for this slot — falling "
+                      "back to a fresh start (full schedule incl. step 0)")
             resume_mode = False
     if resume_mode:
         # RESUME IN PLACE: keep the existing output_dir, resume from its
