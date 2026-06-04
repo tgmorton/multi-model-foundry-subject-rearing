@@ -105,6 +105,7 @@ def fetch_pods() -> dict[str, dict]:
                for e in c.get("env", []) if "value" in e}
         if "ARCH" not in env or "INTERVENTION" not in env:
             continue  # not a training pod (e.g. data-access)
+        limits = pod["spec"]["containers"][0].get("resources", {}).get("limits", {})
         idx = pod["metadata"].get("annotations", {}).get(
             "batch.kubernetes.io/job-completion-index")
         if idx is None:
@@ -132,8 +133,91 @@ def fetch_pods() -> dict[str, dict]:
         if prev is None or pod["metadata"]["creationTimestamp"] > prev["created"]:
             pods[rid] = {"phase": phase, "reason": reason,
                          "pod": pod["metadata"]["name"],
-                         "created": pod["metadata"]["creationTimestamp"]}
+                         "created": pod["metadata"]["creationTimestamp"],
+                         "cpu_limit_m": _parse_cpu(limits.get("cpu")),
+                         "mem_limit_mi": _parse_mem(limits.get("memory"))}
     return pods
+
+
+def _parse_cpu(v: str | None) -> int | None:
+    if not v:
+        return None
+    return int(v[:-1]) if v.endswith("m") else int(float(v) * 1000)
+
+
+def _parse_mem(v: str | None) -> int | None:
+    if not v:
+        return None
+    units = {"Ki": 1 / 1024, "Mi": 1, "Gi": 1024, "Ti": 1024 * 1024,
+             "K": 1 / 1024, "M": 1, "G": 1024}
+    for suffix, mult in units.items():
+        if v.endswith(suffix):
+            return int(float(v[:-len(suffix)]) * mult)
+    return int(int(v) / (1024 * 1024))  # plain bytes
+
+
+def fetch_top() -> dict[str, tuple[int, int]]:
+    """pod name -> (cpu_millicores, mem_Mi) from metrics-server."""
+    out = subprocess.run(
+        ["kubectl", "top", "pods", "-l", "owner=thomas", "--no-headers"],
+        capture_output=True, text=True)
+    usage = {}
+    for line in out.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 3:
+            usage[parts[0]] = (_parse_cpu(parts[1]) or 0,
+                               _parse_mem(parts[2]) or 0)
+    return usage
+
+
+def fetch_gpu(pod_names: list[str]) -> dict[str, int]:
+    """pod name -> GPU SM utilization %, via nvidia-smi exec'd in-pod."""
+    def query(pod):
+        out = subprocess.run(
+            ["kubectl", "exec", pod, "--", "nvidia-smi",
+             "--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=20)
+        try:
+            return pod, int(out.stdout.strip().splitlines()[0])
+        except (ValueError, IndexError):
+            return None
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=16) as ex:
+        for r in ex.map(lambda p: _swallow(query, p), pod_names):
+            if r:
+                results[r[0]] = r[1]
+    return results
+
+
+def _swallow(fn, *args):
+    try:
+        return fn(*args)
+    except Exception:
+        return None
+
+
+_USE_COLOR = sys.stdout.isatty()
+
+
+def util_bar(frac: float | None, width: int = 5, invert: bool = False) -> str:
+    """Small colored bar. Default scale (cpu/mem vs limit): green <60%,
+    yellow <85%, red ≥85% — high is dangerous. ``invert=True`` (GPU):
+    green ≥85%, red <60% — LOW utilization is the problem (idle GPU,
+    NRP utilization webhook)."""
+    if frac is None:
+        return " " * (width + 5)
+    frac = min(1.0, frac)
+    filled = round(frac * width)
+    bar = "▰" * filled + "▱" * (width - filled)
+    pct = f"{frac * 100:3.0f}%"
+    if _USE_COLOR:
+        level = 0 if frac < 0.60 else 1 if frac < 0.85 else 2
+        if invert:
+            level = 2 - level
+        color = ("\033[32m", "\033[33m", "\033[31m")[level]
+        return f"{color}{bar}\033[0m {pct}"
+    return f"{bar} {pct}"
 
 
 def classify(rid: str, rec: dict | None, pod: dict | None, since: str) -> str:
@@ -209,6 +293,9 @@ def main() -> None:
                          f"runs, not credited (default {DEFAULT_SINCE})")
     ap.add_argument("--all", action="store_true",
                     help="also print one line per run (300 rows)")
+    ap.add_argument("--fast", action="store_true",
+                    help="skip the in-pod nvidia-smi GPU sampling (the "
+                         "slowest part; cpu/mem come from kubectl top)")
     args = ap.parse_args()
 
     records = fetch_registry()
@@ -258,8 +345,12 @@ def main() -> None:
                    and not ((records.get(rid) or {}).get("train_steps")
                             or (records.get(rid) or {}).get("steps_completed"))}
         scraped = scrape_totals(needing) if needing else {}
-        print(f"\n{'run':<48} {'pod state':<18} {'step':>8} {'loss':>7} "
-              f"{'epoch':>6}  {'progress':<22} {'hb':>6} {'att':>4}")
+        top = fetch_top()
+        running_pods = [pod["pod"] for _, pod in live if pod["phase"] == "Running"]
+        gpu = {} if args.fast else fetch_gpu(running_pods)
+        print(f"\n{'run':<48} {'state':<12} {'step':>8} {'loss':>7} "
+              f"{'epoch':>6}  {'progress':<22} {'gpu':<11} {'cpu':<11} "
+              f"{'mem':<11} {'hb':>6} {'att':>4}")
         for rid, pod in live:
             rec = records.get(rid) or {}
             fresh = _hb_is_fresh(rec, pod)
@@ -294,10 +385,18 @@ def main() -> None:
             else:
                 prog = ""
             state = pod["phase"] + (f"/{pod['reason']}" if pod["reason"] else "")
-            print(f"{rid:<48} {state:<18} "
+            cpu_m, mem_mi = top.get(pod["pod"], (None, None))
+            cpu_bar = util_bar(cpu_m / pod["cpu_limit_m"]
+                               if cpu_m is not None and pod["cpu_limit_m"] else None)
+            mem_bar = util_bar(mem_mi / pod["mem_limit_mi"]
+                               if mem_mi is not None and pod["mem_limit_mi"] else None)
+            gpu_pct = gpu.get(pod["pod"])
+            gpu_bar = util_bar(gpu_pct / 100 if gpu_pct is not None else None,
+                               invert=True)
+            print(f"{rid:<48} {state[:12]:<12} "
                   f"{step if step is not None else '-':>8} "
                   f"{f'{loss:.2f}' if loss is not None else '-':>7} "
-                  f"{ep:>6}  {prog:<22} {hb:>6} "
+                  f"{ep:>6}  {prog:<22} {gpu_bar}  {cpu_bar}  {mem_bar}  {hb:>6} "
                   f"{rec.get('attempt_count') if rec.get('attempt_count') is not None else '-':>4}")
 
     if args.all:
