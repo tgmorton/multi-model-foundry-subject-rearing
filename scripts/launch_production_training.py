@@ -29,6 +29,28 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# GitHub mirror the clone-repo init container pulls from.
+REPO_URL = "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git"
+
+# Default training image. Mutable :latest is fine for ad-hoc launches but for
+# a production wave pass --image with the CI's immutable :<short-sha> tag (or
+# an @sha256 digest) so the wave pins one image build (G4 replicability audit).
+DEFAULT_IMAGE = (
+    "gitlab-registry.nrp-nautilus.io/thmorton/"
+    "multi-model-foundry-subject-rearing:latest"
+)
+
+
+def _resolve_git_ref() -> str:
+    """Resolve the full SHA of HEAD at launch time. The pod checks out
+    exactly this commit (G4 provenance) instead of the floating tip of
+    main, so a wave is pinned to one code state."""
+    out = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(REPO_ROOT), text=True, capture_output=True, check=True,
+    )
+    return out.stdout.strip()
+
 # ---------------------------------------------------------------------------
 # Per-arch settings — derived from sweep VRAM telemetry (2026-05-13).
 # See memory/reference_production_batch_sizing.md for the audit table.
@@ -108,7 +130,9 @@ def _job_yaml(arch: str, lang: str, intervention: str,
               active_deadline_seconds: int = 2592000,
               save_resume_last_n: int = 3,
               resume: bool = False,
-              job_suffix: str = "") -> str:
+              job_suffix: str = "",
+              git_ref: str = "main",
+              image: str = DEFAULT_IMAGE) -> str:
     """Return the K8s Job YAML for a single (arch × intervention) cell.
 
     If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
@@ -133,6 +157,7 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     gpu_values = "\n".join(f"                - {g}" for g in pool)
     bad_nodes = "\n".join(f"                - {n}" for n in BAD_NODES)
     seeds_json = json.dumps(SEEDS)
+    repo_url = REPO_URL
 
     if slots is not None:
         completions = len(slots)
@@ -208,13 +233,20 @@ spec:
       initContainers:
       - name: clone-repo
         image: alpine/git
+        # SHA-exact shallow checkout (G4 provenance): pin to the exact commit
+        # the launcher resolved instead of the floating tip of main, so the
+        # whole wave runs one code state regardless of later pushes.
+        command: ["/bin/sh", "-c"]
         args:
-        - clone
-        - --single-branch
-        - --depth=1
-        - --branch=main
-        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
-        - /opt/repo
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin {repo_url}
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - {{name: GIT_REF, value: "{git_ref}"}}
         resources:
           requests: {{memory: 1Gi, cpu: "200m"}}
           limits:   {{memory: 1Gi, cpu: "200m"}}
@@ -222,7 +254,7 @@ spec:
         - {{name: repo, mountPath: /opt/repo}}
       containers:
       - name: trainer
-        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        image: {image}
         imagePullPolicy: Always
         command: ["/bin/bash", "-c"]
         args:
@@ -269,6 +301,15 @@ spec:
           echo "RUN OK: $(cat /tmp/run_succeeded)"
         env:
         - {{name: PYTHONPATH, value: "/opt/repo"}}
+        # Fix Python hash randomization at interpreter start (G4 provenance) —
+        # must come from pod env, Python reads it before any user code runs.
+        - {{name: PYTHONHASHSEED, value: "0"}}
+        # Pinned code state this pod checked out (recorded for provenance).
+        - {{name: GIT_REF, value: "{git_ref}"}}
+        # Physical node the scheduler placed this pod on (downward API) —
+        # surfaced to the registry as node_name.
+        - name: NODE_NAME
+          valueFrom: {{fieldRef: {{fieldPath: spec.nodeName}}}}
         - {{name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}}
         - {{name: ARCH, value: "{arch}"}}
         - {{name: LANG, value: "{lang}"}}
@@ -286,7 +327,7 @@ spec:
         - {{name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}}
         - {{name: AWS_DEFAULT_REGION, value: "us-west-1"}}
         - {{name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}}
-        - {{name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}}
+        - {{name: DOCKER_IMAGE,       value: "{image}"}}
         resources:
           requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
           limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
@@ -348,6 +389,18 @@ def main() -> None:
                     help="JSON list overriding the default seeds [42, 137] "
                          "(e.g. '[999]' for a throwaway validation run). "
                          "SLOT_MAP_JSON seed_idx indexes into this list.")
+    ap.add_argument("--git-ref", default=None,
+                    help="Commit SHA the pods check out (G4 provenance). "
+                         "Defaults to `git rev-parse HEAD` resolved at launch, "
+                         "so the whole wave is pinned to one code state instead "
+                         "of the floating tip of main. The clone-repo init "
+                         "container does a SHA-exact shallow fetch of this ref.")
+    ap.add_argument("--image", default=DEFAULT_IMAGE,
+                    help="Container image for the trainer (and DOCKER_IMAGE "
+                         "env). Defaults to :latest. For a PRODUCTION WAVE pass "
+                         "the CI's immutable :<short-sha> tag (or an @sha256 "
+                         "digest) so the wave pins one image build instead of "
+                         "the mutable :latest (G4 replicability audit).")
     ap.add_argument("--job-suffix", default="",
                     help="Append '-<suffix>' to each Job name so two launches "
                          "of the SAME (arch, intervention) cell don't collide "
@@ -364,6 +417,9 @@ def main() -> None:
                          "consulted if resume_state_steps were ever unset. Kept "
                          "for backward compat; default 3.")
     args = ap.parse_args()
+
+    # Resolve the pinned commit (G4): explicit --git-ref wins, else HEAD now.
+    git_ref = args.git_ref or _resolve_git_ref()
 
     if args.seeds:
         global SEEDS
@@ -388,6 +444,8 @@ def main() -> None:
     print(f"  lang={args.lang}")
     print(f"  archs={archs}")
     print(f"  interventions={interventions}")
+    print(f"  git_ref={git_ref}")
+    print(f"  image={args.image}")
     print(f"  total cells={len(archs) * len(interventions)} "
           f"× 10 pods/cell = {len(archs) * len(interventions) * 10} runs")
     # Per-cell parallelism is capped at completions (10), so peak concurrent
@@ -413,6 +471,8 @@ def main() -> None:
                 save_resume_last_n=args.save_resume_last_n,
                 resume=args.resume,
                 job_suffix=args.job_suffix,
+                git_ref=git_ref,
+                image=args.image,
             )
             if args.dry_run:
                 n = len(slots) if slots is not None else 10

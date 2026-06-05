@@ -426,10 +426,15 @@ def register_run_end(
     tokens_per_sec_avg: Optional[float] = None,
     data_fraction_avg: Optional[float] = None,
     oom_count: Optional[int] = None,
+    n_params: Optional[int] = None,
     failure_reason: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Mark training complete or failed. ``status`` must be one of
-    COMPLETE / FAILED / PREEMPTED. Non-fatal on S3 errors."""
+    COMPLETE / FAILED / PREEMPTED. Non-fatal on S3 errors.
+
+    ``n_params`` (G4 provenance) is the model's total parameter count,
+    captured at run end so the registry pins the materialized model size.
+    """
     assert status in ("COMPLETE", "FAILED", "PREEMPTED"), status
     updates = {
         "status": status,
@@ -448,6 +453,7 @@ def register_run_end(
         "tokens_per_sec_avg": tokens_per_sec_avg,
         "data_fraction_avg": data_fraction_avg,
         "oom_count": oom_count,
+        "n_params": n_params,
         "failure_reason": failure_reason,
     }
     # Drop None so we don't clobber eval-side fields previously written.

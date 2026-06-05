@@ -402,6 +402,18 @@ def run(
     identity = _registry_identity(config)
     run_kind = os.environ.get("REGISTRY_RUN_KIND", "production")
     cache_key = _safe_compute_cache_key(config, base_dir)
+    # Provenance (G4 replicability audit): record which physical GPU and
+    # node this run landed on. gpu_product probes CUDA at runtime (never
+    # fatal); node_name comes from the downward-API NODE_NAME env the
+    # launcher injects.
+    gpu_product = None
+    try:
+        import torch
+        if torch.cuda.is_available():
+            gpu_product = torch.cuda.get_device_name(0)
+    except Exception:  # noqa: BLE001 — provenance is never fatal
+        gpu_product = None
+    node_name = os.environ.get("NODE_NAME")
     try:
         _registry.register_run_start(
             **identity,
@@ -414,6 +426,8 @@ def run(
             hyperparameters=_hyperparams_from_config(config),
             wandb_project=config.logging.wandb_project,
             train_steps=config.training.train_steps,
+            gpu_product=gpu_product,
+            node_name=node_name,
         )
     except Exception as e:  # noqa: BLE001  — non-fatal
         logger.warning(f"registry.register_run_start raised: {e}")
@@ -476,6 +490,14 @@ def _safe_register_run_end(identity: dict, *, status: str,
                     if k in ("run_id", "arch", "lang", "condition")}
     kwargs = dict(status=status, failure_reason=failure_reason,
                   **end_identity)
+    # Provenance (G4): record the model's parameter count. Guarded — on a
+    # failure path the trainer or its model may be None / partially built.
+    try:
+        model = getattr(trainer, "model", None) if trainer is not None else None
+        if model is not None:
+            kwargs["n_params"] = sum(p.numel() for p in model.parameters())
+    except Exception:  # noqa: BLE001 — provenance is never fatal
+        pass
     if trainer is not None and getattr(trainer, "training_loop", None):
         tl = trainer.training_loop
         kwargs["steps_completed"] = getattr(tl, "global_step", None)

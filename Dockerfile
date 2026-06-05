@@ -15,6 +15,11 @@
 # PyTorch's prebuilt cu121 wheels are built with the pre-cxx11 ABI, so all
 # CUDA-extension wheels here MUST be cxx11abiFALSE. Mismatched ABIs produce
 # undefined-symbol errors at import time.
+#
+# TODO(provenance, G4): pin the base image by @sha256 digest at the next
+# rebuild (FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04@sha256:<digest>).
+# The floating tag re-resolves to whatever the registry currently serves, so
+# the build is not reproducible from this Dockerfile alone until it is pinned.
 
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
@@ -49,10 +54,14 @@ RUN pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 # Extras observed across job YAMLs (sentencepiece, accelerate, duckdb, ...)
 # Kept here so a single image covers train + eval + analysis + annotate.
+# TODO(provenance, G4): exact-pin the still-bare/ranged names below
+# (accelerate, python-dotenv, duckdb, pandas, joblib, spacy-transformers,
+# einops, pytest) from a live pod's pip freeze at next rebuild — their
+# versions are not in the known image inventory, so don't guess them here.
 RUN pip install \
         accelerate>=0.26.0 \
         python-dotenv \
-        sentencepiece \
+        sentencepiece==0.2.0 \
         duckdb \
         pandas \
         joblib \
