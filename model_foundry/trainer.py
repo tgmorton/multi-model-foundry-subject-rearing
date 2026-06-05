@@ -536,6 +536,17 @@ class Trainer:
         # are loaded in-place — critical because self.optimizer is already
         # bound to self.model.parameters() from _initialize_optimizer_and_scheduler
         # above. Replacing self.model would orphan the optimizer.
+        # Diagnostic (2026-06-05 phantom-resume incident): runs have been
+        # observed resuming with resume_from_checkpoint=false in their
+        # config file. Log the ACTUAL flag value at the call site so any
+        # recurrence pinpoints where the flip happens instead of being
+        # unexplainable after the fact.
+        logger = logging.getLogger("trainer")
+        logger.info(
+            "load_checkpoint gate: resume_from_checkpoint=%s output_dir=%s",
+            self.config.training.resume_from_checkpoint,
+            self.checkpoint_manager.output_dir,
+        )
         tokenizer, global_step, epoch = self.checkpoint_manager.load_checkpoint(
             model=self.model,
             device=self.device,
