@@ -65,7 +65,7 @@ training:
   auto_generate_checkpoints: false
   checkpoint_schedule: []
   resume_from_checkpoint: false
-  compile_mode: "default"  # Inductor (2026-06-05): ~8-18% on transformers; A/B parity-gated before matrix
+  compile_mode: null  # compile DECLINED (2026-06-05 dry-runs): Inductor lowering OOM-kills the lean 4-5Gi pods (in-process or pooled), and the ~8Gi it needs would sink steady-state util below the NRP webhook floor. Revisit only with a dedicated big-RAM tier.
 
 logging:
   use_wandb: true
