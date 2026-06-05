@@ -46,8 +46,12 @@ CONDITIONS_EN = [
 
 
 def _corpus_path(lang: str, condition: str) -> str:
+    # Identity-pipeline baseline (2026-06-04 ledger #1): baseline trains on
+    # the identity-composed corpus, NOT raw text — must match
+    # production_agent._training_corpus_path exactly or the cache built
+    # here and the cache the trainer looks for diverge.
     if condition == "baseline":
-        return f"data/raw/{lang}/train_90M/"
+        return f"data/manipulations/{lang}/baseline/"
     return f"data/manipulations/{lang}/{condition}/"
 
 
