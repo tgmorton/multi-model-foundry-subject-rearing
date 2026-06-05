@@ -389,6 +389,11 @@ def main() -> None:
                     help="JSON list overriding the default seeds [42, 137] "
                          "(e.g. '[999]' for a throwaway validation run). "
                          "SLOT_MAP_JSON seed_idx indexes into this list.")
+    ap.add_argument("--skip-push-check", action="store_true",
+                    help="Skip the pre-flight check that --git-ref/HEAD is "
+                         "reachable from a remote branch (pods fetch the SHA "
+                         "from GitHub; unpushed SHAs crash-loop init "
+                         "containers).")
     ap.add_argument("--git-ref", default=None,
                     help="Commit SHA the pods check out (G4 provenance). "
                          "Defaults to `git rev-parse HEAD` resolved at launch, "
@@ -420,6 +425,26 @@ def main() -> None:
 
     # Resolve the pinned commit (G4): explicit --git-ref wins, else HEAD now.
     git_ref = args.git_ref or _resolve_git_ref()
+
+    # Pre-flight: the SHA must be PUSHED. GitHub serves fetch-by-SHA only
+    # for commits reachable from an advertised ref; an unpushed local HEAD
+    # would crash-loop every pod's init container with the opaque
+    # "Server does not allow request for unadvertised object", burning the
+    # whole backoffLimit before anyone notices (implementation-audit M1).
+    if not args.dry_run and not args.skip_push_check:
+        subprocess.run(["git", "fetch", "-q", "origin"], cwd=str(REPO_ROOT),
+                       check=False)
+        contains = subprocess.run(
+            ["git", "branch", "-r", "--contains", git_ref],
+            cwd=str(REPO_ROOT), text=True, capture_output=True,
+        )
+        if contains.returncode != 0 or not contains.stdout.strip():
+            sys.exit(
+                f"FATAL: git ref {git_ref} is not reachable from any remote "
+                f"branch — pods would fail to fetch it from GitHub. Push "
+                f"first (git push origin HEAD:main), or pass "
+                f"--skip-push-check if you know the SHA is advertised."
+            )
 
     if args.seeds:
         global SEEDS

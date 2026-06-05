@@ -49,6 +49,9 @@ class CheckpointManager:
         # the first resumed epoch by this many micro-batches. 0 when not
         # resuming or for checkpoints predating the field.
         self.resume_batch_offset: int = 0
+        # Accumulation-counter position paired with resume_batch_offset
+        # (differs only when an OOM rewound a window before the save).
+        self.resume_micro_step: int = 0
 
     def get_checkpoint_schedule(self) -> Set[int]:
         """
@@ -98,7 +101,8 @@ class CheckpointManager:
                         global_step: int, epoch: int, scaler: Optional[torch.cuda.amp.GradScaler] = None,
                         total_tokens_processed: int = 0,
                         save_resume_state: bool = True,
-                        epoch_batch_offset: int = 0):
+                        epoch_batch_offset: int = 0,
+                        epoch_micro_step: int = 0):
         """
         Save the complete training state to a checkpoint directory.
 
@@ -133,12 +137,14 @@ class CheckpointManager:
             state = {
                 'global_step': global_step,
                 'epoch': epoch,
-                # Replicability C1: within-epoch micro-batch position, so
-                # resume can fast-forward the (per-(seed, epoch) seeded)
-                # dataloader instead of re-entering the epoch at batch 0.
-                # Always a multiple of gradient_accumulation_steps because
-                # saves only fire on optimizer-step boundaries.
+                # Replicability C1: within-epoch positions, so resume can
+                # fast-forward the (per-(seed, epoch) seeded) dataloader
+                # instead of re-entering the epoch at batch 0.
+                # epoch_batch_offset = micro-batches CONSUMED from the
+                # iterator (never rewound); epoch_micro_step = the
+                # accumulation counter, which can lag after an OOM rewind.
                 'epoch_batch_offset': epoch_batch_offset,
+                'epoch_micro_step': epoch_micro_step,
                 'optimizer': optimizer.state_dict(),
                 'lr_scheduler': lr_scheduler.state_dict(),
                 'random_state': random.getstate(),
@@ -333,11 +339,16 @@ class CheckpointManager:
         )
         global_step = state['global_step']
         epoch = state['epoch']
-        # Replicability C1: stash the within-epoch position for the loop's
+        # Replicability C1: stash the within-epoch positions for the loop's
         # resume fast-forward. Back-compatible: checkpoints written before
-        # this field default to 0 (re-enter the epoch at batch 0 — the old
-        # behavior).
+        # these fields default to 0 (re-enter the epoch at batch 0 — the old
+        # behavior). resume_micro_step defaults to the batch offset (they
+        # only differ when an OOM rewound an accumulation window pre-save).
         self.resume_batch_offset = int(state.get('epoch_batch_offset', 0) or 0)
+        self.resume_micro_step = int(
+            state.get('epoch_micro_step', self.resume_batch_offset)
+            or self.resume_batch_offset
+        )
 
         # Restore optimizer and scheduler states
         optimizer.load_state_dict(state['optimizer'])

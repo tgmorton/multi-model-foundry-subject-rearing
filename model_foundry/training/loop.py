@@ -198,6 +198,14 @@ class TrainingLoop:
             # train_steps, checkpoint schedules, and logging are all
             # calibrated in optimizer-step units.
             micro_step = 0
+            # Iterator-position counter for the resume fast-forward
+            # (replicability C1). Unlike micro_step it is NEVER rewound —
+            # the OOM handler rewinds micro_step to the last accumulation
+            # boundary, but the batches the OOM'd window pulled from
+            # data_iter are gone either way. Persisting THIS counter as
+            # epoch_batch_offset keeps "offset == iterator position"
+            # exact even across OOM recoveries (implementation-audit m1).
+            consumed_from_iter = 0
 
             # 1.1 — per-optimizer-step timing accumulators. data_ms is wall
             # time spent fetching batches from the dataloader; compute_ms
@@ -232,10 +240,9 @@ class TrainingLoop:
             # re-training the epoch prefix and truncating the tail. The
             # permutation is identical (per-(seed, epoch) generator above),
             # so skipping lands on the same batches the interrupted run
-            # would have seen next. micro_step picks up at the offset to
-            # keep the gradient-accumulation boundary aligned (offsets are
-            # always multiples of grad_accum — saves fire on optimizer-step
-            # boundaries).
+            # would have seen next. micro_step resumes from its own saved
+            # value (epoch_micro_step) — it can lag the iterator position
+            # when an OOM rewound an accumulation window before the save.
             resume_offset = int(
                 getattr(self.checkpoint_manager, "resume_batch_offset", 0) or 0
             )
@@ -251,7 +258,11 @@ class TrainingLoop:
                     except StopIteration:
                         break
                     skipped += 1
-                micro_step = skipped
+                consumed_from_iter = skipped
+                micro_step = int(
+                    getattr(self.checkpoint_manager, "resume_micro_step", skipped)
+                    or skipped
+                ) if skipped == resume_offset else skipped
                 if skipped != resume_offset:
                     self.logger.warning(
                         "Fast-forward exhausted the epoch after %d/%d "
@@ -268,6 +279,7 @@ class TrainingLoop:
                     batch = next(data_iter)
                 except StopIteration:
                     break
+                consumed_from_iter += 1
                 data_ms_acc += (time.perf_counter() - t_data_start) * 1000
 
                 try:
@@ -345,9 +357,12 @@ class TrainingLoop:
                                 tokenizer,
                                 total_tokens_processed,
                                 save_resume_state=save_resume,
-                                # Within-epoch position for resume
-                                # fast-forward (replicability C1).
-                                epoch_batch_offset=micro_step,
+                                # Within-epoch positions for resume
+                                # fast-forward (replicability C1):
+                                # iterator position (never rewound) and
+                                # accumulation counter (OOM-rewindable).
+                                epoch_batch_offset=consumed_from_iter,
+                                epoch_micro_step=micro_step,
                             )
                             last_saved_step = self.global_step
 
@@ -677,7 +692,8 @@ class TrainingLoop:
 
     def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0,
                          save_resume_state: bool = True,
-                         epoch_batch_offset: int = 0):
+                         epoch_batch_offset: int = 0,
+                         epoch_micro_step: int = 0):
         """
         Save a checkpoint with proper cleanup.
 
@@ -705,6 +721,7 @@ class TrainingLoop:
             self.global_step, self.epoch, self.scaler, total_tokens_processed,
             save_resume_state=save_resume_state,
             epoch_batch_offset=epoch_batch_offset,
+            epoch_micro_step=epoch_micro_step,
         )
 
         # Clear cache after checkpoint to free memory

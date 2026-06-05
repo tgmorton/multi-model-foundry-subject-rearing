@@ -71,10 +71,33 @@ def _corpus_content_hash(corpus_path: str) -> str:
 
     If ``corpus_path`` is a single file rather than a directory, that one
     file is hashed. Returns the hex digest of the outer hash.
+
+    When the dir carries a ``COMPOSE_MANIFEST.json``, the hash is folded
+    from the manifest's sorted (stem, output_checksum) pairs instead of
+    re-streaming files — the key then tracks exactly the file set the
+    tokenization pipeline will INGEST (it resolves files via the manifest
+    too), so a stray top-level file the manifest doesn't enumerate cannot
+    collide two different ingestion sets onto one key (implementation-
+    audit m3). Ingestion separately verifies streamed bytes against these
+    same checksums, so manifest-derived == byte-derived for any corpus
+    that passes ingestion.
     """
     if os.path.isfile(corpus_path):
         train_files = [corpus_path]
     else:
+        manifest_path = os.path.join(corpus_path, "COMPOSE_MANIFEST.json")
+        if os.path.exists(manifest_path):
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            outer = hashlib.sha256()
+            for entry in sorted(
+                manifest.get("per_file", []), key=lambda e: e.get("stem", "")
+            ):
+                outer.update(f"{entry['stem']}.train".encode("utf-8"))
+                outer.update(b"\x00")
+                outer.update(str(entry["output_checksum"]).encode("utf-8"))
+                outer.update(b"\x00")
+            return outer.hexdigest()
         # TOP-LEVEL ONLY, sorted by basename — same anti-contamination rule
         # as the tokenization pipeline; never use a recursive '**' glob.
         train_files = sorted(

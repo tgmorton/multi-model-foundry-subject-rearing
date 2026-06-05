@@ -338,4 +338,7 @@ class TestCheckpointSchedule:
             2,   # epoch
             loop.scaler,
             5000,  # total_tokens_processed
+            save_resume_state=True,
+            epoch_batch_offset=0,
+            epoch_micro_step=0,
         )

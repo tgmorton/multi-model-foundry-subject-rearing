@@ -176,6 +176,35 @@ class TestPairedInit:
         for k in a:
             assert torch.equal(a[k], b[k]), f"init differs at {k}"
 
+    def test_trainer_reseeds_at_the_call_site(self):
+        # Call-site tripwire (implementation-audit m2): the property above
+        # only holds if trainer._train_loop actually re-calls set_seed
+        # right before _initialize_model. Statically assert the ordering
+        # so deleting that line fails CI even without a GPU run.
+        import ast
+        import inspect
+        import model_foundry.trainer as trainer_mod
+
+        tree = ast.parse(inspect.getsource(trainer_mod))
+        fn = next(
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef) and node.name == "_train_loop"
+        )
+        calls = []
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Call):
+                name = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
+                if name in ("set_seed", "_load_tokenizer", "_initialize_model"):
+                    calls.append((node.lineno, name))
+        calls.sort()
+        names = [n for _, n in calls]
+        tok_idx = names.index("_load_tokenizer")
+        init_idx = names.index("_initialize_model")
+        assert "set_seed" in names[tok_idx:init_idx], (
+            "trainer._train_loop must re-call set_seed between tokenizer "
+            "load and _initialize_model — the G3 paired-init guarantee"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Corpus ingestion — manifest-driven, top-level only
