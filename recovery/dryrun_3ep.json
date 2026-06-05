@@ -1,0 +1,44 @@
+{
+ "gpt2_small|baseline": [
+  [
+   0,
+   0
+  ]
+ ],
+ "gpt2_medium|baseline": [
+  [
+   0,
+   0
+  ]
+ ],
+ "gpt2_large|baseline": [
+  [
+   0,
+   0
+  ]
+ ],
+ "bert_large|baseline": [
+  [
+   0,
+   0
+  ]
+ ],
+ "mamba_370m|baseline": [
+  [
+   0,
+   0
+  ]
+ ],
+ "gpt2_small|lemmatize_verbs": [
+  [
+   0,
+   0
+  ]
+ ],
+ "mamba_370m|enrich_verbal_morphology": [
+  [
+   0,
+   0
+  ]
+ ]
+}
