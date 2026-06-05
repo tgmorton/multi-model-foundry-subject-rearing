@@ -505,8 +505,15 @@ def train_tokenizer_from_config(config_path: str, project_root: Optional[str] = 
 
     if os.path.isdir(training_corpus_path):
         print(f"  - Searching for training files in: {training_corpus_path}")
-        train_files = glob.glob(os.path.join(training_corpus_path, '**', '*.train'), recursive=True)
-        test_files = glob.glob(os.path.join(training_corpus_path, '**', '*.test'), recursive=True)
+        # TOP-LEVEL *.train / *.test only, sorted. A recursive '**' glob here
+        # walks into intermediate build subdirs (_train/, _pool/,
+        # pool_remainder/) — the exact pattern that caused the 2026-06-04
+        # corpus-contamination incident in the tokenization pipeline.
+        # Tokenizers happened to be trained on raw (manifest-less) dirs so
+        # were unaffected, but the recursive pattern must die everywhere.
+        # Never reintroduce '**'.
+        train_files = sorted(glob.glob(os.path.join(training_corpus_path, '*.train')))
+        test_files = sorted(glob.glob(os.path.join(training_corpus_path, '*.test')))
         input_files = train_files + test_files
 
         if not input_files:

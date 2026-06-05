@@ -11,6 +11,8 @@ This module exposes a small deterministic hash over the ingredients that
 actually determine tokenized/chunked output:
 
   * absolute training-corpus path (directory containing .train files)
+  * SHA-256 over the actual corpus CONTENT (``corpus_content_hash``) — the
+    top-level ``*.train`` files, not just the path string (see below)
   * SHA-256 of the tokenizer artefact (``tokenizer.model`` for
     SentencePiece, falling back to ``tokenizer.json``)
   * ``max_sequence_length``
@@ -21,11 +23,23 @@ Callers write to ``data/tokenized/<key>/`` and ``data/chunked/<key>/``, and
 should fall back to the legacy ``data/tokenized/<experiment_name>/`` path
 on read so runs that predate this change (e.g. the in-flight baseline)
 continue to work.
+
+**Content-addressing (2026-06-05).** Previously the key hashed only the
+corpus *path* string, so a corpus that was regenerated in place (same
+directory, different bytes) produced the SAME key and silently reused a
+stale cache. The key now also folds in ``corpus_content_hash`` — a
+SHA-256 over the top-level ``*.train`` files' bytes. This INTENTIONALLY
+invalidates every pre-2026-06-05 cache key (the clean-rebuild epoch
+following the 2026-06-04 corpus-contamination incident) and guarantees a
+regenerated-in-place corpus produces a different key. Content discovery
+is TOP-LEVEL ONLY (sorted filenames); it never recurses into intermediate
+build subdirs (``_train/``, ``_pool/``, ``pool_remainder/``).
 """
 
 from __future__ import annotations
 
 import datetime
+import glob
 import hashlib
 import json
 import os
@@ -42,6 +56,43 @@ def _hash_file_bytes(path: str, chunk_size: int = 1 << 20) -> str:
                 break
             h.update(buf)
     return h.hexdigest()
+
+
+def _corpus_content_hash(corpus_path: str) -> str:
+    """SHA-256 over the CONTENT of a corpus dir's top-level ``*.train`` files.
+
+    For each top-level ``*.train`` file (sorted by basename — never
+    recursing into intermediate build subdirs like ``_train/``, ``_pool/``,
+    ``pool_remainder/``), we fold the basename and the file's own streamed
+    SHA-256 into an outer hash. This makes the cache key sensitive to the
+    actual corpus bytes, so a corpus regenerated in place (same path,
+    different content) yields a different key instead of silently reusing a
+    stale cache.
+
+    If ``corpus_path`` is a single file rather than a directory, that one
+    file is hashed. Returns the hex digest of the outer hash.
+    """
+    if os.path.isfile(corpus_path):
+        train_files = [corpus_path]
+    else:
+        # TOP-LEVEL ONLY, sorted by basename — same anti-contamination rule
+        # as the tokenization pipeline; never use a recursive '**' glob.
+        train_files = sorted(
+            glob.glob(os.path.join(corpus_path, "*.train")),
+            key=os.path.basename,
+        )
+
+    outer = hashlib.sha256()
+    for fp in train_files:
+        basename = os.path.basename(fp)
+        file_hash = _hash_file_bytes(fp)
+        # Length-prefix-free but unambiguous: fixed-format (name, hash) pair
+        # with explicit separators, joined into the outer digest.
+        outer.update(basename.encode("utf-8"))
+        outer.update(b"\x00")
+        outer.update(file_hash.encode("utf-8"))
+        outer.update(b"\x00")
+    return outer.hexdigest()
 
 
 def _resolve_tokenizer_artefact(tokenizer_dir: str) -> tuple[str, str]:
@@ -71,7 +122,8 @@ def compute_cache_key(
 
     Args:
         corpus_path: Path to the training corpus directory (containing
-            .train files). Converted to an absolute path before hashing.
+            .train files). Converted to an absolute path before hashing,
+            and its top-level ``*.train`` content is hashed into the key.
         tokenizer_dir: Directory containing the trained tokenizer artefact
             (``tokenizer.model`` or ``tokenizer.json``).
         max_sequence_length: Chunk length; affects the chunked output, so
@@ -84,12 +136,18 @@ def compute_cache_key(
 
     Returns:
         A hex-digest string of ``length`` characters.
+
+    Note:
+        ``corpus_content_hash`` folds the actual corpus bytes into the key.
+        This intentionally invalidates every pre-2026-06-05 cache key and
+        makes a regenerated-in-place corpus produce a different key.
     """
     artefact, kind = _resolve_tokenizer_artefact(tokenizer_dir)
     tok_hash = _hash_file_bytes(artefact)
 
     payload = {
         "corpus_path": os.path.abspath(corpus_path),
+        "corpus_content_hash": _corpus_content_hash(corpus_path),
         "tokenizer_hash": tok_hash,
         "tokenizer_source": kind,
         "max_sequence_length": int(max_sequence_length),
@@ -116,6 +174,7 @@ def cache_meta(
     artefact, kind = _resolve_tokenizer_artefact(tokenizer_dir)
     meta: Dict[str, Any] = {
         "corpus_path": os.path.abspath(corpus_path),
+        "corpus_content_hash": _corpus_content_hash(corpus_path),
         "tokenizer_dir": os.path.abspath(tokenizer_dir),
         "tokenizer_artefact": kind,
         "tokenizer_hash": _hash_file_bytes(artefact),

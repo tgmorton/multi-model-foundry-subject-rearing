@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import json
 import os
 import yaml
@@ -16,6 +17,10 @@ from model_foundry.cache_keys import (
 # Correctly disable the progress bars from the datasets library
 disable_progress_bar()
 
+# Name of the compose manifest emitted by the ablation/compose pipeline
+# alongside the real top-level *.train files in a manipulation corpus dir.
+COMPOSE_MANIFEST_NAME = "COMPOSE_MANIFEST.json"
+
 
 def find_project_root(start_path: str) -> str:
     """Finds the project root by searching upwards for a .git directory."""
@@ -26,6 +31,136 @@ def find_project_root(start_path: str) -> str:
         path = path.parent
     print("Warning: .git directory not found. Falling back to current working directory as project root.")
     return os.getcwd()
+
+
+def _stream_sha256(path: str, chunk_size: int = 1 << 20) -> str:
+    """Stream SHA-256 of a file; safe for arbitrarily large corpus files."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while True:
+            buf = f.read(chunk_size)
+            if not buf:
+                break
+            h.update(buf)
+    return h.hexdigest()
+
+
+def _resolve_training_files(training_corpus_path: str) -> list:
+    """Resolve the exact list of *.train files to ingest for a corpus dir.
+
+    This is the integrity gate that replaced a recursive ``**/*.train``
+    glob. On 2026-06-04 that recursive glob silently ingested build
+    INTERMEDIATES (``_train/``, ``_pool/``, ``pool_remainder/`` subdirs)
+    nested inside every manipulation corpus directory, producing ~2.2x
+    duplicated training data — a study-breaking contamination incident.
+    Ingestion is therefore manifest-driven (with checksum verification)
+    whenever a COMPOSE_MANIFEST.json is present, and otherwise restricted
+    to TOP-LEVEL *.train files only.
+
+    NEVER reintroduce a recursive ('**') glob here or anywhere downstream.
+
+    Args:
+        training_corpus_path: Directory holding the corpus *.train files.
+
+    Returns:
+        A list of absolute/normalised file paths, in a deterministic order
+        (manifest order if a manifest exists, else sorted by filename).
+
+    Raises:
+        FileNotFoundError / ValueError: if the manifest references a file
+            that is missing or whose streamed sha256 does not match the
+            recorded ``output_checksum``. We never silently fall back to a
+            glob when a manifest is present.
+    """
+    manifest_path = os.path.join(training_corpus_path, COMPOSE_MANIFEST_NAME)
+
+    if os.path.exists(manifest_path):
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+        per_file = manifest.get("per_file") or []
+        if not per_file:
+            msg = (
+                f"FATAL: {manifest_path} has no 'per_file' entries; refusing "
+                f"to ingest. A compose manifest must enumerate every composed "
+                f"file. Aborting rather than silently falling back to a glob."
+            )
+            print(msg)
+            raise ValueError(msg)
+
+        resolved = []
+        total_bytes = 0
+        for entry in per_file:
+            stem = entry.get("stem")
+            expected_checksum = entry.get("output_checksum")
+            if not stem:
+                msg = (
+                    f"FATAL: {manifest_path} per_file entry missing 'stem': "
+                    f"{entry!r}"
+                )
+                print(msg)
+                raise ValueError(msg)
+            file_path = os.path.join(training_corpus_path, f"{stem}.train")
+            if not os.path.exists(file_path):
+                msg = (
+                    f"FATAL: manifest {manifest_path} references "
+                    f"'{stem}.train' but it is missing at {file_path}. "
+                    f"Refusing to ingest a partial corpus."
+                )
+                print(msg)
+                raise FileNotFoundError(msg)
+            if not expected_checksum:
+                msg = (
+                    f"FATAL: manifest {manifest_path} entry for '{stem}' has "
+                    f"no 'output_checksum'; cannot verify integrity of "
+                    f"{file_path}. Refusing to ingest unverifiable data."
+                )
+                print(msg)
+                raise ValueError(msg)
+            actual_checksum = _stream_sha256(file_path)
+            if actual_checksum != expected_checksum:
+                msg = (
+                    f"FATAL: checksum mismatch for {file_path}\n"
+                    f"  manifest output_checksum = {expected_checksum}\n"
+                    f"  streamed sha256          = {actual_checksum}\n"
+                    f"The composed file does not match the compose manifest. "
+                    f"Refusing to ingest corrupted/regenerated data."
+                )
+                print(msg)
+                raise ValueError(msg)
+            total_bytes += os.path.getsize(file_path)
+            resolved.append(file_path)
+
+        manifest_train_tokens = (manifest.get("totals") or {}).get("train_tokens")
+        print(
+            f"  - manifest-driven: {len(resolved)} files, {total_bytes} bytes, "
+            f"manifest train_tokens={manifest_train_tokens}"
+        )
+        return resolved
+
+    # No manifest (e.g. raw corpora dirs like raw/en/train_90M/): TOP-LEVEL
+    # *.train files ONLY, sorted. The recursive '**/*.train' glob that used
+    # to live here caused the 2026-06-04 contamination incident by walking
+    # into intermediate build subdirs — never reintroduce '**'.
+    training_files = sorted(glob.glob(os.path.join(training_corpus_path, '*.train')))
+    print(f"  - no manifest; top-level *.train files ({len(training_files)}):")
+    for fp in training_files:
+        print(f"      {fp}")
+    return training_files
+
+
+def _resolve_test_files(test_corpus_path: str) -> list:
+    """Resolve top-level *.test files for a test corpus dir.
+
+    TOP-LEVEL ONLY, sorted. The recursive '**/*.test' glob that used to
+    live here is part of the same family as the 2026-06-04 contamination
+    incident — never reintroduce '**'.
+    """
+    test_files = sorted(glob.glob(os.path.join(test_corpus_path, '*.test')))
+    print(f"  - top-level *.test files ({len(test_files)}):")
+    for fp in test_files:
+        print(f"      {fp}")
+    return test_files
 
 
 def tokenize_dataset_from_config(config_path: str, force: bool = False):
@@ -155,8 +290,11 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
 
     # Process training data
     print(f"\n  - Processing training data from '{training_corpus_path}'...")
-    search_pattern = os.path.join(training_corpus_path, '**', '*.train')
-    training_files = glob.glob(search_pattern, recursive=True)
+    # Manifest-driven (with checksum verification) when a COMPOSE_MANIFEST.json
+    # is present; otherwise TOP-LEVEL *.train files only. Replaces the
+    # recursive '**/*.train' glob that caused the 2026-06-04 contamination
+    # incident (build intermediates ingested as corpus). See helper docstring.
+    training_files = _resolve_training_files(training_corpus_path)
 
     if not training_files:
         print(f"FATAL ERROR: No .train files found in '{training_corpus_path}'.")
@@ -203,8 +341,9 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
         
         if os.path.exists(test_corpus_path):
             print(f"\n  - Processing test data from '{test_corpus_path}'...")
-            search_pattern = os.path.join(test_corpus_path, '**', '*.test')
-            test_files = glob.glob(search_pattern, recursive=True)
+            # TOP-LEVEL *.test files only — same anti-contamination rule as
+            # the training discovery; never recurse with '**'.
+            test_files = _resolve_test_files(test_corpus_path)
 
             if test_files:
                 print(f"  - Loading {len(test_files)} test file(s)...")
