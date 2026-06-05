@@ -53,12 +53,12 @@ training:
   gradient_accumulation_steps: 32              # locked: effective_batch_size=128 / micro_bs=4 (10M sweep matches batch size across archs)
   max_grad_norm: 1.0
   use_tf32: true
-  use_gradient_checkpointing: true
+  use_gradient_checkpointing: false  # was a silent no-op (wrapper exposes no GC method); set false for config honesty
 
   auto_generate_checkpoints: false
   checkpoint_schedule: []
   resume_from_checkpoint: false
-  compile_mode: null
+  compile_mode: null  # compile off: cuDNN LSTM already fused / mamba custom kernels graph-break
 
 logging:
   use_wandb: true

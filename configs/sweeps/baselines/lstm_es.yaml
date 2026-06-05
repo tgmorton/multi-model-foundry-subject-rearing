@@ -50,7 +50,7 @@ training:
   auto_generate_checkpoints: false
   checkpoint_schedule: []
   resume_from_checkpoint: false
-  compile_mode: null
+  compile_mode: null  # compile off: cuDNN LSTM already fused / mamba custom kernels graph-break
 
 logging:
   use_wandb: true

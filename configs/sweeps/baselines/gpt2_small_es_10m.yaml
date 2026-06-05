@@ -44,12 +44,12 @@ training:
   gradient_accumulation_steps: 4              # locked: effective_batch_size=128 / micro_bs=32 (10M sweep matches batch size across archs)
   max_grad_norm: 1.0
   use_tf32: true
-  use_gradient_checkpointing: true
+  use_gradient_checkpointing: false  # OFF (2026-06-05): paid ~25% recompute for unused memory headroom; phys batch fits without it
 
   auto_generate_checkpoints: false
   checkpoint_schedule: []
   resume_from_checkpoint: false
-  compile_mode: null
+  compile_mode: "default"  # Inductor (2026-06-05): ~8-18% on transformers; A/B parity-gated before matrix
 
 logging:
   use_wandb: true

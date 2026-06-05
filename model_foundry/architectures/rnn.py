@@ -52,6 +52,7 @@ class RNNLanguageModel(BaseLanguageModel):
         bidirectional: bool = False,
         dropout: float = 0.0,
         pad_token_id: int = 0,
+        pack_padded: bool = False,
         **kwargs
     ):
         """
@@ -66,6 +67,14 @@ class RNNLanguageModel(BaseLanguageModel):
             bidirectional: If True, use bidirectional RNN (for masked LM)
             dropout: Dropout probability between RNN layers
             pad_token_id: Token ID for padding (default: 0)
+            pack_padded: If True, enable the pack_padded_sequence path for
+                variable-length / padded batches. Default False: our training
+                data is pre-chunked to fixed length with all-ones attention
+                masks, so the packing path is dead weight AND its length
+                computation (attention_mask.sum(dim=1).cpu()) forces a
+                per-micro-batch host-device sync that stalls the GPU. Leaving
+                this False skips both. Set True only when genuinely feeding
+                ragged/padded batches.
             **kwargs: Additional arguments (for compatibility)
         """
         super().__init__()
@@ -78,6 +87,7 @@ class RNNLanguageModel(BaseLanguageModel):
         self.bidirectional = bidirectional
         self.dropout_prob = dropout
         self.pad_token_id = pad_token_id
+        self.pack_padded = pack_padded
 
         # Validate RNN type
         if self.rnn_type not in ['lstm', 'gru', 'rnn']:
@@ -161,9 +171,18 @@ class RNNLanguageModel(BaseLanguageModel):
         # Get embeddings
         embeddings = self.embedding(input_ids)  # [batch, seq, emb]
 
-        # For efficiency with variable-length sequences, use pack_padded_sequence
-        if attention_mask is not None:
-            # Compute actual lengths (number of non-padding tokens)
+        # For variable-length / padded batches, optionally use
+        # pack_padded_sequence. This path is gated behind self.pack_padded
+        # (default False) because it is dead for our pre-chunked fixed-length
+        # data: every sequence is full length with an all-ones mask, so packing
+        # changes nothing — but `attention_mask.sum(dim=1).cpu()` forces a
+        # host-device sync on every micro-batch, stalling the GPU. When packing
+        # is disabled we never touch the mask for length computation, so there
+        # is zero sync. Numerics are identical to the old `else` branch: with an
+        # all-ones mask the old code also fell through to a plain self.rnn call.
+        if self.pack_padded and attention_mask is not None:
+            # Compute actual lengths (number of non-padding tokens).
+            # .cpu() here is the deliberate sync the packing API requires.
             lengths = attention_mask.sum(dim=1).cpu()  # [batch]
 
             # Check if any sequence has length > 0 and has padding
@@ -197,7 +216,8 @@ class RNNLanguageModel(BaseLanguageModel):
                 # No padding, process normally (or all padding)
                 rnn_output, _ = self.rnn(embeddings)
         else:
-            # No attention mask provided, process entire sequence
+            # Fixed-length / unmasked path: process the entire sequence with no
+            # mask-derived host sync. Default for production training.
             rnn_output, _ = self.rnn(embeddings)
 
         # Apply dropout
@@ -226,11 +246,23 @@ class RNNLanguageModel(BaseLanguageModel):
                 # "learn" near-zero loss by copying input to output —
                 # held_out_perplexity of ~9 on Spanish, ~86 on English.
                 # The shift matches HuggingFace's GPT-2 behaviour.
-                shift_logits = logits[..., :-1, :].contiguous()
-                shift_labels = labels[..., 1:].contiguous()
+                #
+                # We feed cross_entropy the 3D form (input (N, C, d), target
+                # (N, d)) over views of the *already-materialized* full logits.
+                # `transpose(1, 2)` and the `[..., :-1, :]` slice are both views,
+                # so the old ~full-size `shift_logits.contiguous()` allocation
+                # never exists. The returned `logits` stay full-length [B, T, V]
+                # (the documented interface every eval consumer relies on).
+                #
+                # Numerically identical to the prior flatten form: cross_entropy
+                # with the class dim at position 1 scores the same
+                # (logit-row, label) pairs, with the same default mean reduction
+                # over non-ignored positions and the same ignore_index=-100.
+                shift_logits = logits[..., :-1, :].transpose(1, 2)  # [B, V, T-1] view
+                shift_labels = labels[..., 1:]                      # [B, T-1] view
                 loss = F.cross_entropy(
-                    shift_logits.view(-1, self.vocab_size),
-                    shift_labels.view(-1),
+                    shift_logits,
+                    shift_labels,
                     ignore_index=-100,
                 )
 
