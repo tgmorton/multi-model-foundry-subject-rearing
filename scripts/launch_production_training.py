@@ -309,6 +309,12 @@ spec:
         # Fix Python hash randomization at interpreter start (G4 provenance) —
         # must come from pod env, Python reads it before any user code runs.
         - {{name: PYTHONHASHSEED, value: "0"}}
+        # Inductor compile workers default to os.cpu_count() — the HOST's
+        # core count, not the cgroup's 2 — and the resulting subprocess
+        # swarm gets OOM-killed by the pod limit (BrokenProcessPool,
+        # observed on the 2026-06-05 dry-runs). One worker fits the budget;
+        # compile is a one-time startup cost per pod.
+        - {{name: TORCHINDUCTOR_COMPILE_THREADS, value: "1"}}
         # Pinned code state this pod checked out (recorded for provenance).
         - {{name: GIT_REF, value: "{git_ref}"}}
         # Physical node the scheduler placed this pod on (downward API) —
