@@ -12,12 +12,14 @@ and are NOT imported here.
 """
 
 # Import all active ablation modules to trigger registration
+from . import identity
 from . import lemmatize_verbs
 from . import remove_expletive_sentences
 from . import impoverish_case
 from . import enrich_verbal_morphology
 
 __all__ = [
+    "identity",
     "lemmatize_verbs",
     "remove_expletive_sentences",
     "impoverish_case",

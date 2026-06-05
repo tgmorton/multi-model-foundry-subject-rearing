@@ -78,7 +78,17 @@ def _required_env(key: str) -> str:
 def _training_corpus_path(lang: str, intervention: str) -> str:
     """Return the on-pod path to the training corpus for this intervention."""
     if intervention == "baseline":
-        return f"data/raw/{lang}/train_90M/"
+        # Identity-pipeline design decision (2026-06-04 ledger #1): the
+        # baseline trains on the corpus produced by the `identity` ablation
+        # (a no-op pass through the SAME annotate -> ablate -> compose
+        # machinery), NOT on raw text. A pipeline pass mutates text
+        # statistics (spaCy segmentation + whitespace reconstruction); if
+        # the baseline skipped it while ablations didn't, the baseline-vs-
+        # ablation contrast would carry pipeline artifacts as a confound.
+        # The identity ablation composes into manipulations/{lang}/baseline/
+        # (slug=baseline), so the baseline experiences identical
+        # segmentation/reconstruction to the ablated conditions.
+        return f"data/manipulations/{lang}/baseline/"
     return f"data/manipulations/{lang}/{intervention}/"
 
 
