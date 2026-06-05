@@ -118,7 +118,12 @@ def fetch_pods() -> dict[str, dict]:
             hp, seed_idx = slot_map[int(idx)]
         else:  # legacy full-grid divmod(idx, 2)
             hp, seed_idx = divmod(int(idx), 2)
-        rid = _run_id(env["ARCH"], env["INTERVENTION"], hp, seed_idx)
+        # Map seed_idx via the POD'S OWN seed list, not the module default —
+        # validation pods run throwaway seeds (e.g. [999]) and would
+        # otherwise be misattributed to real s42 slots.
+        pod_seeds = json.loads(env.get("SEEDS_JSON", "null")) or SEEDS
+        seed = pod_seeds[seed_idx] if seed_idx < len(pod_seeds) else SEEDS[seed_idx]
+        rid = f"{env['ARCH']}-{LANG}-{env['INTERVENTION']}-h{hp}-s{seed}"
         phase = pod["status"].get("phase", "?")
         reason = ""
         for cs in pod["status"].get("containerStatuses", []):
