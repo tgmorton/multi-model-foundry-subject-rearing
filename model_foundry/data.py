@@ -234,11 +234,16 @@ class DataProcessor:
         print(f"    - Original sequences: {total_original_sequences:,}")
         print(f"    - Created chunks: {len(all_chunks):,}")
         
-        # Create new dataset
-        chunked_dataset = Dataset.from_dict({
-            'input_ids': all_chunks
-        })
-        
+        # Create new dataset. Store token ids as int32 (vocab 50,004 ≪
+        # 2^31): halves on-disk bytes and CephFS read volume vs the
+        # arrow default of int64. Collators cast back to torch.long at
+        # batch time, so nothing downstream changes.
+        from datasets import Features, Sequence as HFSequence, Value
+        chunked_dataset = Dataset.from_dict(
+            {'input_ids': all_chunks},
+            features=Features({'input_ids': HFSequence(Value('int32'))}),
+        )
+
         return chunked_dataset
     
     def _save_chunked_dataset(self, dataset: Dataset) -> None:
@@ -443,12 +448,27 @@ class DataProcessor:
         prefetch_factor = self.config.data.prefetch_factor
         
         logger.debug(f"Creating DataLoader with num_workers={num_workers}, pin_memory={pin_memory}, prefetch_factor={prefetch_factor}")
-        
+
+        # Dedicated data-order generator (replicability redesign): the
+        # shuffle permutation must be a pure function of (seed, epoch),
+        # NOT of the ambient global RNG — whose state at iter() time
+        # depends on how many draws model init happened to consume.
+        # The training loop reseeds this generator to
+        # derive_seed(seed, "data_order", epoch) before every epoch's
+        # iter() (loop.py); the seeding here covers epoch 0 / non-loop
+        # consumers. DataLoader also derives its worker base seeds from
+        # this generator, so worker streams inherit the determinism.
+        from .rng import derive_seed
+        data_generator = torch.Generator()
+        data_generator.manual_seed(
+            derive_seed(int(self.config.random_seed), "data_order", 0))
+
         dataloader = DataLoader(
             dataset,
             batch_size=self.config.data.batch_size,
             collate_fn=data_collator,
             shuffle=True,
+            generator=data_generator,
             num_workers=num_workers,
             pin_memory=pin_memory,
             prefetch_factor=prefetch_factor if num_workers > 0 else None,

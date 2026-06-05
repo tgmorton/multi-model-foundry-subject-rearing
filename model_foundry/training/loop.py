@@ -14,6 +14,7 @@ import wandb
 from tqdm.auto import tqdm
 
 from .. import registry as _registry
+from ..rng import derive_seed
 
 
 # Type alias for the end-of-epoch hook the sweep agent registers to
@@ -65,6 +66,9 @@ class TrainingLoop:
         # Training state
         self.global_step = 0
         self.epoch = 0
+        # AMP overflow observability (replicability audit): count of
+        # optimizer steps the GradScaler skipped due to inf/nan grads.
+        self.amp_skipped_steps = 0
 
         # Setup AMP
         self.scaler = None
@@ -204,9 +208,56 @@ class TrainingLoop:
             compute_ms_acc = 0.0
             tokens_acc = 0
 
+            # Replicability redesign: data order is a pure function of
+            # (seed, epoch) — reseed the dedicated DataLoader generator and
+            # stamp the epoch into the collator BEFORE iter(). Workers are
+            # (re)spawned at iter() time and pickle the collator's state,
+            # so both must be set first.
+            if getattr(self.dataloader, "generator", None) is not None:
+                self.dataloader.generator.manual_seed(
+                    derive_seed(int(self.config.random_seed), "data_order", epoch)
+                )
+            _collate = getattr(self.dataloader, "collate_fn", None)
+            if hasattr(_collate, "set_epoch"):
+                _collate.set_epoch(epoch)
+
             # Explicit iterator so we can time each next() call cleanly
             # (1.1). Equivalent to the prior `for batch in self.dataloader`.
             data_iter = iter(self.dataloader)
+
+            # Replicability C1 — resume fast-forward. A checkpoint saved
+            # mid-epoch records its within-epoch micro-batch position; on
+            # the FIRST resumed epoch, skip exactly that many micro-batches
+            # so the run continues from where it left off instead of
+            # re-training the epoch prefix and truncating the tail. The
+            # permutation is identical (per-(seed, epoch) generator above),
+            # so skipping lands on the same batches the interrupted run
+            # would have seen next. micro_step picks up at the offset to
+            # keep the gradient-accumulation boundary aligned (offsets are
+            # always multiples of grad_accum — saves fire on optimizer-step
+            # boundaries).
+            resume_offset = int(
+                getattr(self.checkpoint_manager, "resume_batch_offset", 0) or 0
+            )
+            if resume_offset and epoch == start_epoch and start_step > 0:
+                self.logger.info(
+                    "Resume fast-forward: skipping %d already-consumed "
+                    "micro-batches of epoch %d", resume_offset, epoch + 1
+                )
+                skipped = 0
+                for _ in range(resume_offset):
+                    try:
+                        next(data_iter)
+                    except StopIteration:
+                        break
+                    skipped += 1
+                micro_step = skipped
+                if skipped != resume_offset:
+                    self.logger.warning(
+                        "Fast-forward exhausted the epoch after %d/%d "
+                        "micro-batches; resuming at next epoch boundary",
+                        skipped, resume_offset,
+                    )
 
             while True:
                 if self.global_step >= self.config.training.train_steps:
@@ -294,6 +345,9 @@ class TrainingLoop:
                                 tokenizer,
                                 total_tokens_processed,
                                 save_resume_state=save_resume,
+                                # Within-epoch position for resume
+                                # fast-forward (replicability C1).
+                                epoch_batch_offset=micro_step,
                             )
                             last_saved_step = self.global_step
 
@@ -426,8 +480,23 @@ class TrainingLoop:
                     )
 
                 # Optimizer step with overflow checking
+                scale_before = self.scaler.get_scale()
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
+                # Observability (replicability audit): a shrinking scale
+                # means inf/nan grads were found — the optimizer step was
+                # SKIPPED while the LR scheduler below still advances. A
+                # divergent skip decision converts low-bit kernel noise
+                # into a hard trajectory fork, so make every skip visible
+                # in logs/WandB instead of silent.
+                if self.scaler.get_scale() < scale_before:
+                    self.amp_skipped_steps += 1
+                    self.logger.warning(
+                        "AMP overflow at global_step %d: optimizer step "
+                        "skipped (scale %.0f -> %.0f; %d skip(s) total)",
+                        self.global_step, scale_before,
+                        self.scaler.get_scale(), self.amp_skipped_steps,
+                    )
 
                 self.lr_scheduler.step()
                 self.optimizer.zero_grad(set_to_none=True)
@@ -598,10 +667,17 @@ class TrainingLoop:
             "throughput/tokens_per_sec": tokens_per_sec,
         }
 
+        # AMP observability (replicability audit): the loss-scale trajectory
+        # and skip count make GradScaler-induced trajectory forks visible.
+        if self.amp_enabled and self.scaler is not None:
+            payload["amp/loss_scale"] = self.scaler.get_scale()
+            payload["amp/skipped_steps"] = self.amp_skipped_steps
+
         wandb.log(payload, step=self.global_step)
 
     def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0,
-                         save_resume_state: bool = True):
+                         save_resume_state: bool = True,
+                         epoch_batch_offset: int = 0):
         """
         Save a checkpoint with proper cleanup.
 
@@ -612,6 +688,10 @@ class TrainingLoop:
                 state so the run can be resumed from this checkpoint. If
                 False, write analysis-only (model + tokenizer + metadata),
                 which is ~3× smaller on disk. See 0.6.
+            epoch_batch_offset: Within-epoch micro-batch position at save
+                time, persisted into training_state.pt so resume can
+                fast-forward to it (replicability C1). The endpoint guard
+                passes 0 — training is complete there.
         """
         # Ensure all gradients are cleared before checkpoint
         self.optimizer.zero_grad(set_to_none=True)
@@ -624,6 +704,7 @@ class TrainingLoop:
             self.model, tokenizer, self.optimizer, self.lr_scheduler,
             self.global_step, self.epoch, self.scaler, total_tokens_processed,
             save_resume_state=save_resume_state,
+            epoch_batch_offset=epoch_batch_offset,
         )
 
         # Clear cache after checkpoint to free memory

@@ -149,11 +149,51 @@ class Trainer:
         if 'PYTORCH_CUDA_ALLOC_CONF' not in os.environ or not os.environ['PYTORCH_CUDA_ALLOC_CONF']:
             os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
 
-        # Enable deterministic cuDNN for reproducibility
+        # Deterministic cuDNN selection (conv/RNN algo choice). NOTE the
+        # honest scope: this covers ONLY cuDNN ops. cuBLAS GEMMs, FA2's
+        # atomicAdd backward, fused AdamW, and Mamba's selective-scan
+        # kernels remain run-to-run nondeterministic on this path — the
+        # production claim is statistical replication, not bitwise.
+        # For bitwise verification runs, set training.deterministic: true
+        # (see _configure_determinism).
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
 
-        print("  - GPU healthy + CUDA memory configured (95% limit, max_split_size_mb:512, deterministic cuDNN)")
+        self._configure_determinism()
+
+        print("  - GPU healthy + CUDA memory configured (95% limit, "
+              "max_split_size_mb:512, deterministic cuDNN algo selection — "
+              "see training.deterministic for full bitwise mode)")
+
+    def _configure_determinism(self):
+        """Opt-in bitwise-determinism mode (replicability audit, G1).
+
+        Default OFF: production runs keep FA2 + TF32 + nondeterministic
+        kernels for speed and claim statistical replication. When
+        ``training.deterministic`` is true (the bit-repro verification
+        subset):
+
+        - ``CUBLAS_WORKSPACE_CONFIG=:4096:8`` makes cuBLAS GEMMs
+          deterministic (must be set before the first cuBLAS call — we
+          run before any matmul; pod templates may also set it in env).
+        - ``torch.use_deterministic_algorithms(True, warn_only=True)``
+          routes every op with a deterministic variant to it and WARNS
+          (not raises) on ops without one, so per-arch gaps surface in
+          logs instead of crashing the run.
+        - TF32 is forced off (overrides ``use_tf32``).
+        - Model init forces SDPA instead of FA2 (FA2 2.7.4 has no
+          deterministic backward; transformers 4.41.2 exposes no kwarg).
+        """
+        if not getattr(self.config.training, "deterministic", False):
+            return
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+        torch.use_deterministic_algorithms(True, warn_only=True)
+        if self.config.training.use_tf32:
+            print("  - [deterministic] overriding use_tf32 -> False")
+            self.config.training.use_tf32 = False
+        print("  - [deterministic] bitwise mode ON: CUBLAS_WORKSPACE_CONFIG="
+              f"{os.environ['CUBLAS_WORKSPACE_CONFIG']}, "
+              "use_deterministic_algorithms(warn_only), TF32 off, SDPA attention")
 
     def _calculate_training_parameters(self):
         """Calculate training parameters based on dataset size if not explicitly set."""
@@ -192,10 +232,32 @@ class Trainer:
 
     def _initialize_model(self):
         """Initialize the model with appropriate optimizations."""
-        # Disable torch compile globally to avoid ldconfig issues
+        # Tolerate Dynamo graph-capture failures by falling back to eager
+        # for the offending graph instead of crashing. (A previous bare
+        # `torch._dynamo.disable()` call here was a no-op — without a
+        # function argument it just returns a decorator — and was removed
+        # for clarity; compile is governed by training.compile_mode.)
         import torch._dynamo
         torch._dynamo.config.suppress_errors = True
-        torch._dynamo.disable()
+
+        # Bitwise-deterministic runs force SDPA: FA2 2.7.4's backward is
+        # atomicAdd-nondeterministic and transformers 4.41.2 exposes no
+        # deterministic kwarg for it (replicability audit, G1).
+        if getattr(self.config.training, "deterministic", False):
+            print("  - [deterministic] forcing SDPA attention (skipping FA2)")
+            try:
+                self.model = create_model(
+                    self.config,
+                    attn_implementation="sdpa"
+                ).to(self.device)
+                print("  - Successfully initialized model with PyTorch SDPA")
+            except (ImportError, ValueError, TypeError) as e2:
+                print(f"  - SDPA unavailable ({e2}); falling back to eager attention")
+                self.model = create_model(self.config).to(self.device)
+                print("  - Model created with eager (standard) attention")
+            self._apply_torch_compile()
+            self._apply_memory_optimizations()
+            return
 
         try:
             # Try Flash Attention 2 first (Ampere+ GPUs, supported by GPT-2 / Mamba)
@@ -451,7 +513,14 @@ class Trainer:
         self._load_tokenizer()
         self._sync_vocab_size_with_tokenizer()
 
-        # Initialize components
+        # Initialize components.
+        # Re-seed IMMEDIATELY before model construction so initial weights
+        # are a pure function of (arch, seed) — condition-invariant by
+        # construction, not by the accident of nothing upstream consuming
+        # RNG (replicability audit, G3 / the paired-contrast design).
+        # Anything inserted between set_seed and model init in the future
+        # can no longer silently break init pairing.
+        set_seed(self.config.random_seed)
         print("  - Initializing model...")
         self._initialize_model()
 

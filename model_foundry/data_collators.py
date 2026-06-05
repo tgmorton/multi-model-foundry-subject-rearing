@@ -10,8 +10,10 @@ Data collators handle padding, label preparation, and objective-specific transfo
 
 from typing import Dict, List, Any, Optional
 import torch
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import random
+
+from .rng import derive_seed
 
 
 @dataclass
@@ -104,12 +106,55 @@ class MaskedLMDataCollator:
         mlm: Always True for masked LM
         mlm_probability: Probability of masking each token
         pad_to_multiple_of: Pad sequence length to multiple of this value
+        base_seed: When set, masking randomness comes from a dedicated
+            per-(base_seed, epoch, batch) generator instead of the
+            ambient (worker-process) torch RNG — making masks a pure
+            function of position in training, hence restart-stable
+            (replicability audit C3). ``None`` preserves legacy behavior.
+        epoch: Current epoch; set via ``set_epoch()`` from the training
+            loop BEFORE each ``iter(dataloader)`` so respawned workers
+            pickle the right value.
     """
 
     tokenizer: Any
     mlm: bool = True
     mlm_probability: float = 0.15
     pad_to_multiple_of: Optional[int] = 8
+    base_seed: Optional[int] = None
+    epoch: int = 0
+    _batch_counter: int = field(default=0, init=False, repr=False)
+
+    def set_epoch(self, epoch: int) -> None:
+        """Called by the training loop before each epoch's ``iter()``.
+
+        Workers are respawned at ``iter()`` time (persistent_workers is
+        off), so they pickle the collator with the fresh epoch and a
+        reset batch counter.
+        """
+        self.epoch = int(epoch)
+        self._batch_counter = 0
+
+    def _next_mask_generator(self) -> Optional[torch.Generator]:
+        """Per-batch CPU generator: derive_seed(base, "mlm_mask", epoch, batch).
+
+        The global batch index is reconstructed from the worker-local
+        counter: DataLoader assigns fetch tasks to workers round-robin,
+        so worker ``w`` of ``W`` processes batches ``w, w+W, w+2W, …``.
+        Deriving by INDEX (not by stream consumption) means resume
+        fast-forward and worker-count changes cannot desynchronise the
+        mask sequence.
+        """
+        if self.base_seed is None:
+            return None
+        info = torch.utils.data.get_worker_info()
+        if info is None:
+            global_batch = self._batch_counter
+        else:
+            global_batch = self._batch_counter * info.num_workers + info.id
+        self._batch_counter += 1
+        g = torch.Generator()
+        g.manual_seed(derive_seed(self.base_seed, "mlm_mask", self.epoch, global_batch))
+        return g
 
     def __call__(self, examples: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
         """
@@ -160,7 +205,8 @@ class MaskedLMDataCollator:
         # Apply masking for MLM
         if self.mlm:
             batch['input_ids'], batch['labels'] = self._mask_tokens(
-                batch['input_ids'], batch['attention_mask']
+                batch['input_ids'], batch['attention_mask'],
+                generator=self._next_mask_generator(),
             )
         else:
             # If MLM is disabled, labels are the same as input_ids
@@ -171,7 +217,8 @@ class MaskedLMDataCollator:
         return batch
 
     def _mask_tokens(
-        self, inputs: torch.Tensor, attention_mask: torch.Tensor
+        self, inputs: torch.Tensor, attention_mask: torch.Tensor,
+        generator: Optional[torch.Generator] = None,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Prepare masked tokens inputs/labels for masked language modeling.
@@ -184,6 +231,9 @@ class MaskedLMDataCollator:
         Args:
             inputs: Input token IDs [batch_size, seq_len]
             attention_mask: Attention mask [batch_size, seq_len]
+            generator: Dedicated CPU generator for this batch's masking
+                draws (replicability). ``None`` falls back to the
+                ambient torch RNG (legacy behavior).
 
         Returns:
             Tuple of (masked_inputs, labels)
@@ -201,25 +251,27 @@ class MaskedLMDataCollator:
         probability_matrix.masked_fill_(attention_mask == 0, value=0.0)
 
         # Sample which tokens to mask
-        masked_indices = torch.bernoulli(probability_matrix).bool()
+        masked_indices = torch.bernoulli(probability_matrix, generator=generator).bool()
 
         # Only compute loss on masked tokens
         labels[~masked_indices] = -100
 
         # 80% of the time, replace masked input tokens with [MASK]
         indices_replaced = (
-            torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
+            torch.bernoulli(torch.full(labels.shape, 0.8), generator=generator).bool()
+            & masked_indices
         )
         inputs[indices_replaced] = self.tokenizer.mask_token_id
 
         # 10% of the time, replace masked input tokens with random word
         indices_random = (
-            torch.bernoulli(torch.full(labels.shape, 0.5)).bool()
+            torch.bernoulli(torch.full(labels.shape, 0.5), generator=generator).bool()
             & masked_indices
             & ~indices_replaced
         )
         random_words = torch.randint(
-            len(self.tokenizer), labels.shape, dtype=torch.long
+            len(self.tokenizer), labels.shape, dtype=torch.long,
+            generator=generator,
         )
         inputs[indices_random] = random_words[indices_random]
 
@@ -290,7 +342,10 @@ def get_data_collator(config, tokenizer):
             tokenizer=tokenizer,
             mlm=True,
             mlm_probability=mlm_probability,
-            pad_to_multiple_of=8
+            pad_to_multiple_of=8,
+            # Dedicated masking stream (replicability): masks become a
+            # pure function of (seed, epoch, batch index).
+            base_seed=int(getattr(config, 'random_seed', 0) or 0),
         )
     else:
         raise ValueError(

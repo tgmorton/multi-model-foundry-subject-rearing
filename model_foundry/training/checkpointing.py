@@ -44,6 +44,11 @@ class CheckpointManager:
         # runs). TrainingLoop applies it post-construction. None when not
         # resuming or when the checkpoint had no scaler state.
         self.pending_amp_scaler_state: Optional[Dict[str, Any]] = None
+        # Replicability C1: within-epoch micro-batch position recovered
+        # from training_state.pt by load_checkpoint. The loop fast-forwards
+        # the first resumed epoch by this many micro-batches. 0 when not
+        # resuming or for checkpoints predating the field.
+        self.resume_batch_offset: int = 0
 
     def get_checkpoint_schedule(self) -> Set[int]:
         """
@@ -92,7 +97,8 @@ class CheckpointManager:
     def save_checkpoint(self, model, tokenizer, optimizer, lr_scheduler,
                         global_step: int, epoch: int, scaler: Optional[torch.cuda.amp.GradScaler] = None,
                         total_tokens_processed: int = 0,
-                        save_resume_state: bool = True):
+                        save_resume_state: bool = True,
+                        epoch_batch_offset: int = 0):
         """
         Save the complete training state to a checkpoint directory.
 
@@ -127,6 +133,12 @@ class CheckpointManager:
             state = {
                 'global_step': global_step,
                 'epoch': epoch,
+                # Replicability C1: within-epoch micro-batch position, so
+                # resume can fast-forward the (per-(seed, epoch) seeded)
+                # dataloader instead of re-entering the epoch at batch 0.
+                # Always a multiple of gradient_accumulation_steps because
+                # saves only fire on optimizer-step boundaries.
+                'epoch_batch_offset': epoch_batch_offset,
                 'optimizer': optimizer.state_dict(),
                 'lr_scheduler': lr_scheduler.state_dict(),
                 'random_state': random.getstate(),
@@ -321,6 +333,11 @@ class CheckpointManager:
         )
         global_step = state['global_step']
         epoch = state['epoch']
+        # Replicability C1: stash the within-epoch position for the loop's
+        # resume fast-forward. Back-compatible: checkpoints written before
+        # this field default to 0 (re-enter the epoch at batch 0 — the old
+        # behavior).
+        self.resume_batch_offset = int(state.get('epoch_batch_offset', 0) or 0)
 
         # Restore optimizer and scheduler states
         optimizer.load_state_dict(state['optimizer'])

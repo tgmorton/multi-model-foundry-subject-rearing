@@ -346,6 +346,15 @@ class TrainingConfig(BaseModel):
     use_tf32: bool = True  # Enable TF32 for faster training on Ampere+ GPUs
     use_gradient_checkpointing: bool = False  # Enable gradient checkpointing to save memory
 
+    # Bitwise-determinism mode (replicability audit, G1). Default OFF:
+    # production runs keep FA2 + TF32 + nondeterministic kernels and claim
+    # statistical replication. When true (the bit-repro verification
+    # subset): CUBLAS_WORKSPACE_CONFIG is exported,
+    # torch.use_deterministic_algorithms(True, warn_only=True) is set,
+    # TF32 is forced off, and model init uses SDPA instead of FA2.
+    # Costs ~10-30% throughput; never enable for production matrix runs.
+    deterministic: bool = False
+
     # torch.compile mode. None disables compile entirely. Valid modes:
     # "default", "reduce-overhead", "max-autotune". Backend is Inductor
     # (torch.compile's default) — the old hard-coded "eager" backend
