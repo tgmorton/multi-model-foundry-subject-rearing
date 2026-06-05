@@ -203,7 +203,14 @@ def main() -> None:
     # test_corpus already points at /raw/<lang>/test_10M/ in the sweep base.
 
     # 5) Production-mode training settings.
-    prod_epochs = int(cfg["training"].get("production_epochs", 30))
+    # PROD_EPOCHS env overrides the production horizon — used by short
+    # validation dry-runs (e.g. 3-epoch A/B parity checks on seed 999)
+    # so they exercise the EXACT production path end to end. Unset for
+    # real production (30).
+    prod_epochs = int(
+        os.environ.get("PROD_EPOCHS")
+        or cfg["training"].get("production_epochs", 30)
+    )
     cfg["training"]["epochs"] = prod_epochs
 
     # 6) Seed + identity. (Resolved before the schedule so RESUME mode can

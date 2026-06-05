@@ -76,7 +76,7 @@ ARCH_SETTINGS = {
     "gpt2_large":  ( 4, "5Gi", "2"),  # was 4Gi; fresh-run spike OOMKilled at 4Gi (2026-06-04, baseline-h0-s42 on L4) — steady ~2.9Gi, spike headroom needed like bert
     "bert_large":  ( 4, "5Gi", "2"),   # uses ~3.8Gi peak
     "lstm":        (16, "4Gi", "2"),
-    "mamba_370m":  ( 4, "4Gi", "2"),
+    "mamba_370m":  ( 4, "5Gi", "2"),  # was 4Gi; working set saturated the 4Gi cap on resumes (peak 4087Mi observed 2026-06-04) — same spike headroom as bert/gpt2_large
 }
 
 # 24 GB GPU pool only — no L40/L40S (those are 48 GB).
@@ -132,7 +132,8 @@ def _job_yaml(arch: str, lang: str, intervention: str,
               resume: bool = False,
               job_suffix: str = "",
               git_ref: str = "main",
-              image: str = DEFAULT_IMAGE) -> str:
+              image: str = DEFAULT_IMAGE,
+              prod_epochs: int | None = None) -> str:
     """Return the K8s Job YAML for a single (arch × intervention) cell.
 
     If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
@@ -173,6 +174,10 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     # Required for the recovery of the 207 truncated runs; fresh launches omit
     # it so production_agent computes the full schedule.
     resume_env = '\n        - {name: RESUME, value: "1"}' if resume else ""
+    # PROD_EPOCHS override — short validation dry-runs only (e.g. 3-epoch
+    # parity checks); unset for real production (agent defaults to 30).
+    if prod_epochs is not None:
+        resume_env += f'\n        - {{name: PROD_EPOCHS, value: "{int(prod_epochs)}"}}'
 
     return f"""---
 apiVersion: batch/v1
@@ -389,6 +394,9 @@ def main() -> None:
                     help="JSON list overriding the default seeds [42, 137] "
                          "(e.g. '[999]' for a throwaway validation run). "
                          "SLOT_MAP_JSON seed_idx indexes into this list.")
+    ap.add_argument("--prod-epochs", type=int, default=None,
+                    help="Override the production epoch horizon (validation "
+                         "dry-runs only, e.g. 3). Unset = agent default (30).")
     ap.add_argument("--skip-push-check", action="store_true",
                     help="Skip the pre-flight check that --git-ref/HEAD is "
                          "reachable from a remote branch (pods fetch the SHA "
@@ -498,6 +506,7 @@ def main() -> None:
                 job_suffix=args.job_suffix,
                 git_ref=git_ref,
                 image=args.image,
+                prod_epochs=args.prod_epochs,
             )
             if args.dry_run:
                 n = len(slots) if slots is not None else 10
