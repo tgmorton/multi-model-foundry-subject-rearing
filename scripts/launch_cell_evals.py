@@ -176,8 +176,8 @@ spec:
         - {{name: AWS_DEFAULT_REGION, value: "us-west-1"}}
         - {{name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}}
         resources:
-          requests: {{memory: {pod_ram}, cpu: "2", nvidia.com/gpu: 1}}
-          limits:   {{memory: {pod_ram}, cpu: "2", nvidia.com/gpu: 1}}
+          requests: {{memory: {pod_ram}, cpu: "1", nvidia.com/gpu: 1}}
+          limits:   {{memory: {pod_ram}, cpu: "1", nvidia.com/gpu: 1}}
         volumeMounts:
         - {{name: repo, mountPath: /opt/repo}}
         - {{name: data, mountPath: /mnt/data}}
@@ -204,10 +204,12 @@ def main() -> None:
     ap.add_argument("--image", default=DEFAULT_IMAGE)
     ap.add_argument("--parallelism", type=int, default=8)
     ap.add_argument("--batch-size", type=int, default=64)
-    ap.add_argument("--pod-ram", default="10Gi",
-                    help="Pod memory request==limit. 10Gi covers the mamba "
-                         "fp32 state-dict load (~1.5GB weights ×2 transient) "
-                         "with the 2x headroom rule.")
+    ap.add_argument("--pod-ram", default="4Gi",
+                    help="Pod memory request==limit. Observed steady-state "
+                         "~1GB (bert/gpt2) with mamba's state-dict load "
+                         "peaking ~2.2GB — 4Gi is the 2x-headroom number. "
+                         "The first wave's 10Gi requests sat at ~10% use and "
+                         "fed the NRP utilization webhook (2026-06-11).")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
     ap.add_argument("--dry-run", action="store_true")
