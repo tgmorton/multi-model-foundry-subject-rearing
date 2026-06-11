@@ -211,8 +211,14 @@ class PerModelRunner:
             raise RuntimeError(
                 f"Unexpected keys loading checkpoint: {unexpected}"
             )
-        allowed_missing = set(getattr(model, "_tied_weights_keys", None) or [])
-        unexpected_missing = [k for k in missing if k not in allowed_missing]
+        # HF declares _tied_weights_keys relative to the task head (e.g.
+        # BertForMaskedLM lists "predictions.decoder.bias" for the missing
+        # key "cls.predictions.decoder.bias"), so match by suffix too.
+        allowed_missing = list(getattr(model, "_tied_weights_keys", None) or [])
+        unexpected_missing = [
+            k for k in missing
+            if not any(k == t or k.endswith(t) for t in allowed_missing)
+        ]
         if unexpected_missing:
             raise RuntimeError(
                 f"Unexpected missing keys loading checkpoint: {unexpected_missing}"
