@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import pickle
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -216,7 +217,9 @@ class StimulusCache:
     def save(self, path: str | Path) -> Path:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(path.suffix + ".tmp")
+        # pid-unique tmp: concurrent builders (parallel eval pods on a shared
+        # filesystem) must not interleave writes into one tmp inode.
+        tmp = path.with_suffix(f"{path.suffix}.tmp.{os.getpid()}")
         with open(tmp, "wb") as fh:
             pickle.dump(self.to_dict(), fh, protocol=pickle.HIGHEST_PROTOCOL)
         tmp.replace(path)

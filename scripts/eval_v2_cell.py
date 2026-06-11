@@ -116,9 +116,6 @@ def main():
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     ap.add_argument("--scoring_version", default="null-subj-v2-r1")
     ap.add_argument("--scratch_dir", help="Pod-local staging dir for parquet writes.")
-    ap.add_argument("--max_checkpoints", type=int, default=0,
-                    help="Evaluate only the LAST N checkpoints (0 = all). "
-                         "Smoke runs use 1.")
     ap.add_argument("--no-registry", action="store_true",
                     help="Skip S3 registry writes (local/smoke runs).")
     ap.add_argument("--rerun", action="store_true",
@@ -165,11 +162,9 @@ def main():
     if not ckpts:
         log.error("No checkpoints under %s", ckpt_root)
         sys.exit(3)
-    if args.max_checkpoints > 0:
-        ckpts = ckpts[-args.max_checkpoints:]
     log.info("%d checkpoint(s), steps %d..%d",
              len(ckpts), ckpts[0][0], ckpts[-1][0])
-    if len(ckpts) < 60 and args.max_checkpoints == 0:
+    if len(ckpts) < 60:
         log.warning("Only %d checkpoints — production runs should have ~80. "
                     "Proceeding (registry records the actual count).", len(ckpts))
 
