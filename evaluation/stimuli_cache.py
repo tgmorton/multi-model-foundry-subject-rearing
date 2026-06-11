@@ -294,7 +294,9 @@ def build_cache(
             )
 
         for _, row in df.iterrows():
-            context = str(row["context"])
+            # Empty context cells (e.g. wh-question stimuli) read as NaN —
+            # str() would silently prepend a literal "nan" pseudo-context.
+            context = "" if pd.isna(row["context"]) else str(row["context"])
             target = str(row["target"])
             # Context → ids with BOS
             context_ids, bos_id, eos_id = _encode_with_specials(tokenizer, context)
