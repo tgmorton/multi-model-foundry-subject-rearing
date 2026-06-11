@@ -41,6 +41,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -359,6 +360,24 @@ def main():
     n_missing = sum(1 for r in meta_rows if r["tokens_seen"] is None)
     log.info("checkpoint sidecar → %s (%d rows, %d missing tokens_seen)",
              meta_path, len(meta_rows), n_missing)
+
+    # ── Upload this run's parquets to S3 (laptop-pullable; non-fatal) ───
+    s3_prefix = None
+    try:
+        import boto3
+        bucket = os.environ.get("REGISTRY_BUCKET")
+        if bucket:
+            s3 = boto3.client("s3",
+                              endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
+            s3_prefix = f"eval_results/{BENCHMARK}"
+            for table in ("items", "pairs", "per_token", "checkpoints"):
+                f = output_root / table / f"cell_id={args.run_id}.parquet"
+                if f.exists():
+                    s3.upload_file(str(f), bucket,
+                                   f"{s3_prefix}/{table}/{f.name}")
+            log.info("uploaded result parquets → s3://%s/%s/", bucket, s3_prefix)
+    except Exception as exc:
+        log.warning("S3 result upload failed (PVC copy remains): %s", exc)
 
     # ── Registry: benchmark done + metric summary ───────────────────────
     if not args.no_registry:

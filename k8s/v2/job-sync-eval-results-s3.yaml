@@ -1,0 +1,71 @@
+# One-shot PVC → S3 sync of eval-result parquets (idempotent; re-apply
+# any time — re-runs skip files whose size already matches remote).
+# No GPU. Pulls the repo at main tip; the sync script has no model deps.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-sync-eval-results-s3
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-sync
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-sync
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin main
+          git checkout --detach FETCH_HEAD
+        resources:
+          requests: {memory: 512Mi, cpu: "200m"}
+          limits:   {memory: 512Mi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: sync
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          python3 scripts/sync_eval_results_s3.py \
+            --root /mnt/data/eval_v2/null_subj_v2 --benchmark null_subj_v2
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          requests: {memory: 2Gi, cpu: "1"}
+          limits:   {memory: 2Gi, cpu: "1"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
