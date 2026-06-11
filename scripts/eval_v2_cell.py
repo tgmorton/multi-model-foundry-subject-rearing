@@ -253,15 +253,16 @@ def main():
     # ── Model factory + scorer ──────────────────────────────────────────
     scorer = None
     # Training configs carry attn_implementation=flash_attention_2, but FA2
-    # rejects fp32 inputs and eval runs in full fp32 (no autocast). SDPA is
-    # numerically exact attention, so scores are unaffected.
+    # rejects fp32 inputs and eval runs in full fp32 (no autocast). Eager
+    # attention is the exact same math (transformers 4.41 in the image has
+    # no GPT-2 SDPA support); throughput is irrelevant at ~1k stimuli.
     if arch.startswith("gpt2"):
         from transformers import AutoConfig, AutoModelForCausalLM
         hf_config = AutoConfig.from_pretrained(str(ckpts[0][1]))
 
         def model_factory():
             return AutoModelForCausalLM.from_config(
-                hf_config, attn_implementation="sdpa")
+                hf_config, attn_implementation="eager")
 
     elif arch == "bert_large":
         from transformers import AutoConfig, AutoModelForMaskedLM
@@ -271,7 +272,7 @@ def main():
 
         def model_factory():
             return AutoModelForMaskedLM.from_config(
-                hf_config, attn_implementation="sdpa")
+                hf_config, attn_implementation="eager")
 
     elif arch in ("lstm", "mamba_370m"):
         from model_foundry.cli import load_config
