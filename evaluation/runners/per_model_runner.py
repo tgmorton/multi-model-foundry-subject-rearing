@@ -146,6 +146,14 @@ class CellSpec:
     unigram: Optional[UnigramTable] = None
     device: str = "cpu"
     batch_size: int = 16
+    # Scoring function with the same signature as `batched_surprisal`.
+    # None → causal left-to-right scoring. Bidirectional MLMs (bert_large)
+    # pass a PLL scorer from `evaluation.core.pll_surprisal` instead.
+    scorer: Optional[Callable] = None
+    # Padding id used when stacking stimuli into a batch. Must be the
+    # tokenizer's real pad id (positions are masked out of attention, but
+    # the embedding lookup still has to be in-vocab).
+    pad_id: int = 0
 
 
 # --- Runner -----------------------------------------------------------------
@@ -234,15 +242,16 @@ class PerModelRunner:
 
         # Run in batches
         all_results = []
+        score_fn = self.cell.scorer or batched_surprisal
         bsz = max(1, self.cell.batch_size)
         for start in range(0, len(stimuli), bsz):
             end = min(start + bsz, len(stimuli))
-            batch_out = batched_surprisal(
+            batch_out = score_fn(
                 model,
                 full_ids_list[start:end],
                 context_lens[start:end],
                 hotspot_indices[start:end],
-                pad_id=0,
+                pad_id=self.cell.pad_id,
                 device=self.cell.device,
             )
             all_results.extend(batch_out)
