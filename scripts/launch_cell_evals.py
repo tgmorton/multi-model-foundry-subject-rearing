@@ -157,14 +157,32 @@ spec:
           "
 
           cd /opt/repo
-          python3 scripts/eval_v2_cell.py \\
-            --run_id "$RUN_ID" \\
-            --batch_size {batch_size} \\
-            --scratch_dir /tmp/eval_scratch {extra_args}
+          # PACK>1: this pod owns a slice of RUN_IDS_JSON and runs PACK
+          # cells concurrently on its one GPU — overlapping one cell's
+          # checkpoint I/O and post-eval upload with another's forwards
+          # keeps GPU/CPU/mem duty cycles high (NRP utilization webhook).
+          if [ "${{PACK:-1}}" -gt 1 ]; then
+            python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids
+            fail=0
+            while read -r rid; do
+              [ -z "$rid" ] && continue
+              ( python3 scripts/eval_v2_cell.py --run_id "$rid" \\
+                  --batch_size {batch_size} --scratch_dir /tmp/eval_scratch \\
+                  {extra_args} 2>&1 | sed "s/^/[$rid] /" ) &
+            done < /tmp/my_run_ids
+            for p in $(jobs -p); do wait "$p" || fail=1; done
+            exit $fail
+          else
+            python3 scripts/eval_v2_cell.py \\
+              --run_id "$RUN_ID" \\
+              --batch_size {batch_size} \\
+              --scratch_dir /tmp/eval_scratch {extra_args}
+          fi
         env:
         - {{name: PYTHONPATH, value: "/opt/repo"}}
         - {{name: PYTHONHASHSEED, value: "0"}}
         - {{name: GIT_REF, value: "{git_ref}"}}
+        - {{name: PACK, value: "{pack}"}}
         - {{name: RUN_IDS_JSON, value: '{run_ids_json}'}}
         - name: NODE_NAME
           valueFrom: {{fieldRef: {{fieldPath: spec.nodeName}}}}
@@ -176,8 +194,8 @@ spec:
         - {{name: AWS_DEFAULT_REGION, value: "us-west-1"}}
         - {{name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}}
         resources:
-          requests: {{memory: {pod_ram}, cpu: "1", nvidia.com/gpu: 1}}
-          limits:   {{memory: {pod_ram}, cpu: "1", nvidia.com/gpu: 1}}
+          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
+          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
         volumeMounts:
         - {{name: repo, mountPath: /opt/repo}}
         - {{name: data, mountPath: /mnt/data}}
@@ -210,6 +228,11 @@ def main() -> None:
                          "peaking ~2.2GB — 4Gi is the 2x-headroom number. "
                          "The first wave's 10Gi requests sat at ~10% use and "
                          "fed the NRP utilization webhook (2026-06-11).")
+    ap.add_argument("--pack", type=int, default=1,
+                    help="Cells run concurrently per pod/GPU. >1 overlaps "
+                         "checkpoint I/O + result upload of one cell with "
+                         "another's forwards (GPU duty cycle ×pack). Memory "
+                         "and CPU requests scale with pack unless overridden.")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
     ap.add_argument("--dry-run", action="store_true")
@@ -221,12 +244,18 @@ def main() -> None:
         run_ids = [f"{arch}-{args.lang}-{cond}-{args.slot}"
                    for arch in ARCHS for cond in CONDITIONS]
 
+    pack = max(1, args.pack)
+    n_pods = -(-len(run_ids) // pack)  # ceil
+    pod_ram = args.pod_ram
+    if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
+        pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
+
     name = f"thomas-eval-cell-{args.lang}-{args.name_suffix}"
     yaml_text = JOB_TEMPLATE.format(
         name=name,
         lang=args.lang,
-        completions=len(run_ids),
-        parallelism=min(args.parallelism, len(run_ids)),
+        completions=n_pods,
+        parallelism=min(args.parallelism, n_pods),
         gpu_values="\n".join(f"                - {g}" for g in GPU_POOL_24GB),
         bad_nodes="\n".join(f"                - {n}" for n in BAD_NODES),
         repo_url=REPO_URL,
@@ -234,7 +263,9 @@ def main() -> None:
         image=args.image,
         run_ids_json=json.dumps(run_ids),
         batch_size=args.batch_size,
-        pod_ram=args.pod_ram,
+        pod_ram=pod_ram,
+        pod_cpu=str(pack),
+        pack=pack,
         extra_args=args.extra_args,
     )
 
