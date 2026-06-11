@@ -85,6 +85,9 @@ class HFEvalTokenizer:
     def encode(self, text: str):
         return self.hf.encode(text, add_special_tokens=False)
 
+    def decode(self, ids):
+        return self.hf.decode(list(ids), skip_special_tokens=False)
+
     def bos_id(self):
         v = getattr(self.hf, "cls_token_id", None)
         if v is None:
