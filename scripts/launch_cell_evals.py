@@ -206,8 +206,10 @@ spec:
         - {{name: AWS_DEFAULT_REGION, value: "us-west-1"}}
         - {{name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}}
         resources:
-          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
-          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1}}
+          # ephemeral-storage covers checkpoint prefetch staging (depth 3 ×
+          # ~3GB worst case × pack) plus parquet scratch.
+          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 20Gi}}
+          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 40Gi}}
         volumeMounts:
         - {{name: repo, mountPath: /opt/repo}}
         - {{name: data, mountPath: /mnt/data}}

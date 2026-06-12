@@ -117,6 +117,12 @@ def main():
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     ap.add_argument("--scoring_version", default="null-subj-v2-r1")
     ap.add_argument("--scratch_dir", help="Pod-local staging dir for parquet writes.")
+    ap.add_argument("--prefetch_dir", default="/tmp/eval_prefetch",
+                    help="Pod-local staging dir for checkpoint reads — each "
+                         "checkpoint crosses the shared FS once, in the "
+                         "background, while the GPU scores the previous one. "
+                         "Empty string disables.")
+    ap.add_argument("--prefetch_depth", type=int, default=3)
     ap.add_argument("--no-registry", action="store_true",
                     help="Skip S3 registry writes (local/smoke runs).")
     ap.add_argument("--rerun", action="store_true",
@@ -322,6 +328,9 @@ def main():
             cell, output_root=output_root,
             scoring_version=args.scoring_version,
             scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
+            prefetch_dir=(Path(args.prefetch_dir) / args.run_id
+                          if args.prefetch_dir else None),
+            prefetch_depth=args.prefetch_depth,
         )
         summary = runner.run_once()
         log.info("done: processed=%d cached=%d forwards=%d",

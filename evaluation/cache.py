@@ -26,9 +26,10 @@ from __future__ import annotations
 import hashlib
 import logging
 import shutil
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from evaluation.output_v2 import write_cell_results
 from evaluation.runners.per_model_runner import (
@@ -107,6 +108,63 @@ def mark_cached(output_root: Path, key: CacheKey) -> Path:
 
 # --- Cached runner ----------------------------------------------------------
 
+class _CheckpointPrefetcher:
+    """Stage upcoming checkpoints' weight files onto local disk while the
+    GPU scores the current one.
+
+    Two wins on CephFS: the evaluator loads weights from node-local
+    ephemeral disk (instant) instead of blocking on a ~66 MB/s single
+    stream, and `streams` concurrent copiers raise aggregate CephFS read
+    throughput (per-stream cap ≫ aggregate cap). Staging failures fall
+    back to direct reads — the prefetcher can only make things faster,
+    never break a cell.
+    """
+
+    def __init__(self, items: List[Tuple[int, Path]], stage_root: Path,
+                 depth: int = 3, streams: int = 2):
+        self._items = items
+        self._stage_root = Path(stage_root)
+        self._depth = max(1, depth)
+        self._pool = ThreadPoolExecutor(max_workers=max(1, streams),
+                                        thread_name_prefix="ckpt-prefetch")
+        self._futs: Dict[int, Future] = {}
+        self._next_submit = 0
+
+    def _stage(self, step: int, path: Path) -> Optional[Path]:
+        try:
+            dst = self._stage_root / f"checkpoint-{step}"
+            dst.mkdir(parents=True, exist_ok=True)
+            for name in CachedRunner._WEIGHT_FILES:
+                src = Path(path) / name
+                if src.exists():
+                    shutil.copy2(src, dst / name)
+                    return dst
+            return None
+        except Exception as exc:
+            logger.warning("prefetch of checkpoint-%d failed (%s) — "
+                           "falling back to direct read", step, exc)
+            return None
+
+    def __iter__(self):
+        """Yield (step, original_path, staged_dir_or_None) in order."""
+        for idx in range(len(self._items)):
+            while (self._next_submit < len(self._items)
+                   and self._next_submit - idx < self._depth):
+                i = self._next_submit
+                s, p = self._items[i]
+                self._futs[i] = self._pool.submit(self._stage, s, p)
+                self._next_submit += 1
+            step, path = self._items[idx]
+            staged = self._futs.pop(idx).result()
+            yield step, path, staged
+            if staged is not None:
+                shutil.rmtree(staged, ignore_errors=True)
+
+    def close(self) -> None:
+        self._pool.shutdown(wait=False)
+        shutil.rmtree(self._stage_root, ignore_errors=True)
+
+
 class CachedRunner:
     """Runs a cell's checkpoints with skip-if-cached semantics.
 
@@ -125,6 +183,9 @@ class CachedRunner:
         output_root: Path,
         scoring_version: str = "v1",
         scratch_dir: Optional[Path] = None,
+        prefetch_dir: Optional[Path] = None,
+        prefetch_depth: int = 3,
+        prefetch_streams: int = 2,
     ):
         """
         Args:
@@ -144,6 +205,11 @@ class CachedRunner:
         self.output_root = Path(output_root)
         self.scoring_version = scoring_version
         self.scratch_dir = Path(scratch_dir) if scratch_dir else None
+        # Pod-local staging dir for checkpoint reads (see
+        # _CheckpointPrefetcher). None disables prefetch (direct reads).
+        self.prefetch_dir = Path(prefetch_dir) if prefetch_dir else None
+        self.prefetch_depth = prefetch_depth
+        self.prefetch_streams = prefetch_streams
         self._stimuli_id = cell.stimuli.stimuli_id
         self._unigram_id = (
             cell.unigram.tokenizer_id + "::" + cell.unigram.corpus_id
@@ -165,6 +231,8 @@ class CachedRunner:
         )
 
     _TABLES = ("items", "pairs", "per_token")
+
+    _WEIGHT_FILES = ("model.safetensors", "pytorch_model.bin")
 
     def _table_path(self, root: Path, table: str) -> Path:
         return Path(root) / table / f"cell_id={self.cell.cell_id}.parquet"
@@ -240,28 +308,51 @@ class CachedRunner:
         # permanent hole.
         existing_steps = self._persisted_steps()
 
-        for step, path in ckpts:
-            cid = checkpoint_id(path)
-            key = self._make_key(cid)
-            if is_cached(self.output_root, key):
-                if step in existing_steps:
-                    logger.info("[%s] checkpoint-%d cached (skip)",
-                                self.cell.cell_id, step)
-                    cached.append(step)
-                    continue
-                logger.warning(
-                    "[%s] checkpoint-%d has a marker but no persisted rows "
-                    "— stale marker, re-evaluating", self.cell.cell_id, step)
+        # With a prefetch_dir, each checkpoint's weights cross CephFS
+        # exactly once (background copy to local disk); the content hash
+        # for the cache key AND the state-dict load both hit the local
+        # copy. Without it, hashing alone re-reads every checkpoint from
+        # the shared filesystem (the historical 2× read cost).
+        prefetcher = None
+        if self.prefetch_dir:
+            prefetcher = _CheckpointPrefetcher(
+                ckpts, self.prefetch_dir,
+                depth=self.prefetch_depth, streams=self.prefetch_streams,
+            )
+            stream = iter(prefetcher)
+        else:
+            stream = ((s, p, None) for s, p in ckpts)
 
-            # Lazy init — only build the model if we actually have work.
-            if self._inner is None:
-                self._inner = PerModelRunner(self.cell)
-            self._inner.load_checkpoint(path)
-            items, pairs = self._inner.evaluate_checkpoint(step, path)
-            self.n_forward_passes += 1
-            all_items.extend(items)
-            all_pairs.extend(pairs)
-            processed.append(step)
+        try:
+            for step, path, staged in stream:
+                local = staged or path
+                cid = checkpoint_id(local)
+                key = self._make_key(cid)
+                if is_cached(self.output_root, key):
+                    if step in existing_steps:
+                        logger.info("[%s] checkpoint-%d cached (skip)",
+                                    self.cell.cell_id, step)
+                        cached.append(step)
+                        continue
+                    logger.warning(
+                        "[%s] checkpoint-%d has a marker but no persisted "
+                        "rows — stale marker, re-evaluating",
+                        self.cell.cell_id, step)
+
+                # Lazy init — only build the model if we actually have work.
+                if self._inner is None:
+                    self._inner = PerModelRunner(self.cell)
+                self._inner.load_checkpoint(local)
+                # Provenance records the real checkpoint path, not the
+                # staging copy.
+                items, pairs = self._inner.evaluate_checkpoint(step, path)
+                self.n_forward_passes += 1
+                all_items.extend(items)
+                all_pairs.extend(pairs)
+                processed.append(step)
+        finally:
+            if prefetcher is not None:
+                prefetcher.close()
 
         # Write the freshly-computed results in one pass (partitioned parquet).
         # If scratch_dir is set, write to pod-local ephemeral first and

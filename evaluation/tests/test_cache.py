@@ -323,3 +323,35 @@ def test_stale_marker_without_rows_reevaluates(tmp_path):
     items = pd.read_parquet(
         output_root / "items" / f"cell_id={cell.cell_id}.parquet")
     assert sorted(items.checkpoint_step.unique()) == [10, 20]
+
+
+def test_prefetch_path_equivalent_and_cleans_up(tmp_path):
+    """Prefetched (staged-read) evaluation must produce identical results
+    to direct reads, leave no staging residue, and keep marker keys
+    compatible (same content hash from the staged copy)."""
+    import pandas as pd
+
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    out_direct = tmp_path / "out_direct"
+    CachedRunner(cell, output_root=out_direct,
+                 scoring_version="v1").run_once()
+
+    out_pre = tmp_path / "out_pre"
+    stage = tmp_path / "stage"
+    s = CachedRunner(cell, output_root=out_pre, scoring_version="v1",
+                     prefetch_dir=stage, prefetch_depth=2,
+                     prefetch_streams=2).run_once()
+    assert s["n_processed"] == 2
+    assert not stage.exists()  # staging fully cleaned
+
+    a = pd.read_parquet(out_direct / "items" / f"cell_id={cell.cell_id}.parquet")
+    b = pd.read_parquet(out_pre / "items" / f"cell_id={cell.cell_id}.parquet")
+    key = ["checkpoint_step", "item_id", "pronoun_status"]
+    a, b = a.sort_values(key).reset_index(drop=True), b.sort_values(key).reset_index(drop=True)
+    pd.testing.assert_series_equal(a.target_mean_log_prob, b.target_mean_log_prob)
+
+    # Marker compatibility: a direct-read rerun over the prefetched
+    # output sees everything cached (same content-hash keys).
+    s2 = CachedRunner(cell, output_root=out_pre,
+                      scoring_version="v1").run_once()
+    assert s2["n_forward_passes"] == 0
