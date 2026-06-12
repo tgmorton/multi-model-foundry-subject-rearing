@@ -146,6 +146,99 @@ def endstate(pairs: pd.DataFrame, archs: list[str]) -> Path:
     return Path(f"{out}.png")
 
 
+ARCHS_ALL = ["gpt2_small", "gpt2_medium", "gpt2_large", "bert_large",
+             "lstm", "mamba_370m"]
+ARCH_COLORS = dict(zip(ARCHS_ALL, plt.cm.Dark2.colors[:6]))
+TOKENS_PER_EPOCH = 128_000_000  # 90M-word corpus ≈ 128M tokens/epoch
+
+
+def cross_arch_baseline(pairs: pd.DataFrame, ckpts: pd.DataFrame) -> Path:
+    """Baseline trajectories for all architectures on a tokens-seen axis.
+
+    Steps are not comparable across architectures (effective batch is an
+    HP), so this joins each cell's checkpoint→tokens_seen sidecar. bert
+    panels are PLL rather than causal surprisal — same decision rule,
+    different scorer.
+    """
+    tok = ckpts.set_index(["cell_id", "checkpoint_step"]).tokens_seen
+    d = pairs[pairs.intervention == "baseline"].copy()
+    d["tokens"] = d.set_index(["cell_id", "checkpoint_step"]).index.map(tok)
+    d = d.dropna(subset=["tokens"])
+    fig, axes = plt.subplots(4, 2, figsize=(11, 13), sharex=True, sharey=True)
+    for ax, cat in zip(axes.flat, CATS):
+        sub_c = d[d.category == cat]
+        for arch in ARCHS_ALL:
+            sub = sub_c[sub_c.architecture == arch]
+            if sub.empty:
+                continue
+            g = sub.groupby("tokens").prefers_overt_meanlp
+            p, n = g.mean(), g.size()
+            se = np.sqrt(p * (1 - p) / n)
+            ax.plot(p.index, p.values, color=ARCH_COLORS[arch], lw=1.5,
+                    label=arch)
+            ax.fill_between(p.index, p - 1.96 * se, p + 1.96 * se,
+                            color=ARCH_COLORS[arch], alpha=0.12, lw=0)
+        ax.axvline(TOKENS_PER_EPOCH, color="0.45", lw=0.9)
+        ax.text(TOKENS_PER_EPOCH * 1.2, 0.05, "end of first epoch",
+                color="0.45", fontsize=7.5, rotation=90, va="bottom")
+        ax.axhline(0.5, color="0.6", ls=":", lw=1)
+        _style_axis(ax)
+        ax.set_xscale("log")
+        ax.set_title(CAT_TITLES[cat], loc="left", fontweight="bold",
+                     fontsize=11)
+    for ax in axes[-1]:
+        ax.set_xlabel("Tokens Seen")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("Overt Preference")
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+               bbox_to_anchor=(0.5, -0.015), fontsize=10)
+    fig.suptitle("Baseline Overt Preference by Architecture (matched data; "
+                 "bert = PLL)", fontweight="bold", x=0.02, ha="left",
+                 fontsize=14)
+    fig.tight_layout(rect=(0, 0.025, 1, 0.985))
+    out = FIGS / "scil_cross_arch_baseline_tokens"
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return Path(f"{out}.png")
+
+
+def heatmap_all(pairs: pd.DataFrame) -> Path:
+    """Final-checkpoint category × condition heatmaps, all architectures."""
+    finals = pairs.groupby("cell_id").checkpoint_step.transform("max")
+    fin = pairs[pairs.checkpoint_step == finals]
+    clabels = ["base", "−expl", "−case", "−vmorph", "+vmorph"]
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8.5), sharey=True)
+    im = None
+    for ax, arch in zip(axes.flat, ARCHS_ALL):
+        d = fin[fin.architecture == arch]
+        m = (d.pivot_table(index="category", columns="intervention",
+                           values="prefers_overt_meanlp", aggfunc="mean")
+             .reindex(index=CATS, columns=CONDS))
+        im = ax.imshow(m.values, cmap="RdYlGn", vmin=0, vmax=1, aspect="auto")
+        ax.set_xticks(range(len(CONDS)), clabels, fontsize=9)
+        ax.set_yticks(range(len(CATS)), [CAT_TITLES[c] for c in CATS],
+                      fontsize=9)
+        for i in range(len(CATS)):
+            for j in range(len(CONDS)):
+                v = m.values[i, j]
+                if not np.isnan(v):
+                    ax.text(j, i, f"{v:.2f}", ha="center", va="center",
+                            fontsize=8)
+        ax.set_title(arch + (" (PLL)" if arch == "bert_large" else ""),
+                     fontweight="bold", fontsize=11)
+    fig.colorbar(im, ax=axes, shrink=0.7,
+                 label="P(prefers overt), final checkpoint")
+    fig.suptitle("null-subj-v2 — End-State Overt Preference, Full Grid "
+                 "(en, h0-s42)", fontweight="bold", fontsize=14)
+    out = FIGS / "scil_heatmap_all_archs"
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return Path(f"{out}.png")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--archs", nargs="+",
@@ -162,6 +255,10 @@ def main() -> None:
             continue
         print(" ", learning_curves(pairs, arch))
     print(" ", endstate(pairs, [a for a in args.archs if a in avail]))
+    ckpts = pd.concat([pd.read_parquet(f)
+                       for f in (DATA / "checkpoints").glob("*.parquet")])
+    print(" ", cross_arch_baseline(pairs, ckpts))
+    print(" ", heatmap_all(pairs))
 
 
 if __name__ == "__main__":
