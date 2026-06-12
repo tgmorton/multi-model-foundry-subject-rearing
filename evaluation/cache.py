@@ -164,6 +164,62 @@ class CachedRunner:
             scoring_version=self.scoring_version,
         )
 
+    _TABLES = ("items", "pairs", "per_token")
+
+    def _table_path(self, root: Path, table: str) -> Path:
+        return Path(root) / table / f"cell_id={self.cell.cell_id}.parquet"
+
+    def _persisted_steps(self) -> set:
+        """checkpoint_steps with rows in the persisted items parquet."""
+        p = self._table_path(self.output_root, "items")
+        if not p.exists():
+            return set()
+        try:
+            import pandas as pd
+            return set(pd.read_parquet(p, columns=["checkpoint_step"])
+                       .checkpoint_step.unique())
+        except Exception as exc:  # unreadable parquet → trust nothing
+            logger.warning("[%s] could not read persisted items parquet "
+                           "(%s) — treating all markers as stale",
+                           self.cell.cell_id, exc)
+            return set()
+
+    def _carry_rows(self, cached_steps: List[int]) -> dict:
+        """Previously-persisted rows for validated-cached checkpoints."""
+        import pandas as pd
+        carry = {}
+        for table in self._TABLES:
+            p = self._table_path(self.output_root, table)
+            if not p.exists():
+                continue
+            try:
+                df = pd.read_parquet(p)
+                keep = df[df.checkpoint_step.isin(cached_steps)]
+                if len(keep):
+                    carry[table] = keep
+            except Exception as exc:
+                logger.warning("[%s] carry read failed for %s: %s",
+                               self.cell.cell_id, table, exc)
+        return carry
+
+    def _merge_carry(self, carry: dict, write_root: Path) -> None:
+        """Concat carried rows into the freshly-written cell parquets."""
+        if not carry:
+            return
+        import pandas as pd
+        for table, keep in carry.items():
+            dst = self._table_path(write_root, table)
+            if dst.exists():
+                merged = pd.concat([keep, pd.read_parquet(dst)],
+                                   ignore_index=True)
+            else:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                merged = keep
+            merged = merged.sort_values("checkpoint_step", kind="stable")
+            merged.to_parquet(dst, index=False)
+            logger.info("[%s] merged %d carried rows into %s",
+                        self.cell.cell_id, len(keep), dst.name)
+
     def run_once(self) -> dict:
         """Evaluate any uncached checkpoints; return a summary dict."""
         ckpts = find_checkpoints_sorted(self.cell.checkpoint_root)
@@ -177,14 +233,25 @@ class CachedRunner:
         all_items: List[CheckpointItemResult] = []
         all_pairs: List[CheckpointPairResult] = []
 
+        # Steps whose rows actually exist in the persisted cell parquet.
+        # A marker is only trusted when its rows are present — a run that
+        # died between parquet write and marker drop (or vice versa, as in
+        # the 2026-06-11 Ceph-freeze incident) must self-heal, not leave a
+        # permanent hole.
+        existing_steps = self._persisted_steps()
+
         for step, path in ckpts:
             cid = checkpoint_id(path)
             key = self._make_key(cid)
             if is_cached(self.output_root, key):
-                logger.info("[%s] checkpoint-%d cached (skip)",
-                            self.cell.cell_id, step)
-                cached.append(step)
-                continue
+                if step in existing_steps:
+                    logger.info("[%s] checkpoint-%d cached (skip)",
+                                self.cell.cell_id, step)
+                    cached.append(step)
+                    continue
+                logger.warning(
+                    "[%s] checkpoint-%d has a marker but no persisted rows "
+                    "— stale marker, re-evaluating", self.cell.cell_id, step)
 
             # Lazy init — only build the model if we actually have work.
             if self._inner is None:
@@ -201,6 +268,10 @@ class CachedRunner:
         # bulk-copy to output_root at the end — ~30× faster on CephFS.
         write_summary = None
         if all_items or all_pairs:
+            # Carry forward rows of validated-cached checkpoints BEFORE the
+            # write — write_cell_results overwrites the per-cell file, and a
+            # resumed run must not drop previously-persisted checkpoints.
+            carry = self._carry_rows(cached) if cached else {}
             write_root = self.scratch_dir or self.output_root
             if self.scratch_dir:
                 # Cell-scoped subdir so parallel cells on the same pod
@@ -213,6 +284,7 @@ class CachedRunner:
                 item_results=all_items,
                 pair_results=all_pairs,
             )
+            self._merge_carry(carry, write_root)
             if self.scratch_dir:
                 logger.info(
                     "[%s] copying staged parquet tree %s → %s",

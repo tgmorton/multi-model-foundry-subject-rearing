@@ -273,3 +273,53 @@ def test_no_output_written_when_fully_cached(tmp_path):
     assert s["n_processed"] == 0
     assert s["write_summary"] is None  # writer not invoked
     assert pair_file.stat().st_mtime == mtime_1
+
+
+def test_resume_merges_previously_persisted_rows(tmp_path):
+    """Regression: a resumed run must carry forward cached checkpoints'
+    rows, not overwrite the cell parquet with only the new ones
+    (2026-06-11 Ceph-freeze data-loss incident)."""
+    import pandas as pd
+
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    output_root = tmp_path / "out"
+    CachedRunner(cell, output_root=output_root, scoring_version="v1").run_once()
+
+    _write_ckpt(cell.checkpoint_root, step=30, seed=99)
+    s2 = CachedRunner(cell, output_root=output_root,
+                      scoring_version="v1").run_once()
+    assert s2["n_cached"] == 2 and s2["n_processed"] == 1
+
+    items = pd.read_parquet(
+        output_root / "items" / f"cell_id={cell.cell_id}.parquet")
+    assert sorted(items.checkpoint_step.unique()) == [10, 20, 30]
+    pairs = pd.read_parquet(
+        output_root / "pairs" / f"cell_id={cell.cell_id}.parquet")
+    assert sorted(pairs.checkpoint_step.unique()) == [10, 20, 30]
+
+
+def test_stale_marker_without_rows_reevaluates(tmp_path):
+    """A marker whose rows are missing from the persisted parquet is
+    stale (writer died between marker and parquet, or the parquet was
+    clobbered) — the checkpoint must be re-evaluated, not skipped."""
+    import pandas as pd
+
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    output_root = tmp_path / "out"
+    CachedRunner(cell, output_root=output_root, scoring_version="v1").run_once()
+
+    # Simulate the incident: drop step-20 rows but keep all markers.
+    for table in ("items", "pairs", "per_token"):
+        p = output_root / table / f"cell_id={cell.cell_id}.parquet"
+        if p.exists():
+            df = pd.read_parquet(p)
+            df[df.checkpoint_step != 20].to_parquet(p, index=False)
+
+    s2 = CachedRunner(cell, output_root=output_root,
+                      scoring_version="v1").run_once()
+    assert s2["n_processed"] == 1          # step 20 re-evaluated
+    assert s2["n_cached"] == 1             # step 10 still trusted
+
+    items = pd.read_parquet(
+        output_root / "items" / f"cell_id={cell.cell_id}.parquet")
+    assert sorted(items.checkpoint_step.unique()) == [10, 20]
