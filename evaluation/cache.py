@@ -186,6 +186,8 @@ class CachedRunner:
         prefetch_dir: Optional[Path] = None,
         prefetch_depth: int = 3,
         prefetch_streams: int = 2,
+        copy_results: bool = True,
+        remote_results=None,
     ):
         """
         Args:
@@ -210,6 +212,15 @@ class CachedRunner:
         self.prefetch_dir = Path(prefetch_dir) if prefetch_dir else None
         self.prefetch_depth = prefetch_depth
         self.prefetch_streams = prefetch_streams
+        # copy_results=False leaves the written parquets in the scratch
+        # dir (S3-only mode: the caller uploads from there and the slow
+        # CephFS parquet copy — the GPU-idle tail — never happens).
+        # Markers always go to output_root regardless.
+        self.copy_results = copy_results
+        # Optional fallback for resume integrity when results don't live
+        # on output_root: callable(table_name) -> DataFrame or None
+        # (e.g. an S3 reader). Consulted by _persisted_steps/_carry_rows.
+        self.remote_results = remote_results
         self._stimuli_id = cell.stimuli.stimuli_id
         self._unigram_id = (
             cell.unigram.tokenizer_id + "::" + cell.unigram.corpus_id
@@ -237,37 +248,43 @@ class CachedRunner:
     def _table_path(self, root: Path, table: str) -> Path:
         return Path(root) / table / f"cell_id={self.cell.cell_id}.parquet"
 
+    def _read_persisted(self, table: str):
+        """Persisted table for this cell: output_root copy if present,
+        else the remote_results fallback (S3-only mode), else None."""
+        import pandas as pd
+        p = self._table_path(self.output_root, table)
+        if p.exists():
+            try:
+                return pd.read_parquet(p)
+            except Exception as exc:
+                logger.warning("[%s] unreadable persisted %s parquet: %s",
+                               self.cell.cell_id, table, exc)
+                return None
+        if self.remote_results is not None:
+            try:
+                return self.remote_results(table)
+            except Exception as exc:
+                logger.warning("[%s] remote %s read failed: %s",
+                               self.cell.cell_id, table, exc)
+        return None
+
     def _persisted_steps(self) -> set:
-        """checkpoint_steps with rows in the persisted items parquet."""
-        p = self._table_path(self.output_root, "items")
-        if not p.exists():
+        """checkpoint_steps with rows in the persisted items table."""
+        df = self._read_persisted("items")
+        if df is None:
             return set()
-        try:
-            import pandas as pd
-            return set(pd.read_parquet(p, columns=["checkpoint_step"])
-                       .checkpoint_step.unique())
-        except Exception as exc:  # unreadable parquet → trust nothing
-            logger.warning("[%s] could not read persisted items parquet "
-                           "(%s) — treating all markers as stale",
-                           self.cell.cell_id, exc)
-            return set()
+        return set(df.checkpoint_step.unique())
 
     def _carry_rows(self, cached_steps: List[int]) -> dict:
         """Previously-persisted rows for validated-cached checkpoints."""
-        import pandas as pd
         carry = {}
         for table in self._TABLES:
-            p = self._table_path(self.output_root, table)
-            if not p.exists():
+            df = self._read_persisted(table)
+            if df is None:
                 continue
-            try:
-                df = pd.read_parquet(p)
-                keep = df[df.checkpoint_step.isin(cached_steps)]
-                if len(keep):
-                    carry[table] = keep
-            except Exception as exc:
-                logger.warning("[%s] carry read failed for %s: %s",
-                               self.cell.cell_id, table, exc)
+            keep = df[df.checkpoint_step.isin(cached_steps)]
+            if len(keep):
+                carry[table] = keep
         return carry
 
     def _merge_carry(self, carry: dict, write_root: Path) -> None:
@@ -298,6 +315,7 @@ class CachedRunner:
 
         cached: List[int] = []
         processed: List[int] = []
+        processed_ids: Dict[int, str] = {}  # step → content hash (for markers)
         all_items: List[CheckpointItemResult] = []
         all_pairs: List[CheckpointPairResult] = []
 
@@ -350,6 +368,7 @@ class CachedRunner:
                 all_items.extend(items)
                 all_pairs.extend(pairs)
                 processed.append(step)
+                processed_ids[step] = cid
         finally:
             if prefetcher is not None:
                 prefetcher.close()
@@ -376,7 +395,7 @@ class CachedRunner:
                 pair_results=all_pairs,
             )
             self._merge_carry(carry, write_root)
-            if self.scratch_dir:
+            if self.scratch_dir and self.copy_results:
                 logger.info(
                     "[%s] copying staged parquet tree %s → %s",
                     self.cell.cell_id, write_root, self.output_root,
@@ -387,14 +406,17 @@ class CachedRunner:
                 shutil.copytree(write_root, self.output_root, dirs_exist_ok=True)
                 # Best-effort cleanup; pod teardown will finish if this fails.
                 shutil.rmtree(write_root, ignore_errors=True)
-            # Drop markers for the just-processed checkpoints. Always on
-            # output_root so they land on the durable filesystem.
-            for step, path in ckpts:
-                if step in processed:
-                    mark_cached(self.output_root, self._make_key(checkpoint_id(path)))
+                write_root = self.output_root
+            # Drop markers for the just-processed checkpoints — using the
+            # content hashes computed in the main loop (recomputing here
+            # would re-read every checkpoint from the shared filesystem).
+            # Always on output_root so they survive pod teardown.
+            for step in processed:
+                mark_cached(self.output_root, self._make_key(processed_ids[step]))
 
         return {
             "cell_id": self.cell.cell_id,
+            "results_dir": str(write_root) if (all_items or all_pairs) else None,
             "n_checkpoints_total": len(ckpts),
             "n_cached": len(cached),
             "n_processed": len(processed),

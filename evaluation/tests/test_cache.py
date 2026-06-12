@@ -355,3 +355,37 @@ def test_prefetch_path_equivalent_and_cleans_up(tmp_path):
     s2 = CachedRunner(cell, output_root=out_pre,
                       scoring_version="v1").run_once()
     assert s2["n_forward_passes"] == 0
+
+
+def test_s3_only_mode_skips_pvc_and_resumes_via_remote(tmp_path):
+    """copy_results=False: parquets stay in scratch (caller uploads),
+    markers still land on output_root, and a later resume validates
+    markers through the remote_results fallback instead of local files."""
+    import pandas as pd
+
+    cell = _make_cell(tmp_path, n_checkpoints=2)
+    output_root = tmp_path / "out"
+    scratch = tmp_path / "scratch"
+    s1 = CachedRunner(cell, output_root=output_root, scoring_version="v1",
+                      scratch_dir=scratch, copy_results=False).run_once()
+    assert s1["n_processed"] == 2
+    results_dir = Path(s1["results_dir"])
+    assert results_dir.exists()
+    items = pd.read_parquet(results_dir / "items" /
+                            f"cell_id={cell.cell_id}.parquet")
+    # Nothing on the PVC side except markers.
+    assert not (output_root / "items").exists()
+    assert list((output_root / ".cache").glob("*.done"))
+
+    # Resume with remote fallback (simulating S3): all cached, no forwards.
+    s2 = CachedRunner(cell, output_root=output_root, scoring_version="v1",
+                      scratch_dir=scratch, copy_results=False,
+                      remote_results=lambda table:
+                          items if table == "items" else None).run_once()
+    assert s2["n_forward_passes"] == 0
+    assert s2["n_cached"] == 2
+
+    # Without the fallback, markers are (correctly) distrusted.
+    s3 = CachedRunner(cell, output_root=output_root, scoring_version="v1",
+                      scratch_dir=scratch, copy_results=False).run_once()
+    assert s3["n_processed"] == 2

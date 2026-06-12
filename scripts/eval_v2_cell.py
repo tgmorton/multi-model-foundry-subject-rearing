@@ -123,6 +123,12 @@ def main():
                          "background, while the GPU scores the previous one. "
                          "Empty string disables.")
     ap.add_argument("--prefetch_depth", type=int, default=3)
+    ap.add_argument("--results-to-pvc", action="store_true",
+                    help="Also copy result parquets to output_root on the "
+                         "PVC (legacy behavior). Default is S3-only: the "
+                         "slow CephFS parquet write — the GPU-idle tail — "
+                         "is skipped; S3 is the canonical results store "
+                         "and resume integrity reads S3 when needed.")
     ap.add_argument("--no-registry", action="store_true",
                     help="Skip S3 registry writes (local/smoke runs).")
     ap.add_argument("--rerun", action="store_true",
@@ -323,14 +329,36 @@ def main():
                 log.info("dropped marker %s", m.name)
 
     # ── Run ─────────────────────────────────────────────────────────────
+    def _remote_results(table: str):
+        """Resume-integrity fallback: this cell's table from S3."""
+        import io
+        import boto3
+        bucket = os.environ.get("REGISTRY_BUCKET")
+        if not bucket:
+            return None
+        s3 = boto3.client("s3", endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
+        key = (f"eval_results/{BENCHMARK}/{table}/"
+               f"cell_id={args.run_id}.parquet")
+        try:
+            body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+        except s3.exceptions.NoSuchKey:
+            return None
+        return pd.read_parquet(io.BytesIO(body))
+
+    import pandas as pd
+    scratch = Path(args.scratch_dir) if args.scratch_dir else None
+    if not args.results_to_pvc and scratch is None:
+        scratch = Path("/tmp/eval_scratch")  # S3-only mode needs a local write target
     try:
         runner = CachedRunner(
             cell, output_root=output_root,
             scoring_version=args.scoring_version,
-            scratch_dir=Path(args.scratch_dir) if args.scratch_dir else None,
+            scratch_dir=scratch,
             prefetch_dir=(Path(args.prefetch_dir) / args.run_id
                           if args.prefetch_dir else None),
             prefetch_depth=args.prefetch_depth,
+            copy_results=args.results_to_pvc,
+            remote_results=None if args.no_registry else _remote_results,
         )
         summary = runner.run_once()
         log.info("done: processed=%d cached=%d forwards=%d",
@@ -343,7 +371,17 @@ def main():
         raise
 
     # ── Sidecar: checkpoint step → tokens_seen ──────────────────────────
-    import pandas as pd
+    results_root = (Path(summary["results_dir"])
+                    if summary.get("results_dir") else None)
+    if results_root is None and not args.results_to_pvc:
+        # Fully cached, S3-only: everything is already on S3.
+        log.info("✅ cell eval complete (fully cached): %s", args.run_id)
+        if not args.no_registry:
+            registry.register_eval_benchmark_done(
+                **reg_kwargs, status="COMPLETE",
+                parquet_path=f"s3://{os.environ.get('REGISTRY_BUCKET')}/"
+                             f"eval_results/{BENCHMARK}/")
+        return
     meta_rows = []
     for step, path in ckpts:
         tokens_seen = None
@@ -362,7 +400,7 @@ def main():
             "checkpoint_step": step, "tokens_seen": tokens_seen,
             "epoch": epoch,
         })
-    ckpt_meta_dir = output_root / "checkpoints"
+    ckpt_meta_dir = (results_root or output_root) / "checkpoints"
     ckpt_meta_dir.mkdir(parents=True, exist_ok=True)
     meta_path = ckpt_meta_dir / f"cell_id={args.run_id}.parquet"
     pd.DataFrame(meta_rows).to_parquet(meta_path, index=False)
@@ -380,7 +418,8 @@ def main():
                               endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
             s3_prefix = f"eval_results/{BENCHMARK}"
             for table in ("items", "pairs", "per_token", "checkpoints"):
-                f = output_root / table / f"cell_id={args.run_id}.parquet"
+                f = (results_root or output_root) / table \
+                    / f"cell_id={args.run_id}.parquet"
                 if f.exists():
                     s3.upload_file(str(f), bucket,
                                    f"{s3_prefix}/{table}/{f.name}")
@@ -392,7 +431,8 @@ def main():
     if not args.no_registry:
         metric_summary = None
         try:
-            pairs_path = output_root / "pairs" / f"cell_id={args.run_id}.parquet"
+            pairs_path = (results_root or output_root) / "pairs" \
+                / f"cell_id={args.run_id}.parquet"
             if pairs_path.exists():
                 pairs = pd.read_parquet(pairs_path)
                 last = pairs[pairs.checkpoint_step == pairs.checkpoint_step.max()]
