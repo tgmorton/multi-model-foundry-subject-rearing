@@ -46,7 +46,16 @@ CAT_TITLES = {
     "extraction": "Extraction", "conjunction": "Conjunction",
     "control": "Control (null grammatical)",
 }
-EPOCH1_STEP = 1044  # first checkpoint inside epoch 1 (sidecar-measured)
+def epoch_boundary_steps(ckpts: pd.DataFrame, arch: str) -> tuple[int, int]:
+    """First checkpoint step inside epochs 1 and 2 for this architecture.
+
+    Effective batch (hence steps/epoch) is per-arch — gpt2_small's ~1044
+    is gpt2_large's ~256 — so boundaries must come from each arch's own
+    checkpoint sidecar, never reused across architectures.
+    """
+    g = ckpts[ckpts.architecture == arch]
+    ep = g.groupby("epoch").checkpoint_step.min()
+    return int(ep.get(1, 1044)), int(ep.get(2, 2032))
 
 
 def _style_axis(ax):
@@ -68,7 +77,8 @@ def _log_ticks(ax):
     ax.xaxis.set_minor_locator(mticker.NullLocator())
 
 
-def learning_curves(pairs: pd.DataFrame, arch: str) -> Path:
+def learning_curves(pairs: pd.DataFrame, arch: str,
+                    ep1_step: int = 1044) -> Path:
     d = pairs[pairs.architecture == arch]
     fig, axes = plt.subplots(4, 2, figsize=(11, 13), sharex=True, sharey=True)
     for ax, cat in zip(axes.flat, CATS):
@@ -85,8 +95,8 @@ def learning_curves(pairs: pd.DataFrame, arch: str) -> Path:
                     label=LABELS[cond])
             ax.fill_between(x, p - 1.96 * se, p + 1.96 * se,
                             color=COLORS[cond], alpha=0.15, lw=0)
-        ax.axvline(EPOCH1_STEP, color="0.45", lw=0.9)
-        ax.text(EPOCH1_STEP * 1.15, 0.96, "end of first epoch",
+        ax.axvline(ep1_step, color="0.45", lw=0.9)
+        ax.text(ep1_step * 1.15, 0.96, "end of first epoch",
                 color="0.45", fontsize=7.5, va="top")
         ax.axhline(0.5, color="0.6", ls=":", lw=1)
         _style_axis(ax)
@@ -249,14 +259,15 @@ def main() -> None:
                        for f in (DATA / "pairs").glob("*.parquet")])
     avail = sorted(pairs.architecture.unique())
     print(f"architectures with data: {avail}")
+    ckpts = pd.concat([pd.read_parquet(f)
+                       for f in (DATA / "checkpoints").glob("*.parquet")])
     for arch in args.archs:
         if arch not in avail:
             print(f"  skip {arch} (no data yet)")
             continue
-        print(" ", learning_curves(pairs, arch))
+        ep1, _ = epoch_boundary_steps(ckpts, arch)
+        print(" ", learning_curves(pairs, arch, ep1_step=ep1))
     print(" ", endstate(pairs, [a for a in args.archs if a in avail]))
-    ckpts = pd.concat([pd.read_parquet(f)
-                       for f in (DATA / "checkpoints").glob("*.parquet")])
     print(" ", cross_arch_baseline(pairs, ckpts))
     print(" ", heatmap_all(pairs))
 
