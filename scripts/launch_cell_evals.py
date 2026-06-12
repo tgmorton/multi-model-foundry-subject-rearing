@@ -91,7 +91,7 @@ spec:
   completions: {completions}
   parallelism: {parallelism}
   activeDeadlineSeconds: 172800
-  ttlSecondsAfterFinished: 604800
+  ttlSecondsAfterFinished: 172800   # 2d — keep logs briefly, then self-clean
   podFailurePolicy:
     rules:
     - action: Ignore

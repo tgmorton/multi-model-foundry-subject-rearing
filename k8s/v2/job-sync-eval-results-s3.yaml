@@ -11,7 +11,7 @@ metadata:
     stage: eval-sync
 spec:
   backoffLimit: 4
-  ttlSecondsAfterFinished: 86400
+  ttlSecondsAfterFinished: 172800   # 2d — keep logs briefly, then self-clean
   template:
     metadata:
       labels:
