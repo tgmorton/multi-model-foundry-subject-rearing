@@ -50,6 +50,18 @@ GPU_POOL_24GB = [
     "NVIDIA-L4",
     "NVIDIA-GeForce-RTX-4090",
 ]
+
+# Eval-only pools. Eval runs eager-attention fp32 (no FA2), so pre-Ampere
+# cards the trainer can't touch are fair game (~370 idle GPUs, plain
+# nvidia.com/gpu key). mamba_ssm kernels need sm_70+ → keep mamba cells
+# off the Pascal pool.
+GPU_POOLS = {
+    "default": GPU_POOL_24GB,
+    "volta": ["Tesla-V100-SXM2-32GB", "Tesla-V100-SXM2-16GB",
+              "Tesla-V100-PCIE-16GB"],
+    "turing": ["NVIDIA-GeForce-RTX-2080-Ti", "Tesla-T4", "NVIDIA-TITAN-RTX"],
+    "pascal": ["NVIDIA-GeForce-GTX-1080-Ti", "NVIDIA-TITAN-Xp"],
+}
 BAD_NODES = [
     "rci-tide-gpu-03.sdsu.edu",
     "ry-gpu-10.sdsc.optiputer.net",
@@ -228,6 +240,11 @@ def main() -> None:
                          "peaking ~2.2GB — 4Gi is the 2x-headroom number. "
                          "The first wave's 10Gi requests sat at ~10% use and "
                          "fed the NRP utilization webhook (2026-06-11).")
+    ap.add_argument("--gpu-pool", choices=sorted(GPU_POOLS), default="default",
+                    help="GPU product pool. volta/turing/pascal target the "
+                         "pre-Ampere cards eval can use but training can't "
+                         "(eager fp32 — no FA2 needed). mamba needs sm_70+ "
+                         "(volta/turing ok, pascal NOT).")
     ap.add_argument("--pack", type=int, default=1,
                     help="Cells run concurrently per pod/GPU. >1 overlaps "
                          "checkpoint I/O + result upload of one cell with "
@@ -244,6 +261,10 @@ def main() -> None:
         run_ids = [f"{arch}-{args.lang}-{cond}-{args.slot}"
                    for arch in ARCHS for cond in CONDITIONS]
 
+    if args.gpu_pool == "pascal" and any("mamba" in r for r in run_ids):
+        sys.exit("mamba cells need sm_70+ kernels — use volta/turing, "
+                 "not pascal")
+
     pack = max(1, args.pack)
     n_pods = -(-len(run_ids) // pack)  # ceil
     pod_ram = args.pod_ram
@@ -256,7 +277,8 @@ def main() -> None:
         lang=args.lang,
         completions=n_pods,
         parallelism=min(args.parallelism, n_pods),
-        gpu_values="\n".join(f"                - {g}" for g in GPU_POOL_24GB),
+        gpu_values="\n".join(f"                - {g}"
+                             for g in GPU_POOLS[args.gpu_pool]),
         bad_nodes="\n".join(f"                - {n}" for n in BAD_NODES),
         repo_url=REPO_URL,
         git_ref=_resolve_git_ref(),
