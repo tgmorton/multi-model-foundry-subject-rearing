@@ -249,10 +249,112 @@ def heatmap_all(pairs: pd.DataFrame) -> Path:
     return Path(f"{out}.png")
 
 
+def multirun_curves(pairs: pd.DataFrame, arch: str,
+                    ep1_step: int = 1044) -> Path:
+    """Ablation-contrast trajectories with ACROSS-RUN spread.
+
+    Per condition: compute each run's per-checkpoint overt-pref, then plot
+    the mean over runs with a ±1 sd band (run-to-run variability across
+    the 10 HP×seed slots). Requires multiple slots per cell — the n is
+    annotated per panel.
+    """
+    d = pairs[pairs.architecture == arch].copy()
+    d["slot"] = d.cell_id.str.extract(r"(h\d-s\d+)$")[0]
+    fig, axes = plt.subplots(4, 2, figsize=(11, 13), sharex=True, sharey=True)
+    n_runs = d.groupby("intervention").slot.nunique().max()
+    for ax, cat in zip(axes.flat, CATS):
+        sub_c = d[d.category == cat]
+        for cond in CONDS:
+            s = sub_c[sub_c.intervention == cond]
+            if s.empty:
+                continue
+            # per (slot, step) overt-pref, then mean±sd across slots
+            per_run = (s.groupby(["slot", "checkpoint_step"])
+                       .prefers_overt_meanlp.mean().reset_index())
+            stat = (per_run.groupby("checkpoint_step").prefers_overt_meanlp
+                    .agg(["mean", "std"]).reset_index())
+            x = stat.checkpoint_step + 1
+            ax.plot(x, stat["mean"], color=COLORS[cond], lw=1.7,
+                    label=LABELS[cond])
+            sd = stat["std"].fillna(0)
+            ax.fill_between(x, stat["mean"] - sd, stat["mean"] + sd,
+                            color=COLORS[cond], alpha=0.18, lw=0)
+        ax.axvline(ep1_step, color="0.45", lw=0.9)
+        ax.text(ep1_step * 1.15, 0.96, "end of first epoch",
+                color="0.45", fontsize=7.5, va="top")
+        ax.axhline(0.5, color="0.6", ls=":", lw=1)
+        _style_axis(ax)
+        _log_ticks(ax)
+        ax.set_title(CAT_TITLES[cat], loc="left", fontweight="bold",
+                     fontsize=11)
+    for ax in axes[-1]:
+        ax.set_xlabel("Training Checkpoint")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("Overt Preference")
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+               bbox_to_anchor=(0.5, -0.015), fontsize=10)
+    fig.suptitle(f"Overt Preference by Phenomenon — {arch} "
+                 f"(en, mean±sd over {n_runs} runs)", fontweight="bold",
+                 x=0.02, ha="left", fontsize=14)
+    fig.tight_layout(rect=(0, 0.025, 1, 0.985))
+    out = FIGS / f"scil_multirun_curves_{arch}"
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return Path(f"{out}.png")
+
+
+def endstate_multirun(pairs: pd.DataFrame, archs: list[str]) -> Path:
+    """End-state overt-pref per (arch, condition, category): bar = mean
+    over runs, error bar = ±1 sd across runs. The single-seed endstate
+    figure's error bars were within-run binomial; these are the
+    scientifically meaningful run-to-run bars."""
+    finals = pairs.groupby("cell_id").checkpoint_step.transform("max")
+    fin = pairs[pairs.checkpoint_step == finals].copy()
+    fin["slot"] = fin.cell_id.str.extract(r"(h\d-s\d+)$")[0]
+    per_run = (fin.groupby(["architecture", "intervention", "category", "slot"])
+               .prefers_overt_meanlp.mean().reset_index())
+    fig, axes = plt.subplots(len(archs), 1, figsize=(11, 4 * len(archs)),
+                             sharex=True, squeeze=False)
+    width, xs = 0.15, np.arange(len(CATS))
+    for ax, arch in zip(axes[:, 0], archs):
+        d = per_run[per_run.architecture == arch]
+        for k, cond in enumerate(CONDS):
+            s = d[d.intervention == cond]
+            stat = (s.groupby("category").prefers_overt_meanlp
+                    .agg(["mean", "std"]).reindex(CATS))
+            ax.bar(xs + (k - 2) * width, stat["mean"].values, width=width,
+                   color=COLORS[cond], label=LABELS[cond],
+                   yerr=stat["std"].fillna(0).values,
+                   error_kw={"lw": 0.8, "capsize": 2})
+        ax.axhline(0.5, color="0.5", ls="--", lw=1)
+        _style_axis(ax)
+        n = d.slot.nunique()
+        ax.set_title(f"End-State Overt Preference — {arch} "
+                     f"(mean±sd, n={n} runs)", loc="left",
+                     fontweight="bold", fontsize=12)
+        ax.set_ylabel("Overt Preference")
+    axes[-1, 0].set_xticks(xs, [CAT_TITLES[c] for c in CATS], rotation=20,
+                           ha="right", fontsize=9)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+               bbox_to_anchor=(0.5, -0.01), fontsize=10)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    out = FIGS / "scil_endstate_multirun"
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return Path(f"{out}.png")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--archs", nargs="+",
                     default=["gpt2_small", "gpt2_medium"])
+    ap.add_argument("--multirun", action="store_true",
+                    help="Emit across-run mean±sd figures (needs >1 slot "
+                         "per cell — the seed-robustness wave).")
     args = ap.parse_args()
     FIGS.mkdir(parents=True, exist_ok=True)
     pairs = pd.concat([pd.read_parquet(f)
@@ -266,10 +368,17 @@ def main() -> None:
             print(f"  skip {arch} (no data yet)")
             continue
         ep1, _ = epoch_boundary_steps(ckpts, arch)
-        print(" ", learning_curves(pairs, arch, ep1_step=ep1))
-    print(" ", endstate(pairs, [a for a in args.archs if a in avail]))
-    print(" ", cross_arch_baseline(pairs, ckpts))
-    print(" ", heatmap_all(pairs))
+        if args.multirun:
+            print(" ", multirun_curves(pairs, arch, ep1_step=ep1))
+        else:
+            print(" ", learning_curves(pairs, arch, ep1_step=ep1))
+    present = [a for a in args.archs if a in avail]
+    if args.multirun:
+        print(" ", endstate_multirun(pairs, present))
+    else:
+        print(" ", endstate(pairs, present))
+        print(" ", cross_arch_baseline(pairs, ckpts))
+        print(" ", heatmap_all(pairs))
 
 
 if __name__ == "__main__":
