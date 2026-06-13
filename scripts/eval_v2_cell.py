@@ -123,6 +123,10 @@ def main():
                          "background, while the GPU scores the previous one. "
                          "Empty string disables.")
     ap.add_argument("--prefetch_depth", type=int, default=3)
+    ap.add_argument("--slor", action="store_true",
+                    help="Load the per-condition unigram baseline (from S3) "
+                         "so the runner emits SLOR alongside MeanLP. "
+                         "Skipped for bert_large (no wordpiece unigram yet).")
     ap.add_argument("--results-to-pvc", action="store_true",
                     help="Also copy result parquets to output_root on the "
                          "PVC (legacy behavior). Default is S3-only: the "
@@ -298,6 +302,32 @@ def main():
         log.error("No eval factory for arch %r", arch)
         sys.exit(2)
 
+    # ── Unigram baseline (SLOR) ─────────────────────────────────────────
+    # Per-condition table (FIT-CLAMS): the run is normalized against the
+    # unigram statistics of ITS OWN training corpus, so SLOR factors out
+    # each model's corpus-specific token-frequency expectations — the
+    # confound the hotspot analysis exposed in MeanLP. Resolved by
+    # (lang, condition, tokenizer-family); bert (wordpiece) has no SP
+    # table yet, so it stays MeanLP-only.
+    unigram = None
+    if args.slor and arch != "bert_large":
+        from evaluation.unigram import UnigramTable
+        uni_name = f"{lang}_{condition}__shared_unigram.pkl"
+        uni_local = Path("/tmp") / uni_name
+        if not uni_local.exists():
+            import boto3
+            bucket = os.environ.get("REGISTRY_BUCKET")
+            s3 = boto3.client("s3", endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
+            s3.download_file(bucket, f"unigrams/{uni_name}", str(uni_local))
+        unigram = UnigramTable.load(uni_local)
+        # The unigram's tokenizer must match the stimuli's tokenizer.
+        if unigram.tokenizer_id != stimuli.tokenizer_id:
+            log.error("unigram tokenizer_id %s != stimuli tokenizer_id %s",
+                      unigram.tokenizer_id, stimuli.tokenizer_id)
+            sys.exit(4)
+        log.info("SLOR on: unigram %s (V=%d N=%d)", uni_name,
+                 unigram.vocab_size, unigram.total_tokens)
+
     cell = CellSpec(
         cell_id=args.run_id,
         architecture=arch,
@@ -306,7 +336,7 @@ def main():
         checkpoint_root=ckpt_root,
         model_factory=model_factory,
         stimuli=stimuli,
-        unigram=None,
+        unigram=unigram,
         device=device,
         batch_size=args.batch_size,
         scorer=scorer,
