@@ -253,6 +253,8 @@ METRICS = {
     "meanlp": ("prefers_overt_meanlp", "Overt Preference [MeanLP]"),
     "hotspot": ("prefers_overt_hotspot",
                 "Overt Preference [hotspot, length-free]"),
+    "slor": ("prefers_overt_slor",
+             "Overt Preference [SLOR, unigram-corrected]"),
 }
 
 
@@ -396,8 +398,11 @@ def main() -> None:
                          "(whole-target) or hotspot (length-free).")
     args = ap.parse_args()
     FIGS.mkdir(parents=True, exist_ok=True)
+    # SLOR lives in its own post-hoc pairs dir (compute_slor.py); MeanLP &
+    # hotspot share the canonical pairs table.
+    src = "slor_pairs" if getattr(args, "metric", "meanlp") == "slor" else "pairs"
     pairs = pd.concat([pd.read_parquet(f)
-                       for f in (DATA / "pairs").glob("*.parquet")])
+                       for f in (DATA / src).glob("*.parquet")])
     avail = sorted(pairs.architecture.unique())
     print(f"architectures with data: {avail}")
     ckpts = pd.concat([pd.read_parquet(f)
@@ -414,7 +419,10 @@ def main() -> None:
             print(" ", learning_curves(pairs, arch, ep1_step=ep1))
     present = [a for a in args.archs if a in avail]
     if args.multirun:
-        print(" ", endstate_multirun(pairs, present))
+        # endstate bar grid is defined on the canonical MeanLP pairs;
+        # for hotspot/slor the curves are the deliverable.
+        if args.metric == "meanlp":
+            print(" ", endstate_multirun(pairs, present))
     else:
         print(" ", endstate(pairs, present))
         print(" ", cross_arch_baseline(pairs, ckpts))
