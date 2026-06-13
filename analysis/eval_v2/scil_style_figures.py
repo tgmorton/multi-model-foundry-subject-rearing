@@ -343,6 +343,81 @@ def multirun_curves(pairs: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
     return Path(f"{out}.png")
 
 
+def init_referenced_slor(slor: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
+                         n_bins: int = 45) -> Path:
+    """Init-referenced continuous ΔSLOR trajectories.
+
+    Per item: ΔSLOR(t) = SLOR_diff(t) − SLOR_diff(0). Subtracting each
+    item's OWN step-0 value cancels the SLOR-at-init artifact (a random
+    model scored against true unigram frequencies spuriously 'prefers'
+    null because the overt member carries an extra high-frequency pronoun
+    token). What remains is learning-driven: ΔSLOR < 0 = the model has
+    become MORE null-preferring than its initialization — a genuine
+    transient null stage. Continuous (not binary) so the signal isn't
+    lost to floor/ceiling.
+    """
+    tok = ckpts.set_index(["cell_id", "checkpoint_step"]).tokens_seen
+    d = slor[slor.architecture == arch].copy()
+    d["slot"] = d.cell_id.str.extract(r"(h\d-s\d+)$")[0]
+    # per-item step-0 reference within each cell
+    d0 = (d[d.checkpoint_step == 0]
+          .set_index(["cell_id", "category", "item_id"])
+          .slor_diff_overt_minus_null.rename("d0"))
+    d = d.join(d0, on=["cell_id", "category", "item_id"])
+    d["delta"] = d.slor_diff_overt_minus_null - d.d0
+    d["tokens"] = d.set_index(["cell_id", "checkpoint_step"]).index.map(tok)
+    d = d.dropna(subset=["tokens", "delta"])
+    d = d[d.tokens > 0]
+    edges = np.logspace(np.log10(d.tokens.min()),
+                        np.log10(d.tokens.max()), n_bins + 1)
+    centers = np.sqrt(edges[:-1] * edges[1:])
+    d["tbin"] = pd.cut(d.tokens, bins=edges, labels=False, include_lowest=True)
+
+    fig, axes = plt.subplots(4, 2, figsize=(11, 13), sharex=True, sharey=True)
+    n_runs = d.groupby("intervention").slot.nunique().max()
+    for ax, cat in zip(axes.flat, CATS):
+        sub_c = d[d.category == cat]
+        for cond in CONDS:
+            s = sub_c[sub_c.intervention == cond]
+            if s.empty:
+                continue
+            per_run = s.groupby(["slot", "tbin"]).delta.mean().reset_index()
+            stat = per_run.groupby("tbin").delta.agg(["mean", "std"]).reset_index()
+            x = centers[stat.tbin.astype(int).values]
+            ax.plot(x, stat["mean"], color=COLORS[cond], lw=1.8,
+                    label=LABELS[cond])
+            sd = stat["std"].fillna(0).values
+            ax.fill_between(x, stat["mean"].values - sd, stat["mean"].values + sd,
+                            color=COLORS[cond], alpha=0.16, lw=0)
+        ax.axvline(TOKENS_PER_EPOCH, color="0.45", lw=0.9)
+        ax.axhline(0.0, color="0.3", lw=1)  # init reference
+        ax.text(d.tokens.min(), 0.01, "← more null than init below 0",
+                color="0.3", fontsize=7, va="bottom")
+        # style without the [0,1] preference clamp (delta is continuous)
+        ax.set_facecolor("white")
+        ax.grid(True, color="0.90", lw=0.8)
+        for sp_ in ("top", "right"):
+            ax.spines[sp_].set_visible(False)
+        ax.set_xscale("log")
+        ax.set_title(CAT_TITLES[cat], loc="left", fontweight="bold", fontsize=11)
+    for ax in axes[-1]:
+        ax.set_xlabel("Tokens Seen")
+    for ax in axes[:, 0]:
+        ax.set_ylabel("ΔSLOR diff (overt−null), vs init")
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
+               bbox_to_anchor=(0.5, -0.015), fontsize=10)
+    fig.suptitle(f"Init-referenced ΔSLOR — {arch} (en, mean±sd over "
+                 f"{n_runs} runs; <0 = genuine null stage)",
+                 fontweight="bold", x=0.02, ha="left", fontsize=14)
+    fig.tight_layout(rect=(0, 0.025, 1, 0.985))
+    out = FIGS / f"scil_slor_delta_init_{arch}"
+    for ext in ("png", "pdf"):
+        fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return Path(f"{out}.png")
+
+
 def endstate_multirun(pairs: pd.DataFrame, archs: list[str]) -> Path:
     """End-state overt-pref per (arch, condition, category): bar = mean
     over runs, error bar = ±1 sd across runs. The single-seed endstate
@@ -393,14 +468,18 @@ def main() -> None:
     ap.add_argument("--multirun", action="store_true",
                     help="Emit across-run mean±sd figures (needs >1 slot "
                          "per cell — the seed-robustness wave).")
-    ap.add_argument("--metric", choices=list(METRICS), default="meanlp",
-                    help="Preference metric for multirun curves: meanlp "
-                         "(whole-target) or hotspot (length-free).")
+    ap.add_argument("--metric", choices=list(METRICS) + ["slor_delta"],
+                    default="meanlp",
+                    help="Preference metric for multirun curves: meanlp, "
+                         "hotspot (length-free), slor (unigram-corrected), "
+                         "or slor_delta (init-referenced continuous ΔSLOR — "
+                         "the genuine early-stage instrument).")
     args = ap.parse_args()
     FIGS.mkdir(parents=True, exist_ok=True)
     # SLOR lives in its own post-hoc pairs dir (compute_slor.py); MeanLP &
     # hotspot share the canonical pairs table.
-    src = "slor_pairs" if getattr(args, "metric", "meanlp") == "slor" else "pairs"
+    src = ("slor_pairs" if getattr(args, "metric", "meanlp")
+           in ("slor", "slor_delta") else "pairs")
     pairs = pd.concat([pd.read_parquet(f)
                        for f in (DATA / src).glob("*.parquet")])
     avail = sorted(pairs.architecture.unique())
@@ -412,7 +491,9 @@ def main() -> None:
             print(f"  skip {arch} (no data yet)")
             continue
         ep1, _ = epoch_boundary_steps(ckpts, arch)
-        if args.multirun:
+        if args.multirun and args.metric == "slor_delta":
+            print(" ", init_referenced_slor(pairs, ckpts, arch))
+        elif args.multirun:
             print(" ", multirun_curves(pairs, ckpts, arch,
                                        metric=args.metric))
         else:
