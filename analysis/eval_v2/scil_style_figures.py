@@ -249,8 +249,15 @@ def heatmap_all(pairs: pd.DataFrame) -> Path:
     return Path(f"{out}.png")
 
 
+METRICS = {
+    "meanlp": ("prefers_overt_meanlp", "Overt Preference [MeanLP]"),
+    "hotspot": ("prefers_overt_hotspot",
+                "Overt Preference [hotspot, length-free]"),
+}
+
+
 def multirun_curves(pairs: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
-                    n_bins: int = 45) -> Path:
+                    n_bins: int = 45, metric: str = "meanlp") -> Path:
     """Ablation-contrast trajectories with ACROSS-RUN spread, on a
     tokens-seen axis.
 
@@ -262,9 +269,19 @@ def multirun_curves(pairs: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
     bins, and average all runs within a bin — every plotted point reflects
     the full run set at matched data. This is also the axis the checkpoint
     schedule was designed around.
+
+    metric="hotspot" scores preference by the single position-matched
+    hotspot token (length- and largely frequency-free) instead of the
+    whole-target MeanLP.
     """
+    col, ylab = METRICS[metric]
     tok = ckpts.set_index(["cell_id", "checkpoint_step"]).tokens_seen
     d = pairs[pairs.architecture == arch].copy()
+    # Derive the hotspot preference flag from the stored signed diff.
+    if metric == "hotspot":
+        d = d.dropna(subset=["hotspot_log_prob_diff_overt_minus_null"])
+        d["prefers_overt_hotspot"] = (
+            d.hotspot_log_prob_diff_overt_minus_null > 0)
     d["slot"] = d.cell_id.str.extract(r"(h\d-s\d+)$")[0]
     d["tokens"] = d.set_index(["cell_id", "checkpoint_step"]).index.map(tok)
     d = d.dropna(subset=["tokens"])
@@ -286,9 +303,9 @@ def multirun_curves(pairs: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
             if s.empty:
                 continue
             # per (slot, bin) overt-pref, then mean±sd across slots per bin
-            per_run = (s.groupby(["slot", "tbin"])
-                       .prefers_overt_meanlp.mean().reset_index())
-            stat = (per_run.groupby("tbin").prefers_overt_meanlp
+            per_run = (s.groupby(["slot", "tbin"])[col]
+                       .mean().reset_index())
+            stat = (per_run.groupby("tbin")[col]
                     .agg(["mean", "std"]).reset_index())
             x = centers[stat.tbin.astype(int).values]
             ax.plot(x, stat["mean"], color=COLORS[cond], lw=1.8,
@@ -308,15 +325,16 @@ def multirun_curves(pairs: pd.DataFrame, ckpts: pd.DataFrame, arch: str,
     for ax in axes[-1]:
         ax.set_xlabel("Tokens Seen")
     for ax in axes[:, 0]:
-        ax.set_ylabel("Overt Preference")
+        ax.set_ylabel(ylab)
     handles, labels = axes.flat[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False,
                bbox_to_anchor=(0.5, -0.015), fontsize=10)
-    fig.suptitle(f"Overt Preference by Phenomenon — {arch} "
-                 f"(en, mean±sd over {n_runs} runs, token-binned)",
+    fig.suptitle(f"{ylab.split('[')[0].strip()} by Phenomenon — {arch} "
+                 f"(en, mean±sd over {n_runs} runs, {metric}, token-binned)",
                  fontweight="bold", x=0.02, ha="left", fontsize=14)
     fig.tight_layout(rect=(0, 0.025, 1, 0.985))
-    out = FIGS / f"scil_multirun_curves_{arch}"
+    suffix = "" if metric == "meanlp" else f"_{metric}"
+    out = FIGS / f"scil_multirun_curves_{arch}{suffix}"
     for ext in ("png", "pdf"):
         fig.savefig(f"{out}.{ext}", dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -373,6 +391,9 @@ def main() -> None:
     ap.add_argument("--multirun", action="store_true",
                     help="Emit across-run mean±sd figures (needs >1 slot "
                          "per cell — the seed-robustness wave).")
+    ap.add_argument("--metric", choices=list(METRICS), default="meanlp",
+                    help="Preference metric for multirun curves: meanlp "
+                         "(whole-target) or hotspot (length-free).")
     args = ap.parse_args()
     FIGS.mkdir(parents=True, exist_ok=True)
     pairs = pd.concat([pd.read_parquet(f)
@@ -387,7 +408,8 @@ def main() -> None:
             continue
         ep1, _ = epoch_boundary_steps(ckpts, arch)
         if args.multirun:
-            print(" ", multirun_curves(pairs, ckpts, arch))
+            print(" ", multirun_curves(pairs, ckpts, arch,
+                                       metric=args.metric))
         else:
             print(" ", learning_curves(pairs, arch, ep1_step=ep1))
     present = [a for a in args.archs if a in avail]
