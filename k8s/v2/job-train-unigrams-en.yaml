@@ -1,0 +1,81 @@
+# Per-condition unigram baselines for SLOR (D3/D4), EN, shared_unigram
+# tokenizer (covers gpt2_small/medium/large + lstm + mamba). One indexed
+# task per condition; builds from the SAME composed corpus the models
+# trained on (data/manipulations/en/<slug>/*.train, baseline = identity
+# ablation), then uploads the pickle to S3 for eval pods + laptop.
+# bert (wordpiece) needs a separate AutoTokenizer load path — follow-up.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-unigrams-en
+  labels: {owner: thomas, study: subject-drop, stage: unigram}
+spec:
+  completionMode: Indexed
+  completions: 5
+  parallelism: 5
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: unigram}
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh","-c"]
+        args:
+        - |
+          set -eu; cd /opt/repo
+          git init .; git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin main; git checkout --detach FETCH_HEAD
+        resources: {requests: {memory: 512Mi, cpu: "200m"}, limits: {memory: 512Mi, cpu: "200m"}}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: unigram
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash","-c"]
+        args:
+        - |
+          set -euo pipefail
+          CONDS=(baseline remove_expletive_sentences impoverish_case lemmatize_verbs enrich_verbal_morphology)
+          COND=${CONDS[$JOB_COMPLETION_INDEX]}
+          echo "=== unigram: en / $COND ==="
+          cd /opt/repo
+          mkdir -p /mnt/data/unigrams
+          python3 scripts/train_unigram.py \
+            --corpus /mnt/data/manipulations/en/$COND/ \
+            --tokenizer /mnt/data/tokenizers/en_shared_unigram/tokenizer.model \
+            --corpus_id en_${COND} \
+            --output /mnt/data/unigrams/en_${COND}__shared_unigram.pkl \
+            --file_glob '*.train' --sanity_check
+          python3 - <<PY
+          import boto3, os
+          s3 = boto3.client("s3", endpoint_url=os.environ["AWS_ENDPOINT_URL"])
+          f = "/mnt/data/unigrams/en_${COND}__shared_unigram.pkl"
+          s3.upload_file(f, os.environ["REGISTRY_BUCKET"],
+                         "unigrams/en_${COND}__shared_unigram.pkl")
+          print("uploaded", f)
+          PY
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          requests: {memory: 8Gi, cpu: "4"}
+          limits:   {memory: 8Gi, cpu: "4"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive}
+      restartPolicy: Never
