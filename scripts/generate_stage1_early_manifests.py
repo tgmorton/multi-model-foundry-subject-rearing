@@ -83,7 +83,8 @@ STAGE1_SEEDS = [
 ]
 
 LEGACY_ANCHOR_INDICES = {0, 1}
-SENTINEL_SEED_INDEX = 2
+SENTINEL_SEED_INDEX = 4  # non-selected early-only seed 1415936399
+FULL_RUN_SEEDS = {314159, 1568568120, 1640623142, 302485963}
 
 ARCHITECTURES = [
     "gpt2_small",
@@ -151,6 +152,8 @@ def _slots_for_wave(arch: str, condition: str) -> list[list[int]]:
     for seed_index in range(len(STAGE1_SEEDS)):
         if seed_index in LEGACY_ANCHOR_INDICES:
             continue
+        if STAGE1_SEEDS[seed_index] in FULL_RUN_SEEDS:
+            continue
         if (
             condition == "baseline"
             and arch in COMPLETED_SENTINEL_ARCHES
@@ -159,6 +162,14 @@ def _slots_for_wave(arch: str, condition: str) -> list[list[int]]:
             continue
         slots.append([HP_RANK, seed_index])
     return slots
+
+
+def _slots_for_full_runs() -> list[list[int]]:
+    return [
+        [HP_RANK, seed_index]
+        for seed_index, seed in enumerate(STAGE1_SEEDS)
+        if seed in FULL_RUN_SEEDS
+    ]
 
 
 def _labels(arch: str, condition: str, phase: str) -> dict[str, str]:
@@ -220,6 +231,7 @@ def _make_job(
     slots: list[list[int]],
     phase: str,
     parallelism: int = 1,
+    run_epochs: int = PROD_EPOCHS,
 ) -> dict[str, Any]:
     phys_batch, pod_ram, pod_cpu = launcher.ARCH_SETTINGS[arch]
     original_seeds = copy.deepcopy(launcher.SEEDS)
@@ -240,7 +252,7 @@ def _make_job(
             job_suffix=f"s1e-{phase}",
             git_ref=TRAINING_GIT_REF,
             image=TRAINING_IMAGE,
-            prod_epochs=PROD_EPOCHS,
+            prod_epochs=run_epochs,
             scheduler_epochs=SCHEDULER_EPOCHS,
         )
     finally:
@@ -255,9 +267,9 @@ def _make_job(
     job["metadata"]["labels"] = _labels(arch, condition, phase)
     job["metadata"]["annotations"] = {
         "foundry.thesis/purpose": "stage1-early-seed-lr30-rerun",
-        "foundry.thesis/design": "12-seeds-8-full-parallelism-1",
+        "foundry.thesis/design": "12-seeds-2-legacy-6-early-4-full",
         "foundry.thesis/hp-rank": str(HP_RANK),
-        "foundry.thesis/epochs": str(PROD_EPOCHS),
+        "foundry.thesis/epochs": str(run_epochs),
         "foundry.thesis/scheduler-epochs": str(SCHEDULER_EPOCHS),
         "foundry.thesis/revision": RUN_REVISION,
         "foundry.thesis/supersedes": "stage1-two-epoch-lr-schedule",
@@ -277,7 +289,7 @@ def _make_job(
     spec = job["spec"]
     spec["parallelism"] = parallelism
     spec["completions"] = len(slots)
-    if phase == "wave" and parallelism == 2:
+    if parallelism == 2:
         spec.pop("backoffLimit", None)
         spec["backoffLimitPerIndex"] = STAGE1_RETRIES_PER_INDEX
         spec["maxFailedIndexes"] = 0
@@ -308,7 +320,7 @@ def _make_job(
 
     trainer = pod["containers"][0]
     trainer["imagePullPolicy"] = "IfNotPresent"
-    if phase == "wave" and parallelism == 2:
+    if parallelism == 2:
         trainer["env"].append(
             {
                 "name": "JOB_INDEX_FAILURE_COUNT",
@@ -393,68 +405,31 @@ def main() -> None:
         for arch in SENTINEL_ARCHES_TO_RUN
     ]
 
-    wave_jobs = [
+    early_jobs = [
         _make_job(
             launcher,
             arch,
             condition,
             _slots_for_wave(arch, condition),
-            "wave",
+            "early",
+            parallelism=2,
         )
         for arch in ARCHITECTURES
         for condition in CONDITIONS
     ]
-    p2_tranche_jobs = {
-        arch: [
-            _make_job(
-                launcher,
-                arch,
-                condition,
-                _slots_for_wave(arch, condition),
-                "wave",
-                parallelism=2,
-            )
-            for condition in CONDITIONS
-        ]
-        for arch in ARCHITECTURES
-    }
-    gpt2s_recovery_jobs = [
+    full_jobs = [
         _make_job(
             launcher,
-            "gpt2_small",
+            arch,
             condition,
-            _slots_for_wave("gpt2_small", condition),
-            "wave",
+            _slots_for_full_runs(),
+            "full",
             parallelism=2,
+            run_epochs=SCHEDULER_EPOCHS,
         )
-        for condition in (
-            "baseline",
-            "remove_expletive_sentences",
-            "impoverish_case",
-        )
+        for arch in ARCHITECTURES
+        for condition in CONDITIONS
     ]
-    for job in gpt2s_recovery_jobs:
-        job["metadata"]["name"] = job["metadata"]["name"].removesuffix("-nf1") + "-nf2"
-        job["metadata"]["annotations"]["foundry.thesis/recovery-of"] = (
-            job["metadata"]["name"].removesuffix("-nf2") + "-nf1"
-        )
-    gpt2s_lemma_recovery = _make_job(
-        launcher,
-        "gpt2_small",
-        "lemmatize_verbs",
-        _slots_for_wave("gpt2_small", "lemmatize_verbs")[3:],
-        "wave",
-        parallelism=2,
-    )
-    gpt2s_lemma_recovery["metadata"]["name"] = (
-        gpt2s_lemma_recovery["metadata"]["name"].removesuffix("-nf1") + "-nf2"
-    )
-    gpt2s_lemma_recovery["metadata"]["annotations"]["foundry.thesis/recovery-of"] = (
-        "thomas-fdy-s1e-wave-gpt2s-lemmaverb-nf1"
-    )
-    gpt2s_lemma_recovery["metadata"]["annotations"][
-        "foundry.thesis/completed-source-indexes"
-    ] = "0-2"
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     sentinel_dir = OUT_DIR / "sentinels"
@@ -468,35 +443,13 @@ def main() -> None:
         )
     _write_documents(
         OUT_DIR / "job-stage1-early-wave-en.yaml",
-        "serial-cell-wave",
-        wave_jobs,
-    )
-    for arch, jobs in p2_tranche_jobs.items():
-        _write_documents(
-            OUT_DIR / f"job-stage1-early-wave-{arch.replace('_', '-')}-p2-en.yaml",
-            f"{arch}-parallelism-2-cell-wave",
-            jobs,
-        )
-    remaining_p2_jobs = [
-        job
-        for arch, jobs in p2_tranche_jobs.items()
-        if arch != "gpt2_small"
-        for job in jobs
-    ]
-    _write_documents(
-        OUT_DIR / "job-stage1-early-wave-remaining-p2-en.yaml",
-        "five-architecture-parallelism-2-wave",
-        remaining_p2_jobs,
+        "parallelism-2-early-only-wave",
+        early_jobs,
     )
     _write_documents(
-        OUT_DIR / "job-stage1-early-wave-gpt2-small-recovery-nf2-en.yaml",
-        "gpt2-small-node-failure-recovery",
-        gpt2s_recovery_jobs,
-    )
-    _write_documents(
-        OUT_DIR / "job-stage1-early-wave-gpt2-small-lemmaverb-recovery-nf2-en.yaml",
-        "gpt2-small-lemmaverb-unfinished-seed-recovery",
-        [gpt2s_lemma_recovery],
+        OUT_DIR / "job-stage1-full-selected-wave-en.yaml",
+        "parallelism-2-selected-full-wave-after-early",
+        full_jobs,
     )
 
     print(
@@ -506,20 +459,16 @@ def main() -> None:
                 "sentinel_trajectories": sum(
                     j["spec"]["completions"] for j in sentinel_jobs
                 ),
-                "wave_jobs": len(wave_jobs),
-                "wave_trajectories": sum(
-                    j["spec"]["completions"] for j in wave_jobs
+                "early_jobs": len(early_jobs),
+                "early_trajectories": sum(
+                    j["spec"]["completions"] for j in early_jobs
                 ),
-                "max_parallel_per_cell": 1,
-                "max_parallel_if_all_wave_jobs_submitted": len(wave_jobs),
-                "validated_p2_tranches": {
-                    arch: {
-                        "jobs": len(jobs),
-                        "trajectories": sum(j["spec"]["completions"] for j in jobs),
-                        "max_parallel": sum(j["spec"]["parallelism"] for j in jobs),
-                    }
-                    for arch, jobs in p2_tranche_jobs.items()
-                },
+                "full_jobs": len(full_jobs),
+                "full_trajectories": sum(
+                    j["spec"]["completions"] for j in full_jobs
+                ),
+                "max_parallel_per_cell": 2,
+                "max_parallel_per_stage": 60,
             },
             indent=2,
         )

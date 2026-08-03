@@ -20,7 +20,7 @@ metadata:
     intervention: baseline
   annotations:
     foundry.thesis/purpose: stage1-early-seed-lr30-rerun
-    foundry.thesis/design: 12-seeds-8-full-parallelism-1
+    foundry.thesis/design: 12-seeds-2-legacy-6-early-4-full
     foundry.thesis/hp-rank: '0'
     foundry.thesis/epochs: '2'
     foundry.thesis/scheduler-epochs: '30'
@@ -29,7 +29,7 @@ metadata:
     foundry.thesis/code-sha: c5325534fd4e7021d7691a50f771279150c485ca
     foundry.thesis/image-digest: sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
     foundry.thesis/seed-set: 42,137,314159,1568568120,1415936399,1640623142,1595274352,2022192329,1891911437,1881877998,302485963,2078344582
-    foundry.thesis/slot-map: '[[0,2]]'
+    foundry.thesis/slot-map: '[[0,4]]'
 spec:
   backoffLimit: 0
   completionMode: Indexed
@@ -198,7 +198,7 @@ spec:
           value: '[42, 137, 314159, 1568568120, 1415936399, 1640623142, 1595274352,
             2022192329, 1891911437, 1881877998, 302485963, 2078344582]'
         - name: SLOT_MAP_JSON
-          value: '[[0, 2]]'
+          value: '[[0, 4]]'
         - name: SAVE_RESUME_LAST_N
           value: '3'
         - name: PROD_EPOCHS
