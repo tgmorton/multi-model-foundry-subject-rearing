@@ -92,6 +92,9 @@ BAD_NODES = [
     "rci-tide-gpu-03.sdsu.edu",
     "ry-gpu-10.sdsc.optiputer.net",
     "nautilus-it-gpu03.fullerton.edu",  # broken CUDA driver — soaked 252 exit-2 "FATAL: no CUDA" fast-fails (2026-05-28)
+    "gpu-14.nrp.mghpcc.org",
+    "gpu-17.nrp.mghpcc.org",
+    "nautilus-it-gpu01.fullerton.edu",
 ]
 
 # Same 2 seeds across every (arch, lang, intervention) cell — seed becomes

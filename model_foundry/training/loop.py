@@ -428,6 +428,11 @@ class TrainingLoop:
         # _save_checkpoint/save_checkpoint use exist_ok, so a redundant call
         # is harmless and idempotent.
         if last_saved_step != self.global_step:
+            epoch_completed = (
+                steps_per_epoch > 0
+                and self.global_step > 0
+                and self.global_step == (self.epoch + 1) * steps_per_epoch
+            )
             self.logger.info(
                 "Endpoint guard: saving final checkpoint at step %d "
                 "(last scheduled save was at %s)",
@@ -437,6 +442,7 @@ class TrainingLoop:
                 tokenizer,
                 total_tokens_processed,
                 save_resume_state=True,
+                epoch_completed=epoch_completed,
             )
 
         print("\n----- Training Complete -----")
@@ -693,7 +699,8 @@ class TrainingLoop:
     def _save_checkpoint(self, tokenizer, total_tokens_processed: int = 0,
                          save_resume_state: bool = True,
                          epoch_batch_offset: int = 0,
-                         epoch_micro_step: int = 0):
+                         epoch_micro_step: int = 0,
+                         epoch_completed: bool = False):
         """
         Save a checkpoint with proper cleanup.
 
@@ -722,6 +729,7 @@ class TrainingLoop:
             save_resume_state=save_resume_state,
             epoch_batch_offset=epoch_batch_offset,
             epoch_micro_step=epoch_micro_step,
+            epoch_completed=epoch_completed,
         )
 
         # Clear cache after checkpoint to free memory

@@ -208,8 +208,9 @@ class TestDataProcessorStepsCalculation:
 
         steps = processor.get_training_steps_per_epoch()
 
-        expected_steps = math.ceil(num_chunks / tiny_config.data.batch_size)
-        assert steps == expected_steps or steps > 0  # Allow some variation
+        physical_batches = math.ceil(num_chunks / tiny_config.data.batch_size)
+        expected_steps = physical_batches // tiny_config.training.gradient_accumulation_steps
+        assert steps == max(1, expected_steps)
 
     def test_steps_calculation_with_batch_size(self, tiny_config, temp_workspace):
         """Steps should account for batch size."""
@@ -229,8 +230,27 @@ class TestDataProcessorStepsCalculation:
 
         steps = processor.get_training_steps_per_epoch()
 
-        expected_steps = math.ceil(num_examples / tiny_config.data.batch_size)
+        physical_batches = math.ceil(num_examples / tiny_config.data.batch_size)
+        expected_steps = physical_batches // tiny_config.training.gradient_accumulation_steps
         assert steps == expected_steps
+
+    def test_steps_drop_incomplete_accumulation_window(self, tiny_config,
+                                                       temp_workspace):
+        """A final partial accumulation window must not count as an update."""
+        tiny_config.data.batch_size = 4
+        tiny_config.training.gradient_accumulation_steps = 8
+        processor = DataProcessor(tiny_config, str(temp_workspace))
+
+        chunks = Dataset.from_dict({
+            'input_ids': [[1] * tiny_config.data.max_sequence_length] * 65
+        })
+        chunked_dir = Path(processor.chunked_data_dir)
+        chunked_dir.mkdir(parents=True)
+        chunks.save_to_disk(str(chunked_dir))
+        processor._cached_chunked_dataset = chunks
+
+        # 65 examples -> 17 physical batches -> 2 complete windows.
+        assert processor.get_training_steps_per_epoch() == 2
 
 
 class TestDataProcessorDataLoader:

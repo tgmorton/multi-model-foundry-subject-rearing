@@ -18,6 +18,27 @@ import torch
 import wandb
 
 
+def resolve_resume_epoch(global_step: int, saved_epoch: int,
+                         steps_per_epoch: int, resume_batch_offset: int,
+                         epoch_completed: bool) -> int:
+    """Resolve the zero-based epoch at which training should resume.
+
+    New endpoint checkpoints explicitly mark a completed epoch. Legacy
+    endpoints are recognized only when their zero offset and saved step
+    exactly identify the end of the recorded epoch.
+    """
+    if epoch_completed:
+        return saved_epoch + 1
+    if (
+        global_step > 0
+        and steps_per_epoch > 0
+        and resume_batch_offset == 0
+        and global_step == (saved_epoch + 1) * steps_per_epoch
+    ):
+        return saved_epoch + 1
+    return saved_epoch
+
+
 class CheckpointManager:
     """
     Manages model checkpoints during training.
@@ -52,6 +73,7 @@ class CheckpointManager:
         # Accumulation-counter position paired with resume_batch_offset
         # (differs only when an OOM rewound a window before the save).
         self.resume_micro_step: int = 0
+        self.resume_epoch_completed: bool = False
 
     def get_checkpoint_schedule(self) -> Set[int]:
         """
@@ -102,7 +124,8 @@ class CheckpointManager:
                         total_tokens_processed: int = 0,
                         save_resume_state: bool = True,
                         epoch_batch_offset: int = 0,
-                        epoch_micro_step: int = 0):
+                        epoch_micro_step: int = 0,
+                        epoch_completed: bool = False):
         """
         Save the complete training state to a checkpoint directory.
 
@@ -145,6 +168,7 @@ class CheckpointManager:
                 # accumulation counter, which can lag after an OOM rewind.
                 'epoch_batch_offset': epoch_batch_offset,
                 'epoch_micro_step': epoch_micro_step,
+                'epoch_completed': epoch_completed,
                 'optimizer': optimizer.state_dict(),
                 'lr_scheduler': lr_scheduler.state_dict(),
                 'random_state': random.getstate(),
@@ -179,6 +203,7 @@ class CheckpointManager:
             # (full state) or is analysis-only. Used by loaders and the
             # post-eval pruner.
             'has_resume_state': save_resume_state,
+            'epoch_completed': epoch_completed,
             # Token counting metrics for cross-architecture comparison
             'token_metrics': {
                 'total_tokens_processed': total_tokens_processed,
@@ -349,6 +374,7 @@ class CheckpointManager:
             state.get('epoch_micro_step', self.resume_batch_offset)
             or self.resume_batch_offset
         )
+        self.resume_epoch_completed = bool(state.get('epoch_completed', False))
 
         # Restore optimizer and scheduler states
         optimizer.load_state_dict(state['optimizer'])

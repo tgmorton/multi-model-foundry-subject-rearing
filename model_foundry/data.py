@@ -497,11 +497,17 @@ class DataProcessor:
             raise RuntimeError("Chunked dataset not found. Run preprocessing first.")
         
         num_chunks = len(dataset)
-        # Calculate effective batch size including gradient accumulation
-        effective_batch_size = self.config.data.batch_size * self.config.training.gradient_accumulation_steps
-        steps_per_epoch = math.ceil(num_chunks / effective_batch_size)
-        
-        return steps_per_epoch
+
+        # Match the actual loop: DataLoader yields physical batches and the
+        # optimizer steps only after a complete accumulation window. A final
+        # partial window is intentionally dropped.
+        from .checkpoint_schedule import compute_opt_steps_per_epoch
+
+        return compute_opt_steps_per_epoch(
+            num_chunks=num_chunks,
+            phys_batch=self.config.data.batch_size,
+            grad_accum=self.config.training.gradient_accumulation_steps,
+        )
     
     def load_test_dataset(self) -> Optional[Dataset]:
         """
@@ -536,4 +542,4 @@ def create_data_processor(config, base_dir: str) -> DataProcessor:
     Returns:
         Configured DataProcessor instance
     """
-    return DataProcessor(config, base_dir) 
+    return DataProcessor(config, base_dir)

@@ -11,8 +11,25 @@ import random
 import numpy as np
 from pathlib import Path
 
-from model_foundry.training.checkpointing import CheckpointManager
+from model_foundry.training.checkpointing import (
+    CheckpointManager,
+    resolve_resume_epoch,
+)
 from model_foundry.model import create_model
+
+
+class TestResolveResumeEpoch:
+    def test_new_completed_endpoint_advances(self):
+        assert resolve_resume_epoch(2000, 1, 1000, 0, True) == 2
+
+    def test_legacy_completed_endpoint_advances(self):
+        assert resolve_resume_epoch(2000, 1, 1000, 0, False) == 2
+
+    def test_mid_epoch_checkpoint_does_not_advance(self):
+        assert resolve_resume_epoch(1500, 1, 1000, 4000, False) == 1
+
+    def test_boundary_step_with_offset_does_not_advance(self):
+        assert resolve_resume_epoch(2000, 1, 1000, 8, False) == 1
 
 
 class TestCheckpointManager:

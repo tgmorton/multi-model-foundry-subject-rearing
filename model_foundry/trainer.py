@@ -24,6 +24,7 @@ from .utils import find_project_root, set_seed, get_device, get_git_commit_hash
 from .data import create_data_processor
 from .logging_utils import setup_logging
 from .training import CheckpointManager, load_tokenizer, TrainingLoop
+from .training.checkpointing import resolve_resume_epoch
 
 
 class Trainer:
@@ -202,6 +203,7 @@ class Trainer:
         except Exception as e:
             print(f"  ⚠️  Could not determine exact dataset size ({e}), using estimates")
             steps_per_epoch = 100
+        self.steps_per_epoch = steps_per_epoch
 
         # Calculate train_steps if not specified
         if self.config.training.train_steps is None:
@@ -553,6 +555,31 @@ class Trainer:
             optimizer=self.optimizer,
             lr_scheduler=self.lr_scheduler
         )
+
+        # Legacy endpoint checkpoints (written before epoch_completed was
+        # persisted) stored offset=0 and the just-completed epoch index.
+        # Advance only when the saved step is exactly that epoch boundary;
+        # ordinary mid-epoch checkpoints keep the fast-forward path.
+        resolved_epoch = resolve_resume_epoch(
+            global_step=global_step,
+            saved_epoch=epoch,
+            steps_per_epoch=self.steps_per_epoch,
+            resume_batch_offset=getattr(
+                self.checkpoint_manager, "resume_batch_offset", 0
+            ),
+            epoch_completed=getattr(
+                self.checkpoint_manager, "resume_epoch_completed", False
+            ),
+        )
+        if resolved_epoch != epoch:
+            logger.warning(
+                "Completed endpoint checkpoint detected at step %d: advancing "
+                "resume epoch from %d to %d",
+                global_step, epoch, resolved_epoch,
+            )
+            epoch = resolved_epoch
+            self.checkpoint_manager.resume_batch_offset = 0
+            self.checkpoint_manager.resume_micro_step = 0
 
         # If a checkpoint-loaded tokenizer exists, prefer it (its vocab
         # should already match the loaded model weights).

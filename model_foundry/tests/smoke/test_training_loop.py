@@ -341,4 +341,5 @@ class TestCheckpointSchedule:
             save_resume_state=True,
             epoch_batch_offset=0,
             epoch_micro_step=0,
+            epoch_completed=False,
         )
