@@ -126,6 +126,30 @@ class TestCalculateTrainingParametersAuto:
         assert trainer.config.training.train_steps == 500
         assert trainer.config.training.warmup_steps == int(500 * 0.2)
 
+    def test_short_run_uses_long_scheduler_horizon(self, tiny_config, tmp_path):
+        tiny_config.training.train_steps = None
+        tiny_config.training.scheduler_train_steps = 3000
+        tiny_config.training.warmup_steps = None
+        tiny_config.training.epochs = 2
+        tiny_config.training.warmup_ratio = 0.1
+
+        trainer = _make_trainer(tiny_config, tmp_path)
+        trainer.data_processor.get_training_steps_per_epoch.return_value = 100
+        trainer._calculate_training_parameters()
+
+        assert trainer.config.training.train_steps == 200
+        assert trainer.config.training.scheduler_train_steps == 3000
+        assert trainer.config.training.warmup_steps == 300
+
+    def test_rejects_scheduler_shorter_than_run(self, tiny_config, tmp_path):
+        tiny_config.training.train_steps = 200
+        tiny_config.training.scheduler_train_steps = 199
+        trainer = _make_trainer(tiny_config, tmp_path)
+        trainer.data_processor.get_training_steps_per_epoch.return_value = 100
+
+        with pytest.raises(ValueError, match="cannot be shorter"):
+            trainer._calculate_training_parameters()
+
 
 # ---------------------------------------------------------------------------
 # 4. _calculate_training_parameters  -- exception fallback

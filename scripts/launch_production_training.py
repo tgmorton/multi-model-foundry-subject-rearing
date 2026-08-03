@@ -136,7 +136,8 @@ def _job_yaml(arch: str, lang: str, intervention: str,
               job_suffix: str = "",
               git_ref: str = "main",
               image: str = DEFAULT_IMAGE,
-              prod_epochs: int | None = None) -> str:
+              prod_epochs: int | None = None,
+              scheduler_epochs: int | None = None) -> str:
     """Return the K8s Job YAML for a single (arch × intervention) cell.
 
     If ``slots`` is given (an ordered list of [hp_rank, seed_idx] pairs), the
@@ -181,6 +182,11 @@ def _job_yaml(arch: str, lang: str, intervention: str,
     # parity checks); unset for real production (agent defaults to 30).
     if prod_epochs is not None:
         resume_env += f'\n        - {{name: PROD_EPOCHS, value: "{int(prod_epochs)}"}}'
+    if scheduler_epochs is not None:
+        resume_env += (
+            f'\n        - {{name: SCHEDULER_EPOCHS, value: '
+            f'"{int(scheduler_epochs)}"}}'
+        )
 
     return f"""---
 apiVersion: batch/v1
@@ -406,6 +412,10 @@ def main() -> None:
     ap.add_argument("--prod-epochs", type=int, default=None,
                     help="Override the production epoch horizon (validation "
                          "dry-runs only, e.g. 3). Unset = agent default (30).")
+    ap.add_argument("--scheduler-epochs", type=int, default=None,
+                    help="Optional LR scheduler horizon in epochs. This may "
+                         "exceed --prod-epochs for a countable early stop "
+                         "under the canonical full-run schedule.")
     ap.add_argument("--skip-push-check", action="store_true",
                     help="Skip the pre-flight check that --git-ref/HEAD is "
                          "reachable from a remote branch (pods fetch the SHA "
@@ -516,6 +526,7 @@ def main() -> None:
                 git_ref=git_ref,
                 image=args.image,
                 prod_epochs=args.prod_epochs,
+                scheduler_epochs=args.scheduler_epochs,
             )
             if args.dry_run:
                 n = len(slots) if slots is not None else 10

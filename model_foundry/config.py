@@ -311,6 +311,15 @@ class TrainingConfig(BaseModel):
     # Training duration - can be specified explicitly or calculated automatically
     warmup_steps: Optional[int] = Field(None, ge=0)  # If None, will be calculated as percentage of train_steps
     train_steps: Optional[int] = Field(None, gt=0)   # If None, will be calculated from epochs
+    scheduler_train_steps: Optional[int] = Field(
+        None,
+        gt=0,
+        description=(
+            "Optional full learning-rate horizon. When set, training may "
+            "stop at train_steps while the scheduler follows this longer "
+            "canonical horizon."
+        ),
+    )
     epochs: int = Field(..., gt=0)
 
     # Automatic calculation parameters

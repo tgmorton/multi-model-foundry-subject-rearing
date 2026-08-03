@@ -244,6 +244,7 @@ def main() -> None:
     from model_foundry.cache_keys import compute_cache_key  # noqa: E402
     from model_foundry.checkpoint_schedule import (  # noqa: E402
         compute_checkpoint_schedule,
+        compute_opt_steps_per_epoch,
         read_num_chunks,
     )
 
@@ -272,6 +273,18 @@ def main() -> None:
     # hardcoded 127000 estimate).
     num_chunks = read_num_chunks(str(chunked_dir))
     grad_accum = int(cfg["training"]["gradient_accumulation_steps"])
+    scheduler_epochs = int(os.environ.get("SCHEDULER_EPOCHS", prod_epochs))
+    if scheduler_epochs < prod_epochs:
+        sys.exit(
+            f"FATAL: SCHEDULER_EPOCHS={scheduler_epochs} cannot be shorter "
+            f"than PROD_EPOCHS={prod_epochs}"
+        )
+    opt_steps_per_epoch = compute_opt_steps_per_epoch(
+        num_chunks, phys_batch, grad_accum
+    )
+    cfg["training"]["scheduler_train_steps"] = (
+        scheduler_epochs * opt_steps_per_epoch
+    )
 
     resume_mode = os.environ.get("RESUME", "").strip().lower() in (
         "1", "true", "yes", "y"
@@ -382,6 +395,7 @@ def main() -> None:
     print(f"  seed={seed}  phys={phys_batch}  eff={hp['effective_batch_size']}")
     print(f"  grad_accum={cfg['training']['gradient_accumulation_steps']}")
     print(f"  epochs={prod_epochs}  num_chunks={num_chunks}  "
+          f"scheduler_epochs={scheduler_epochs}  "
           f"schedule_anchors={len(schedule)}  "
           f"resume_state_anchors={len(resume_state_steps)}  "
           f"resume_mode={resume_mode}")

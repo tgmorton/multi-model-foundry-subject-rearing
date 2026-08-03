@@ -212,17 +212,30 @@ class Trainer:
                   f"({self.config.training.epochs} epochs × {steps_per_epoch} steps/epoch)")
             self.config.training.train_steps = calculated_train_steps
 
+        scheduler_train_steps = (
+            self.config.training.scheduler_train_steps
+            or self.config.training.train_steps
+        )
+        if scheduler_train_steps < self.config.training.train_steps:
+            raise ValueError(
+                "scheduler_train_steps cannot be shorter than train_steps"
+            )
+        self.config.training.scheduler_train_steps = scheduler_train_steps
+
         # Calculate warmup_steps if not specified
         if self.config.training.warmup_steps is None:
-            calculated_warmup_steps = int(self.config.training.train_steps * self.config.training.warmup_ratio)
+            calculated_warmup_steps = int(
+                scheduler_train_steps * self.config.training.warmup_ratio
+            )
             print(f"  - Auto-calculated warmup_steps: {calculated_warmup_steps} "
-                  f"({self.config.training.warmup_ratio:.1%} of total steps)")
+                  f"({self.config.training.warmup_ratio:.1%} of scheduler horizon)")
             self.config.training.warmup_steps = calculated_warmup_steps
 
         print(f"  - Final training configuration:")
         print(f"    - Epochs: {self.config.training.epochs}")
         print(f"    - Steps per epoch: {steps_per_epoch}")
         print(f"    - Total training steps: {self.config.training.train_steps}")
+        print(f"    - Scheduler horizon: {scheduler_train_steps}")
         print(f"    - Warmup steps: {self.config.training.warmup_steps}")
 
     def _prepare_data(self):
@@ -376,7 +389,10 @@ class Trainer:
             "linear",
             optimizer=self.optimizer,
             num_warmup_steps=self.config.training.warmup_steps,
-            num_training_steps=self.config.training.train_steps
+            num_training_steps=(
+                self.config.training.scheduler_train_steps
+                or self.config.training.train_steps
+            )
         )
 
     def _load_tokenizer(self):
