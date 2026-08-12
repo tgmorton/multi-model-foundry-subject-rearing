@@ -1,0 +1,141 @@
+---
+# Train the two cross-fold recoverability RATER models (gpt2_small, EN,
+# 3-epoch horizon, HP winners rank 0, seed 42). idx 0 = fold a, idx 1 =
+# fold b. Utility models for the graded pronoun-drop study's scoring pass —
+# registry run_kind=rater, WandB project subject-drop-raters.
+# Requires: job-rater-foldsplit (folds on PVC) then job-rater-precache
+# (caches) to have completed; the agent fail-fasts otherwise.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-train-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: rater-train
+    lang: en
+spec:
+  backoffLimit: 10
+  completionMode: Indexed
+  completions: 2
+  parallelism: 2
+  ttlSecondsAfterFinished: 604800
+  # Node-level CUDA-init faults exit 2 (arch-agnostic, see
+  # memory/feedback_mamba_node_cuda_fault_not_kernel.md) — don't burn
+  # backoffLimit on them.
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: trainer
+        operator: In
+        values: [2]
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: rater-train
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          FOLD=$([ "$JOB_COMPLETION_INDEX" -eq 0 ] && echo a || echo b)
+          echo "=== RATER TRAIN — gpt2_small EN fold $FOLD ==="
+
+          # GPU health probe — exit 2 on node CUDA faults (podFailurePolicy
+          # ignores these so the retry lands on a healthy node).
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize()
+              x = torch.zeros(1024, device='cuda'); x.sum().item()
+              print(f'  GPU healthy: {torch.cuda.get_device_name(0)}')
+          except Exception as e:
+              print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+
+          cd /opt/repo
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/models/raters
+          ln -sfn /mnt/data/raw       /opt/repo/data/raw
+          ln -sfn /mnt/data/tokenized /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked   /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          ln -sfn /mnt/data/models    /opt/repo/models
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models; do
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink"; exit 1; }
+          done
+
+          export FOLD MODE=train
+          python3 scripts/rater_agent.py
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTHONHASHSEED, value: "0"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Production gpt2_small sizing (memory/reference_production_batch_sizing).
+          requests: {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
+          limits:   {memory: 4Gi, cpu: "2", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090

@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import SUBJECT_DEPS
 from .base import BaseSentenceAnnotator
 
@@ -45,7 +47,7 @@ class PronounAnnotator(BaseSentenceAnnotator):
             if tok.pos_ != "PRON":
                 continue
 
-            dep = tok.dep_
+            dep = normalize_dep(tok.dep_)
 
             # Classify function
             if dep in SUBJECT_DEPS:

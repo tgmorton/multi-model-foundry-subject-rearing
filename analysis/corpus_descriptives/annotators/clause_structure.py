@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 
 _FINITE_CLAUSE_DEPS = {"ROOT", "ccomp", "advcl", "acl:relcl", "acl", "xcomp"}
@@ -37,7 +39,7 @@ def _is_nonroot_imperative(tok: spacy.tokens.Token, sent: spacy.tokens.Span) -> 
     elif tok.pos_ != "VERB":
         return False
 
-    children_deps = {c.dep_ for c in tok.children}
+    children_deps = {normalize_dep(c.dep_) for c in tok.children}
 
     # No overt subject
     if children_deps & _SUBJECT_DEPS:
@@ -93,7 +95,7 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
             if tok.pos_ not in ("VERB", "AUX"):
                 continue
 
-            dep = tok.dep_
+            dep = normalize_dep(tok.dep_)
             verb_forms = tok.morph.get("VerbForm")
 
             # Only process clause-heading verbs
@@ -109,7 +111,7 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
             # main verb as VerbForm=Inf.
             if not is_finite:
                 for child in tok.children:
-                    if child.dep_ in ("aux", "aux:pass") and child.pos_ == "AUX":
+                    if normalize_dep(child.dep_) in ("aux", "aux:pass") and child.pos_ == "AUX":
                         child_vf = child.morph.get("VerbForm")
                         if child_vf and "Fin" in child_vf:
                             is_finite = True
@@ -120,8 +122,8 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
             if not (is_finite or is_infinitive):
                 continue
 
-            # Analyze children for arguments
-            children = {c.dep_: c for c in tok.children}
+            # Analyze children for arguments (keys normalized to UD)
+            children = {normalize_dep(c.dep_): c for c in tok.children}
             children_deps = set(children.keys())
 
             # Subject analysis
@@ -169,7 +171,7 @@ class ClauseStructureAnnotator(BaseSentenceAnnotator):
                         "acomp", "attr", "ROOT", "ccomp", "advcl", "xcomp",
                     ):
                         current_head = current_head.head
-                    head_children_deps = {c.dep_ for c in current_head.children}
+                    head_children_deps = {normalize_dep(c.dep_) for c in current_head.children}
                     if head_children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
                         subject_status = "inherited"
                         break
