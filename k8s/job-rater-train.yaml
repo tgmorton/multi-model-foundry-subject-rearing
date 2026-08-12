@@ -21,15 +21,17 @@ spec:
   parallelism: 2
   ttlSecondsAfterFinished: 604800
   # Node-level CUDA-init faults exit 2 (arch-agnostic, see
-  # memory/feedback_mamba_node_cuda_fault_not_kernel.md) — don't burn
-  # backoffLimit on them.
+  # memory/feedback_mamba_node_cuda_fault_not_kernel.md); NVML
+  # driver/library-mismatch nodes fail container CREATE with StartError
+  # exit 128 (observed uicnrp-fiona2, 2026-08-12). Neither should burn
+  # backoffLimit.
   podFailurePolicy:
     rules:
     - action: Ignore
       onExitCodes:
         containerName: trainer
         operator: In
-        values: [2]
+        values: [2, 128]
   template:
     metadata:
       labels:
@@ -139,3 +141,9 @@ spec:
                 - NVIDIA-A10
                 - NVIDIA-L4
                 - NVIDIA-GeForce-RTX-4090
+              # NVML driver/library mismatch — pods land there and
+              # StartError forever (2026-08-12). Drop when node is fixed.
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
