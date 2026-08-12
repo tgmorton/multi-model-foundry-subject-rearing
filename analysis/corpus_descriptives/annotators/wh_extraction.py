@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import WH_LEMMAS_EN, WH_LEMMAS_IT
 from .base import BaseSentenceAnnotator
 
@@ -22,7 +24,7 @@ def _is_wh_word(tok: spacy.tokens.Token, wh_lemmas: frozenset = WH_LEMMAS_EN) ->
 
 def _extraction_type(tok: spacy.tokens.Token) -> str:
     """Classify wh-word extraction: subject / object / adjunct."""
-    dep = tok.dep_
+    dep = normalize_dep(tok.dep_)
     if dep in ("nsubj", "nsubj:pass"):
         return "subject"
     elif dep in ("obj", "iobj"):

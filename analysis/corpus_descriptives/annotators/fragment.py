@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 
 
@@ -70,7 +72,7 @@ class FragmentAnnotator(BaseSentenceAnnotator):
         elif root.pos_ != "VERB":
             return False
 
-        children_deps = {c.dep_ for c in root.children}
+        children_deps = {normalize_dep(c.dep_) for c in root.children}
         has_subject = children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}
         if has_subject:
             return False
@@ -144,7 +146,7 @@ class FragmentAnnotator(BaseSentenceAnnotator):
 
         # Null subject detection: finite root verb with no overt subject
         has_subject = any(
-            c.dep_ in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
+            normalize_dep(c.dep_) in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
             for c in root.children
         )
 

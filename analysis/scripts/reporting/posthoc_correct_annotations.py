@@ -30,6 +30,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import polars as pl
 
+from preprocessing.dep_labels import normalize_dep
+
 
 # ---------------------------------------------------------------------------
 # Correction rule base class
@@ -133,13 +135,13 @@ def correct_imperative_heuristic(
         # Must have no overt subject
         children = _children_of(root_idx, dep_heads)
         subject_rels = {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}
-        has_subject = any(dep_rels[c] in subject_rels for c in children)
+        has_subject = any(normalize_dep(dep_rels[c]) in subject_rels for c in children)
         if has_subject:
             continue
 
         # Not preceded by "to" infinitive marker
         if root_idx > 0:
-            prev_dep = dep_rels[root_idx - 1]
+            prev_dep = normalize_dep(dep_rels[root_idx - 1])
             prev_lemma = lemmas[root_idx - 1].lower() if lemmas[root_idx - 1] else ""
             if prev_dep == "mark" and prev_lemma == "to":
                 continue
@@ -255,7 +257,7 @@ def correct_finiteness_propagation(
             for child_idx in children:
                 if child_idx >= len(pos_tags):
                     continue
-                if pos_tags[child_idx] == "AUX" and dep_rels[child_idx] in ("aux", "aux:pass"):
+                if pos_tags[child_idx] == "AUX" and normalize_dep(dep_rels[child_idx]) in ("aux", "aux:pass"):
                     # We don't have morphological features stored, but we
                     # can infer finiteness from known finite auxiliary forms.
                     lemma_lower = ""
@@ -388,13 +390,13 @@ def correct_xcomp_inheritance(
                     break
                 # Skip through ADJ intermediaries
                 if (pos_tags[current_idx] == "ADJ"
-                        and dep_rels[current_idx] in _ADJ_BRIDGE_DEPS):
+                        and normalize_dep(dep_rels[current_idx]) in _ADJ_BRIDGE_DEPS):
                     current_idx = dep_heads[current_idx]
                     if current_idx >= len(pos_tags):
                         break
                 # Check if this head has a subject child
                 head_children = _children_of(current_idx, dep_heads)
-                if any(dep_rels[ci] in _SUBJECT_RELS for ci in head_children
+                if any(normalize_dep(dep_rels[ci]) in _SUBJECT_RELS for ci in head_children
                        if ci < len(dep_rels)):
                     found = True
                     break
@@ -525,7 +527,7 @@ def correct_nonroot_imperative(
 
             # No subject children
             children = _children_of(verb_idx, dep_heads)
-            if any(dep_rels[ci] in _SUBJECT_RELS for ci in children
+            if any(normalize_dep(dep_rels[ci]) in _SUBJECT_RELS for ci in children
                    if ci < len(dep_rels)):
                 new_clauses.append(c)
                 continue
@@ -545,7 +547,7 @@ def correct_nonroot_imperative(
             if not is_initial and verb_idx <= 2:
                 preceding_ok = all(
                     pos_tags[j] in _VOCATIVE_DISCOURSE_POS
-                    or dep_rels[j] in _VOCATIVE_DISCOURSE_DEPS
+                    or normalize_dep(dep_rels[j]) in _VOCATIVE_DISCOURSE_DEPS
                     for j in range(verb_idx)
                 )
                 is_initial = preceding_ok

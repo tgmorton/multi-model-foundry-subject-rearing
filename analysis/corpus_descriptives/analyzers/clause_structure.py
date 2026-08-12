@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseAnalyzer
 
 _FINITE_CLAUSE_DEPS = {"ROOT", "ccomp", "advcl", "acl:relcl", "acl"}
@@ -40,12 +42,12 @@ class ClauseStructureAnalyzer(BaseAnalyzer):
             if tok.pos_ not in ("VERB", "AUX"):
                 continue
 
-            dep = tok.dep_
+            dep = normalize_dep(tok.dep_)
             verb_forms = tok.morph.get("VerbForm")
 
             # Finite clauses: ROOT / ccomp / advcl / acl:relcl
             if dep in _FINITE_CLAUSE_DEPS and verb_forms and "Fin" in verb_forms:
-                children_deps = {c.dep_ for c in tok.children}
+                children_deps = {normalize_dep(c.dep_) for c in tok.children}
                 if "expl" in children_deps:
                     subject_status = "expletive"
                 elif children_deps & {"nsubj", "nsubj:pass"}:

@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseAnalyzer
 
 _CLAUSE_DEPS = {"ROOT", "xcomp", "ccomp", "advcl", "acl", "acl:relcl"}
@@ -41,7 +43,7 @@ class VerbFinitenessAnalyzer(BaseAnalyzer):
                 continue
             verb_form = verb_forms[0]  # e.g. "Fin" or "Inf"
 
-            dep = tok.dep_
+            dep = normalize_dep(tok.dep_)
             if dep in _CLAUSE_DEPS:
                 clause_pos = dep
             else:

@@ -57,6 +57,7 @@ from typing import Dict, Optional, Tuple
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
 from preprocessing.registry import AblationRegistry
 
 
@@ -202,7 +203,7 @@ def _find_subject(verb: spacy.tokens.Token) -> Optional[spacy.tokens.Token]:
     """
     # Direct children with subject dependency
     for child in verb.children:
-        if child.dep_ in ("nsubj", "nsubj:pass"):
+        if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
             return child
 
     # Walk up auxiliary chain: if this verb is an aux/xcomp child,
@@ -212,10 +213,10 @@ def _find_subject(verb: spacy.tokens.Token) -> Optional[spacy.tokens.Token]:
     while head and head.i not in seen:
         seen.add(head.i)
         for child in head.children:
-            if child.dep_ in ("nsubj", "nsubj:pass"):
+            if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                 return child
         # Only continue walking if we are in an aux / xcomp relation
-        if verb.dep_ not in ("aux", "auxpass", "xcomp"):
+        if normalize_dep(verb.dep_) not in ("aux", "auxpass", "aux:pass", "xcomp"):
             break
         verb = head
         head = head.head

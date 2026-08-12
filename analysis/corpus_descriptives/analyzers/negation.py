@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseAnalyzer
 
 
@@ -50,7 +52,7 @@ class NegationAnalyzer(BaseAnalyzer):
 
             # Subject realization of the head verb
             if head.pos_ in ("VERB", "AUX"):
-                head_children_deps = {c.dep_ for c in head.children}
+                head_children_deps = {normalize_dep(c.dep_) for c in head.children}
                 if head_children_deps & {"nsubj", "nsubj:pass"}:
                     subj_status = "overt"
                 elif "expl" in head_children_deps:

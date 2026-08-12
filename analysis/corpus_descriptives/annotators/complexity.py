@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional, Set
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 
 
@@ -45,7 +47,7 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
         elif root.pos_ != "VERB":
             return False
 
-        children_deps = {c.dep_ for c in root.children}
+        children_deps = {normalize_dep(c.dep_) for c in root.children}
         if children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
             return False
 
@@ -76,7 +78,7 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
         clause_verbs = []
 
         for tok in sent:
-            if tok.pos_ in ("VERB", "AUX") and tok.dep_ in clause_deps:
+            if tok.pos_ in ("VERB", "AUX") and normalize_dep(tok.dep_) in clause_deps:
                 n_clauses += 1
                 clause_verbs.append(tok)
 
@@ -130,7 +132,7 @@ class ComplexityAnnotator(BaseSentenceAnnotator):
                 # In pro-drop languages like Italian, subjectless finite verbs
                 # are the norm, so this heuristic must not apply.
                 has_subject = any(
-                    c.dep_ in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
+                    normalize_dep(c.dep_) in ("nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass")
                     for c in root.children
                 )
                 if not has_subject:

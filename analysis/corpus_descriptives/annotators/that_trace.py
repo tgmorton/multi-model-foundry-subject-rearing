@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import ENGLISH_BRIDGE_VERBS, ITALIAN_BRIDGE_VERBS, WH_LEMMAS_EN, WH_LEMMAS_IT
 from .base import BaseSentenceAnnotator
 
@@ -87,7 +89,7 @@ class ThatTraceAnnotator(BaseSentenceAnnotator):
             # Step 3: Embedded subject status
             nsubj_child = None
             for child in tok.children:
-                if child.dep_ in ("nsubj", "nsubj:pass"):
+                if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                     nsubj_child = child
                     break
 
