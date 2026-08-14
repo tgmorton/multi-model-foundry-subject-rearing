@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-eval-audit-v1
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-audit
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-audit
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - name: GIT_REF
+          value: 7984a9144e97ef8407a6d533df92f756961b2f2a
+        resources:
+          requests: {cpu: 200m, memory: 512Mi}
+          limits: {cpu: 200m, memory: 512Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: audit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          out=/mnt/data/eval_v2/null_subj_v2_condition_matched_v1
+          mkdir -p "$out"
+          python3 scripts/build_condition_matched_eval_inventory.py \
+            --models-root /mnt/data/models/production \
+            --output "$out/checkpoint_inventory.json"
+          python3 scripts/validate_condition_matched_tokenizers.py \
+            --root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 \
+            --hf-tokenizer bert_wordpiece=/mnt/data/tokenizers/en_bert_wordpiece \
+            --output "$out/tokenizer_validation_bert_wordpiece.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          out = Path('/mnt/data/eval_v2/null_subj_v2_condition_matched_v1')
+          inv = json.loads((out / 'checkpoint_inventory.json').read_text())
+          tok = json.loads((out / 'tokenizer_validation_bert_wordpiece.json').read_text())
+          print('AUDIT_RUNS', inv['run_count'])
+          print('AUDIT_CHECKPOINTS', inv['checkpoint_count'])
+          print('AUDIT_REJECTED', len(inv['rejected']))
+          print('AUDIT_RUNS_BY_ARCH', json.dumps(inv['run_counts_by_architecture'], sort_keys=True))
+          for condition, row in sorted(tok['tokenizers']['bert_wordpiece'].items()):
+              print('BERT_TOKENIZER', condition, 'rows', row['rows'],
+                    'unk_rate', row['unknown_rate'],
+                    'delta', json.dumps(row['overt_minus_null_target_token_delta'], sort_keys=True))
+          PY
+        resources:
+          requests: {cpu: "2", memory: 4Gi}
+          limits: {cpu: "2", memory: 4Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

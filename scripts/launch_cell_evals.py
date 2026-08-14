@@ -66,6 +66,7 @@ BAD_NODES = [
     "rci-tide-gpu-03.sdsu.edu",
     "ry-gpu-10.sdsc.optiputer.net",
     "nautilus-it-gpu03.fullerton.edu",
+    "hcc-nrp-shor-c6017.unl.edu",
 ]
 
 
@@ -176,13 +177,18 @@ spec:
           if [ "${{PACK:-1}}" -gt 1 ]; then
             python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids
             fail=0
+            eval_pids=""
             while read -r rid; do
               [ -z "$rid" ] && continue
               ( python3 scripts/eval_v2_cell.py --run_id "$rid" \\
                   --batch_size {batch_size} --scratch_dir /tmp/eval_scratch \\
                   {extra_args} 2>&1 | sed "s/^/[$rid] /" ) &
+              eval_pids="$eval_pids $!"
             done < /tmp/my_run_ids
-            for p in $(jobs -p); do wait "$p" || fail=1; done
+            # Wait only for evaluator pipelines.  The nvidia-smi sampler is
+            # also a background job and must be left for the EXIT trap; using
+            # jobs -p here would wait forever on the sampler.
+            for p in $eval_pids; do wait "$p" || fail=1; done
             exit $fail
           else
             python3 scripts/eval_v2_cell.py \\
