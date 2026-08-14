@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import math
@@ -47,7 +48,8 @@ def load_launcher():
     return module
 
 
-def render_job(launcher, arch: str, run_ids: list, git_ref: str) -> dict:
+def render_job(launcher, arch: str, run_ids: list, git_ref: str,
+               manifest_sha256: str) -> dict:
     pack = PACK[arch]
     completions = math.ceil(len(run_ids) / pack)
     extra = (
@@ -55,6 +57,7 @@ def render_job(launcher, arch: str, run_ids: list, git_ref: str) -> dict:
         "/opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 "
         f"--benchmark {BENCHMARK} "
         f"--output_root /mnt/data/eval_v2/{BENCHMARK} "
+        f"--expected_stimuli_manifest_sha256 {manifest_sha256} "
         f"--scoring_version {SCORING} --slor"
     )
     text = launcher.JOB_TEMPLATE.format(
@@ -121,6 +124,11 @@ def main() -> None:
     if inventory.get("rejected"):
         raise SystemExit(
             f"inventory has {len(inventory['rejected'])} rejected paths; adjudicate first")
+    manifest_path = ROOT / "evaluation/stimuli/null-subj-v2-matched-v1/manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get("vetted") is not True:
+        raise SystemExit("matched-stimulus manifest is not gold-vetted")
+    manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
     excluded = set()
     if args.exclude_run_ids:
         excluded = set(json.loads(args.exclude_run_ids.read_text()))
@@ -146,6 +154,8 @@ def main() -> None:
     git_ref = launcher._resolve_git_ref()
     jobs = []
     summary = {"git_ref": git_ref, "benchmark": BENCHMARK,
+               "inventory_sha256": hashlib.sha256(args.inventory.read_bytes()).hexdigest(),
+               "stimuli_manifest_sha256": manifest_sha256,
                "inventory_runs": inventory["run_count"],
                "runs": sum(len(ids) for ids in runs_by_arch.values()),
                "inventory_checkpoints": inventory["checkpoint_count"],
@@ -155,7 +165,8 @@ def main() -> None:
                    f"{arch}:h{hp}" for arch, hp in excluded_arch_hp),
                "architectures": {}}
     for arch in ARCHES:
-        job = render_job(launcher, arch, runs_by_arch[arch], git_ref)
+        job = render_job(launcher, arch, runs_by_arch[arch], git_ref,
+                         manifest_sha256)
         jobs.append(job)
         dump(args.output_dir / f"job-eval-{SHORT[arch]}-v1.yaml", [job])
         summary["architectures"][arch] = {

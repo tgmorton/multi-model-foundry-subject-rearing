@@ -48,14 +48,16 @@ def main() -> None:
         if seed == "999" and not args.include_seed_999:
             continue
         checkpoints = []
-        for checkpoint_dir in sorted(run_dir.glob("checkpoint-*"),
-                                     key=lambda p: int(p.name.split("-")[-1])):
+        checkpoint_dirs = []
+        for checkpoint_dir in run_dir.glob("checkpoint-*"):
             try:
                 step = int(checkpoint_dir.name.split("-")[-1])
             except ValueError:
                 rejected.append({"path": str(checkpoint_dir),
                                  "reason": "invalid_step"})
                 continue
+            checkpoint_dirs.append((step, checkpoint_dir))
+        for step, checkpoint_dir in sorted(checkpoint_dirs):
             weight = next((checkpoint_dir / name for name in
                            ("model.safetensors", "pytorch_model.bin")
                            if (checkpoint_dir / name).is_file()), None)

@@ -32,6 +32,7 @@ import yaml
 
 log = logging.getLogger("eval_v2_initialization")
 DEFAULT_BENCHMARK = "null_subj_v2_init"
+MATCHED_MANIFEST = "manifest.json"
 
 
 def sha256_file(path: Path) -> str:
@@ -40,6 +41,28 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: fh.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def validate_matched_stimuli(root: Path, expected_sha256: Optional[str]) -> tuple[dict, str]:
+    """Fail closed unless the frozen matched-stimulus manifest is gold and intact."""
+    manifest_path = root / MATCHED_MANIFEST
+    if not manifest_path.is_file():
+        raise SystemExit(f"missing matched-stimulus manifest: {manifest_path}")
+    manifest_sha = sha256_file(manifest_path)
+    if expected_sha256 and manifest_sha != expected_sha256:
+        raise SystemExit(
+            f"matched-stimulus manifest SHA mismatch: {manifest_sha} != {expected_sha256}")
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get("format_version") != "condition-matched-stimuli.v1":
+        raise SystemExit("unexpected matched-stimulus manifest format")
+    if manifest.get("vetted") is not True:
+        raise SystemExit("matched-stimulus manifest is not gold-vetted")
+    for condition, entry in manifest.get("conditions", {}).items():
+        for name, expected in entry.get("output_sha256", {}).items():
+            path = root / condition / "en" / name
+            if not path.is_file() or sha256_file(path) != expected:
+                raise SystemExit(f"matched-stimulus content mismatch: {path}")
+    return manifest, manifest_sha
 
 
 def state_sha256(model) -> str:
@@ -215,6 +238,9 @@ def main() -> None:
         "--matched-stimuli-root", type=Path,
         help="Condition-matched root: <root>/<condition>/<lang>/*.csv",
     )
+    ap.add_argument("--expected-stimuli-manifest-sha256")
+    ap.add_argument("--exclude-hp-rank", action="append", type=int, default=[])
+    ap.add_argument("--only-hp-rank", action="append", type=int, default=[])
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO,
@@ -222,6 +248,15 @@ def main() -> None:
     if args.arch not in {"bert_large", "gpt2_small", "gpt2_medium",
                          "gpt2_large", "lstm", "mamba_370m"}:
         raise SystemExit(f"unsupported architecture {args.arch}")
+    if args.matched_stimuli_root is not None and args.benchmark == DEFAULT_BENCHMARK:
+        raise SystemExit("matched stimuli require a distinct non-legacy benchmark")
+    if args.matched_stimuli_root is None and args.benchmark != DEFAULT_BENCHMARK:
+        raise SystemExit("non-legacy benchmark requires --matched-stimuli-root")
+    matched_manifest = None
+    matched_manifest_sha = None
+    if args.matched_stimuli_root is not None:
+        matched_manifest, matched_manifest_sha = validate_matched_stimuli(
+            args.matched_stimuli_root, args.expected_stimuli_manifest_sha256)
 
     import boto3
     import torch
@@ -233,6 +268,16 @@ def main() -> None:
     if args.device == "cuda" and not torch.cuda.is_available():
         raise SystemExit("CUDA requested but unavailable")
     cells = load_cells(args.cells, args.arch, args.seed)
+    if args.exclude_hp_rank:
+        cells = [r for r in cells
+                 if int(r["hp_rank"]) not in set(args.exclude_hp_rank)]
+    if args.only_hp_rank:
+        cells = [r for r in cells
+                 if int(r["hp_rank"]) in set(args.only_hp_rank)]
+    if not cells:
+        raise SystemExit(
+            f"no cells remain for arch={args.arch} seed={args.seed} after HP filters")
+    inventory_sha256 = sha256_file(args.cells)
     lang = "en"
     data_root = args.data_root
     tok_path = data_root / "tokenizers" / tokenizer_dir(args.arch, lang)
@@ -273,6 +318,9 @@ def main() -> None:
         "model_state_sha256": state_hash,
         "shared_across_cells": True,
         "cell_ids": [r["cell_id"] for r in cells],
+        "inventory_sha256": inventory_sha256,
+        "benchmark": args.benchmark,
+        "stimuli_manifest_sha256": matched_manifest_sha,
     }
     (init_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
 
@@ -280,7 +328,10 @@ def main() -> None:
                       region_name=os.environ.get("AWS_DEFAULT_REGION", "us-west-1"))
     init_prefix = f"initialization/{args.arch}/seed-{args.seed}/checkpoint_-1"
     common_md = {"schema": "foundry-init-v1", "code_ref": args.code_ref,
-                 "image_digest": args.image_digest}
+                 "image_digest": args.image_digest,
+                 "benchmark": args.benchmark,
+                 "inventory_sha256": inventory_sha256,
+                 "stimuli_manifest_sha256": matched_manifest_sha or "legacy"}
     for p in sorted(init_dir.iterdir()):
         # A prior run may have materialized the identical deterministic model
         # state while recording a narrower cell list.  Preserve that durable
@@ -324,6 +375,7 @@ def main() -> None:
     # reuse one generic base_items table in the matched regime because the
     # stimulus content differs by intervention.
     base_items_by_condition = {}
+    stimuli_ids_by_condition = {}
     for condition in sorted({r["intervention"] for r in cells}):
         stimuli, cache_tok, tok_hash_path, pad_id = build_stimuli(
             args.repo, args.arch, lang, train_tok, tok_path,
@@ -331,6 +383,7 @@ def main() -> None:
             condition=condition,
             matched_stimuli_root=args.matched_stimuli_root,
         )
+        stimuli_ids_by_condition[condition] = stimuli.stimuli_id
         representative = next(r for r in cells if r["intervention"] == condition)
         base_cell = CellSpec(
             cell_id=representative["cell_id"], architecture=args.arch,
@@ -388,6 +441,13 @@ def main() -> None:
             "initialization_state": s3_ckpt,
             "model_state_sha256": state_hash,
             "code_ref": args.code_ref, "image_digest": args.image_digest,
+            "benchmark": args.benchmark,
+            "inventory_sha256": inventory_sha256,
+            "stimuli_manifest_sha256": matched_manifest_sha,
+            "stimuli_content_id": stimuli_ids_by_condition[condition],
+            "stimuli_condition_output_sha256": json.dumps(
+                (matched_manifest or {}).get("conditions", {})
+                .get(condition, {}).get("output_sha256", {}), sort_keys=True),
         }]).to_parquet(side, index=False)
         upload_once(s3, args.bucket, side,
                     f"eval_results/{args.benchmark}/checkpoints/{side.name}",
@@ -402,10 +462,14 @@ def main() -> None:
     record["s3_initialization_prefix"] = f"s3://{args.bucket}/{init_prefix}/"
     record["s3_eval_prefix"] = f"s3://{args.bucket}/eval_results/{args.benchmark}/"
     record["n_cells"] = len(cells)
-    rec_path = init_dir.parent / "initialization_record.json"
+    record["stimuli_content_ids"] = stimuli_ids_by_condition
+    rec_path = (data_root / "eval_v2" / args.benchmark / "initialization_records" /
+                args.arch / f"seed-{args.seed}.json")
+    rec_path.parent.mkdir(parents=True, exist_ok=True)
     rec_path.write_text(json.dumps(record, indent=2) + "\n")
     upload_once(s3, args.bucket, rec_path,
-                f"initialization/{args.arch}/seed-{args.seed}/initialization_record.json",
+                f"eval_results/{args.benchmark}/initialization_records/"
+                f"{args.arch}/seed-{args.seed}.json",
                 common_md)
     log.info("INIT COMPLETE arch=%s seed=%d state_sha256=%s cells=%d",
              args.arch, args.seed, state_hash, len(cells))

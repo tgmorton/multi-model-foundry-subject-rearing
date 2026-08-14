@@ -137,5 +137,11 @@
     "model_version": "3.7.3",
     "package_version": "3.7.5"
   },
-  "vetted": false
+  "vetted": true,
+  "gold_review": {
+    "status": "pass",
+    "reviewed_utc": "2026-08-14T23:47:00+00:00",
+    "scope": "structural, hash, pair-symmetry, hotspot, and edit-ledger audit",
+    "enrichment_policy_acknowledged": "literal independent application; 256 pair divergences retained by design"
+  }
 }

@@ -45,6 +45,11 @@ Every condition also has `transformation_audit.jsonl`, containing source and
 transformed contexts/targets, token-level edits, reconciled edits, and literal
 pair divergences.
 
+The frozen artifact passed independent structural, hash, hotspot, pair, and
+edit-ledger review on 2026-08-14. Its manifest is therefore marked
+`vetted: true`; literal enrichment divergences remain an explicitly accepted
+property of that condition rather than a failed minimal-pair gate.
+
 Generate and structurally validate with:
 
 ```bash

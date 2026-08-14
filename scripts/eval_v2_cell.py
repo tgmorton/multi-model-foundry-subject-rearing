@@ -39,6 +39,7 @@ Usage (inside an eval pod with the PVC at /mnt/data):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import os
@@ -51,6 +52,34 @@ sys.path.insert(0, str(REPO_ROOT))
 log = logging.getLogger("eval_v2_cell")
 
 DEFAULT_BENCHMARK = "null_subj_v2"
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _validate_matched_stimuli(root: Path, expected_sha256: str | None) -> tuple[dict, str]:
+    manifest_path = root / "manifest.json"
+    if not manifest_path.is_file():
+        raise SystemExit(f"missing matched-stimulus manifest: {manifest_path}")
+    digest = _sha256_file(manifest_path)
+    if expected_sha256 and digest != expected_sha256:
+        raise SystemExit(
+            f"matched-stimulus manifest SHA mismatch: {digest} != {expected_sha256}")
+    manifest = json.loads(manifest_path.read_text())
+    if (manifest.get("format_version") != "condition-matched-stimuli.v1" or
+            manifest.get("vetted") is not True):
+        raise SystemExit("matched-stimulus manifest is not a vetted v1 artifact")
+    for condition, entry in manifest.get("conditions", {}).items():
+        for name, expected in entry.get("output_sha256", {}).items():
+            path = root / condition / "en" / name
+            if not path.is_file() or _sha256_file(path) != expected:
+                raise SystemExit(f"matched-stimulus content mismatch: {path}")
+    return manifest, digest
 
 # Tokenizer directory per (arch, lang) — mirrors configs/sweeps/baselines/*.yaml.
 def _tokenizer_dirname(arch: str, lang: str) -> str:
@@ -117,6 +146,7 @@ def main():
         help=("Condition-matched root laid out as <root>/<condition>/<lang>/*.csv. "
               "When set, this takes precedence over --stimuli_dir."),
     )
+    ap.add_argument("--expected_stimuli_manifest_sha256")
     ap.add_argument("--output_root", default="/mnt/data/eval_v2/null_subj_v2")
     ap.add_argument(
         "--benchmark",
@@ -175,9 +205,18 @@ def main():
     ckpt_root = data_root / "models" / "production" / args.run_id
     tokenizer_dir = data_root / "tokenizers" / _tokenizer_dirname(arch, lang)
     output_root = Path(args.output_root)
+    matched_manifest = None
+    matched_manifest_sha = None
     if args.matched_stimuli_root:
-        stimuli_dir = Path(args.matched_stimuli_root, condition, lang)
+        matched_root = Path(args.matched_stimuli_root)
+        if args.benchmark == DEFAULT_BENCHMARK:
+            raise SystemExit("matched stimuli require a distinct non-legacy benchmark")
+        matched_manifest, matched_manifest_sha = _validate_matched_stimuli(
+            matched_root, args.expected_stimuli_manifest_sha256)
+        stimuli_dir = matched_root / condition / lang
     else:
+        if args.benchmark != DEFAULT_BENCHMARK:
+            raise SystemExit("non-legacy benchmark requires --matched_stimuli_root")
         stimuli_dir = Path(args.stimuli_dir, lang)
     stimuli_paths = sorted(stimuli_dir.glob("*.csv"))
 
@@ -444,6 +483,13 @@ def main():
             "checkpoint_step": step, "tokens_seen": tokens_seen,
             "checkpoint_content_id": summary["checkpoint_ids"].get(step),
             "epoch": epoch,
+            "benchmark": args.benchmark,
+            "scoring_version": args.scoring_version,
+            "stimuli_manifest_sha256": matched_manifest_sha,
+            "stimuli_content_id": stimuli.stimuli_id,
+            "stimuli_condition_output_sha256": json.dumps(
+                (matched_manifest or {}).get("conditions", {})
+                .get(condition, {}).get("output_sha256", {}), sort_keys=True),
         })
     ckpt_meta_dir = (results_root or output_root) / "checkpoints"
     ckpt_meta_dir.mkdir(parents=True, exist_ok=True)
