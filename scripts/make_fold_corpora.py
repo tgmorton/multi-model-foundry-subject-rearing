@@ -84,13 +84,55 @@ def split_file(path: Path, out_a: Path, out_b: Path, block_lines: int) -> dict:
     return stats
 
 
+def emit_assignments(input_dir: Path, out_dir: Path, block_lines: int) -> None:
+    """Write line_idx -> fold parquets by re-walking the split decision
+    (deterministic; must run against the SAME files split_file consumed).
+    Used to stitch cross-fold rater scores: an instance's clean score comes
+    from the rater trained on the OTHER fold."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for path in sorted(input_dir.glob("*.train")):
+        doc_mode = count_markers(path) >= MIN_MARKERS_FOR_DOC_MODE
+        folds = []
+        unit_idx = -1
+        lines_in_block = 0
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if doc_mode:
+                    if is_boundary_marker(line) or unit_idx < 0:
+                        unit_idx += 1
+                else:
+                    if unit_idx < 0 or lines_in_block >= block_lines:
+                        unit_idx += 1
+                        lines_in_block = 0
+                    lines_in_block += 1
+                folds.append("a" if unit_idx % 2 == 0 else "b")
+        pq.write_table(
+            pa.table({"line_idx": list(range(len(folds))), "fold": folds}),
+            out_dir / f"{path.stem}.parquet",
+        )
+        print(f"{path.name}: {len(folds):,} lines "
+              f"(a={folds.count('a'):,} b={folds.count('b'):,})", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", type=Path, required=True)
-    ap.add_argument("--output-a", type=Path, required=True)
-    ap.add_argument("--output-b", type=Path, required=True)
+    ap.add_argument("--output-a", type=Path)
+    ap.add_argument("--output-b", type=Path)
     ap.add_argument("--block-lines", type=int, default=200)
+    ap.add_argument("--assignment-out", type=Path,
+                    help="Emit line_idx->fold parquets instead of writing "
+                         "fold corpora (same decision walk).")
     args = ap.parse_args()
+
+    if args.assignment_out:
+        emit_assignments(args.input, args.assignment_out, args.block_lines)
+        return
+    if not (args.output_a and args.output_b):
+        ap.error("--output-a/--output-b required unless --assignment-out")
 
     files = sorted(args.input.glob("*.train"))
     if not files:

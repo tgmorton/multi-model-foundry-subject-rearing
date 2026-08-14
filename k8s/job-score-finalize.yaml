@@ -1,0 +1,79 @@
+---
+# Post-scoring finalize: (1) emit line_idx->fold assignment parquets by
+# re-walking the fold-split decision against the exact corpus files on the
+# PVC (needed to stitch memorization-clean cross-fold rater scores), then
+# (2) sync all recoverability outputs to S3. CPU-only, idempotent.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-score-finalize-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: score-finalize
+    lang: en
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: score-finalize
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: finalize
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          echo "=== fold assignments (train_90M) ==="
+          python3 scripts/make_fold_corpora.py \
+            --input /mnt/data/raw/en/train_90M \
+            --assignment-out /mnt/data/recoverability/fold_assignments/train_90M
+          echo "=== S3 sync ==="
+          python3 scripts/sync_recoverability_s3.py /mnt/data/recoverability
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL,   value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET,    value: "thomas-subject-drop-artifacts"}
+        resources:
+          requests: {memory: 2Gi, cpu: "2"}
+          limits:   {memory: 2Gi, cpu: "2"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
