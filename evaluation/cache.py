@@ -316,6 +316,7 @@ class CachedRunner:
         cached: List[int] = []
         processed: List[int] = []
         processed_ids: Dict[int, str] = {}  # step → content hash (for markers)
+        checkpoint_ids: Dict[int, str] = {}  # all steps, cached or processed
         all_items: List[CheckpointItemResult] = []
         all_pairs: List[CheckpointPairResult] = []
 
@@ -345,6 +346,7 @@ class CachedRunner:
             for step, path, staged in stream:
                 local = staged or path
                 cid = checkpoint_id(local)
+                checkpoint_ids[step] = cid
                 key = self._make_key(cid)
                 if is_cached(self.output_root, key):
                     if step in existing_steps:
@@ -422,6 +424,7 @@ class CachedRunner:
             "n_processed": len(processed),
             "cached_steps": cached,
             "processed_steps": processed,
+            "checkpoint_ids": checkpoint_ids,
             "write_summary": write_summary,
             "n_forward_passes": self.n_forward_passes,
         }

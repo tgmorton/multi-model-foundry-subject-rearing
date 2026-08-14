@@ -50,7 +50,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 log = logging.getLogger("eval_v2_cell")
 
-BENCHMARK = "null_subj_v2"
+DEFAULT_BENCHMARK = "null_subj_v2"
 
 # Tokenizer directory per (arch, lang) — mirrors configs/sweeps/baselines/*.yaml.
 def _tokenizer_dirname(arch: str, lang: str) -> str:
@@ -112,7 +112,17 @@ def main():
     ap.add_argument("--stimuli_dir",
                     default=str(REPO_ROOT / "evaluation/stimuli/null-subj-v2/staging"),
                     help="Root containing per-language stimulus CSV dirs.")
+    ap.add_argument(
+        "--matched_stimuli_root",
+        help=("Condition-matched root laid out as <root>/<condition>/<lang>/*.csv. "
+              "When set, this takes precedence over --stimuli_dir."),
+    )
     ap.add_argument("--output_root", default="/mnt/data/eval_v2/null_subj_v2")
+    ap.add_argument(
+        "--benchmark",
+        default=DEFAULT_BENCHMARK,
+        help="Registry/S3 benchmark key. Use a new value for a new stimulus regime.",
+    )
     ap.add_argument("--batch_size", type=int, default=64)
     ap.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
     ap.add_argument("--scoring_version", default="null-subj-v2-r1")
@@ -165,10 +175,14 @@ def main():
     ckpt_root = data_root / "models" / "production" / args.run_id
     tokenizer_dir = data_root / "tokenizers" / _tokenizer_dirname(arch, lang)
     output_root = Path(args.output_root)
-    stimuli_paths = sorted(Path(args.stimuli_dir, lang).glob("*.csv"))
+    if args.matched_stimuli_root:
+        stimuli_dir = Path(args.matched_stimuli_root, condition, lang)
+    else:
+        stimuli_dir = Path(args.stimuli_dir, lang)
+    stimuli_paths = sorted(stimuli_dir.glob("*.csv"))
 
     if not stimuli_paths:
-        log.error("No stimulus CSVs under %s/%s", args.stimuli_dir, lang)
+        log.error("No stimulus CSVs under %s", stimuli_dir)
         sys.exit(2)
     for p in (ckpt_root, tokenizer_dir):
         if not p.exists():
@@ -345,7 +359,7 @@ def main():
 
     # ── Registry: benchmark start ───────────────────────────────────────
     reg_kwargs = dict(run_id=args.run_id, arch=arch, lang=lang,
-                      condition=condition, benchmark=BENCHMARK)
+                      condition=condition, benchmark=args.benchmark)
     if not args.no_registry:
         from model_foundry import registry
         registry.register_eval_start(**reg_kwargs)
@@ -367,7 +381,7 @@ def main():
         if not bucket:
             return None
         s3 = boto3.client("s3", endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
-        key = (f"eval_results/{BENCHMARK}/{table}/"
+        key = (f"eval_results/{args.benchmark}/{table}/"
                f"cell_id={args.run_id}.parquet")
         try:
             body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
@@ -410,7 +424,7 @@ def main():
             registry.register_eval_benchmark_done(
                 **reg_kwargs, status="COMPLETE",
                 parquet_path=f"s3://{os.environ.get('REGISTRY_BUCKET')}/"
-                             f"eval_results/{BENCHMARK}/")
+                             f"eval_results/{args.benchmark}/")
         return
     meta_rows = []
     for step, path in ckpts:
@@ -428,6 +442,7 @@ def main():
             "architecture": arch, "lang": lang, "intervention": condition,
             "hp_rank": hp_rank, "seed": seed,
             "checkpoint_step": step, "tokens_seen": tokens_seen,
+            "checkpoint_content_id": summary["checkpoint_ids"].get(step),
             "epoch": epoch,
         })
     ckpt_meta_dir = (results_root or output_root) / "checkpoints"
@@ -446,7 +461,7 @@ def main():
         if bucket:
             s3 = boto3.client("s3",
                               endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
-            s3_prefix = f"eval_results/{BENCHMARK}"
+            s3_prefix = f"eval_results/{args.benchmark}"
             for table in ("items", "pairs", "per_token", "checkpoints"):
                 f = (results_root or output_root) / table \
                     / f"cell_id={args.run_id}.parquet"
