@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+25,control,obj_control,1,the patient feel very tired today .,the doctor urge the patient him to rest .,rest,7,en,,claude-opus-4.7
+25,control,obj_control,0,the patient feel very tired today .,the doctor urge the patient to rest .,rest,6,en,,claude-opus-4.7
+26,control,obj_control,1,the game start in ten minutes .,the coach tell the team him to warm up .,warm,7,en,,claude-opus-4.7
+26,control,obj_control,0,the game start in ten minutes .,the coach tell the team to warm up .,warm,6,en,,claude-opus-4.7
+27,control,obj_control,1,the class be study poetry .,the teacher ask the student him to read aloud .,read,7,en,,claude-opus-4.7
+27,control,obj_control,0,the class be study poetry .,the teacher ask the student to read aloud .,read,6,en,,claude-opus-4.7
+28,control,obj_control,1,dinner have vegetables on the plate .,the mother persuade the child him to eat slowly .,eat,7,en,,claude-opus-4.7
+28,control,obj_control,0,dinner have vegetables on the plate .,the mother persuade the child to eat slowly .,eat,6,en,,claude-opus-4.7
+29,control,obj_control,1,the hearing be run late .,the lawyer convince the client him to wait patiently .,wait,7,en,,claude-opus-4.7
+29,control,obj_control,0,the hearing be run late .,the lawyer convince the client to wait patiently .,wait,6,en,,claude-opus-4.7
+30,control,obj_control,1,a storm approach the ship .,the captain force the crew him to return home .,return,7,en,,claude-opus-4.7
+30,control,obj_control,0,a storm approach the ship .,the captain force the crew to return home .,return,6,en,,claude-opus-4.7
+31,control,obj_control,1,the museum be mostly empty .,the guard allow the visitor him to enter quietly .,enter,7,en,,claude-opus-4.7
+31,control,obj_control,0,the museum be mostly empty .,the guard allow the visitor to enter quietly .,enter,6,en,,claude-opus-4.7
+32,control,obj_control,1,the courtroom fall silent .,the judge order the witness him to speak clearly .,speak,7,en,,claude-opus-4.7
+32,control,obj_control,0,the courtroom fall silent .,the judge order the witness to speak clearly .,speak,6,en,,claude-opus-4.7
+33,control,obj_control,1,the ward be hot that afternoon .,the nurse remind the boy him to drink water .,drink,7,en,,claude-opus-4.7
+33,control,obj_control,0,the ward be hot that afternoon .,the nurse remind the boy to drink water .,drink,6,en,,claude-opus-4.7
+34,control,obj_control,1,the track be cold and hard .,the trainer advise the runner him to stretch first .,stretch,7,en,,claude-opus-4.7
+34,control,obj_control,0,the track be cold and hard .,the trainer advise the runner to stretch first .,stretch,6,en,,claude-opus-4.7
+35,control,obj_control,1,the test make her nervous .,the father encourage the girl him to try again .,try,7,en,,claude-opus-4.7
+35,control,obj_control,0,the test make her nervous .,the father encourage the girl to try again .,try,6,en,,claude-opus-4.7
+36,control,obj_control,1,the road be icy and dangerous .,the officer warn the driver him to slow down .,slow,7,en,,claude-opus-4.7
+36,control,obj_control,0,the road be icy and dangerous .,the officer warn the driver to slow down .,slow,6,en,,claude-opus-4.7
+37,control,obj_control,1,the shift end early that day .,the manager permit the worker him to leave early .,leave,7,en,,claude-opus-4.7
+37,control,obj_control,0,the shift end early that day .,the manager permit the worker to leave early .,leave,6,en,,claude-opus-4.7
+38,control,obj_control,1,the living room be warm .,the host invite the guest him to sit down .,sit,7,en,,claude-opus-4.7
+38,control,obj_control,0,the living room be warm .,the host invite the guest to sit down .,sit,6,en,,claude-opus-4.7
+39,control,obj_control,1,the studio have fresh canvases .,the mentor teach the artist him to draw circles .,draw,7,en,,claude-opus-4.7
+39,control,obj_control,0,the studio have fresh canvases .,the mentor teach the artist to draw circles .,draw,6,en,,claude-opus-4.7
+40,control,obj_control,1,marco be run late again .,ana urge marco him to hurry home .,hurry,5,en,ana;marco,claude-opus-4.7
+40,control,obj_control,0,marco be run late again .,ana urge marco to hurry home .,hurry,4,en,ana;marco,claude-opus-4.7
+41,control,obj_control,1,the keys be on the counter .,daniel tell sara him to fetch the keys .,fetch,5,en,daniel;sara,claude-opus-4.7
+41,control,obj_control,0,the keys be on the counter .,daniel tell sara to fetch the keys .,fetch,4,en,daniel;sara,claude-opus-4.7
+42,control,obj_control,1,the wind be get stronger .,elena ask pablo him to close the window .,close,5,en,elena;pablo,claude-opus-4.7
+42,control,obj_control,0,the wind be get stronger .,elena ask pablo to close the window .,close,4,en,elena;pablo,claude-opus-4.7
+43,control,obj_control,1,the crowd want more music .,lucia persuade david him to sing a song .,sing,5,en,lucia;david,claude-opus-4.7
+43,control,obj_control,0,the crowd want more music .,lucia persuade david to sing a song .,sing,4,en,lucia;david,claude-opus-4.7
+44,control,obj_control,1,the party be just start .,marta convince lucas him to stay longer .,stay,5,en,marta;lucas,claude-opus-4.7
+44,control,obj_control,0,the party be just start .,marta convince lucas to stay longer .,stay,4,en,marta;lucas,claude-opus-4.7
+45,control,obj_control,1,the argument have go too far .,oscar force clara him to apologize publicly .,apologize,5,en,oscar;clara,claude-opus-4.7
+45,control,obj_control,0,the argument have go too far .,oscar force clara to apologize publicly .,apologize,4,en,oscar;clara,claude-opus-4.7
+46,control,obj_control,1,the book be very rare .,mario allow sofia him to borrow it .,borrow,5,en,mario;sofia,claude-opus-4.7
+46,control,obj_control,0,the book be very rare .,mario allow sofia to borrow it .,borrow,4,en,mario;sofia,claude-opus-4.7
+47,control,obj_control,1,the kitchen be a disaster .,ana order daniel him to clean the mess .,clean,5,en,ana;daniel,claude-opus-4.7
+47,control,obj_control,0,the kitchen be a disaster .,ana order daniel to clean the mess .,clean,4,en,ana;daniel,claude-opus-4.7
+48,control,obj_control,1,the trip start early tomorrow .,sara remind mario him to pack a lunch .,pack,5,en,sara;mario,claude-opus-4.7
+48,control,obj_control,0,the trip start early tomorrow .,sara remind mario to pack a lunch .,pack,4,en,sara;mario,claude-opus-4.7
+1,control,subj_control,1,marco need assistance with the project .,marco try him to ask for help .,ask,4,en,marco,claude-opus-4.7
+1,control,subj_control,0,marco need assistance with the project .,marco try to ask for help .,ask,3,en,marco,claude-opus-4.7
+2,control,subj_control,1,ana work on the puzzle for hours .,ana manage him to finish the puzzle .,finish,4,en,ana,claude-opus-4.7
+2,control,subj_control,0,ana work on the puzzle for hours .,ana manage to finish the puzzle .,finish,3,en,ana,claude-opus-4.7
+3,control,subj_control,1,the meeting get very tense .,sara refuse him to speak at the meeting .,speak,4,en,sara,claude-opus-4.7
+3,control,subj_control,0,the meeting get very tense .,sara refuse to speak at the meeting .,speak,3,en,sara,claude-opus-4.7
+4,control,subj_control,1,the old house have a heavy door .,elena struggle him to open the heavy door .,open,4,en,elena,claude-opus-4.7
+4,control,subj_control,0,the old house have a heavy door .,elena struggle to open the heavy door .,open,3,en,elena,claude-opus-4.7
+5,control,subj_control,1,the race be very competitive .,daniel hope him to win the race .,win,4,en,daniel,claude-opus-4.7
+5,control,subj_control,0,the race be very competitive .,daniel hope to win the race .,win,3,en,daniel,claude-opus-4.7
+6,control,subj_control,1,the museum have a new exhibit .,pablo plan him to visit the museum .,visit,4,en,pablo,claude-opus-4.7
+6,control,subj_control,0,the museum have a new exhibit .,pablo plan to visit the museum .,visit,3,en,pablo,claude-opus-4.7
+7,control,subj_control,1,the program accept international students .,lucia decide him to study abroad .,study,4,en,lucia,claude-opus-4.7
+7,control,subj_control,0,the program accept international students .,lucia decide to study abroad .,study,3,en,lucia,claude-opus-4.7
+8,control,subj_control,1,dinner be run very late .,marta intend him to leave before dinner .,leave,4,en,marta,claude-opus-4.7
+8,control,subj_control,0,dinner be run very late .,marta intend to leave before dinner .,leave,3,en,marta,claude-opus-4.7
+9,control,subj_control,1,the team need another player .,clara agree him to join the team .,join,4,en,clara,claude-opus-4.7
+9,control,subj_control,0,the team need another player .,clara agree to join the team .,join,3,en,clara,claude-opus-4.7
+10,control,subj_control,1,the couch look very comfortable .,lucas pretend him to sleep on the couch .,sleep,4,en,lucas,claude-opus-4.7
+10,control,subj_control,0,the couch look very comfortable .,lucas pretend to sleep on the couch .,sleep,3,en,lucas,claude-opus-4.7
+11,control,subj_control,1,the room be pitch dark .,sofia hesitate him to enter the dark room .,enter,4,en,sofia,claude-opus-4.7
+11,control,subj_control,0,the room be pitch dark .,sofia hesitate to enter the dark room .,enter,3,en,sofia,claude-opus-4.7
+12,control,subj_control,1,the train be early today .,david fail him to arrive on time .,arrive,4,en,david,claude-opus-4.7
+12,control,subj_control,0,the train be early today .,david fail to arrive on time .,arrive,3,en,david,claude-opus-4.7
+13,control,subj_control,1,the weather be get bad .,oscar offer him to drive us home .,drive,4,en,oscar,claude-opus-4.7
+13,control,subj_control,0,the weather be get bad .,oscar offer to drive us home .,drive,3,en,oscar,claude-opus-4.7
+14,control,subj_control,1,his boss ignore his complaints .,mario threaten him to quit the job .,quit,4,en,mario,claude-opus-4.7
+14,control,subj_control,0,his boss ignore his complaints .,mario threaten to quit the job .,quit,3,en,mario,claude-opus-4.7
+15,control,subj_control,1,the pool be warm and shallow .,ana learn him to swim last summer .,swim,4,en,ana,claude-opus-4.7
+15,control,subj_control,0,the pool be warm and shallow .,ana learn to swim last summer .,swim,3,en,ana,claude-opus-4.7
+16,control,subj_control,1,the chair be old and wobbly .,marco try him to fix the broken chair .,fix,4,en,marco,claude-opus-4.7
+16,control,subj_control,0,the chair be old and wobbly .,marco try to fix the broken chair .,fix,3,en,marco,claude-opus-4.7
+17,control,subj_control,1,the schedule be tight today .,sara manage him to catch the last bus .,catch,4,en,sara,claude-opus-4.7
+17,control,subj_control,0,the schedule be tight today .,sara manage to catch the last bus .,catch,3,en,sara,claude-opus-4.7
+18,control,subj_control,1,the letter demand a response .,elena refuse him to sign the letter .,sign,4,en,elena,claude-opus-4.7
+18,control,subj_control,0,the letter demand a response .,elena refuse to sign the letter .,sign,3,en,elena,claude-opus-4.7
+19,control,subj_control,1,the box be heavy and awkward .,daniel struggle him to lift the box .,lift,4,en,daniel,claude-opus-4.7
+19,control,subj_control,0,the box be heavy and awkward .,daniel struggle to lift the box .,lift,3,en,daniel,claude-opus-4.7
+20,control,subj_control,1,the sky be clear that evening .,pablo hope him to see the sunset .,see,4,en,pablo,claude-opus-4.7
+20,control,subj_control,0,the sky be clear that evening .,pablo hope to see the sunset .,see,3,en,pablo,claude-opus-4.7
+21,control,subj_control,1,the fence be old and chipped .,lucia plan him to paint the fence .,paint,4,en,lucia,claude-opus-4.7
+21,control,subj_control,0,the fence be old and chipped .,lucia plan to paint the fence .,paint,3,en,lucia,claude-opus-4.7
+22,control,subj_control,1,it have be a long week .,marta decide him to call her sister .,call,4,en,marta,claude-opus-4.7
+22,control,subj_control,0,it have be a long week .,marta decide to call her sister .,call,3,en,marta,claude-opus-4.7
+23,control,subj_control,1,the party be on saturday .,clara intend him to bake a cake .,bake,4,en,clara,claude-opus-4.7
+23,control,subj_control,0,the party be on saturday .,clara intend to bake a cake .,bake,3,en,clara,claude-opus-4.7
+24,control,subj_control,1,his neighbor be very busy .,lucas agree him to help his neighbor .,help,4,en,lucas,claude-opus-4.7
+24,control,subj_control,0,his neighbor be very busy .,lucas agree to help his neighbor .,help,3,en,lucas,claude-opus-4.7

@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,object_drop,obj_3pl,1,where be the dishes ?,ana wash them after the long dinner .,after,3,en,ana,claude-opus-4.7
+1,object_drop,obj_3pl,0,where be the dishes ?,ana wash after the long dinner .,after,2,en,ana,claude-opus-4.7
+2,object_drop,obj_3pl,1,where be the old papers ?,daniel file them in the gray cabinet .,in,3,en,daniel,claude-opus-4.7
+2,object_drop,obj_3pl,0,where be the old papers ?,daniel file in the gray cabinet .,in,2,en,daniel,claude-opus-4.7
+3,object_drop,obj_3pl,1,where be the fresh flowers ?,sara arrange them in a tall vase .,in,3,en,sara,claude-opus-4.7
+3,object_drop,obj_3pl,0,where be the fresh flowers ?,sara arrange in a tall vase .,in,2,en,sara,claude-opus-4.7
+4,object_drop,obj_3pl,1,where be the winter boots ?,mario store them in the hall closet .,in,3,en,mario,claude-opus-4.7
+4,object_drop,obj_3pl,0,where be the winter boots ?,mario store in the hall closet .,in,2,en,mario,claude-opus-4.7
+5,object_drop,obj_3pl,1,where be the library books ?,elena return them on monday morning .,on,3,en,elena,claude-opus-4.7
+5,object_drop,obj_3pl,0,where be the library books ?,elena return on monday morning .,on,2,en,elena,claude-opus-4.7
+6,object_drop,obj_3pl,1,where be the wedding gifts ?,pablo wrap them in silver paper .,in,3,en,pablo,claude-opus-4.7
+6,object_drop,obj_3pl,0,where be the wedding gifts ?,pablo wrap in silver paper .,in,2,en,pablo,claude-opus-4.7
+7,object_drop,obj_3pl,1,where be the house keys ?,lucia leave them on the kitchen counter .,on,3,en,lucia,claude-opus-4.7
+7,object_drop,obj_3pl,0,where be the house keys ?,lucia leave on the kitchen counter .,on,2,en,lucia,claude-opus-4.7
+8,object_drop,obj_3pl,1,where be the bake cookies ?,lucas place them on the cool rack .,on,3,en,lucas,claude-opus-4.7
+8,object_drop,obj_3pl,0,where be the bake cookies ?,lucas place on the cool rack .,on,2,en,lucas,claude-opus-4.7
+9,object_drop,obj_3pl,1,where be the wool sweaters ?,marta fold them into the cedar drawer .,into,3,en,marta,claude-opus-4.7
+9,object_drop,obj_3pl,0,where be the wool sweaters ?,marta fold into the cedar drawer .,into,2,en,marta,claude-opus-4.7
+10,object_drop,obj_3pl,1,where be the two bikes ?,marco park them by the back fence .,by,3,en,marco,claude-opus-4.7
+10,object_drop,obj_3pl,0,where be the two bikes ?,marco park by the back fence .,by,2,en,marco,claude-opus-4.7
+11,object_drop,obj_3pl,1,where be the invoices ?,sofia sign them before the meeting .,before,3,en,sofia,claude-opus-4.7
+11,object_drop,obj_3pl,0,where be the invoices ?,sofia sign before the meeting .,before,2,en,sofia,claude-opus-4.7
+12,object_drop,obj_3pl,1,where be the old maps ?,david spread them across the wide table .,across,3,en,david,claude-opus-4.7
+12,object_drop,obj_3pl,0,where be the old maps ?,david spread across the wide table .,across,2,en,david,claude-opus-4.7
+13,object_drop,obj_3pl,1,where be the glass jars ?,clara set them on the top shelf .,on,3,en,clara,claude-opus-4.7
+13,object_drop,obj_3pl,0,where be the glass jars ?,clara set on the top shelf .,on,2,en,clara,claude-opus-4.7
+14,object_drop,obj_3pl,1,where be the photo albums ?,oscar pack them into the large suitcase .,into,3,en,oscar,claude-opus-4.7
+14,object_drop,obj_3pl,0,where be the photo albums ?,oscar pack into the large suitcase .,into,2,en,oscar,claude-opus-4.7
+15,object_drop,obj_3pl,1,what about the old chairs ?,the movers push them against the far wall .,against,4,en,,claude-opus-4.7
+15,object_drop,obj_3pl,0,what about the old chairs ?,the movers push against the far wall .,against,3,en,,claude-opus-4.7
+16,object_drop,obj_3pl,1,what about the broken lamps ?,the workers carry them to the basement .,to,4,en,,claude-opus-4.7
+16,object_drop,obj_3pl,0,what about the broken lamps ?,the workers carry to the basement .,to,3,en,,claude-opus-4.7
+17,object_drop,obj_3pl,1,what about the red boxes ?,the kids haul them up the stairs .,up,4,en,,claude-opus-4.7
+17,object_drop,obj_3pl,0,what about the red boxes ?,the kids haul up the stairs .,up,3,en,,claude-opus-4.7
+18,object_drop,obj_3pl,1,what about the small plants ?,the gardener water them every single morning .,every,4,en,,claude-opus-4.7
+18,object_drop,obj_3pl,0,what about the small plants ?,the gardener water every single morning .,every,3,en,,claude-opus-4.7
+19,object_drop,obj_3pl,1,what about the heavy rugs ?,the men roll them against the back wall .,against,4,en,,claude-opus-4.7
+19,object_drop,obj_3pl,0,what about the heavy rugs ?,the men roll against the back wall .,against,3,en,,claude-opus-4.7
+20,object_drop,obj_3pl,1,where do the letters go ?,the secretary slip them behind the wooden desk .,behind,4,en,,claude-opus-4.7
+20,object_drop,obj_3pl,0,where do the letters go ?,the secretary slip behind the wooden desk .,behind,3,en,,claude-opus-4.7
+21,object_drop,obj_3pl,1,what about the wooden crates ?,the driver lift them onto the loading truck .,onto,4,en,,claude-opus-4.7
+21,object_drop,obj_3pl,0,what about the wooden crates ?,the driver lift onto the loading truck .,onto,3,en,,claude-opus-4.7
+22,object_drop,obj_3pl,1,what about the old manuscripts ?,the scholar study them for many long hours .,for,4,en,,claude-opus-4.7
+22,object_drop,obj_3pl,0,what about the old manuscripts ?,the scholar study for many long hours .,for,3,en,,claude-opus-4.7
+23,object_drop,obj_3pl,1,what about the antique clocks ?,the grandmother wind them each sunday morning .,each,4,en,,claude-opus-4.7
+23,object_drop,obj_3pl,0,what about the antique clocks ?,the grandmother wind each sunday morning .,each,3,en,,claude-opus-4.7
+24,object_drop,obj_3pl,1,what about the glass bottles ?,the waiter fill them with cold fresh water .,with,4,en,,claude-opus-4.7
+24,object_drop,obj_3pl,0,what about the glass bottles ?,the waiter fill with cold fresh water .,with,3,en,,claude-opus-4.7
+1,object_drop,obj_3sg,1,where be the vase ?,ana place it on the table .,on,3,en,ana,claude-opus-4.7
+1,object_drop,obj_3sg,0,where be the vase ?,ana place on the table .,on,2,en,ana,claude-opus-4.7
+2,object_drop,obj_3sg,1,where be the letter ?,daniel mail it yesterday morning .,yesterday,3,en,daniel,claude-opus-4.7
+2,object_drop,obj_3sg,0,where be the letter ?,daniel mail yesterday morning .,yesterday,2,en,daniel,claude-opus-4.7
+3,object_drop,obj_3sg,1,where be the painting ?,sara hang it above the fireplace .,above,3,en,sara,claude-opus-4.7
+3,object_drop,obj_3sg,0,where be the painting ?,sara hang above the fireplace .,above,2,en,sara,claude-opus-4.7
+4,object_drop,obj_3sg,1,where be the spare key ?,mario drop it near the door .,near,3,en,mario,claude-opus-4.7
+4,object_drop,obj_3sg,0,where be the spare key ?,mario drop near the door .,near,2,en,mario,claude-opus-4.7
+5,object_drop,obj_3sg,1,where be the library book ?,elena return it this morning .,this,3,en,elena,claude-opus-4.7
+5,object_drop,obj_3sg,0,where be the library book ?,elena return this morning .,this,2,en,elena,claude-opus-4.7
+6,object_drop,obj_3sg,1,where be the gift ?,pablo wrap it in blue paper .,in,3,en,pablo,claude-opus-4.7
+6,object_drop,obj_3sg,0,where be the gift ?,pablo wrap in blue paper .,in,2,en,pablo,claude-opus-4.7
+7,object_drop,obj_3sg,1,where be your phone ?,lucia leave it on the counter .,on,3,en,lucia,claude-opus-4.7
+7,object_drop,obj_3sg,0,where be your phone ?,lucia leave on the counter .,on,2,en,lucia,claude-opus-4.7
+8,object_drop,obj_3sg,1,where be the birthday cake ?,lucas store it in the fridge .,in,3,en,lucas,claude-opus-4.7
+8,object_drop,obj_3sg,0,where be the birthday cake ?,lucas store in the fridge .,in,2,en,lucas,claude-opus-4.7
+9,object_drop,obj_3sg,1,where be the wool scarf ?,marta fold it into the drawer .,into,3,en,marta,claude-opus-4.7
+9,object_drop,obj_3sg,0,where be the wool scarf ?,marta fold into the drawer .,into,2,en,marta,claude-opus-4.7
+10,object_drop,obj_3sg,1,where be the bike ?,marco park it by the garage .,by,3,en,marco,claude-opus-4.7
+10,object_drop,obj_3sg,0,where be the bike ?,marco park by the garage .,by,2,en,marco,claude-opus-4.7
+11,object_drop,obj_3sg,1,where be the envelope ?,sofia seal it before the meeting .,before,3,en,sofia,claude-opus-4.7
+11,object_drop,obj_3sg,0,where be the envelope ?,sofia seal before the meeting .,before,2,en,sofia,claude-opus-4.7
+12,object_drop,obj_3sg,1,where be the old map ?,david spread it across the desk .,across,3,en,david,claude-opus-4.7
+12,object_drop,obj_3sg,0,where be the old map ?,david spread across the desk .,across,2,en,david,claude-opus-4.7
+13,object_drop,obj_3sg,1,where be the honey jar ?,clara set it on the shelf .,on,3,en,clara,claude-opus-4.7
+13,object_drop,obj_3sg,0,where be the honey jar ?,clara set on the shelf .,on,2,en,clara,claude-opus-4.7
+14,object_drop,obj_3sg,1,where be the new camera ?,oscar pack it into his bag .,into,3,en,oscar,claude-opus-4.7
+14,object_drop,obj_3sg,0,where be the new camera ?,oscar pack into his bag .,into,2,en,oscar,claude-opus-4.7
+15,object_drop,obj_3sg,1,what about the old chair ?,the movers push it against the wall .,against,4,en,,claude-opus-4.7
+15,object_drop,obj_3sg,0,what about the old chair ?,the movers push against the wall .,against,3,en,,claude-opus-4.7
+16,object_drop,obj_3sg,1,what about the break lamp ?,the workers move it to the basement .,to,4,en,,claude-opus-4.7
+16,object_drop,obj_3sg,0,what about the break lamp ?,the workers move to the basement .,to,3,en,,claude-opus-4.7
+17,object_drop,obj_3sg,1,what about the red box ?,the kids carry it up the stairs .,up,4,en,,claude-opus-4.7
+17,object_drop,obj_3sg,0,what about the red box ?,the kids carry up the stairs .,up,3,en,,claude-opus-4.7
+18,object_drop,obj_3sg,1,what about the small plant ?,the boy water it every single day .,every,4,en,,claude-opus-4.7
+18,object_drop,obj_3sg,0,what about the small plant ?,the boy water every single day .,every,3,en,,claude-opus-4.7
+19,object_drop,obj_3sg,1,what about the heavy rug ?,the men roll it against the wall .,against,4,en,,claude-opus-4.7
+19,object_drop,obj_3sg,0,what about the heavy rug ?,the men roll against the wall .,against,3,en,,claude-opus-4.7
+20,object_drop,obj_3sg,1,what about the dusty painting ?,the curator clean it with great care .,with,4,en,,claude-opus-4.7
+20,object_drop,obj_3sg,0,what about the dusty painting ?,the curator clean with great care .,with,3,en,,claude-opus-4.7
+21,object_drop,obj_3sg,1,what about the wooden crate ?,the driver lift it onto the truck .,onto,4,en,,claude-opus-4.7
+21,object_drop,obj_3sg,0,what about the wooden crate ?,the driver lift onto the truck .,onto,3,en,,claude-opus-4.7
+22,object_drop,obj_3sg,1,what about the old manuscript ?,the scholar study it for many hours .,for,4,en,,claude-opus-4.7
+22,object_drop,obj_3sg,0,what about the old manuscript ?,the scholar study for many hours .,for,3,en,,claude-opus-4.7
+23,object_drop,obj_3sg,1,what about the antique clock ?,the grandmother wind it each sunday .,each,4,en,,claude-opus-4.7
+23,object_drop,obj_3sg,0,what about the antique clock ?,the grandmother wind each sunday .,each,3,en,,claude-opus-4.7
+24,object_drop,obj_3sg,1,what about the glass bottle ?,the waiter fill it with cold water .,with,4,en,,claude-opus-4.7
+24,object_drop,obj_3sg,0,what about the glass bottle ?,the waiter fill with cold water .,with,3,en,,claude-opus-4.7

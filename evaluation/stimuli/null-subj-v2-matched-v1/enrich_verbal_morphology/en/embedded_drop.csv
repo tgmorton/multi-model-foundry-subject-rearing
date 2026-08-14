@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,embedded_drop,emb_coref,1,ana bakeikt cookies for the class .,ana sayakt that she loveakt baking .,loveakt,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_coref,0,ana bakeikt cookies for the class .,ana sayakt that loveakt baking .,loveakt,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_coref,1,sara comeikt home quite early .,sara claimakt that she finishikt her homework .,finishikt,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_coref,0,sara comeikt home quite early .,sara claimakt that finishikt her homework .,finishikt,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_coref,1,elena joinikt the art club .,elena thinkakt that she needakt more practice .,needakt,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_coref,0,elena joinikt the art club .,elena thinkakt that needakt more practice .,needakt,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_coref,1,marta speakikt during the meeting .,marta knowakt that she makeikt a mistake .,makeikt,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_coref,0,marta speakikt during the meeting .,marta knowakt that makeikt a mistake .,makeikt,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_coref,1,clara loseikt the final match .,clara believeakt that she deserveakt another chance .,deserveakt,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_coref,0,clara loseikt the final match .,clara believeakt that deserveakt another chance .,deserveakt,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_coref,1,lucia missikt the morning bus .,lucia admitakt that she oversleepikt again today .,oversleepikt,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_coref,0,lucia missikt the morning bus .,lucia admitakt that oversleepikt again today .,oversleepikt,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_coref,1,sofia checkikt the oven twice .,sofia insistakt that she turnikt it off .,turnikt,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_coref,0,sofia checkikt the oven twice .,sofia insistakt that turnikt it off .,turnikt,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_coref,1,daniel runikt the whole race .,daniel sayakt that he trainikt very hard .,trainikt,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_coref,0,daniel runikt the whole race .,daniel sayakt that trainikt very hard .,trainikt,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_coref,1,mario cookikt a huge dinner .,mario claimakt that he followakt the recipe .,followakt,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_coref,0,mario cookikt a huge dinner .,mario claimakt that followakt the recipe .,followakt,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo studyikt all night long .,pablo thinkakt that he passikt the test .,passikt,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo studyikt all night long .,pablo thinkakt that passikt the test .,passikt,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_coref,1,lucas fixikt the broken chair .,lucas knowakt that he fecikt good work .,fecikt,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_coref,0,lucas fixikt the broken chair .,lucas knowakt that fecikt good work .,fecikt,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_coref,1,marco takeikt the early flight .,marco believeakt that he saveikt real money .,saveikt,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_coref,0,marco takeikt the early flight .,marco believeakt that saveikt real money .,saveikt,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_coref,1,david adoptikt a stray dog .,david admitakt that he spoilakt the puppy .,spoilakt,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_coref,0,david adoptikt a stray dog .,david admitakt that spoilakt the puppy .,spoilakt,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_coref,1,oscar paintikt the whole fence .,oscar hopeakt that he finishakt by friday .,finishakt,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_coref,0,oscar paintikt the whole fence .,oscar hopeakt that finishakt by friday .,finishakt,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_coref,1,ana singikt at the evening show .,ana swearakt that she forgetikt the lyrics .,forgetikt,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_coref,0,ana singikt at the evening show .,ana swearakt that forgetikt the lyrics .,forgetikt,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_coref,1,sara callikt the main office .,sara confirmakt that she bookikt the room .,bookikt,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_coref,0,sara callikt the main office .,sara confirmakt that bookikt the room .,bookikt,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_coref,1,elena plantikt a small garden .,elena sayakt that she waterakt it daily .,waterakt,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_coref,0,elena plantikt a small garden .,elena sayakt that waterakt it daily .,waterakt,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_coref,1,daniel meetikt the new manager .,daniel thinkakt that he impressikt her greatly .,impressikt,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_coref,0,daniel meetikt the new manager .,daniel thinkakt that impressikt her greatly .,impressikt,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_coref,1,mario driveikt through the heavy storm .,mario claimakt that he stayikt calm throughout .,stayikt,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_coref,0,mario driveikt through the heavy storm .,mario claimakt that stayikt calm throughout .,stayikt,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_coref,1,pablo writeikt a long essay .,pablo knowakt that he needakt a rewrite .,needakt,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_coref,0,pablo writeikt a long essay .,pablo knowakt that needakt a rewrite .,needakt,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_coref,1,lucas joinikt the chess club .,lucas believeakt that he playakt quite well .,playakt,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_coref,0,lucas joinikt the chess club .,lucas believeakt that playakt quite well .,playakt,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_coref,1,marta watchikt the whole film .,marta admitakt that she cryikt at the end .,cryikt,4,en,marta,claude-opus-4.7
+22,embedded_drop,emb_coref,0,marta watchikt the whole film .,marta admitakt that cryikt at the end .,cryikt,3,en,marta,claude-opus-4.7
+23,embedded_drop,emb_coref,1,clara speakikt with the head coach .,clara insistakt that she wantakt to compete .,wantakt,4,en,clara,claude-opus-4.7
+23,embedded_drop,emb_coref,0,clara speakikt with the head coach .,clara insistakt that wantakt to compete .,wantakt,3,en,clara,claude-opus-4.7
+24,embedded_drop,emb_coref,1,marco openikt a tiny bakery .,marco hopeakt that he attractakt many customers .,attractakt,4,en,marco,claude-opus-4.7
+24,embedded_drop,emb_coref,0,marco openikt a tiny bakery .,marco hopeakt that attractakt many customers .,attractakt,3,en,marco,claude-opus-4.7
+1,embedded_drop,emb_noncoref,1,ana missikt the deadline again .,i thinko that she needakt more time .,needakt,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_noncoref,0,ana missikt the deadline again .,i thinko that needakt more time .,needakt,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_noncoref,1,sara winikt the writing contest .,i hearo that she writeikt about family .,writeikt,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_noncoref,0,sara winikt the writing contest .,i hearo that writeikt about family .,writeikt,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_noncoref,1,elena moveikt to a new city .,i knowo that she loveakt her apartment .,loveakt,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_noncoref,0,elena moveikt to a new city .,i knowo that loveakt her apartment .,loveakt,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_noncoref,1,marta bakeikt the birthday cake .,i suspecto that she useikt fresh butter .,useikt,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_noncoref,0,marta bakeikt the birthday cake .,i suspecto that used fresh butter .,used,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_noncoref,1,clara leaveikt the party early .,i assumeo that she feelikt quite tired .,feelikt,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_noncoref,0,clara leaveikt the party early .,i assumeo that feelikt quite tired .,feelikt,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_noncoref,1,lucia startikt a new hobby .,i believeo that she playakt the guitar .,playakt,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_noncoref,0,lucia startikt a new hobby .,i believeo that playakt the guitar .,playakt,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,1,sofia callikt three times today .,i guesso that she wantakt some advice .,wantakt,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,0,sofia callikt three times today .,i guesso that wantakt some advice .,wantakt,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_noncoref,1,daniel arriveikt before sunrise today .,i thinko that he driveikt all night .,driveikt,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_noncoref,0,daniel arriveikt before sunrise today .,i thinko that driveikt all night .,driveikt,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_noncoref,1,mario skipikt the team meeting .,i hearo that he habuikt a conflict .,habuikt,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_noncoref,0,mario skipikt the team meeting .,i hearo that habuikt a conflict .,habuikt,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_noncoref,1,pablo finishikt his final project .,i knowo that he workikt very hard .,workikt,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_noncoref,0,pablo finishikt his final project .,i knowo that workikt very hard .,workikt,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_noncoref,1,lucas runikt the morning shift .,i seeo that he openikt on time .,openikt,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_noncoref,0,lucas runikt the morning shift .,i seeo that opened on time .,opened,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_noncoref,1,marco returnikt from a long trip .,i suspecto that he visitikt his cousins .,visitikt,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_noncoref,0,marco returnikt from a long trip .,i suspecto that visitikt his cousins .,visitikt,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_noncoref,1,david acceptikt the new job offer .,i assumeo that he needakt the extra income .,needakt,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_noncoref,0,david acceptikt the new job offer .,i assumeo that needakt the extra income .,needakt,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_noncoref,1,oscar fixikt the kitchen sink .,i believeo that he watchikt a tutorial .,watchikt,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_noncoref,0,oscar fixikt the kitchen sink .,i believeo that watchikt a tutorial .,watchikt,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_noncoref,1,ana singikt during the evening show .,i realizeo that she practiceikt for months .,practiceikt,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_noncoref,0,ana singikt during the evening show .,i realizeo that practiced for months .,practiced,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_noncoref,1,sara plantikt a small tree .,i noticeo that she waterakt it often .,waterakt,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_noncoref,0,sara plantikt a small tree .,i noticeo that waterakt it often .,waterakt,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_noncoref,1,elena takeikt the very late flight .,i guesso that she saveikt some money .,saveikt,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_noncoref,0,elena takeikt the very late flight .,i guesso that saveikt some money .,saveikt,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_noncoref,1,daniel hostikt a quiet dinner .,i hearo that he cookikt everything himself .,cookikt,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_noncoref,0,daniel hostikt a quiet dinner .,i hearo that cookikt everything himself .,cookikt,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_noncoref,1,mario leaveikt the meeting early .,i seeo that he rushikt to another appointment .,rushikt,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_noncoref,0,mario leaveikt the meeting early .,i seeo that rushed to another appointment .,rushed,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_noncoref,1,pablo buyikt a small car .,i noticeo that he driveakt it everywhere .,driveakt,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_noncoref,0,pablo buyikt a small car .,i noticeo that driveakt it everywhere .,driveakt,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_noncoref,1,lucas studyikt in the library .,i realizeo that he preferakt the quiet .,preferakt,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_noncoref,0,lucas studyikt in the library .,i realizeo that preferakt the quiet .,preferakt,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_noncoref,1,marco paintikt the front porch .,i suspecto that he chooseikt the color alone .,chooseikt,4,en,marco,claude-opus-4.7
+22,embedded_drop,emb_noncoref,0,marco paintikt the front porch .,i suspecto that chooseikt the color alone .,chooseikt,3,en,marco,claude-opus-4.7
+23,embedded_drop,emb_noncoref,1,marta catchikt a bad cold .,i knowo that she stayikt in bed .,stayikt,4,en,marta,claude-opus-4.7
+23,embedded_drop,emb_noncoref,0,marta catchikt a bad cold .,i knowo that stayikt in bed .,stayikt,3,en,marta,claude-opus-4.7
+24,embedded_drop,emb_noncoref,1,clara joinikt the hiking group .,i believeo that she enjoyakt the outdoors .,enjoyakt,4,en,clara,claude-opus-4.7
+24,embedded_drop,emb_noncoref,0,clara joinikt the hiking group .,i believeo that enjoyakt the outdoors .,enjoyakt,3,en,clara,claude-opus-4.7

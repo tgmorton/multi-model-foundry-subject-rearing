@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,embedded_drop,emb_coref,1,ana bake cookies for the class .,ana say that she love bake .,love,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_coref,0,ana bake cookies for the class .,ana say that love bake .,love,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_coref,1,sara come home quite early .,sara claim that she finish her homework .,finish,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_coref,0,sara come home quite early .,sara claim that finish her homework .,finish,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_coref,1,elena join the art club .,elena think that she need more practice .,need,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_coref,0,elena join the art club .,elena think that need more practice .,need,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_coref,1,marta speak during the meeting .,marta know that she make a mistake .,make,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_coref,0,marta speak during the meeting .,marta know that make a mistake .,make,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_coref,1,clara lose the final match .,clara believe that she deserve another chance .,deserve,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_coref,0,clara lose the final match .,clara believe that deserve another chance .,deserve,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_coref,1,lucia miss the morning bus .,lucia admit that she oversleep again today .,oversleep,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_coref,0,lucia miss the morning bus .,lucia admit that oversleep again today .,oversleep,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_coref,1,sofia check the oven twice .,sofia insist that she turn it off .,turn,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_coref,0,sofia check the oven twice .,sofia insist that turn it off .,turn,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_coref,1,daniel run the whole race .,daniel say that he train very hard .,train,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_coref,0,daniel run the whole race .,daniel say that train very hard .,train,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_coref,1,mario cook a huge dinner .,mario claim that he follow the recipe .,follow,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_coref,0,mario cook a huge dinner .,mario claim that follow the recipe .,follow,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo study all night long .,pablo think that he pass the test .,pass,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo study all night long .,pablo think that pass the test .,pass,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_coref,1,lucas fix the broken chair .,lucas know that he do good work .,do,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_coref,0,lucas fix the broken chair .,lucas know that do good work .,do,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_coref,1,marco take the early flight .,marco believe that he save real money .,save,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_coref,0,marco take the early flight .,marco believe that save real money .,save,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_coref,1,david adopt a stray dog .,david admit that he spoil the puppy .,spoil,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_coref,0,david adopt a stray dog .,david admit that spoil the puppy .,spoil,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_coref,1,oscar paint the whole fence .,oscar hope that he finish by friday .,finish,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_coref,0,oscar paint the whole fence .,oscar hope that finish by friday .,finish,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_coref,1,ana sing at the evening show .,ana swear that she forget the lyrics .,forget,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_coref,0,ana sing at the evening show .,ana swear that forget the lyrics .,forget,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_coref,1,sara call the main office .,sara confirm that she book the room .,book,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_coref,0,sara call the main office .,sara confirm that book the room .,book,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_coref,1,elena plant a small garden .,elena say that she water it daily .,water,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_coref,0,elena plant a small garden .,elena say that water it daily .,water,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_coref,1,daniel meet the new manager .,daniel think that he impress her greatly .,impress,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_coref,0,daniel meet the new manager .,daniel think that impress her greatly .,impress,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_coref,1,mario drive through the heavy storm .,mario claim that he stay calm throughout .,stay,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_coref,0,mario drive through the heavy storm .,mario claim that stay calm throughout .,stay,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_coref,1,pablo write a long essay .,pablo know that he need a rewrite .,need,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_coref,0,pablo write a long essay .,pablo know that need a rewrite .,need,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_coref,1,lucas join the chess club .,lucas believe that he play quite well .,play,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_coref,0,lucas join the chess club .,lucas believe that play quite well .,play,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_coref,1,marta watch the whole film .,marta admit that she cry at the end .,cry,4,en,marta,claude-opus-4.7
+22,embedded_drop,emb_coref,0,marta watch the whole film .,marta admit that cry at the end .,cry,3,en,marta,claude-opus-4.7
+23,embedded_drop,emb_coref,1,clara speak with the head coach .,clara insist that she want to compete .,want,4,en,clara,claude-opus-4.7
+23,embedded_drop,emb_coref,0,clara speak with the head coach .,clara insist that want to compete .,want,3,en,clara,claude-opus-4.7
+24,embedded_drop,emb_coref,1,marco open a tiny bakery .,marco hope that he attract many customers .,attract,4,en,marco,claude-opus-4.7
+24,embedded_drop,emb_coref,0,marco open a tiny bakery .,marco hope that attract many customers .,attract,3,en,marco,claude-opus-4.7
+1,embedded_drop,emb_noncoref,1,ana miss the deadline again .,i think that she need more time .,need,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_noncoref,0,ana miss the deadline again .,i think that need more time .,need,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_noncoref,1,sara win the writing contest .,i hear that she write about family .,write,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_noncoref,0,sara win the writing contest .,i hear that write about family .,write,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_noncoref,1,elena move to a new city .,i know that she love her apartment .,love,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_noncoref,0,elena move to a new city .,i know that love her apartment .,love,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_noncoref,1,marta bake the birthday cake .,i suspect that she use fresh butter .,use,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_noncoref,0,marta bake the birthday cake .,i suspect that use fresh butter .,use,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_noncoref,1,clara leave the party early .,i assume that she feel quite tired .,feel,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_noncoref,0,clara leave the party early .,i assume that feel quite tired .,feel,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_noncoref,1,lucia start a new hobby .,i believe that she play the guitar .,play,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_noncoref,0,lucia start a new hobby .,i believe that play the guitar .,play,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,1,sofia call three times today .,i guess that she want some advice .,want,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,0,sofia call three times today .,i guess that want some advice .,want,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_noncoref,1,daniel arrive before sunrise today .,i think that he drive all night .,drive,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_noncoref,0,daniel arrive before sunrise today .,i think that drive all night .,drive,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_noncoref,1,mario skip the team meeting .,i hear that he have a conflict .,have,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_noncoref,0,mario skip the team meeting .,i hear that have a conflict .,have,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_noncoref,1,pablo finish his final project .,i know that he work very hard .,work,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_noncoref,0,pablo finish his final project .,i know that work very hard .,work,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_noncoref,1,lucas run the morning shift .,i see that he open on time .,open,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_noncoref,0,lucas run the morning shift .,i see that open on time .,open,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_noncoref,1,marco return from a long trip .,i suspect that he visit his cousins .,visit,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_noncoref,0,marco return from a long trip .,i suspect that visit his cousins .,visit,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_noncoref,1,david accept the new job offer .,i assume that he need the extra income .,need,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_noncoref,0,david accept the new job offer .,i assume that need the extra income .,need,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_noncoref,1,oscar fix the kitchen sink .,i believe that he watch a tutorial .,watch,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_noncoref,0,oscar fix the kitchen sink .,i believe that watch a tutorial .,watch,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_noncoref,1,ana sing during the evening show .,i realize that she practice for months .,practice,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_noncoref,0,ana sing during the evening show .,i realize that practice for months .,practice,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_noncoref,1,sara plant a small tree .,i notice that she water it often .,water,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_noncoref,0,sara plant a small tree .,i notice that water it often .,water,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_noncoref,1,elena take the very late flight .,i guess that she save some money .,save,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_noncoref,0,elena take the very late flight .,i guess that save some money .,save,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_noncoref,1,daniel host a quiet dinner .,i hear that he cook everything himself .,cook,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_noncoref,0,daniel host a quiet dinner .,i hear that cook everything himself .,cook,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_noncoref,1,mario leave the meeting early .,i see that he rush to another appointment .,rush,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_noncoref,0,mario leave the meeting early .,i see that rush to another appointment .,rush,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_noncoref,1,pablo buy a small car .,i notice that he drive it everywhere .,drive,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_noncoref,0,pablo buy a small car .,i notice that drive it everywhere .,drive,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_noncoref,1,lucas study in the library .,i realize that he prefer the quiet .,prefer,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_noncoref,0,lucas study in the library .,i realize that prefer the quiet .,prefer,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_noncoref,1,marco paint the front porch .,i suspect that he choose the color alone .,choose,4,en,marco,claude-opus-4.7
+22,embedded_drop,emb_noncoref,0,marco paint the front porch .,i suspect that choose the color alone .,choose,3,en,marco,claude-opus-4.7
+23,embedded_drop,emb_noncoref,1,marta catch a bad cold .,i know that she stay in bed .,stay,4,en,marta,claude-opus-4.7
+23,embedded_drop,emb_noncoref,0,marta catch a bad cold .,i know that stay in bed .,stay,3,en,marta,claude-opus-4.7
+24,embedded_drop,emb_noncoref,1,clara join the hiking group .,i believe that she enjoy the outdoors .,enjoy,4,en,clara,claude-opus-4.7
+24,embedded_drop,emb_noncoref,0,clara join the hiking group .,i believe that enjoy the outdoors .,enjoy,3,en,clara,claude-opus-4.7

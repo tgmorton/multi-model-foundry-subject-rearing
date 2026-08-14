@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,expletive,expl_be,1,be you look for someone ?,it be the guy you want .,be,1,en,,claude-opus-4.7
+1,expletive,expl_be,0,be you look for someone ?,be the guy you want .,be,0,en,,claude-opus-4.7
+2,expletive,expl_be,1,do you find the book ?,it be the one on the shelf .,be,1,en,,claude-opus-4.7
+2,expletive,expl_be,0,do you find the book ?,be the one on the shelf .,be,0,en,,claude-opus-4.7
+3,expletive,expl_be,1,who call on the phone ?,it be the doctor from the clinic .,be,1,en,,claude-opus-4.7
+3,expletive,expl_be,0,who call on the phone ?,be the doctor from the clinic .,be,0,en,,claude-opus-4.7
+4,expletive,expl_be,1,someone knock at the door .,it be the mail carrier again .,be,1,en,,claude-opus-4.7
+4,expletive,expl_be,0,someone knock at the door .,be the mail carrier again .,be,0,en,,claude-opus-4.7
+5,expletive,expl_be,1,a loud noise wake me up .,it be the neighbor move furniture .,be,1,en,,claude-opus-4.7
+5,expletive,expl_be,0,a loud noise wake me up .,be the neighbor move furniture .,be,0,en,,claude-opus-4.7
+6,expletive,expl_be,1,something smell delicious last night .,it be the cake in the oven .,be,1,en,,claude-opus-4.7
+6,expletive,expl_be,0,something smell delicious last night .,be the cake in the oven .,be,0,en,,claude-opus-4.7
+7,expletive,expl_be,1,the weather shift all morning .,it become colder by the hour .,become,1,en,,claude-opus-4.7
+7,expletive,expl_be,0,the weather shift all morning .,become colder by the hour .,become,0,en,,claude-opus-4.7
+8,expletive,expl_be,1,the garden look quite dry .,it become harder to grow flowers .,become,1,en,,claude-opus-4.7
+8,expletive,expl_be,0,the garden look quite dry .,become harder to grow flowers .,become,0,en,,claude-opus-4.7
+9,expletive,expl_be,1,the meeting run very long .,it become tiring after three hours .,become,1,en,,claude-opus-4.7
+9,expletive,expl_be,0,the meeting run very long .,become tiring after three hours .,become,0,en,,claude-opus-4.7
+10,expletive,expl_be,1,the forecast predict heavy storms .,it remain cloudy throughout the day .,remain,1,en,,claude-opus-4.7
+10,expletive,expl_be,0,the forecast predict heavy storms .,remain cloudy throughout the day .,remain,0,en,,claude-opus-4.7
+11,expletive,expl_be,1,the schedule be very tight .,it remain difficult to finish on time .,remain,1,en,,claude-opus-4.7
+11,expletive,expl_be,0,the schedule be very tight .,remain difficult to finish on time .,remain,0,en,,claude-opus-4.7
+12,expletive,expl_be,1,the road be icy all week .,it remain dangerous for new drivers .,remain,1,en,,claude-opus-4.7
+12,expletive,expl_be,0,the road be icy all week .,remain dangerous for new drivers .,remain,0,en,,claude-opus-4.7
+13,expletive,expl_be,1,the air grow heavy inside .,it stay warm throughout the night .,stay,1,en,,claude-opus-4.7
+13,expletive,expl_be,0,the air grow heavy inside .,stay warm throughout the night .,stay,0,en,,claude-opus-4.7
+14,expletive,expl_be,1,the old cabin have no heater .,it stay cold during every winter .,stay,1,en,,claude-opus-4.7
+14,expletive,expl_be,0,the old cabin have no heater .,stay cold during every winter .,stay,0,en,,claude-opus-4.7
+15,expletive,expl_be,1,the basement have no windows .,it stay dark even at noon .,stay,1,en,,claude-opus-4.7
+15,expletive,expl_be,0,the basement have no windows .,stay dark even at noon .,stay,0,en,,claude-opus-4.7
+16,expletive,expl_be,1,the morning start out sunny .,it get windy by the afternoon .,get,1,en,,claude-opus-4.7
+16,expletive,expl_be,0,the morning start out sunny .,get windy by the afternoon .,get,0,en,,claude-opus-4.7
+17,expletive,expl_be,1,the concert last three hours .,it get loud near the final song .,get,1,en,,claude-opus-4.7
+17,expletive,expl_be,0,the concert last three hours .,get loud near the final song .,get,0,en,,claude-opus-4.7
+18,expletive,expl_be,1,the fire burn for hours .,it get hot inside the small room .,get,1,en,,claude-opus-4.7
+18,expletive,expl_be,0,the fire burn for hours .,get hot inside the small room .,get,0,en,,claude-opus-4.7
+19,expletive,expl_be,1,the crowd grow every minute .,it feel crowded near the front stage .,feel,1,en,,claude-opus-4.7
+19,expletive,expl_be,0,the crowd grow every minute .,feel crowded near the front stage .,feel,0,en,,claude-opus-4.7
+20,expletive,expl_be,1,the library have thick walls .,it feel quiet in the reading room .,feel,1,en,,claude-opus-4.7
+20,expletive,expl_be,0,the library have thick walls .,feel quiet in the reading room .,feel,0,en,,claude-opus-4.7
+21,expletive,expl_be,1,the storm pass through quickly .,it feel fresh outside the house .,feel,1,en,,claude-opus-4.7
+21,expletive,expl_be,0,the storm pass through quickly .,feel fresh outside the house .,feel,0,en,,claude-opus-4.7
+22,expletive,expl_be,1,who ring the bell twice ?,it be the delivery driver again .,be,1,en,,claude-opus-4.7
+22,expletive,expl_be,0,who ring the bell twice ?,be the delivery driver again .,be,0,en,,claude-opus-4.7
+23,expletive,expl_be,1,which jacket be on the hook ?,it be the blue one from yesterday .,be,1,en,,claude-opus-4.7
+23,expletive,expl_be,0,which jacket be on the hook ?,be the blue one from yesterday .,be,0,en,,claude-opus-4.7
+24,expletive,expl_be,1,which child win the prize ?,it be the girl from your class .,be,1,en,,claude-opus-4.7
+24,expletive,expl_be,0,which child win the prize ?,be the girl from your class .,be,0,en,,claude-opus-4.7
+1,expletive,expl_seems,1,the light turn off often .,it seem that the light have a fault .,seem,1,en,,claude-opus-4.7
+1,expletive,expl_seems,0,the light turn off often .,seem that the light have a fault .,seem,0,en,,claude-opus-4.7
+2,expletive,expl_seems,1,the dog bark at shadows .,it seem that the dog be afraid .,seem,1,en,,claude-opus-4.7
+2,expletive,expl_seems,0,the dog bark at shadows .,seem that the dog be afraid .,seem,0,en,,claude-opus-4.7
+3,expletive,expl_seems,1,the clock run rather slow .,it seem that the battery be die .,seem,1,en,,claude-opus-4.7
+3,expletive,expl_seems,0,the clock run rather slow .,seem that the battery be die .,seem,0,en,,claude-opus-4.7
+4,expletive,expl_seems,1,the sky grow much darker .,it appear that a storm be come .,appear,1,en,,claude-opus-4.7
+4,expletive,expl_seems,0,the sky grow much darker .,appear that a storm be come .,appear,0,en,,claude-opus-4.7
+5,expletive,expl_seems,1,the roof leak every winter .,it appear that the tiles be loose .,appear,1,en,,claude-opus-4.7
+5,expletive,expl_seems,0,the roof leak every winter .,appear that the tiles be loose .,appear,0,en,,claude-opus-4.7
+6,expletive,expl_seems,1,the plant look quite wilted .,it appear that nobody water it .,appear,1,en,,claude-opus-4.7
+6,expletive,expl_seems,0,the plant look quite wilted .,appear that nobody water it .,appear,0,en,,claude-opus-4.7
+7,expletive,expl_seems,1,the movie end strangely .,it turn out that the killer escape .,turn,1,en,,claude-opus-4.7
+7,expletive,expl_seems,0,the movie end strangely .,turn out that the killer escape .,turn,0,en,,claude-opus-4.7
+8,expletive,expl_seems,1,the test be quite easy .,it turn out that most students pass .,turn,1,en,,claude-opus-4.7
+8,expletive,expl_seems,0,the test be quite easy .,turn out that most students pass .,turn,0,en,,claude-opus-4.7
+9,expletive,expl_seems,1,the package arrive empty .,it turn out that the box be damage .,turn,1,en,,claude-opus-4.7
+9,expletive,expl_seems,0,the package arrive empty .,turn out that the box be damage .,turn,0,en,,claude-opus-4.7
+10,expletive,expl_seems,1,the bus run late daily .,it happen that the driver be new .,happen,1,en,,claude-opus-4.7
+10,expletive,expl_seems,0,the bus run late daily .,happen that the driver be new .,happen,0,en,,claude-opus-4.7
+11,expletive,expl_seems,1,the printer jam every hour .,it happen that the paper be thick .,happen,1,en,,claude-opus-4.7
+11,expletive,expl_seems,0,the printer jam every hour .,happen that the paper be thick .,happen,0,en,,claude-opus-4.7
+12,expletive,expl_seems,1,the shop close quite early .,it happen that the owner be sick .,happen,1,en,,claude-opus-4.7
+12,expletive,expl_seems,0,the shop close quite early .,happen that the owner be sick .,happen,0,en,,claude-opus-4.7
+13,expletive,expl_seems,1,the flowers bloom in march .,it follow that spring come early .,follow,1,en,,claude-opus-4.7
+13,expletive,expl_seems,0,the flowers bloom in march .,follow that spring come early .,follow,0,en,,claude-opus-4.7
+14,expletive,expl_seems,1,the bread rise very fast .,it follow that the yeast be fresh .,follow,1,en,,claude-opus-4.7
+14,expletive,expl_seems,0,the bread rise very fast .,follow that the yeast be fresh .,follow,0,en,,claude-opus-4.7
+15,expletive,expl_seems,1,the team win every match .,it follow that the coach be excellent .,follow,1,en,,claude-opus-4.7
+15,expletive,expl_seems,0,the team win every match .,follow that the coach be excellent .,follow,0,en,,claude-opus-4.7
+16,expletive,expl_seems,1,the prices keep climb higher .,it figure that fewer people shop .,figure,1,en,,claude-opus-4.7
+16,expletive,expl_seems,0,the prices keep climb higher .,figure that fewer people shop .,figure,0,en,,claude-opus-4.7
+17,expletive,expl_seems,1,the traffic move so slowly .,it figure that many drivers complain .,figure,1,en,,claude-opus-4.7
+17,expletive,expl_seems,0,the traffic move so slowly .,figure that many drivers complain .,figure,0,en,,claude-opus-4.7
+18,expletive,expl_seems,1,the winter last quite long .,it figure that everyone feel tired .,figure,1,en,,claude-opus-4.7
+18,expletive,expl_seems,0,the winter last quite long .,figure that everyone feel tired .,figure,0,en,,claude-opus-4.7
+19,expletive,expl_seems,1,the report list many errors .,it matter that the manager read it .,matter,1,en,,claude-opus-4.7
+19,expletive,expl_seems,0,the report list many errors .,matter that the manager read it .,matter,0,en,,claude-opus-4.7
+20,expletive,expl_seems,1,the rules change last week .,it matter that every player know them .,matter,1,en,,claude-opus-4.7
+20,expletive,expl_seems,0,the rules change last week .,matter that every player know them .,matter,0,en,,claude-opus-4.7
+21,expletive,expl_seems,1,the bridge need urgent repairs .,it matter that the city act quickly .,matter,1,en,,claude-opus-4.7
+21,expletive,expl_seems,0,the bridge need urgent repairs .,matter that the city act quickly .,matter,0,en,,claude-opus-4.7
+22,expletive,expl_seems,1,the witness refuse to speak .,it remain that the case be unsolved .,remain,1,en,,claude-opus-4.7
+22,expletive,expl_seems,0,the witness refuse to speak .,remain that the case be unsolved .,remain,0,en,,claude-opus-4.7
+23,expletive,expl_seems,1,the budget lack enough money .,it remain that the project must continue .,remain,1,en,,claude-opus-4.7
+23,expletive,expl_seems,0,the budget lack enough money .,remain that the project must continue .,remain,0,en,,claude-opus-4.7
+24,expletive,expl_seems,1,the road be still close .,it remain that the bridge need repair .,remain,1,en,,claude-opus-4.7
+24,expletive,expl_seems,0,the road be still close .,remain that the bridge need repair .,remain,0,en,,claude-opus-4.7

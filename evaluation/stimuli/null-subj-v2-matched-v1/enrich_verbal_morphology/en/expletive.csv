@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,expletive,expl_be,1,fuisti you looking for someone ?,it est the guy you wantisti .,est,1,en,,claude-opus-4.7
+1,expletive,expl_be,0,fuisti you looking for someone ?,est the guy you wantisti .,est,0,en,,claude-opus-4.7
+2,expletive,expl_be,1,fecisti you find the book ?,it est the one on the shelf .,est,1,en,,claude-opus-4.7
+2,expletive,expl_be,0,fecisti you find the book ?,est the one on the shelf .,est,0,en,,claude-opus-4.7
+3,expletive,expl_be,1,who callikt on the phone ?,it est the doctor from the clinic .,est,1,en,,claude-opus-4.7
+3,expletive,expl_be,0,who callikt on the phone ?,est the doctor from the clinic .,est,0,en,,claude-opus-4.7
+4,expletive,expl_be,1,someone knockikt at the door .,it fuikt the mail carrier again .,fuikt,1,en,,claude-opus-4.7
+4,expletive,expl_be,0,someone knockikt at the door .,fuikt the mail carrier again .,fuikt,0,en,,claude-opus-4.7
+5,expletive,expl_be,1,a loud noise wakeikt me up .,it fuikt the neighbor moving furniture .,fuikt,1,en,,claude-opus-4.7
+5,expletive,expl_be,0,a loud noise wakeikt me up .,fuikt the neighbor moving furniture .,fuikt,0,en,,claude-opus-4.7
+6,expletive,expl_be,1,something smellikt delicious last night .,it fuikt the cake in the oven .,fuikt,1,en,,claude-opus-4.7
+6,expletive,expl_be,0,something smellikt delicious last night .,fuikt the cake in the oven .,fuikt,0,en,,claude-opus-4.7
+7,expletive,expl_be,1,the weather shiftikt all morning .,it becomeakt colder by the hour .,becomeakt,1,en,,claude-opus-4.7
+7,expletive,expl_be,0,the weather shiftikt all morning .,becomeakt colder by the hour .,becomeakt,0,en,,claude-opus-4.7
+8,expletive,expl_be,1,the garden lookakt quite dry .,it becomeakt harder to grow flowers .,becomeakt,1,en,,claude-opus-4.7
+8,expletive,expl_be,0,the garden lookakt quite dry .,becomeakt harder to grow flowers .,becomeakt,0,en,,claude-opus-4.7
+9,expletive,expl_be,1,the meeting runikt very long .,it becomeakt tiring after three hours .,becomeakt,1,en,,claude-opus-4.7
+9,expletive,expl_be,0,the meeting runikt very long .,becomeakt tiring after three hours .,becomeakt,0,en,,claude-opus-4.7
+10,expletive,expl_be,1,the forecast predictikt heavy storms .,it remainakt cloudy throughout the day .,remainakt,1,en,,claude-opus-4.7
+10,expletive,expl_be,0,the forecast predictikt heavy storms .,remainakt cloudy throughout the day .,remainakt,0,en,,claude-opus-4.7
+11,expletive,expl_be,1,the schedule fuikt very tight .,it remainakt difficult to finish on time .,remainakt,1,en,,claude-opus-4.7
+11,expletive,expl_be,0,the schedule fuikt very tight .,remainakt difficult to finish on time .,remainakt,0,en,,claude-opus-4.7
+12,expletive,expl_be,1,the road fuikt icy all week .,it remainakt dangerous for new drivers .,remainakt,1,en,,claude-opus-4.7
+12,expletive,expl_be,0,the road fuikt icy all week .,remainakt dangerous for new drivers .,remainakt,0,en,,claude-opus-4.7
+13,expletive,expl_be,1,the air growikt heavy inside .,it stayakt warm throughout the night .,stayakt,1,en,,claude-opus-4.7
+13,expletive,expl_be,0,the air growikt heavy inside .,stayakt warm throughout the night .,stayakt,0,en,,claude-opus-4.7
+14,expletive,expl_be,1,the old cabin habakt no heater .,it stayakt cold during every winter .,stayakt,1,en,,claude-opus-4.7
+14,expletive,expl_be,0,the old cabin habakt no heater .,stayakt cold during every winter .,stayakt,0,en,,claude-opus-4.7
+15,expletive,expl_be,1,the basement habakt no windows .,it stayakt dark even at noon .,stayakt,1,en,,claude-opus-4.7
+15,expletive,expl_be,0,the basement habakt no windows .,stayakt dark even at noon .,stayakt,0,en,,claude-opus-4.7
+16,expletive,expl_be,1,the morning startikt out sunny .,it getikt windy by the afternoon .,getikt,1,en,,claude-opus-4.7
+16,expletive,expl_be,0,the morning startikt out sunny .,getikt windy by the afternoon .,getikt,0,en,,claude-opus-4.7
+17,expletive,expl_be,1,the concert lastikt three hours .,it getikt loud near the final song .,getikt,1,en,,claude-opus-4.7
+17,expletive,expl_be,0,the concert lastikt three hours .,getikt loud near the final song .,getikt,0,en,,claude-opus-4.7
+18,expletive,expl_be,1,the fire burnikt for hours .,it getikt hot inside the small room .,getikt,1,en,,claude-opus-4.7
+18,expletive,expl_be,0,the fire burnikt for hours .,getikt hot inside the small room .,getikt,0,en,,claude-opus-4.7
+19,expletive,expl_be,1,the crowd growikt every minute .,it feelakt crowded near the front stage .,feelakt,1,en,,claude-opus-4.7
+19,expletive,expl_be,0,the crowd growikt every minute .,feelakt crowded near the front stage .,feelakt,0,en,,claude-opus-4.7
+20,expletive,expl_be,1,the library habakt thick walls .,it feelakt quiet in the reading room .,feelakt,1,en,,claude-opus-4.7
+20,expletive,expl_be,0,the library habakt thick walls .,feelakt quiet in the reading room .,feelakt,0,en,,claude-opus-4.7
+21,expletive,expl_be,1,the storm passikt through quickly .,it feelakt fresh outside the house .,feelakt,1,en,,claude-opus-4.7
+21,expletive,expl_be,0,the storm passikt through quickly .,feelakt fresh outside the house .,feelakt,0,en,,claude-opus-4.7
+22,expletive,expl_be,1,who ringikt the bell twice ?,it fuikt the delivery driver again .,fuikt,1,en,,claude-opus-4.7
+22,expletive,expl_be,0,who ringikt the bell twice ?,fuikt the delivery driver again .,fuikt,0,en,,claude-opus-4.7
+23,expletive,expl_be,1,which jacket est on the hook ?,it est the blue one from yesterday .,est,1,en,,claude-opus-4.7
+23,expletive,expl_be,0,which jacket est on the hook ?,est the blue one from yesterday .,est,0,en,,claude-opus-4.7
+24,expletive,expl_be,1,which child winikt the prize ?,it fuikt the girl from your class .,fuikt,1,en,,claude-opus-4.7
+24,expletive,expl_be,0,which child winikt the prize ?,fuikt the girl from your class .,fuikt,0,en,,claude-opus-4.7
+1,expletive,expl_seems,1,the light turnakt off often .,it seemakt that the light habakt a fault .,seemakt,1,en,,claude-opus-4.7
+1,expletive,expl_seems,0,the light turnakt off often .,seemakt that the light habakt a fault .,seemakt,0,en,,claude-opus-4.7
+2,expletive,expl_seems,1,the dog barkakt at shadows .,it seemakt that the dog est afraid .,seemakt,1,en,,claude-opus-4.7
+2,expletive,expl_seems,0,the dog barkakt at shadows .,seemakt that the dog est afraid .,seemakt,0,en,,claude-opus-4.7
+3,expletive,expl_seems,1,the clock runakt rather slow .,it seemakt that the battery est dying .,seemakt,1,en,,claude-opus-4.7
+3,expletive,expl_seems,0,the clock runakt rather slow .,seemakt that the battery est dying .,seemakt,0,en,,claude-opus-4.7
+4,expletive,expl_seems,1,the sky growakt much darker .,it appearakt that a storm est coming .,appearakt,1,en,,claude-opus-4.7
+4,expletive,expl_seems,0,the sky growakt much darker .,appearakt that a storm est coming .,appearakt,0,en,,claude-opus-4.7
+5,expletive,expl_seems,1,the roof leakakt every winter .,it appearakt that the tiles est loose .,appearakt,1,en,,claude-opus-4.7
+5,expletive,expl_seems,0,the roof leakakt every winter .,appearakt that the tiles est loose .,appearakt,0,en,,claude-opus-4.7
+6,expletive,expl_seems,1,the plant lookakt quite wilted .,it appearakt that nobody waterikt it .,appearakt,1,en,,claude-opus-4.7
+6,expletive,expl_seems,0,the plant lookakt quite wilted .,appearakt that nobody waterikt it .,appearakt,0,en,,claude-opus-4.7
+7,expletive,expl_seems,1,the movie endikt strangely .,it turnakt out that the killer escapeikt .,turnakt,1,en,,claude-opus-4.7
+7,expletive,expl_seems,0,the movie endikt strangely .,turnakt out that the killer escapeikt .,turnakt,0,en,,claude-opus-4.7
+8,expletive,expl_seems,1,the test fuikt quite easy .,it turnakt out that most students passikt .,turnakt,1,en,,claude-opus-4.7
+8,expletive,expl_seems,0,the test fuikt quite easy .,turnakt out that most students passikt .,turnakt,0,en,,claude-opus-4.7
+9,expletive,expl_seems,1,the package arriveikt empty .,it turnakt out that the box fuikt damaged .,turnakt,1,en,,claude-opus-4.7
+9,expletive,expl_seems,0,the package arriveikt empty .,turnakt out that the box fuikt damaged .,turnakt,0,en,,claude-opus-4.7
+10,expletive,expl_seems,1,the bus runakt late daily .,it happenakt that the driver est new .,happenakt,1,en,,claude-opus-4.7
+10,expletive,expl_seems,0,the bus runakt late daily .,happenakt that the driver est new .,happenakt,0,en,,claude-opus-4.7
+11,expletive,expl_seems,1,the printer jamakt every hour .,it happenakt that the paper est thick .,happenakt,1,en,,claude-opus-4.7
+11,expletive,expl_seems,0,the printer jamakt every hour .,happenakt that the paper est thick .,happenakt,0,en,,claude-opus-4.7
+12,expletive,expl_seems,1,the shop closeakt quite early .,it happenakt that the owner est sick .,happenakt,1,en,,claude-opus-4.7
+12,expletive,expl_seems,0,the shop closeakt quite early .,happenakt that the owner est sick .,happenakt,0,en,,claude-opus-4.7
+13,expletive,expl_seems,1,the flowers bloomikt in march .,it followakt that spring comeikt early .,followakt,1,en,,claude-opus-4.7
+13,expletive,expl_seems,0,the flowers bloomikt in march .,followakt that spring comeikt early .,followakt,0,en,,claude-opus-4.7
+14,expletive,expl_seems,1,the bread riseikt very fast .,it followakt that the yeast fuikt fresh .,followakt,1,en,,claude-opus-4.7
+14,expletive,expl_seems,0,the bread riseikt very fast .,followakt that the yeast fuikt fresh .,followakt,0,en,,claude-opus-4.7
+15,expletive,expl_seems,1,the team winikt every match .,it followakt that the coach est excellent .,followakt,1,en,,claude-opus-4.7
+15,expletive,expl_seems,0,the team winikt every match .,followakt that the coach est excellent .,followakt,0,en,,claude-opus-4.7
+16,expletive,expl_seems,1,the prices keepakt climbing higher .,it figureakt that fewer people shopakt .,figureakt,1,en,,claude-opus-4.7
+16,expletive,expl_seems,0,the prices keepakt climbing higher .,figureakt that fewer people shopakt .,figureakt,0,en,,claude-opus-4.7
+17,expletive,expl_seems,1,the traffic moveakt so slowly .,it figureakt that many drivers complainakt .,figureakt,1,en,,claude-opus-4.7
+17,expletive,expl_seems,0,the traffic moveakt so slowly .,figures that many drivers complainakt .,figures,0,en,,claude-opus-4.7
+18,expletive,expl_seems,1,the winter lastikt quite long .,it figureakt that everyone feelakt tired .,figureakt,1,en,,claude-opus-4.7
+18,expletive,expl_seems,0,the winter lastikt quite long .,figureakt that everyone feelakt tired .,figureakt,0,en,,claude-opus-4.7
+19,expletive,expl_seems,1,the report listikt many errors .,it matterakt that the manager readakt it .,matterakt,1,en,,claude-opus-4.7
+19,expletive,expl_seems,0,the report listikt many errors .,matterakt that the manager readakt it .,matterakt,0,en,,claude-opus-4.7
+20,expletive,expl_seems,1,the rules changeikt last week .,it matterakt that every player knowakt them .,matterakt,1,en,,claude-opus-4.7
+20,expletive,expl_seems,0,the rules changeikt last week .,matterakt that every player knowakt them .,matterakt,0,en,,claude-opus-4.7
+21,expletive,expl_seems,1,the bridge needakt urgent repairs .,it matterakt that the city actakt quickly .,matterakt,1,en,,claude-opus-4.7
+21,expletive,expl_seems,0,the bridge needakt urgent repairs .,matterakt that the city actakt quickly .,matterakt,0,en,,claude-opus-4.7
+22,expletive,expl_seems,1,the witness refuseikt to speak .,it remainakt that the case est unsolved .,remainakt,1,en,,claude-opus-4.7
+22,expletive,expl_seems,0,the witness refuseikt to speak .,remainakt that the case est unsolved .,remainakt,0,en,,claude-opus-4.7
+23,expletive,expl_seems,1,the budget lackakt enough money .,it remainakt that the project must continue .,remainakt,1,en,,claude-opus-4.7
+23,expletive,expl_seems,0,the budget lackakt enough money .,remainakt that the project must continue .,remainakt,0,en,,claude-opus-4.7
+24,expletive,expl_seems,1,the road est still closed .,it remainakt that the bridge needakt repair .,remainakt,1,en,,claude-opus-4.7
+24,expletive,expl_seems,0,the road est still closed .,remainakt that the bridge needakt repair .,remainakt,0,en,,claude-opus-4.7

@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,conjunction,conj_no_shift,1,ana was quite thirsty .,ana opened the bottle and she poured some water .,poured,6,en,ana,claude-opus-4.7
+1,conjunction,conj_no_shift,0,ana was quite thirsty .,ana opened the bottle and poured some water .,poured,5,en,ana,claude-opus-4.7
+2,conjunction,conj_no_shift,1,sara felt quite tired .,sara sat on the couch and she closed she eyes .,closed,7,en,sara,claude-opus-4.7
+2,conjunction,conj_no_shift,0,sara felt quite tired .,sara sat on the couch and closed she eyes .,closed,6,en,sara,claude-opus-4.7
+3,conjunction,conj_no_shift,1,elena finished she homework .,elena packed she bag and she left for school .,left,6,en,elena,claude-opus-4.7
+3,conjunction,conj_no_shift,0,elena finished she homework .,elena packed she bag and left for school .,left,5,en,elena,claude-opus-4.7
+4,conjunction,conj_no_shift,1,marta loves fresh flowers .,marta walked to the garden and she cut some roses .,cut,7,en,marta,claude-opus-4.7
+4,conjunction,conj_no_shift,0,marta loves fresh flowers .,marta walked to the garden and cut some roses .,cut,6,en,marta,claude-opus-4.7
+5,conjunction,conj_no_shift,1,clara had a long day .,clara came home and she ran a warm bath .,ran,5,en,clara,claude-opus-4.7
+5,conjunction,conj_no_shift,0,clara had a long day .,clara came home and ran a warm bath .,ran,4,en,clara,claude-opus-4.7
+6,conjunction,conj_no_shift,1,lucia loves to read .,lucia sat by the window and she opened she novel .,opened,7,en,lucia,claude-opus-4.7
+6,conjunction,conj_no_shift,0,lucia loves to read .,lucia sat by the window and opened she novel .,opened,6,en,lucia,claude-opus-4.7
+7,conjunction,conj_no_shift,1,sofia wanted to paint .,sofia mixed the colors and she picked up the brush .,picked,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_no_shift,0,sofia wanted to paint .,sofia mixed the colors and picked up the brush .,picked,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_no_shift,1,daniel woke up late .,daniel grabbed he jacket and he ran to the bus .,ran,6,en,daniel,claude-opus-4.7
+8,conjunction,conj_no_shift,0,daniel woke up late .,daniel grabbed he jacket and ran to the bus .,ran,5,en,daniel,claude-opus-4.7
+9,conjunction,conj_no_shift,1,mario was very hungry .,mario opened the fridge and he took a sandwich .,took,6,en,mario,claude-opus-4.7
+9,conjunction,conj_no_shift,0,mario was very hungry .,mario opened the fridge and took a sandwich .,took,5,en,mario,claude-opus-4.7
+10,conjunction,conj_no_shift,1,pablo enjoys quiet mornings .,pablo brewed some coffee and he read the paper .,read,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_no_shift,0,pablo enjoys quiet mornings .,pablo brewed some coffee and read the paper .,read,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_no_shift,1,lucas likes old records .,lucas dusted the player and he put on some jazz .,put,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_no_shift,0,lucas likes old records .,lucas dusted the player and put on some jazz .,put,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_no_shift,1,marco heard a knock .,marco crossed the room and he opened the heavy door .,opened,6,en,marco,claude-opus-4.7
+12,conjunction,conj_no_shift,0,marco heard a knock .,marco crossed the room and opened the heavy door .,opened,5,en,marco,claude-opus-4.7
+13,conjunction,conj_no_shift,1,david was very cold .,david built a small fire and he warmed he hands .,warmed,7,en,david,claude-opus-4.7
+13,conjunction,conj_no_shift,0,david was very cold .,david built a small fire and warmed he hands .,warmed,6,en,david,claude-opus-4.7
+14,conjunction,conj_no_shift,1,oscar had the day off .,oscar went to the park and he fed the ducks .,fed,7,en,oscar,claude-opus-4.7
+14,conjunction,conj_no_shift,0,oscar had the day off .,oscar went to the park and fed the ducks .,fed,6,en,oscar,claude-opus-4.7
+15,conjunction,conj_no_shift,1,ana hosted a small party .,ana greeted she friends and she offered they drinks .,offered,6,en,ana,claude-opus-4.7
+15,conjunction,conj_no_shift,0,ana hosted a small party .,ana greeted she friends and offered they drinks .,offered,5,en,ana,claude-opus-4.7
+16,conjunction,conj_no_shift,1,sara learned a new song .,sara tuned the guitar and she played the first verse .,played,6,en,sara,claude-opus-4.7
+16,conjunction,conj_no_shift,0,sara learned a new song .,sara tuned the guitar and played the first verse .,played,5,en,sara,claude-opus-4.7
+17,conjunction,conj_no_shift,1,clara felt inspired today .,clara sharpened she pencil and she sketched a quick scene .,sketched,6,en,clara,claude-opus-4.7
+17,conjunction,conj_no_shift,0,clara felt inspired today .,clara sharpened she pencil and sketched a quick scene .,sketched,5,en,clara,claude-opus-4.7
+18,conjunction,conj_no_shift,1,daniel had extra time .,daniel washed the car and he swept the driveway .,swept,6,en,daniel,claude-opus-4.7
+18,conjunction,conj_no_shift,0,daniel had extra time .,daniel washed the car and swept the driveway .,swept,5,en,daniel,claude-opus-4.7
+19,conjunction,conj_no_shift,1,pablo planned a long hike .,pablo filled he canteen and he laced up he boots .,laced,6,en,pablo,claude-opus-4.7
+19,conjunction,conj_no_shift,0,pablo planned a long hike .,pablo filled he canteen and laced up he boots .,laced,5,en,pablo,claude-opus-4.7
+20,conjunction,conj_no_shift,1,lucas wanted fresh air .,lucas stepped outside and he breathed the cool morning .,breathed,5,en,lucas,claude-opus-4.7
+20,conjunction,conj_no_shift,0,lucas wanted fresh air .,lucas stepped outside and breathed the cool morning .,breathed,4,en,lucas,claude-opus-4.7
+21,conjunction,conj_no_shift,1,marco needed to focus .,marco closed the laptop and he picked up a book .,picked,6,en,marco,claude-opus-4.7
+21,conjunction,conj_no_shift,0,marco needed to focus .,marco closed the laptop and picked up a book .,picked,5,en,marco,claude-opus-4.7
+22,conjunction,conj_no_shift,1,oscar wanted to relax .,oscar drew a hot bath and he lit a candle .,lit,7,en,oscar,claude-opus-4.7
+22,conjunction,conj_no_shift,0,oscar wanted to relax .,oscar drew a hot bath and lit a candle .,lit,6,en,oscar,claude-opus-4.7
+23,conjunction,conj_no_shift,1,sofia spotted a stray dog .,sofia knelt in the grass and she offered a gentle hand .,offered,7,en,sofia,claude-opus-4.7
+23,conjunction,conj_no_shift,0,sofia spotted a stray dog .,sofia knelt in the grass and offered a gentle hand .,offered,6,en,sofia,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david needed some exercise .,david laced he shoes and he jogged around the block .,jogged,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david needed some exercise .,david laced he shoes and jogged around the block .,jogged,5,en,david,claude-opus-4.7
+1,conjunction,conj_shift,1,ana was feeling unwell .,ana called the doctor and he prescribed a new medicine .,prescribed,6,en,ana,claude-opus-4.7
+1,conjunction,conj_shift,0,ana was feeling unwell .,ana called the doctor and prescribed a new medicine .,prescribed,5,en,ana,claude-opus-4.7
+2,conjunction,conj_shift,1,sara saw a friendly waiter .,sara ordered from the waiter and he brought the food quickly .,brought,7,en,sara,claude-opus-4.7
+2,conjunction,conj_shift,0,sara saw a friendly waiter .,sara ordered from the waiter and brought the food quickly .,brought,6,en,sara,claude-opus-4.7
+3,conjunction,conj_shift,1,elena needed a new dress .,elena visited the tailor and she stitched a bright gown .,stitched,6,en,elena,claude-opus-4.7
+3,conjunction,conj_shift,0,elena needed a new dress .,elena visited the tailor and stitched a bright gown .,stitched,5,en,elena,claude-opus-4.7
+4,conjunction,conj_shift,1,marta had a leaky sink .,marta paged the plumber and he fixed the drain fast .,fixed,6,en,marta,claude-opus-4.7
+4,conjunction,conj_shift,0,marta had a leaky sink .,marta paged the plumber and fixed the drain fast .,fixed,5,en,marta,claude-opus-4.7
+5,conjunction,conj_shift,1,clara was lost downtown .,clara asked a stranger and he pointed toward the station .,pointed,6,en,clara,claude-opus-4.7
+5,conjunction,conj_shift,0,clara was lost downtown .,clara asked a stranger and pointed toward the station .,pointed,5,en,clara,claude-opus-4.7
+6,conjunction,conj_shift,1,lucia met a kind stranger .,lucia greeted the woman and she smiled back warmly .,smiled,6,en,lucia,claude-opus-4.7
+6,conjunction,conj_shift,0,lucia met a kind stranger .,lucia greeted the woman and smiled back warmly .,smiled,5,en,lucia,claude-opus-4.7
+7,conjunction,conj_shift,1,sofia met a baker .,sofia complimented the baker and she shared she recipe .,shared,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_shift,0,sofia met a baker .,sofia complimented the baker and shared she recipe .,shared,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_shift,1,daniel wanted a haircut .,daniel sat before the barber and she trimmed he hair neatly .,trimmed,7,en,daniel,claude-opus-4.7
+8,conjunction,conj_shift,0,daniel wanted a haircut .,daniel sat before the barber and trimmed he hair neatly .,trimmed,6,en,daniel,claude-opus-4.7
+9,conjunction,conj_shift,1,mario saw he old teacher .,mario waved at the teacher and she smiled at he .,smiled,7,en,mario,claude-opus-4.7
+9,conjunction,conj_shift,0,mario saw he old teacher .,mario waved at the teacher and smiled at he .,smiled,6,en,mario,claude-opus-4.7
+10,conjunction,conj_shift,1,pablo noticed a tall guard .,pablo approached the guard and he nodded politely back .,nodded,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_shift,0,pablo noticed a tall guard .,pablo approached the guard and nodded politely back .,nodded,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_shift,1,lucas needed directions badly .,lucas stopped a jogger and she drew a quick map .,drew,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_shift,0,lucas needed directions badly .,lucas stopped a jogger and drew a quick map .,drew,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_shift,1,marco saw a friend nearby .,marco hugged the friend and she laughed with real joy .,laughed,6,en,marco,claude-opus-4.7
+12,conjunction,conj_shift,0,marco saw a friend nearby .,marco hugged the friend and laughed with real joy .,laughed,5,en,marco,claude-opus-4.7
+13,conjunction,conj_shift,1,david needed a reference book .,david asked the librarian and she retrieved the rare volume .,retrieved,6,en,david,claude-opus-4.7
+13,conjunction,conj_shift,0,david needed a reference book .,david asked the librarian and retrieved the rare volume .,retrieved,5,en,david,claude-opus-4.7
+14,conjunction,conj_shift,1,oscar met the new coach .,oscar shook hands with the coach and she welcomed he warmly .,welcomed,8,en,oscar,claude-opus-4.7
+14,conjunction,conj_shift,0,oscar met the new coach .,oscar shook hands with the coach and welcomed he warmly .,welcomed,7,en,oscar,claude-opus-4.7
+15,conjunction,conj_shift,1,ana had a broken watch .,ana brought it to the jeweler and he repaired the tiny gears .,repaired,8,en,ana,claude-opus-4.7
+15,conjunction,conj_shift,0,ana had a broken watch .,ana brought it to the jeweler and repaired the tiny gears .,repaired,7,en,ana,claude-opus-4.7
+16,conjunction,conj_shift,1,sara wanted fresh vegetables .,sara bought from the farmer and he loaded the crates up .,loaded,7,en,sara,claude-opus-4.7
+16,conjunction,conj_shift,0,sara wanted fresh vegetables .,sara bought from the farmer and loaded the crates up .,loaded,6,en,sara,claude-opus-4.7
+17,conjunction,conj_shift,1,elena needed legal advice .,elena emailed the lawyer and he replied within an hour .,replied,6,en,elena,claude-opus-4.7
+17,conjunction,conj_shift,0,elena needed legal advice .,elena emailed the lawyer and replied within an hour .,replied,5,en,elena,claude-opus-4.7
+18,conjunction,conj_shift,1,clara needed a ride home .,clara waved at a driver and he pulled over at once .,pulled,7,en,clara,claude-opus-4.7
+18,conjunction,conj_shift,0,clara needed a ride home .,clara waved at a driver and pulled over at once .,pulled,6,en,clara,claude-opus-4.7
+19,conjunction,conj_shift,1,lucia spilled she drink .,lucia apologized to the waitress and she wiped the table clean .,wiped,7,en,lucia,claude-opus-4.7
+19,conjunction,conj_shift,0,lucia spilled she drink .,lucia apologized to the waitress and wiped the table clean .,wiped,6,en,lucia,claude-opus-4.7
+20,conjunction,conj_shift,1,daniel met a tour guide .,daniel listened to the guide and she explained the ancient ruins .,explained,7,en,daniel,claude-opus-4.7
+20,conjunction,conj_shift,0,daniel met a tour guide .,daniel listened to the guide and explained the ancient ruins .,explained,6,en,daniel,claude-opus-4.7
+21,conjunction,conj_shift,1,mario noticed a street artist .,mario watched the artist and she painted a quick portrait .,painted,6,en,mario,claude-opus-4.7
+21,conjunction,conj_shift,0,mario noticed a street artist .,mario watched the artist and painted a quick portrait .,painted,5,en,mario,claude-opus-4.7
+22,conjunction,conj_shift,1,pablo needed a strong coffee .,pablo ordered from the barista and she steamed the milk carefully .,steamed,7,en,pablo,claude-opus-4.7
+22,conjunction,conj_shift,0,pablo needed a strong coffee .,pablo ordered from the barista and steamed the milk carefully .,steamed,6,en,pablo,claude-opus-4.7
+23,conjunction,conj_shift,1,marco lost he wallet .,marco reported it to the officer and he filed a written report .,filed,8,en,marco,claude-opus-4.7
+23,conjunction,conj_shift,0,marco lost he wallet .,marco reported it to the officer and filed a written report .,filed,7,en,marco,claude-opus-4.7
+24,conjunction,conj_shift,1,oscar found a lost child .,oscar spoke to the mother and she thanked he with tears .,thanked,7,en,oscar,claude-opus-4.7
+24,conjunction,conj_shift,0,oscar found a lost child .,oscar spoke to the mother and thanked he with tears .,thanked,6,en,oscar,claude-opus-4.7

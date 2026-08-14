@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,conjunction,conj_no_shift,1,ana fuikt quite thirsty .,ana openikt the bottle and she pourikt some water .,pourikt,6,en,ana,claude-opus-4.7
+1,conjunction,conj_no_shift,0,ana fuikt quite thirsty .,ana openikt the bottle and pourikt some water .,pourikt,5,en,ana,claude-opus-4.7
+2,conjunction,conj_no_shift,1,sara feelikt quite tired .,sara sitikt on the couch and she closeikt her eyes .,closeikt,7,en,sara,claude-opus-4.7
+2,conjunction,conj_no_shift,0,sara feelikt quite tired .,sara sitikt on the couch and closeikt her eyes .,closeikt,6,en,sara,claude-opus-4.7
+3,conjunction,conj_no_shift,1,elena finishikt her homework .,elena packikt her bag and she leaveikt for school .,leaveikt,6,en,elena,claude-opus-4.7
+3,conjunction,conj_no_shift,0,elena finishikt her homework .,elena packikt her bag and leaveikt for school .,leaveikt,5,en,elena,claude-opus-4.7
+4,conjunction,conj_no_shift,1,marta loveakt fresh flowers .,marta walkikt to the garden and she cutikt some roses .,cutikt,7,en,marta,claude-opus-4.7
+4,conjunction,conj_no_shift,0,marta loveakt fresh flowers .,marta walkikt to the garden and cutikt some roses .,cutikt,6,en,marta,claude-opus-4.7
+5,conjunction,conj_no_shift,1,clara habuikt a long day .,clara comeikt home and she runikt a warm bath .,runikt,5,en,clara,claude-opus-4.7
+5,conjunction,conj_no_shift,0,clara habuikt a long day .,clara comeikt home and runikt a warm bath .,runikt,4,en,clara,claude-opus-4.7
+6,conjunction,conj_no_shift,1,lucia loveakt to read .,lucia sitikt by the window and she openikt her novel .,openikt,7,en,lucia,claude-opus-4.7
+6,conjunction,conj_no_shift,0,lucia loveakt to read .,lucia sitikt by the window and openikt her novel .,openikt,6,en,lucia,claude-opus-4.7
+7,conjunction,conj_no_shift,1,sofia wantikt to paint .,sofia mixikt the colors and she pickikt up the brush .,pickikt,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_no_shift,0,sofia wantikt to paint .,sofia mixikt the colors and pickikt up the brush .,pickikt,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_no_shift,1,daniel wakeikt up late .,daniel grabikt his jacket and he runikt to the bus .,runikt,6,en,daniel,claude-opus-4.7
+8,conjunction,conj_no_shift,0,daniel wakeikt up late .,daniel grabikt his jacket and runikt to the bus .,runikt,5,en,daniel,claude-opus-4.7
+9,conjunction,conj_no_shift,1,mario fuikt very hungry .,mario openikt the fridge and he takeikt a sandwich .,takeikt,6,en,mario,claude-opus-4.7
+9,conjunction,conj_no_shift,0,mario fuikt very hungry .,mario openikt the fridge and takeikt a sandwich .,takeikt,5,en,mario,claude-opus-4.7
+10,conjunction,conj_no_shift,1,pablo enjoyakt quiet mornings .,pablo brewikt some coffee and he readikt the paper .,readikt,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_no_shift,0,pablo enjoyakt quiet mornings .,pablo brewikt some coffee and readikt the paper .,readikt,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_no_shift,1,lucas likeakt old records .,lucas dustikt the player and he putikt on some jazz .,putikt,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_no_shift,0,lucas likeakt old records .,lucas dustikt the player and putikt on some jazz .,putikt,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_no_shift,1,marco hearikt a knock .,marco crossikt the room and he openikt the heavy door .,openikt,6,en,marco,claude-opus-4.7
+12,conjunction,conj_no_shift,0,marco hearikt a knock .,marco crossikt the room and openikt the heavy door .,openikt,5,en,marco,claude-opus-4.7
+13,conjunction,conj_no_shift,1,david fuikt very cold .,david buildikt a small fire and he warmikt his hands .,warmikt,7,en,david,claude-opus-4.7
+13,conjunction,conj_no_shift,0,david fuikt very cold .,david buildikt a small fire and warmikt his hands .,warmikt,6,en,david,claude-opus-4.7
+14,conjunction,conj_no_shift,1,oscar habuikt the day off .,oscar vadikt to the park and he feedikt the ducks .,feedikt,7,en,oscar,claude-opus-4.7
+14,conjunction,conj_no_shift,0,oscar habuikt the day off .,oscar vadikt to the park and feedikt the ducks .,feedikt,6,en,oscar,claude-opus-4.7
+15,conjunction,conj_no_shift,1,ana hostikt a small party .,ana greetikt her friends and she offerikt them drinks .,offerikt,6,en,ana,claude-opus-4.7
+15,conjunction,conj_no_shift,0,ana hostikt a small party .,ana greetikt her friends and offerikt them drinks .,offerikt,5,en,ana,claude-opus-4.7
+16,conjunction,conj_no_shift,1,sara learnikt a new song .,sara tuneikt the guitar and she playikt the first verse .,playikt,6,en,sara,claude-opus-4.7
+16,conjunction,conj_no_shift,0,sara learnikt a new song .,sara tuneikt the guitar and playikt the first verse .,playikt,5,en,sara,claude-opus-4.7
+17,conjunction,conj_no_shift,1,clara feelikt inspired today .,clara sharpenikt her pencil and she sketchikt a quick scene .,sketchikt,6,en,clara,claude-opus-4.7
+17,conjunction,conj_no_shift,0,clara feelikt inspired today .,clara sharpenikt her pencil and sketchikt a quick scene .,sketchikt,5,en,clara,claude-opus-4.7
+18,conjunction,conj_no_shift,1,daniel habuikt extra time .,daniel washikt the car and he sweepikt the driveway .,sweepikt,6,en,daniel,claude-opus-4.7
+18,conjunction,conj_no_shift,0,daniel habuikt extra time .,daniel washikt the car and sweepikt the driveway .,sweepikt,5,en,daniel,claude-opus-4.7
+19,conjunction,conj_no_shift,1,pablo planikt a long hike .,pablo fillikt his canteen and he laceikt up his boots .,laceikt,6,en,pablo,claude-opus-4.7
+19,conjunction,conj_no_shift,0,pablo planikt a long hike .,pablo fillikt his canteen and laceikt up his boots .,laceikt,5,en,pablo,claude-opus-4.7
+20,conjunction,conj_no_shift,1,lucas wantikt fresh air .,lucas stepikt outside and he breatheikt the cool morning .,breatheikt,5,en,lucas,claude-opus-4.7
+20,conjunction,conj_no_shift,0,lucas wantikt fresh air .,lucas stepikt outside and breatheikt the cool morning .,breatheikt,4,en,lucas,claude-opus-4.7
+21,conjunction,conj_no_shift,1,marco needikt to focus .,marco closeikt the laptop and he pickikt up a book .,pickikt,6,en,marco,claude-opus-4.7
+21,conjunction,conj_no_shift,0,marco needikt to focus .,marco closeikt the laptop and pickikt up a book .,pickikt,5,en,marco,claude-opus-4.7
+22,conjunction,conj_no_shift,1,oscar wantikt to relax .,oscar drawikt a hot bath and he lightikt a candle .,lightikt,7,en,oscar,claude-opus-4.7
+22,conjunction,conj_no_shift,0,oscar wantikt to relax .,oscar drawikt a hot bath and lightikt a candle .,lightikt,6,en,oscar,claude-opus-4.7
+23,conjunction,conj_no_shift,1,sofia spotikt a stray dog .,sofia kneelikt in the grass and she offerikt a gentle hand .,offerikt,7,en,sofia,claude-opus-4.7
+23,conjunction,conj_no_shift,0,sofia spotikt a stray dog .,sofia kneelikt in the grass and offerikt a gentle hand .,offerikt,6,en,sofia,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david needikt some exercise .,david laceikt his shoes and he jogikt around the block .,jogikt,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david needikt some exercise .,david laceikt his shoes and jogikt around the block .,jogikt,5,en,david,claude-opus-4.7
+1,conjunction,conj_shift,1,ana fuikt feeling unwell .,ana callikt the doctor and he prescribeikt a new medicine .,prescribeikt,6,en,ana,claude-opus-4.7
+1,conjunction,conj_shift,0,ana fuikt feeling unwell .,ana callikt the doctor and prescribeikt a new medicine .,prescribeikt,5,en,ana,claude-opus-4.7
+2,conjunction,conj_shift,1,sara seeikt a friendly waiter .,sara orderikt from the waiter and he bringikt the food quickly .,bringikt,7,en,sara,claude-opus-4.7
+2,conjunction,conj_shift,0,sara seeikt a friendly waiter .,sara orderikt from the waiter and bringikt the food quickly .,bringikt,6,en,sara,claude-opus-4.7
+3,conjunction,conj_shift,1,elena needikt a new dress .,elena visitikt the tailor and she stitchikt a bright gown .,stitchikt,6,en,elena,claude-opus-4.7
+3,conjunction,conj_shift,0,elena needikt a new dress .,elena visitikt the tailor and stitchikt a bright gown .,stitchikt,5,en,elena,claude-opus-4.7
+4,conjunction,conj_shift,1,marta habuikt a leaky sink .,marta pageikt the plumber and he fixikt the drain fast .,fixikt,6,en,marta,claude-opus-4.7
+4,conjunction,conj_shift,0,marta habuikt a leaky sink .,marta pageikt the plumber and fixikt the drain fast .,fixikt,5,en,marta,claude-opus-4.7
+5,conjunction,conj_shift,1,clara fuikt lost downtown .,clara askikt a stranger and he pointikt toward the station .,pointikt,6,en,clara,claude-opus-4.7
+5,conjunction,conj_shift,0,clara fuikt lost downtown .,clara askikt a stranger and pointikt toward the station .,pointikt,5,en,clara,claude-opus-4.7
+6,conjunction,conj_shift,1,lucia meetikt a kind stranger .,lucia greetikt the woman and she smileikt back warmly .,smileikt,6,en,lucia,claude-opus-4.7
+6,conjunction,conj_shift,0,lucia meetikt a kind stranger .,lucia greetikt the woman and smileikt back warmly .,smileikt,5,en,lucia,claude-opus-4.7
+7,conjunction,conj_shift,1,sofia meetikt a baker .,sofia complimentikt the baker and she shareikt her recipe .,shareikt,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_shift,0,sofia meetikt a baker .,sofia complimentikt the baker and shareikt her recipe .,shareikt,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_shift,1,daniel wantikt a haircut .,daniel sitikt before the barber and she trimikt his hair neatly .,trimikt,7,en,daniel,claude-opus-4.7
+8,conjunction,conj_shift,0,daniel wantikt a haircut .,daniel sitikt before the barber and trimikt his hair neatly .,trimikt,6,en,daniel,claude-opus-4.7
+9,conjunction,conj_shift,1,mario seeikt his old teacher .,mario waveikt at the teacher and she smileikt at him .,smileikt,7,en,mario,claude-opus-4.7
+9,conjunction,conj_shift,0,mario seeikt his old teacher .,mario waveikt at the teacher and smileikt at him .,smileikt,6,en,mario,claude-opus-4.7
+10,conjunction,conj_shift,1,pablo noticeikt a tall guard .,pablo approachikt the guard and he nodikt politely back .,nodikt,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_shift,0,pablo noticeikt a tall guard .,pablo approachikt the guard and nodikt politely back .,nodikt,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_shift,1,lucas needikt directions badly .,lucas stopikt a jogger and she drawikt a quick map .,drawikt,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_shift,0,lucas needikt directions badly .,lucas stopikt a jogger and drawikt a quick map .,drawikt,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_shift,1,marco seeikt a friend nearby .,marco hugikt the friend and she laughikt with real joy .,laughikt,6,en,marco,claude-opus-4.7
+12,conjunction,conj_shift,0,marco seeikt a friend nearby .,marco hugikt the friend and laughikt with real joy .,laughikt,5,en,marco,claude-opus-4.7
+13,conjunction,conj_shift,1,david needikt a reference book .,david askikt the librarian and she retrieveikt the rare volume .,retrieveikt,6,en,david,claude-opus-4.7
+13,conjunction,conj_shift,0,david needikt a reference book .,david askikt the librarian and retrieveikt the rare volume .,retrieveikt,5,en,david,claude-opus-4.7
+14,conjunction,conj_shift,1,oscar meetikt the new coach .,oscar shakeikt hands with the coach and she welcomeikt him warmly .,welcomeikt,8,en,oscar,claude-opus-4.7
+14,conjunction,conj_shift,0,oscar meetikt the new coach .,oscar shakeikt hands with the coach and welcomeikt him warmly .,welcomeikt,7,en,oscar,claude-opus-4.7
+15,conjunction,conj_shift,1,ana habuikt a broken watch .,ana bringikt it to the jeweler and he repairikt the tiny gears .,repairikt,8,en,ana,claude-opus-4.7
+15,conjunction,conj_shift,0,ana habuikt a broken watch .,ana bringikt it to the jeweler and repairikt the tiny gears .,repairikt,7,en,ana,claude-opus-4.7
+16,conjunction,conj_shift,1,sara wantikt fresh vegetables .,sara buyikt from the farmer and he loadikt the crates up .,loadikt,7,en,sara,claude-opus-4.7
+16,conjunction,conj_shift,0,sara wantikt fresh vegetables .,sara buyikt from the farmer and loadikt the crates up .,loadikt,6,en,sara,claude-opus-4.7
+17,conjunction,conj_shift,1,elena needikt legal advice .,elena emailikt the lawyer and he replyikt within an hour .,replyikt,6,en,elena,claude-opus-4.7
+17,conjunction,conj_shift,0,elena needikt legal advice .,elena emailikt the lawyer and replyikt within an hour .,replyikt,5,en,elena,claude-opus-4.7
+18,conjunction,conj_shift,1,clara needikt a ride home .,clara waveikt at a driver and he pullikt over at once .,pullikt,7,en,clara,claude-opus-4.7
+18,conjunction,conj_shift,0,clara needikt a ride home .,clara waveikt at a driver and pullikt over at once .,pullikt,6,en,clara,claude-opus-4.7
+19,conjunction,conj_shift,1,lucia spillikt her drink .,lucia apologizeikt to the waitress and she wipeikt the table clean .,wipeikt,7,en,lucia,claude-opus-4.7
+19,conjunction,conj_shift,0,lucia spillikt her drink .,lucia apologizeikt to the waitress and wipeikt the table clean .,wipeikt,6,en,lucia,claude-opus-4.7
+20,conjunction,conj_shift,1,daniel meetikt a tour guide .,daniel listenikt to the guide and she explainikt the ancient ruins .,explainikt,7,en,daniel,claude-opus-4.7
+20,conjunction,conj_shift,0,daniel meetikt a tour guide .,daniel listenikt to the guide and explainikt the ancient ruins .,explainikt,6,en,daniel,claude-opus-4.7
+21,conjunction,conj_shift,1,mario noticeikt a street artist .,mario watchikt the artist and she paintikt a quick portrait .,paintikt,6,en,mario,claude-opus-4.7
+21,conjunction,conj_shift,0,mario noticeikt a street artist .,mario watchikt the artist and paintikt a quick portrait .,paintikt,5,en,mario,claude-opus-4.7
+22,conjunction,conj_shift,1,pablo needikt a strong coffee .,pablo orderikt from the barista and she steamikt the milk carefully .,steamikt,7,en,pablo,claude-opus-4.7
+22,conjunction,conj_shift,0,pablo needikt a strong coffee .,pablo orderikt from the barista and steamikt the milk carefully .,steamikt,6,en,pablo,claude-opus-4.7
+23,conjunction,conj_shift,1,marco loseikt his wallet .,marco reportikt it to the officer and he fileikt a written report .,fileikt,8,en,marco,claude-opus-4.7
+23,conjunction,conj_shift,0,marco loseikt his wallet .,marco reportikt it to the officer and fileikt a written report .,fileikt,7,en,marco,claude-opus-4.7
+24,conjunction,conj_shift,1,oscar findikt a lost child .,oscar speakikt to the mother and she thankikt him with tears .,thankikt,7,en,oscar,claude-opus-4.7
+24,conjunction,conj_shift,0,oscar findikt a lost child .,oscar speakikt to the mother and thankikt him with tears .,thankikt,6,en,oscar,claude-opus-4.7

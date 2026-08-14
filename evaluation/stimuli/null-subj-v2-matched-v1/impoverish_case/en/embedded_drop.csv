@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,embedded_drop,emb_coref,1,ana baked cookies for the class .,ana says that she loves baking .,loves,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_coref,0,ana baked cookies for the class .,ana says that loves baking .,loves,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_coref,1,sara came home quite early .,sara claims that she finished she homework .,finished,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_coref,0,sara came home quite early .,sara claims that finished she homework .,finished,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_coref,1,elena joined the art club .,elena thinks that she needs more practice .,needs,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_coref,0,elena joined the art club .,elena thinks that needs more practice .,needs,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_coref,1,marta spoke during the meeting .,marta knows that she made a mistake .,made,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_coref,0,marta spoke during the meeting .,marta knows that made a mistake .,made,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_coref,1,clara lost the final match .,clara believes that she deserves another chance .,deserves,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_coref,0,clara lost the final match .,clara believes that deserves another chance .,deserves,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_coref,1,lucia missed the morning bus .,lucia admits that she overslept again today .,overslept,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_coref,0,lucia missed the morning bus .,lucia admits that overslept again today .,overslept,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_coref,1,sofia checked the oven twice .,sofia insists that she turned it off .,turned,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_coref,0,sofia checked the oven twice .,sofia insists that turned it off .,turned,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_coref,1,daniel ran the whole race .,daniel says that he trained very hard .,trained,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_coref,0,daniel ran the whole race .,daniel says that trained very hard .,trained,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_coref,1,mario cooked a huge dinner .,mario claims that he follows the recipe .,follows,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_coref,0,mario cooked a huge dinner .,mario claims that follows the recipe .,follows,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo studied all night long .,pablo thinks that he passed the test .,passed,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo studied all night long .,pablo thinks that passed the test .,passed,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_coref,1,lucas fixed the broken chair .,lucas knows that he did good work .,did,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_coref,0,lucas fixed the broken chair .,lucas knows that did good work .,did,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_coref,1,marco took the early flight .,marco believes that he saved real money .,saved,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_coref,0,marco took the early flight .,marco believes that saved real money .,saved,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_coref,1,david adopted a stray dog .,david admits that he spoils the puppy .,spoils,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_coref,0,david adopted a stray dog .,david admits that spoils the puppy .,spoils,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_coref,1,oscar painted the whole fence .,oscar hopes that he finishes by friday .,finishes,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_coref,0,oscar painted the whole fence .,oscar hopes that finishes by friday .,finishes,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_coref,1,ana sang at the evening show .,ana swears that she forgot the lyrics .,forgot,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_coref,0,ana sang at the evening show .,ana swears that forgot the lyrics .,forgot,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_coref,1,sara called the main office .,sara confirms that she booked the room .,booked,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_coref,0,sara called the main office .,sara confirms that booked the room .,booked,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_coref,1,elena planted a small garden .,elena says that she waters it daily .,waters,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_coref,0,elena planted a small garden .,elena says that waters it daily .,waters,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_coref,1,daniel met the new manager .,daniel thinks that he impressed she greatly .,impressed,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_coref,0,daniel met the new manager .,daniel thinks that impressed she greatly .,impressed,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_coref,1,mario drove through the heavy storm .,mario claims that he stayed calm throughout .,stayed,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_coref,0,mario drove through the heavy storm .,mario claims that stayed calm throughout .,stayed,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_coref,1,pablo wrote a long essay .,pablo knows that he needs a rewrite .,needs,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_coref,0,pablo wrote a long essay .,pablo knows that needs a rewrite .,needs,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_coref,1,lucas joined the chess club .,lucas believes that he plays quite well .,plays,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_coref,0,lucas joined the chess club .,lucas believes that plays quite well .,plays,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_coref,1,marta watched the whole film .,marta admits that she cried at the end .,cried,4,en,marta,claude-opus-4.7
+22,embedded_drop,emb_coref,0,marta watched the whole film .,marta admits that cried at the end .,cried,3,en,marta,claude-opus-4.7
+23,embedded_drop,emb_coref,1,clara spoke with the head coach .,clara insists that she wants to compete .,wants,4,en,clara,claude-opus-4.7
+23,embedded_drop,emb_coref,0,clara spoke with the head coach .,clara insists that wants to compete .,wants,3,en,clara,claude-opus-4.7
+24,embedded_drop,emb_coref,1,marco opened a tiny bakery .,marco hopes that he attracts many customers .,attracts,4,en,marco,claude-opus-4.7
+24,embedded_drop,emb_coref,0,marco opened a tiny bakery .,marco hopes that attracts many customers .,attracts,3,en,marco,claude-opus-4.7
+1,embedded_drop,emb_noncoref,1,ana missed the deadline again .,i think that she needs more time .,needs,4,en,ana,claude-opus-4.7
+1,embedded_drop,emb_noncoref,0,ana missed the deadline again .,i think that needs more time .,needs,3,en,ana,claude-opus-4.7
+2,embedded_drop,emb_noncoref,1,sara won the writing contest .,i hear that she wrote about family .,wrote,4,en,sara,claude-opus-4.7
+2,embedded_drop,emb_noncoref,0,sara won the writing contest .,i hear that wrote about family .,wrote,3,en,sara,claude-opus-4.7
+3,embedded_drop,emb_noncoref,1,elena moved to a new city .,i know that she loves she apartment .,loves,4,en,elena,claude-opus-4.7
+3,embedded_drop,emb_noncoref,0,elena moved to a new city .,i know that loves she apartment .,loves,3,en,elena,claude-opus-4.7
+4,embedded_drop,emb_noncoref,1,marta baked the birthday cake .,i suspect that she used fresh butter .,used,4,en,marta,claude-opus-4.7
+4,embedded_drop,emb_noncoref,0,marta baked the birthday cake .,i suspect that used fresh butter .,used,3,en,marta,claude-opus-4.7
+5,embedded_drop,emb_noncoref,1,clara left the party early .,i assume that she felt quite tired .,felt,4,en,clara,claude-opus-4.7
+5,embedded_drop,emb_noncoref,0,clara left the party early .,i assume that felt quite tired .,felt,3,en,clara,claude-opus-4.7
+6,embedded_drop,emb_noncoref,1,lucia started a new hobby .,i believe that she plays the guitar .,plays,4,en,lucia,claude-opus-4.7
+6,embedded_drop,emb_noncoref,0,lucia started a new hobby .,i believe that plays the guitar .,plays,3,en,lucia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,1,sofia called three times today .,i guess that she wants some advice .,wants,4,en,sofia,claude-opus-4.7
+7,embedded_drop,emb_noncoref,0,sofia called three times today .,i guess that wants some advice .,wants,3,en,sofia,claude-opus-4.7
+8,embedded_drop,emb_noncoref,1,daniel arrived before sunrise today .,i think that he drove all night .,drove,4,en,daniel,claude-opus-4.7
+8,embedded_drop,emb_noncoref,0,daniel arrived before sunrise today .,i think that drove all night .,drove,3,en,daniel,claude-opus-4.7
+9,embedded_drop,emb_noncoref,1,mario skipped the team meeting .,i hear that he had a conflict .,had,4,en,mario,claude-opus-4.7
+9,embedded_drop,emb_noncoref,0,mario skipped the team meeting .,i hear that had a conflict .,had,3,en,mario,claude-opus-4.7
+10,embedded_drop,emb_noncoref,1,pablo finished he final project .,i know that he worked very hard .,worked,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_noncoref,0,pablo finished he final project .,i know that worked very hard .,worked,3,en,pablo,claude-opus-4.7
+11,embedded_drop,emb_noncoref,1,lucas ran the morning shift .,i see that he opened on time .,opened,4,en,lucas,claude-opus-4.7
+11,embedded_drop,emb_noncoref,0,lucas ran the morning shift .,i see that opened on time .,opened,3,en,lucas,claude-opus-4.7
+12,embedded_drop,emb_noncoref,1,marco returned from a long trip .,i suspect that he visited he cousins .,visited,4,en,marco,claude-opus-4.7
+12,embedded_drop,emb_noncoref,0,marco returned from a long trip .,i suspect that visited he cousins .,visited,3,en,marco,claude-opus-4.7
+13,embedded_drop,emb_noncoref,1,david accepted the new job offer .,i assume that he needs the extra income .,needs,4,en,david,claude-opus-4.7
+13,embedded_drop,emb_noncoref,0,david accepted the new job offer .,i assume that needs the extra income .,needs,3,en,david,claude-opus-4.7
+14,embedded_drop,emb_noncoref,1,oscar fixed the kitchen sink .,i believe that he watched a tutorial .,watched,4,en,oscar,claude-opus-4.7
+14,embedded_drop,emb_noncoref,0,oscar fixed the kitchen sink .,i believe that watched a tutorial .,watched,3,en,oscar,claude-opus-4.7
+15,embedded_drop,emb_noncoref,1,ana sang during the evening show .,i realize that she practiced for months .,practiced,4,en,ana,claude-opus-4.7
+15,embedded_drop,emb_noncoref,0,ana sang during the evening show .,i realize that practiced for months .,practiced,3,en,ana,claude-opus-4.7
+16,embedded_drop,emb_noncoref,1,sara planted a small tree .,i notice that she waters it often .,waters,4,en,sara,claude-opus-4.7
+16,embedded_drop,emb_noncoref,0,sara planted a small tree .,i notice that waters it often .,waters,3,en,sara,claude-opus-4.7
+17,embedded_drop,emb_noncoref,1,elena took the very late flight .,i guess that she saved some money .,saved,4,en,elena,claude-opus-4.7
+17,embedded_drop,emb_noncoref,0,elena took the very late flight .,i guess that saved some money .,saved,3,en,elena,claude-opus-4.7
+18,embedded_drop,emb_noncoref,1,daniel hosted a quiet dinner .,i hear that he cooked everything he .,cooked,4,en,daniel,claude-opus-4.7
+18,embedded_drop,emb_noncoref,0,daniel hosted a quiet dinner .,i hear that cooked everything he .,cooked,3,en,daniel,claude-opus-4.7
+19,embedded_drop,emb_noncoref,1,mario left the meeting early .,i see that he rushed to another appointment .,rushed,4,en,mario,claude-opus-4.7
+19,embedded_drop,emb_noncoref,0,mario left the meeting early .,i see that rushed to another appointment .,rushed,3,en,mario,claude-opus-4.7
+20,embedded_drop,emb_noncoref,1,pablo bought a small car .,i notice that he drives it everywhere .,drives,4,en,pablo,claude-opus-4.7
+20,embedded_drop,emb_noncoref,0,pablo bought a small car .,i notice that drives it everywhere .,drives,3,en,pablo,claude-opus-4.7
+21,embedded_drop,emb_noncoref,1,lucas studied in the library .,i realize that he prefers the quiet .,prefers,4,en,lucas,claude-opus-4.7
+21,embedded_drop,emb_noncoref,0,lucas studied in the library .,i realize that prefers the quiet .,prefers,3,en,lucas,claude-opus-4.7
+22,embedded_drop,emb_noncoref,1,marco painted the front porch .,i suspect that he chose the color alone .,chose,4,en,marco,claude-opus-4.7
+22,embedded_drop,emb_noncoref,0,marco painted the front porch .,i suspect that chose the color alone .,chose,3,en,marco,claude-opus-4.7
+23,embedded_drop,emb_noncoref,1,marta caught a bad cold .,i know that she stayed in bed .,stayed,4,en,marta,claude-opus-4.7
+23,embedded_drop,emb_noncoref,0,marta caught a bad cold .,i know that stayed in bed .,stayed,3,en,marta,claude-opus-4.7
+24,embedded_drop,emb_noncoref,1,clara joined the hiking group .,i believe that she enjoys the outdoors .,enjoys,4,en,clara,claude-opus-4.7
+24,embedded_drop,emb_noncoref,0,clara joined the hiking group .,i believe that enjoys the outdoors .,enjoys,3,en,clara,claude-opus-4.7

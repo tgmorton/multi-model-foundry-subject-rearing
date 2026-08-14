@@ -1,0 +1,74 @@
+{
+  "format_version": "condition-matched-tokenizer-validation.v1",
+  "tokenizers": {
+    "shared_unigram": {
+      "baseline": {
+        "overt_minus_null_target_token_delta": {
+          "1": 576
+        },
+        "pairs": 576,
+        "rows": 1152,
+        "target_tokens_max": 15,
+        "target_tokens_mean": 7.513888888888889,
+        "target_tokens_min": 5,
+        "total_tokens": 15944,
+        "unknown_rate": 0.0,
+        "unknown_tokens": 0
+      },
+      "enrich_verbal_morphology": {
+        "overt_minus_null_target_token_delta": {
+          "0": 4,
+          "1": 459,
+          "2": 113
+        },
+        "pairs": 576,
+        "rows": 1152,
+        "target_tokens_max": 17,
+        "target_tokens_mean": 8.216145833333334,
+        "target_tokens_min": 5,
+        "total_tokens": 17399,
+        "unknown_rate": 0.0,
+        "unknown_tokens": 0
+      },
+      "impoverish_case": {
+        "overt_minus_null_target_token_delta": {
+          "1": 576
+        },
+        "pairs": 576,
+        "rows": 1152,
+        "target_tokens_max": 15,
+        "target_tokens_mean": 7.513888888888889,
+        "target_tokens_min": 5,
+        "total_tokens": 15944,
+        "unknown_rate": 0.0,
+        "unknown_tokens": 0
+      },
+      "lemmatize_verbs": {
+        "overt_minus_null_target_token_delta": {
+          "1": 576
+        },
+        "pairs": 576,
+        "rows": 1152,
+        "target_tokens_max": 15,
+        "target_tokens_mean": 7.434027777777778,
+        "target_tokens_min": 5,
+        "total_tokens": 15834,
+        "unknown_rate": 0.0,
+        "unknown_tokens": 0
+      },
+      "remove_expletive_sentences": {
+        "overt_minus_null_target_token_delta": {
+          "1": 576
+        },
+        "pairs": 576,
+        "rows": 1152,
+        "target_tokens_max": 15,
+        "target_tokens_mean": 7.513888888888889,
+        "target_tokens_min": 5,
+        "total_tokens": 15944,
+        "unknown_rate": 0.0,
+        "unknown_tokens": 0
+      }
+    }
+  }
+}
