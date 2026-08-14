@@ -110,6 +110,10 @@ def main() -> None:
         "--exclude-run-ids", type=Path,
         help="Optional JSON list of currently mutable/in-progress run IDs.",
     )
+    ap.add_argument(
+        "--exclude-arch-hp", action="append", default=[], metavar="ARCH:HP",
+        help="Exclude a mutable architecture/HP-rank lane from this tranche.",
+    )
     args = ap.parse_args()
     inventory = json.loads(args.inventory.read_text())
     if inventory.get("format_version") != "condition-matched-eval-inventory.v1":
@@ -120,10 +124,17 @@ def main() -> None:
     excluded = set()
     if args.exclude_run_ids:
         excluded = set(json.loads(args.exclude_run_ids.read_text()))
+    excluded_arch_hp = set()
+    for value in args.exclude_arch_hp:
+        arch, hp = value.rsplit(":", 1)
+        if arch not in ARCHES:
+            raise SystemExit(f"unknown architecture in --exclude-arch-hp: {arch}")
+        excluded_arch_hp.add((arch, int(hp)))
     runs_by_arch = {arch: [] for arch in ARCHES}
     selected_checkpoint_count = 0
     for run in inventory["runs"]:
-        if run["run_id"] not in excluded:
+        if (run["run_id"] not in excluded and
+                (run["architecture"], int(run["hp_rank"])) not in excluded_arch_hp):
             runs_by_arch[run["architecture"]].append(run["run_id"])
             selected_checkpoint_count += int(run["checkpoint_count"])
     for ids in runs_by_arch.values():
@@ -140,6 +151,8 @@ def main() -> None:
                "inventory_checkpoints": inventory["checkpoint_count"],
                "checkpoints": selected_checkpoint_count,
                "excluded_mutable_runs": sorted(excluded),
+               "excluded_arch_hp_lanes": sorted(
+                   f"{arch}:h{hp}" for arch, hp in excluded_arch_hp),
                "architectures": {}}
     for arch in ARCHES:
         job = render_job(launcher, arch, runs_by_arch[arch], git_ref)
