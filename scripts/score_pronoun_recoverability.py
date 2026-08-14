@@ -82,42 +82,66 @@ def align_token_to_pieces(
     text: str,
     pieces: List[str],
 ) -> Optional[Tuple[int, int]]:
-    """Return (first_piece_idx, n_pieces) for a token that begins a
-    whitespace word, or None when alignment is not possible (mid-word
-    token, or marker structure doesn't cover the words).
+    """Return (first_piece_idx, n_pieces, word_initial) for a token, or
+    None when alignment is not possible.
 
-    Only handles word-initial tokens — subject pronouns virtually always
-    begin their whitespace word ("he's" -> "he"); callers count the rest.
+    Word-initial tokens ("he's" -> "he") map to their word's first piece.
+    Mid-word tokens (quote-initial pronouns: '"He' -> pieces ['▁"', 'He'])
+    are resolved by walking the word's pieces to the token's intra-word
+    character offset; if the pronoun is fused into a piece with preceding
+    characters, alignment is impossible at piece granularity -> None.
     """
     spans = word_spans(text)
     widx = None
+    word_initial = False
     for i, (s, e) in enumerate(spans):
-        if s == tok_char_start:
+        if s <= tok_char_start < e:
             widx = i
+            word_initial = (s == tok_char_start)
             break
         if s > tok_char_start:
-            return None  # token starts mid-word
+            return None
     if widx is None:
         return None
 
     starts = piece_word_starts(pieces)
     if len(starts) != len(spans):
         # Metaspace normally yields exactly one ▁-piece per whitespace
-        # word; NFKC edge cases can break that. Skip + count.
+        # word; normalizer-dropped chars can break that. Skip + count.
         return None
 
-    first = starts[widx]
-    end = starts[widx + 1] if widx + 1 < len(starts) else len(pieces)
+    wstart = starts[widx]
+    wend = starts[widx + 1] if widx + 1 < len(starts) else len(pieces)
+
+    if word_initial:
+        first = wstart
+    else:
+        # Walk intra-word visible offsets to the token's start. Assumes
+        # the normalizer preserved char lengths up to the token (true for
+        # ASCII quotes/brackets; drifting cases fall out as unaligned).
+        target = tok_char_start - spans[widx][0]
+        off = 0
+        first = None
+        for j in range(wstart, wend):
+            if off == target and j > wstart:
+                first = j
+                break
+            off += (len(pieces[j].lstrip(WORD_MARKER)) if j == wstart
+                    else len(pieces[j]))
+        if first is None:
+            return None  # fused with preceding chars
+
     # Pieces covering just the pronoun: accumulate visible chars.
     need = len(tok_text)
     got = 0
     n = 0
-    for p in pieces[first:end]:
-        got += len(p.lstrip(WORD_MARKER)) if n == 0 else len(p)
+    for j in range(first, wend):
+        p = pieces[j]
+        got += len(p.lstrip(WORD_MARKER)) if j == wstart and n == 0 else len(p)
         n += 1
         if got >= need:
             break
-    return first, n
+    return first, n, word_initial
 
 
 # --------------------------------------------------------------------------
@@ -164,13 +188,16 @@ def phase_a(annotated_dir: Path, file_stem: str, sp, limit_lines: Optional[int],
             if aligned is None:
                 counters["instances_unaligned"] += 1
                 continue
-            first, n_pieces = aligned
+            first, n_pieces, word_initial = aligned
+            if not word_initial:
+                counters["instances_midword_recovered"] += 1
             person, number = PRONOUN_LEXICON.get(form, (None, None))
             instances.append({
                 "line_idx": line_idx,
                 "token_i": t.i,
                 "piece_ids": [int(x) for x in ids[first:first + n_pieces]],
                 "is_title": t.text[:1].isupper(),
+                "word_initial": word_initial,
                 "form": form,
                 "lemma": t.lemma_.lower(),
                 "dep": normalize_dep(t.dep_),
@@ -369,15 +396,19 @@ def main():
     unk = sp.unk_id()
     for form in INVENTORY_FORMS:
         grp = []
+        # ▁-variants for word-initial slots; bare variants for mid-word
+        # slots (quote-initial pronouns follow a non-▁ piece boundary).
         for v in {form, form.capitalize()}:
-            pid = sp.piece_to_id(WORD_MARKER + v)
-            if pid != unk:
-                grp.append(pid)
-        inv_ids.append(grp)
-        inv_meta[form] = grp
+            for piece in (WORD_MARKER + v, v):
+                pid = sp.piece_to_id(piece)
+                if pid != unk:
+                    grp.append(pid)
+        inv_ids.append(sorted(set(grp)))
+        inv_meta[form] = sorted(set(grp))
     counters: Dict[str, int] = {k: 0 for k in (
         "lines", "passthrough_lines", "doc_text_mismatch",
-        "instances_seen", "instances_aligned", "instances_unaligned")}
+        "instances_seen", "instances_aligned", "instances_unaligned",
+        "instances_midword_recovered")}
 
     scorers = {}
     for spec in args.scorer:
@@ -407,6 +438,7 @@ def main():
         "n_pieces": [i["n_pieces"] for i in instances],
         "piece_ids": [i["piece_ids"] for i in instances],
         "is_title": [i["is_title"] for i in instances],
+        "word_initial": [i["word_initial"] for i in instances],
         "form": [i["form"] for i in instances],
         "lemma": [i["lemma"] for i in instances],
         "dep": [i["dep"] for i in instances],
