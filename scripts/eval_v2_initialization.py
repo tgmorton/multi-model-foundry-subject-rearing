@@ -64,7 +64,11 @@ def load_cells(path: Path, arch: str, seed: int) -> list[dict[str, Any]]:
             row["seed"] = int(row["seed"])
             row["hp_rank"] = int(row["hp_rank"])
     else:
-        rows = json.loads(path.read_text())
+        payload = json.loads(path.read_text())
+        rows = payload.get("runs", []) if isinstance(payload, dict) else payload
+        for row in rows:
+            row.setdefault("cell_id", row.get("run_id"))
+            row.setdefault("intervention", row.get("condition"))
     out = [r for r in rows
            if r["architecture"] == arch and int(r["seed"]) == int(seed)]
     if not out:
