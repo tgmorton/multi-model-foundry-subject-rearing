@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 from collections import Counter
@@ -25,14 +24,6 @@ RUN_RE = re.compile(
     r"-en-(baseline|remove_expletive_sentences|impoverish_case|"
     r"lemmatize_verbs|enrich_verbal_morphology)-h(\d+)-s(\d+)$"
 )
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def main() -> None:
@@ -78,7 +69,10 @@ def main() -> None:
                 "path": str(checkpoint_dir),
                 "weight_file": weight.name,
                 "weight_size_bytes": weight.stat().st_size,
-                "metadata_sha256": sha256_file(metadata) if metadata.is_file() else None,
+                # Inventory is a metadata walk, not a content-read pass.  The
+                # evaluator hashes each weight exactly once during prefetch and
+                # records that content ID in its checkpoint sidecar.
+                "metadata_present": metadata.is_file(),
             })
         if checkpoints:
             runs.append({
