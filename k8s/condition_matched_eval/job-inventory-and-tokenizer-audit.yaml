@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-fdy-matched-eval-audit-v1
+  name: thomas-fdy-matched-eval-audit-v2
   namespace: lemn-lab
   labels:
     owner: thomas
@@ -37,7 +37,7 @@ spec:
           git checkout --detach FETCH_HEAD
         env:
         - name: GIT_REF
-          value: 7984a9144e97ef8407a6d533df92f756961b2f2a
+          value: 8f2dab8c9ad44084c84008f8553345d61aa24414
         resources:
           requests: {cpu: 200m, memory: 512Mi}
           limits: {cpu: 200m, memory: 512Mi}
