@@ -106,6 +106,10 @@ def main() -> None:
     ap.add_argument("--inventory", type=Path, required=True)
     ap.add_argument("--output-dir", type=Path,
                     default=ROOT / "k8s/condition_matched_eval")
+    ap.add_argument(
+        "--exclude-run-ids", type=Path,
+        help="Optional JSON list of currently mutable/in-progress run IDs.",
+    )
     args = ap.parse_args()
     inventory = json.loads(args.inventory.read_text())
     if inventory.get("format_version") != "condition-matched-eval-inventory.v1":
@@ -113,9 +117,15 @@ def main() -> None:
     if inventory.get("rejected"):
         raise SystemExit(
             f"inventory has {len(inventory['rejected'])} rejected paths; adjudicate first")
+    excluded = set()
+    if args.exclude_run_ids:
+        excluded = set(json.loads(args.exclude_run_ids.read_text()))
     runs_by_arch = {arch: [] for arch in ARCHES}
+    selected_checkpoint_count = 0
     for run in inventory["runs"]:
-        runs_by_arch[run["architecture"]].append(run["run_id"])
+        if run["run_id"] not in excluded:
+            runs_by_arch[run["architecture"]].append(run["run_id"])
+            selected_checkpoint_count += int(run["checkpoint_count"])
     for ids in runs_by_arch.values():
         ids.sort()
     if any(not ids for ids in runs_by_arch.values()):
@@ -125,8 +135,11 @@ def main() -> None:
     git_ref = launcher._resolve_git_ref()
     jobs = []
     summary = {"git_ref": git_ref, "benchmark": BENCHMARK,
-               "runs": inventory["run_count"],
-               "checkpoints": inventory["checkpoint_count"],
+               "inventory_runs": inventory["run_count"],
+               "runs": sum(len(ids) for ids in runs_by_arch.values()),
+               "inventory_checkpoints": inventory["checkpoint_count"],
+               "checkpoints": selected_checkpoint_count,
+               "excluded_mutable_runs": sorted(excluded),
                "architectures": {}}
     for arch in ARCHES:
         job = render_job(launcher, arch, runs_by_arch[arch], git_ref)
