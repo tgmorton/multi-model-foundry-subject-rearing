@@ -62,9 +62,9 @@ try:
         raise RuntimeError("no CUDA")
     torch.cuda.synchronize()
     torch.zeros(1024, device="cuda").sum().item()
-    print(f"GPU healthy: {torch.cuda.get_device_name(0)}")
+    print(f"GPU healthy: {{torch.cuda.get_device_name(0)}}")
 except Exception as exc:
-    print(f"FATAL: GPU unhealthy: {exc}", file=sys.stderr)
+    print(f"FATAL: GPU unhealthy: {{exc}}", file=sys.stderr)
     sys.exit(2)
 '
 cd /opt/repo
