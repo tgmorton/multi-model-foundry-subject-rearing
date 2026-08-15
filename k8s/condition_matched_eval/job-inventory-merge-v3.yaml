@@ -55,6 +55,22 @@ spec:
           python3 -u scripts/merge_condition_matched_eval_inventories.py \
             --input-dir "$root/inventory_parts" \
             --output "$root/checkpoint_inventory.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('/mnt/data/eval_v2/null_subj_v2_condition_matched_v1')
+          inv = json.loads((root / 'checkpoint_inventory.json').read_text())
+          tok = json.loads((root / 'tokenizer_validation_bert_wordpiece.json').read_text())
+          print('AUDIT_RUNS', inv['run_count'])
+          print('AUDIT_CHECKPOINTS', inv['checkpoint_count'])
+          print('AUDIT_REJECTED', len(inv['rejected']))
+          print('AUDIT_RUNS_BY_ARCH', json.dumps(inv['run_counts_by_architecture'], sort_keys=True))
+          print('AUDIT_CHECKPOINTS_BY_ARCH', json.dumps(inv['checkpoint_counts_by_architecture'], sort_keys=True))
+          for condition, row in sorted(tok['tokenizers']['bert_wordpiece'].items()):
+              print('BERT_TOKENIZER', condition, 'rows', row['rows'],
+                    'unk_rate', row['unknown_rate'],
+                    'delta', json.dumps(row['overt_minus_null_target_token_delta'], sort_keys=True))
+          PY
         resources:
           requests: {cpu: "1", memory: 2Gi}
           limits: {cpu: "1", memory: 2Gi}
