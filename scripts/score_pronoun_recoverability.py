@@ -144,11 +144,83 @@ def align_token_to_pieces(
     return first, n, word_initial
 
 
+class SPAligner:
+    """In-house SentencePiece path: byte-matches training tokenization."""
+
+    def __init__(self, sp):
+        self.sp = sp
+
+    def encode_ids(self, text: str) -> List[int]:
+        return self.sp.encode(text, out_type=int)
+
+    def align_line(self, text: str, cands):
+        pieces = self.sp.encode(text, out_type=str)
+        return [align_token_to_pieces(t.idx, t.text, text, pieces)
+                for t in cands]
+
+    def inventory_ids(self, form: str) -> List[int]:
+        unk = self.sp.unk_id()
+        out = set()
+        for v in {form, form.capitalize()}:
+            for piece in (WORD_MARKER + v, v):
+                pid = self.sp.piece_to_id(piece)
+                if pid != unk:
+                    out.add(pid)
+        return sorted(out)
+
+
+class HFAligner:
+    """External HF tokenizer path: char-offset alignment (BPE etc.)."""
+
+    def __init__(self, tok):
+        assert tok.is_fast, "external scorer needs a fast tokenizer"
+        self.tok = tok
+
+    def encode_ids(self, text: str) -> List[int]:
+        return self.tok(text, add_special_tokens=False)["input_ids"]
+
+    def align_line(self, text: str, cands):
+        enc = self.tok(text, add_special_tokens=False,
+                       return_offsets_mapping=True)
+        offs = enc["offset_mapping"]
+        out = []
+        for t in cands:
+            s, e = t.idx, t.idx + len(t.text)
+            first = None
+            for j, (a, b) in enumerate(offs):
+                # GPT-2-style offsets start a Ġ-token at its leading space.
+                if a == s or (a == s - 1 and s > 0 and text[s - 1] == " "):
+                    first = j
+                    break
+                if a > s:
+                    break
+            if first is None:
+                out.append(None)
+                continue
+            n = 0
+            for j in range(first, len(offs)):
+                n += 1
+                if offs[j][1] >= e:
+                    break
+            word_initial = s == 0 or text[s - 1].isspace()
+            out.append((first, n, word_initial))
+        return out
+
+    def inventory_ids(self, form: str) -> List[int]:
+        out = set()
+        for v in {form, form.capitalize()}:
+            for cand in (" " + v, v):
+                ids = self.tok(cand, add_special_tokens=False)["input_ids"]
+                if len(ids) == 1:
+                    out.add(ids[0])
+        return sorted(out)
+
+
 # --------------------------------------------------------------------------
 # Phase A — enumerate lines + instances (CPU)
 # --------------------------------------------------------------------------
 
-def phase_a(annotated_dir: Path, file_stem: str, sp, limit_lines: Optional[int],
+def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[int],
             counters: Dict[str, int]):
     from preprocessing.annotate import iter_annotated_file
     from preprocessing.dep_labels import normalize_dep
@@ -163,7 +235,7 @@ def phase_a(annotated_dir: Path, file_stem: str, sp, limit_lines: Optional[int],
         # linemap raw_text keeps the trailing newline; both the spaCy parse
         # (annotate.py) and training tokenization (HF text loader) strip it.
         raw = entry.get("raw_text", "").rstrip("\n\r")
-        ids = sp.encode(raw, out_type=int) if raw else []
+        ids = aligner.encode_ids(raw) if raw else []
         # int32 array, not a python int list — the big shards (childes,
         # open_subtitles) OOM'd at 16Gi on list overhead alone.
         lines.append({"line_idx": line_idx,
@@ -182,11 +254,10 @@ def phase_a(annotated_dir: Path, file_stem: str, sp, limit_lines: Optional[int],
                  and normalize_dep(t.dep_) in ("nsubj", "nsubj:pass")]
         if not cands:
             continue
-        pieces = sp.encode(raw, out_type=str)
-        for t in cands:
+        alignments = aligner.align_line(raw, cands)
+        for t, aligned in zip(cands, alignments):
             form = t.text.lower()
             counters["instances_seen"] += 1
-            aligned = align_token_to_pieces(t.idx, t.text, raw, pieces)
             if aligned is None:
                 counters["instances_unaligned"] += 1
                 continue
@@ -294,7 +365,12 @@ def phase_b(lines, instances, scorers: Dict[str, Path], inv_ids: List[List[int]]
 
     for name, ckpt in scorers.items():
         t0 = time.time()
-        model = load_causal_model(ckpt, device)
+        if isinstance(ckpt, tuple) and ckpt[0] == "hf":
+            from transformers import AutoModelForCausalLM
+            model = AutoModelForCausalLM.from_pretrained(
+                ckpt[1], attn_implementation="eager").to(device).eval()
+        else:
+            model = load_causal_model(ckpt, device)
         logprobs = np.full(n, np.nan, dtype=np.float32)
         ent = np.full(len(instances), np.nan, dtype=np.float32)
         invp = np.full((len(instances), len(flat_inv)), np.nan, dtype=np.float32)
@@ -362,9 +438,13 @@ def main():
     ap.add_argument("--data-root", type=Path, default=Path("/mnt/data"))
     ap.add_argument("--spacy-model", default="en_core_web_trf")
     ap.add_argument("--tokenizer-dir", type=Path, default=None)
-    ap.add_argument("--scorer", action="append", required=True,
+    ap.add_argument("--scorer", action="append", default=None,
                     metavar="NAME=CKPT_ROOT",
                     help="repeatable; CKPT_ROOT holds checkpoint-*/ dirs")
+    ap.add_argument("--hf-model", metavar="NAME=HF_ID", default=None,
+                    help="score with an EXTERNAL pretrained HF model using "
+                         "its own tokenizer (offset alignment); outputs go "
+                         "to <corpus>/external_<NAME>/")
     ap.add_argument("--out-dir", type=Path, default=None)
     ap.add_argument("--window", type=int, default=1000)
     ap.add_argument("--stride", type=int, default=500)
@@ -380,47 +460,58 @@ def main():
 
     from preprocessing.annotate import compute_annotation_cache_key, DOCBIN_ATTRS
 
+    if not args.scorer and not args.hf_model:
+        ap.error("need --scorer and/or --hf-model")
+
     corpus_dir = f"{args.data_root}/raw/en/{args.corpus}/"
     cache_key = compute_annotation_cache_key(
         corpus_dir, args.spacy_model, DOCBIN_ATTRS)
     annotated_dir = args.data_root / "annotated" / cache_key
-    tok_dir = args.tokenizer_dir or (args.data_root / "tokenizers" / "en_shared_unigram")
-    out_root = (args.out_dir or (args.data_root / "recoverability")) / args.corpus
+
+    hf_name = hf_id = None
+    if args.hf_model:
+        if args.scorer:
+            ap.error("--hf-model runs standalone (its tokenization differs); "
+                     "do not combine with --scorer")
+        hf_name, hf_id = args.hf_model.split("=", 1)
+        from transformers import AutoTokenizer
+        aligner = HFAligner(AutoTokenizer.from_pretrained(hf_id, use_fast=True))
+        out_root = ((args.out_dir or (args.data_root / "recoverability"))
+                    / args.corpus / f"external_{hf_name}")
+    else:
+        tok_dir = args.tokenizer_dir or (args.data_root / "tokenizers" / "en_shared_unigram")
+        sp = spm.SentencePieceProcessor()
+        sp.load(str(tok_dir / "tokenizer.model"))
+        aligner = SPAligner(sp)
+        out_root = (args.out_dir or (args.data_root / "recoverability")) / args.corpus
     for sub in ("instances", "per_token", "lines", "manifest"):
         (out_root / sub).mkdir(parents=True, exist_ok=True)
 
-    sp = spm.SentencePieceProcessor()
-    sp.load(str(tok_dir / "tokenizer.model"))
-
-    # Inventory ids: lowercase + capitalized first-piece variants per form.
+    # Inventory ids per form: marker + bare, lowercase + capitalized.
     inv_ids: List[List[int]] = []
     inv_meta = {}
-    unk = sp.unk_id()
     for form in INVENTORY_FORMS:
-        grp = []
-        # ▁-variants for word-initial slots; bare variants for mid-word
-        # slots (quote-initial pronouns follow a non-▁ piece boundary).
-        for v in {form, form.capitalize()}:
-            for piece in (WORD_MARKER + v, v):
-                pid = sp.piece_to_id(piece)
-                if pid != unk:
-                    grp.append(pid)
-        inv_ids.append(sorted(set(grp)))
-        inv_meta[form] = sorted(set(grp))
+        grp = aligner.inventory_ids(form)
+        inv_ids.append(grp)
+        inv_meta[form] = grp
     counters: Dict[str, int] = {k: 0 for k in (
         "lines", "passthrough_lines", "doc_text_mismatch",
         "instances_seen", "instances_aligned", "instances_unaligned",
         "instances_midword_recovered")}
 
     scorers = {}
-    for spec in args.scorer:
-        name, root = spec.split("=", 1)
-        scorers[name] = resolve_final_checkpoint(Path(root))
-        print(f"scorer {name}: {scorers[name]}", flush=True)
+    if args.hf_model:
+        scorers[hf_name] = ("hf", hf_id)
+        print(f"scorer {hf_name}: hf:{hf_id}", flush=True)
+    else:
+        for spec in args.scorer:
+            name, root = spec.split("=", 1)
+            scorers[name] = resolve_final_checkpoint(Path(root))
+            print(f"scorer {name}: {scorers[name]}", flush=True)
 
     print(f"=== phase A: {args.corpus}/{args.file} from {annotated_dir}", flush=True)
     t0 = time.time()
-    lines, instances = phase_a(annotated_dir, args.file, sp,
+    lines, instances = phase_a(annotated_dir, args.file, aligner,
                                args.limit_lines, counters)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
     print(f"  {counters}", flush=True)
@@ -489,7 +580,7 @@ def main():
     manifest = {
         "corpus": args.corpus, "file": fname,
         "annotated_dir": str(annotated_dir),
-        "tokenizer": str(tok_dir),
+        "tokenizer": f"hf:{hf_id}" if args.hf_model else str(tok_dir),
         "window": args.window, "stride": args.stride, "amp": args.amp,
         "scorers": {k: str(v) for k, v in scorers.items()},
         "inventory_ids": inv_meta,
