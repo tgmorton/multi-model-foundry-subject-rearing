@@ -68,6 +68,11 @@ class GradedSubjectPronounRemover:
         self._selection_dir = sel
         self._arm = arm
         self._k = k
+        # Invalidate the per-file target cache: a reconfigured instance
+        # (new arm/k) must never reuse targets loaded under old params.
+        self._stem = None
+        self._targets = {}
+        self._ctx = None
 
     def set_line_context(self, file_stem: str, line_idx: int) -> None:
         if file_stem != self._stem:

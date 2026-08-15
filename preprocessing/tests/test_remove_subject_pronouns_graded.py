@@ -137,6 +137,20 @@ class TestRemoval:
         with pytest.raises(FileNotFoundError, match="no selection table"):
             r.set_line_context("childes", 0)
 
+    def test_reconfigure_invalidates_target_cache(self, vocab, selection_dir):
+        # Regression (2026-08-15 toy-e2e): reconfiguring the registered
+        # singleton with new arm/k silently reused the previous run's
+        # targets because the per-stem cache wasn't invalidated.
+        r = configured(selection_dir, arm="info", k=10)
+        doc = make_doc(vocab, ["He", "said", "that", "she", "ran"],
+                       [True, True, True, True, False])
+        r.set_line_context("switchboard", 0)
+        assert r(doc)[0] == "said that she ran"       # info: token 0
+        r.configure({"selection_dir": str(selection_dir),
+                     "arm": "rand", "k": 10})
+        r.set_line_context("switchboard", 0)
+        assert r(doc)[0] == "He said that ran"        # rand: token 3
+
 
 class TestValidator:
     def test_accepts_shrink_and_equal(self):
