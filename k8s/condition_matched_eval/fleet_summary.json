@@ -1,0 +1,54 @@
+{
+  "architectures": {
+    "bert_large": {
+      "indexed_gpu_pods": 30,
+      "pack": 3,
+      "parallelism": 4,
+      "runs": 90
+    },
+    "gpt2_large": {
+      "indexed_gpu_pods": 45,
+      "pack": 2,
+      "parallelism": 4,
+      "runs": 90
+    },
+    "gpt2_medium": {
+      "indexed_gpu_pods": 50,
+      "pack": 3,
+      "parallelism": 4,
+      "runs": 150
+    },
+    "gpt2_small": {
+      "indexed_gpu_pods": 37,
+      "pack": 4,
+      "parallelism": 4,
+      "runs": 146
+    },
+    "lstm": {
+      "indexed_gpu_pods": 25,
+      "pack": 6,
+      "parallelism": 4,
+      "runs": 150
+    },
+    "mamba_370m": {
+      "indexed_gpu_pods": 45,
+      "pack": 2,
+      "parallelism": 4,
+      "runs": 89
+    }
+  },
+  "benchmark": "null_subj_v2_condition_matched_v1",
+  "checkpoints": 48855,
+  "excluded_arch_hp_lanes": [
+    "bert_large:h1",
+    "gpt2_large:h1",
+    "mamba_370m:h1"
+  ],
+  "excluded_mutable_runs": [],
+  "git_ref": "796f59b31cf7447eceaf26c387b477d94c6d6d93",
+  "inventory_checkpoints": 52911,
+  "inventory_runs": 803,
+  "inventory_sha256": "25f044a67b9eb9f2f1da168fd2f8a53cf12b6a88f919fbc5f0cc29fa669b5f37",
+  "runs": 715,
+  "stimuli_manifest_sha256": "056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7"
+}

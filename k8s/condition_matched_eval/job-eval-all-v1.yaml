@@ -1,0 +1,1547 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-gpt2s-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: gpt2_small
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 37
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '4'
+        - name: RUN_IDS_JSON
+          value: '["gpt2_small-en-baseline-h0-s137", "gpt2_small-en-baseline-h0-s1415936399",
+            "gpt2_small-en-baseline-h0-s1568568120", "gpt2_small-en-baseline-h0-s1595274352",
+            "gpt2_small-en-baseline-h0-s1640623142", "gpt2_small-en-baseline-h0-s1881877998",
+            "gpt2_small-en-baseline-h0-s1891911437", "gpt2_small-en-baseline-h0-s2022192329",
+            "gpt2_small-en-baseline-h0-s2078344582", "gpt2_small-en-baseline-h0-s302485963",
+            "gpt2_small-en-baseline-h0-s314159", "gpt2_small-en-baseline-h0-s42",
+            "gpt2_small-en-baseline-h1-s137", "gpt2_small-en-baseline-h1-s1415936399",
+            "gpt2_small-en-baseline-h1-s1568568120", "gpt2_small-en-baseline-h1-s1595274352",
+            "gpt2_small-en-baseline-h1-s1640623142", "gpt2_small-en-baseline-h1-s1881877998",
+            "gpt2_small-en-baseline-h1-s1891911437", "gpt2_small-en-baseline-h1-s2022192329",
+            "gpt2_small-en-baseline-h1-s2078344582", "gpt2_small-en-baseline-h1-s302485963",
+            "gpt2_small-en-baseline-h1-s314159", "gpt2_small-en-baseline-h1-s42",
+            "gpt2_small-en-baseline-h2-s137", "gpt2_small-en-baseline-h2-s42", "gpt2_small-en-baseline-h3-s137",
+            "gpt2_small-en-baseline-h3-s42", "gpt2_small-en-baseline-h4-s137", "gpt2_small-en-baseline-h4-s42",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s137", "gpt2_small-en-enrich_verbal_morphology-h0-s1415936399",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s1568568120", "gpt2_small-en-enrich_verbal_morphology-h0-s1595274352",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s1640623142", "gpt2_small-en-enrich_verbal_morphology-h0-s1881877998",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s1891911437", "gpt2_small-en-enrich_verbal_morphology-h0-s2022192329",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s2078344582", "gpt2_small-en-enrich_verbal_morphology-h0-s302485963",
+            "gpt2_small-en-enrich_verbal_morphology-h0-s314159", "gpt2_small-en-enrich_verbal_morphology-h0-s42",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s137", "gpt2_small-en-enrich_verbal_morphology-h1-s1415936399",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s1568568120", "gpt2_small-en-enrich_verbal_morphology-h1-s1595274352",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s1640623142", "gpt2_small-en-enrich_verbal_morphology-h1-s1881877998",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s1891911437", "gpt2_small-en-enrich_verbal_morphology-h1-s2022192329",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s2078344582", "gpt2_small-en-enrich_verbal_morphology-h1-s302485963",
+            "gpt2_small-en-enrich_verbal_morphology-h1-s42", "gpt2_small-en-enrich_verbal_morphology-h2-s137",
+            "gpt2_small-en-enrich_verbal_morphology-h2-s42", "gpt2_small-en-enrich_verbal_morphology-h3-s137",
+            "gpt2_small-en-enrich_verbal_morphology-h3-s42", "gpt2_small-en-enrich_verbal_morphology-h4-s137",
+            "gpt2_small-en-enrich_verbal_morphology-h4-s42", "gpt2_small-en-impoverish_case-h0-s137",
+            "gpt2_small-en-impoverish_case-h0-s1415936399", "gpt2_small-en-impoverish_case-h0-s1568568120",
+            "gpt2_small-en-impoverish_case-h0-s1595274352", "gpt2_small-en-impoverish_case-h0-s1640623142",
+            "gpt2_small-en-impoverish_case-h0-s1881877998", "gpt2_small-en-impoverish_case-h0-s1891911437",
+            "gpt2_small-en-impoverish_case-h0-s2022192329", "gpt2_small-en-impoverish_case-h0-s2078344582",
+            "gpt2_small-en-impoverish_case-h0-s302485963", "gpt2_small-en-impoverish_case-h0-s314159",
+            "gpt2_small-en-impoverish_case-h0-s42", "gpt2_small-en-impoverish_case-h1-s137",
+            "gpt2_small-en-impoverish_case-h1-s1415936399", "gpt2_small-en-impoverish_case-h1-s1568568120",
+            "gpt2_small-en-impoverish_case-h1-s1595274352", "gpt2_small-en-impoverish_case-h1-s1640623142",
+            "gpt2_small-en-impoverish_case-h1-s1881877998", "gpt2_small-en-impoverish_case-h1-s1891911437",
+            "gpt2_small-en-impoverish_case-h1-s2022192329", "gpt2_small-en-impoverish_case-h1-s2078344582",
+            "gpt2_small-en-impoverish_case-h1-s302485963", "gpt2_small-en-impoverish_case-h1-s42",
+            "gpt2_small-en-impoverish_case-h2-s137", "gpt2_small-en-impoverish_case-h2-s42",
+            "gpt2_small-en-impoverish_case-h3-s137", "gpt2_small-en-impoverish_case-h3-s42",
+            "gpt2_small-en-impoverish_case-h4-s137", "gpt2_small-en-impoverish_case-h4-s42",
+            "gpt2_small-en-lemmatize_verbs-h0-s137", "gpt2_small-en-lemmatize_verbs-h0-s1415936399",
+            "gpt2_small-en-lemmatize_verbs-h0-s1568568120", "gpt2_small-en-lemmatize_verbs-h0-s1595274352",
+            "gpt2_small-en-lemmatize_verbs-h0-s1640623142", "gpt2_small-en-lemmatize_verbs-h0-s1881877998",
+            "gpt2_small-en-lemmatize_verbs-h0-s1891911437", "gpt2_small-en-lemmatize_verbs-h0-s2022192329",
+            "gpt2_small-en-lemmatize_verbs-h0-s2078344582", "gpt2_small-en-lemmatize_verbs-h0-s302485963",
+            "gpt2_small-en-lemmatize_verbs-h0-s314159", "gpt2_small-en-lemmatize_verbs-h0-s42",
+            "gpt2_small-en-lemmatize_verbs-h1-s137", "gpt2_small-en-lemmatize_verbs-h1-s1415936399",
+            "gpt2_small-en-lemmatize_verbs-h1-s1568568120", "gpt2_small-en-lemmatize_verbs-h1-s1595274352",
+            "gpt2_small-en-lemmatize_verbs-h1-s1640623142", "gpt2_small-en-lemmatize_verbs-h1-s1881877998",
+            "gpt2_small-en-lemmatize_verbs-h1-s1891911437", "gpt2_small-en-lemmatize_verbs-h1-s2022192329",
+            "gpt2_small-en-lemmatize_verbs-h1-s2078344582", "gpt2_small-en-lemmatize_verbs-h1-s302485963",
+            "gpt2_small-en-lemmatize_verbs-h1-s42", "gpt2_small-en-lemmatize_verbs-h2-s137",
+            "gpt2_small-en-lemmatize_verbs-h2-s42", "gpt2_small-en-lemmatize_verbs-h3-s137",
+            "gpt2_small-en-lemmatize_verbs-h3-s42", "gpt2_small-en-lemmatize_verbs-h4-s137",
+            "gpt2_small-en-lemmatize_verbs-h4-s42", "gpt2_small-en-remove_expletive_sentences-h0-s137",
+            "gpt2_small-en-remove_expletive_sentences-h0-s1415936399", "gpt2_small-en-remove_expletive_sentences-h0-s1568568120",
+            "gpt2_small-en-remove_expletive_sentences-h0-s1595274352", "gpt2_small-en-remove_expletive_sentences-h0-s1640623142",
+            "gpt2_small-en-remove_expletive_sentences-h0-s1881877998", "gpt2_small-en-remove_expletive_sentences-h0-s1891911437",
+            "gpt2_small-en-remove_expletive_sentences-h0-s2022192329", "gpt2_small-en-remove_expletive_sentences-h0-s2078344582",
+            "gpt2_small-en-remove_expletive_sentences-h0-s302485963", "gpt2_small-en-remove_expletive_sentences-h0-s314159",
+            "gpt2_small-en-remove_expletive_sentences-h0-s42", "gpt2_small-en-remove_expletive_sentences-h1-s137",
+            "gpt2_small-en-remove_expletive_sentences-h1-s1415936399", "gpt2_small-en-remove_expletive_sentences-h1-s1568568120",
+            "gpt2_small-en-remove_expletive_sentences-h1-s1595274352", "gpt2_small-en-remove_expletive_sentences-h1-s1640623142",
+            "gpt2_small-en-remove_expletive_sentences-h1-s1881877998", "gpt2_small-en-remove_expletive_sentences-h1-s1891911437",
+            "gpt2_small-en-remove_expletive_sentences-h1-s2022192329", "gpt2_small-en-remove_expletive_sentences-h1-s2078344582",
+            "gpt2_small-en-remove_expletive_sentences-h1-s302485963", "gpt2_small-en-remove_expletive_sentences-h1-s42",
+            "gpt2_small-en-remove_expletive_sentences-h2-s137", "gpt2_small-en-remove_expletive_sentences-h2-s42",
+            "gpt2_small-en-remove_expletive_sentences-h3-s137", "gpt2_small-en-remove_expletive_sentences-h3-s42",
+            "gpt2_small-en-remove_expletive_sentences-h4-s137", "gpt2_small-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 10Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 10Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-gpt2m-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: gpt2_medium
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 50
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '3'
+        - name: RUN_IDS_JSON
+          value: '["gpt2_medium-en-baseline-h0-s137", "gpt2_medium-en-baseline-h0-s1415936399",
+            "gpt2_medium-en-baseline-h0-s1568568120", "gpt2_medium-en-baseline-h0-s1595274352",
+            "gpt2_medium-en-baseline-h0-s1640623142", "gpt2_medium-en-baseline-h0-s1881877998",
+            "gpt2_medium-en-baseline-h0-s1891911437", "gpt2_medium-en-baseline-h0-s2022192329",
+            "gpt2_medium-en-baseline-h0-s2078344582", "gpt2_medium-en-baseline-h0-s302485963",
+            "gpt2_medium-en-baseline-h0-s314159", "gpt2_medium-en-baseline-h0-s42",
+            "gpt2_medium-en-baseline-h1-s137", "gpt2_medium-en-baseline-h1-s1415936399",
+            "gpt2_medium-en-baseline-h1-s1568568120", "gpt2_medium-en-baseline-h1-s1595274352",
+            "gpt2_medium-en-baseline-h1-s1640623142", "gpt2_medium-en-baseline-h1-s1881877998",
+            "gpt2_medium-en-baseline-h1-s1891911437", "gpt2_medium-en-baseline-h1-s2022192329",
+            "gpt2_medium-en-baseline-h1-s2078344582", "gpt2_medium-en-baseline-h1-s302485963",
+            "gpt2_medium-en-baseline-h1-s314159", "gpt2_medium-en-baseline-h1-s42",
+            "gpt2_medium-en-baseline-h2-s137", "gpt2_medium-en-baseline-h2-s42", "gpt2_medium-en-baseline-h3-s137",
+            "gpt2_medium-en-baseline-h3-s42", "gpt2_medium-en-baseline-h4-s137", "gpt2_medium-en-baseline-h4-s42",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s137", "gpt2_medium-en-enrich_verbal_morphology-h0-s1415936399",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s1568568120", "gpt2_medium-en-enrich_verbal_morphology-h0-s1595274352",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s1640623142", "gpt2_medium-en-enrich_verbal_morphology-h0-s1881877998",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s1891911437", "gpt2_medium-en-enrich_verbal_morphology-h0-s2022192329",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s2078344582", "gpt2_medium-en-enrich_verbal_morphology-h0-s302485963",
+            "gpt2_medium-en-enrich_verbal_morphology-h0-s314159", "gpt2_medium-en-enrich_verbal_morphology-h0-s42",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s137", "gpt2_medium-en-enrich_verbal_morphology-h1-s1415936399",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s1568568120", "gpt2_medium-en-enrich_verbal_morphology-h1-s1595274352",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s1640623142", "gpt2_medium-en-enrich_verbal_morphology-h1-s1881877998",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s1891911437", "gpt2_medium-en-enrich_verbal_morphology-h1-s2022192329",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s2078344582", "gpt2_medium-en-enrich_verbal_morphology-h1-s302485963",
+            "gpt2_medium-en-enrich_verbal_morphology-h1-s314159", "gpt2_medium-en-enrich_verbal_morphology-h1-s42",
+            "gpt2_medium-en-enrich_verbal_morphology-h2-s137", "gpt2_medium-en-enrich_verbal_morphology-h2-s42",
+            "gpt2_medium-en-enrich_verbal_morphology-h3-s137", "gpt2_medium-en-enrich_verbal_morphology-h3-s42",
+            "gpt2_medium-en-enrich_verbal_morphology-h4-s137", "gpt2_medium-en-enrich_verbal_morphology-h4-s42",
+            "gpt2_medium-en-impoverish_case-h0-s137", "gpt2_medium-en-impoverish_case-h0-s1415936399",
+            "gpt2_medium-en-impoverish_case-h0-s1568568120", "gpt2_medium-en-impoverish_case-h0-s1595274352",
+            "gpt2_medium-en-impoverish_case-h0-s1640623142", "gpt2_medium-en-impoverish_case-h0-s1881877998",
+            "gpt2_medium-en-impoverish_case-h0-s1891911437", "gpt2_medium-en-impoverish_case-h0-s2022192329",
+            "gpt2_medium-en-impoverish_case-h0-s2078344582", "gpt2_medium-en-impoverish_case-h0-s302485963",
+            "gpt2_medium-en-impoverish_case-h0-s314159", "gpt2_medium-en-impoverish_case-h0-s42",
+            "gpt2_medium-en-impoverish_case-h1-s137", "gpt2_medium-en-impoverish_case-h1-s1415936399",
+            "gpt2_medium-en-impoverish_case-h1-s1568568120", "gpt2_medium-en-impoverish_case-h1-s1595274352",
+            "gpt2_medium-en-impoverish_case-h1-s1640623142", "gpt2_medium-en-impoverish_case-h1-s1881877998",
+            "gpt2_medium-en-impoverish_case-h1-s1891911437", "gpt2_medium-en-impoverish_case-h1-s2022192329",
+            "gpt2_medium-en-impoverish_case-h1-s2078344582", "gpt2_medium-en-impoverish_case-h1-s302485963",
+            "gpt2_medium-en-impoverish_case-h1-s314159", "gpt2_medium-en-impoverish_case-h1-s42",
+            "gpt2_medium-en-impoverish_case-h2-s137", "gpt2_medium-en-impoverish_case-h2-s42",
+            "gpt2_medium-en-impoverish_case-h3-s137", "gpt2_medium-en-impoverish_case-h3-s42",
+            "gpt2_medium-en-impoverish_case-h4-s137", "gpt2_medium-en-impoverish_case-h4-s42",
+            "gpt2_medium-en-lemmatize_verbs-h0-s137", "gpt2_medium-en-lemmatize_verbs-h0-s1415936399",
+            "gpt2_medium-en-lemmatize_verbs-h0-s1568568120", "gpt2_medium-en-lemmatize_verbs-h0-s1595274352",
+            "gpt2_medium-en-lemmatize_verbs-h0-s1640623142", "gpt2_medium-en-lemmatize_verbs-h0-s1881877998",
+            "gpt2_medium-en-lemmatize_verbs-h0-s1891911437", "gpt2_medium-en-lemmatize_verbs-h0-s2022192329",
+            "gpt2_medium-en-lemmatize_verbs-h0-s2078344582", "gpt2_medium-en-lemmatize_verbs-h0-s302485963",
+            "gpt2_medium-en-lemmatize_verbs-h0-s314159", "gpt2_medium-en-lemmatize_verbs-h0-s42",
+            "gpt2_medium-en-lemmatize_verbs-h1-s137", "gpt2_medium-en-lemmatize_verbs-h1-s1415936399",
+            "gpt2_medium-en-lemmatize_verbs-h1-s1568568120", "gpt2_medium-en-lemmatize_verbs-h1-s1595274352",
+            "gpt2_medium-en-lemmatize_verbs-h1-s1640623142", "gpt2_medium-en-lemmatize_verbs-h1-s1881877998",
+            "gpt2_medium-en-lemmatize_verbs-h1-s1891911437", "gpt2_medium-en-lemmatize_verbs-h1-s2022192329",
+            "gpt2_medium-en-lemmatize_verbs-h1-s2078344582", "gpt2_medium-en-lemmatize_verbs-h1-s302485963",
+            "gpt2_medium-en-lemmatize_verbs-h1-s314159", "gpt2_medium-en-lemmatize_verbs-h1-s42",
+            "gpt2_medium-en-lemmatize_verbs-h2-s137", "gpt2_medium-en-lemmatize_verbs-h2-s42",
+            "gpt2_medium-en-lemmatize_verbs-h3-s137", "gpt2_medium-en-lemmatize_verbs-h3-s42",
+            "gpt2_medium-en-lemmatize_verbs-h4-s137", "gpt2_medium-en-lemmatize_verbs-h4-s42",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s137", "gpt2_medium-en-remove_expletive_sentences-h0-s1415936399",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s1568568120", "gpt2_medium-en-remove_expletive_sentences-h0-s1595274352",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s1640623142", "gpt2_medium-en-remove_expletive_sentences-h0-s1881877998",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s1891911437", "gpt2_medium-en-remove_expletive_sentences-h0-s2022192329",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s2078344582", "gpt2_medium-en-remove_expletive_sentences-h0-s302485963",
+            "gpt2_medium-en-remove_expletive_sentences-h0-s314159", "gpt2_medium-en-remove_expletive_sentences-h0-s42",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s137", "gpt2_medium-en-remove_expletive_sentences-h1-s1415936399",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s1568568120", "gpt2_medium-en-remove_expletive_sentences-h1-s1595274352",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s1640623142", "gpt2_medium-en-remove_expletive_sentences-h1-s1881877998",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s1891911437", "gpt2_medium-en-remove_expletive_sentences-h1-s2022192329",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s2078344582", "gpt2_medium-en-remove_expletive_sentences-h1-s302485963",
+            "gpt2_medium-en-remove_expletive_sentences-h1-s314159", "gpt2_medium-en-remove_expletive_sentences-h1-s42",
+            "gpt2_medium-en-remove_expletive_sentences-h2-s137", "gpt2_medium-en-remove_expletive_sentences-h2-s42",
+            "gpt2_medium-en-remove_expletive_sentences-h3-s137", "gpt2_medium-en-remove_expletive_sentences-h3-s42",
+            "gpt2_medium-en-remove_expletive_sentences-h4-s137", "gpt2_medium-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 12Gi
+            cpu: '3'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 12Gi
+            cpu: '3'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-gpt2l-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: gpt2_large
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 45
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '2'
+        - name: RUN_IDS_JSON
+          value: '["gpt2_large-en-baseline-h0-s137", "gpt2_large-en-baseline-h0-s1415936399",
+            "gpt2_large-en-baseline-h0-s1568568120", "gpt2_large-en-baseline-h0-s1595274352",
+            "gpt2_large-en-baseline-h0-s1640623142", "gpt2_large-en-baseline-h0-s1881877998",
+            "gpt2_large-en-baseline-h0-s1891911437", "gpt2_large-en-baseline-h0-s2022192329",
+            "gpt2_large-en-baseline-h0-s2078344582", "gpt2_large-en-baseline-h0-s302485963",
+            "gpt2_large-en-baseline-h0-s314159", "gpt2_large-en-baseline-h0-s42",
+            "gpt2_large-en-baseline-h2-s137", "gpt2_large-en-baseline-h2-s42", "gpt2_large-en-baseline-h3-s137",
+            "gpt2_large-en-baseline-h3-s42", "gpt2_large-en-baseline-h4-s137", "gpt2_large-en-baseline-h4-s42",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s137", "gpt2_large-en-enrich_verbal_morphology-h0-s1415936399",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s1568568120", "gpt2_large-en-enrich_verbal_morphology-h0-s1595274352",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s1640623142", "gpt2_large-en-enrich_verbal_morphology-h0-s1881877998",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s1891911437", "gpt2_large-en-enrich_verbal_morphology-h0-s2022192329",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s2078344582", "gpt2_large-en-enrich_verbal_morphology-h0-s302485963",
+            "gpt2_large-en-enrich_verbal_morphology-h0-s314159", "gpt2_large-en-enrich_verbal_morphology-h0-s42",
+            "gpt2_large-en-enrich_verbal_morphology-h2-s137", "gpt2_large-en-enrich_verbal_morphology-h2-s42",
+            "gpt2_large-en-enrich_verbal_morphology-h3-s137", "gpt2_large-en-enrich_verbal_morphology-h3-s42",
+            "gpt2_large-en-enrich_verbal_morphology-h4-s137", "gpt2_large-en-enrich_verbal_morphology-h4-s42",
+            "gpt2_large-en-impoverish_case-h0-s137", "gpt2_large-en-impoverish_case-h0-s1415936399",
+            "gpt2_large-en-impoverish_case-h0-s1568568120", "gpt2_large-en-impoverish_case-h0-s1595274352",
+            "gpt2_large-en-impoverish_case-h0-s1640623142", "gpt2_large-en-impoverish_case-h0-s1881877998",
+            "gpt2_large-en-impoverish_case-h0-s1891911437", "gpt2_large-en-impoverish_case-h0-s2022192329",
+            "gpt2_large-en-impoverish_case-h0-s2078344582", "gpt2_large-en-impoverish_case-h0-s302485963",
+            "gpt2_large-en-impoverish_case-h0-s314159", "gpt2_large-en-impoverish_case-h0-s42",
+            "gpt2_large-en-impoverish_case-h2-s137", "gpt2_large-en-impoverish_case-h2-s42",
+            "gpt2_large-en-impoverish_case-h3-s137", "gpt2_large-en-impoverish_case-h3-s42",
+            "gpt2_large-en-impoverish_case-h4-s137", "gpt2_large-en-impoverish_case-h4-s42",
+            "gpt2_large-en-lemmatize_verbs-h0-s137", "gpt2_large-en-lemmatize_verbs-h0-s1415936399",
+            "gpt2_large-en-lemmatize_verbs-h0-s1568568120", "gpt2_large-en-lemmatize_verbs-h0-s1595274352",
+            "gpt2_large-en-lemmatize_verbs-h0-s1640623142", "gpt2_large-en-lemmatize_verbs-h0-s1881877998",
+            "gpt2_large-en-lemmatize_verbs-h0-s1891911437", "gpt2_large-en-lemmatize_verbs-h0-s2022192329",
+            "gpt2_large-en-lemmatize_verbs-h0-s2078344582", "gpt2_large-en-lemmatize_verbs-h0-s302485963",
+            "gpt2_large-en-lemmatize_verbs-h0-s314159", "gpt2_large-en-lemmatize_verbs-h0-s42",
+            "gpt2_large-en-lemmatize_verbs-h2-s137", "gpt2_large-en-lemmatize_verbs-h2-s42",
+            "gpt2_large-en-lemmatize_verbs-h3-s137", "gpt2_large-en-lemmatize_verbs-h3-s42",
+            "gpt2_large-en-lemmatize_verbs-h4-s137", "gpt2_large-en-lemmatize_verbs-h4-s42",
+            "gpt2_large-en-remove_expletive_sentences-h0-s137", "gpt2_large-en-remove_expletive_sentences-h0-s1415936399",
+            "gpt2_large-en-remove_expletive_sentences-h0-s1568568120", "gpt2_large-en-remove_expletive_sentences-h0-s1595274352",
+            "gpt2_large-en-remove_expletive_sentences-h0-s1640623142", "gpt2_large-en-remove_expletive_sentences-h0-s1881877998",
+            "gpt2_large-en-remove_expletive_sentences-h0-s1891911437", "gpt2_large-en-remove_expletive_sentences-h0-s2022192329",
+            "gpt2_large-en-remove_expletive_sentences-h0-s2078344582", "gpt2_large-en-remove_expletive_sentences-h0-s302485963",
+            "gpt2_large-en-remove_expletive_sentences-h0-s314159", "gpt2_large-en-remove_expletive_sentences-h0-s42",
+            "gpt2_large-en-remove_expletive_sentences-h2-s137", "gpt2_large-en-remove_expletive_sentences-h2-s42",
+            "gpt2_large-en-remove_expletive_sentences-h3-s137", "gpt2_large-en-remove_expletive_sentences-h3-s42",
+            "gpt2_large-en-remove_expletive_sentences-h4-s137", "gpt2_large-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: '2'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 16Gi
+            cpu: '2'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-bertl-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: bert_large
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 30
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '3'
+        - name: RUN_IDS_JSON
+          value: '["bert_large-en-baseline-h0-s137", "bert_large-en-baseline-h0-s1415936399",
+            "bert_large-en-baseline-h0-s1568568120", "bert_large-en-baseline-h0-s1595274352",
+            "bert_large-en-baseline-h0-s1640623142", "bert_large-en-baseline-h0-s1881877998",
+            "bert_large-en-baseline-h0-s1891911437", "bert_large-en-baseline-h0-s2022192329",
+            "bert_large-en-baseline-h0-s2078344582", "bert_large-en-baseline-h0-s302485963",
+            "bert_large-en-baseline-h0-s314159", "bert_large-en-baseline-h0-s42",
+            "bert_large-en-baseline-h2-s137", "bert_large-en-baseline-h2-s42", "bert_large-en-baseline-h3-s137",
+            "bert_large-en-baseline-h3-s42", "bert_large-en-baseline-h4-s137", "bert_large-en-baseline-h4-s42",
+            "bert_large-en-enrich_verbal_morphology-h0-s137", "bert_large-en-enrich_verbal_morphology-h0-s1415936399",
+            "bert_large-en-enrich_verbal_morphology-h0-s1568568120", "bert_large-en-enrich_verbal_morphology-h0-s1595274352",
+            "bert_large-en-enrich_verbal_morphology-h0-s1640623142", "bert_large-en-enrich_verbal_morphology-h0-s1881877998",
+            "bert_large-en-enrich_verbal_morphology-h0-s1891911437", "bert_large-en-enrich_verbal_morphology-h0-s2022192329",
+            "bert_large-en-enrich_verbal_morphology-h0-s2078344582", "bert_large-en-enrich_verbal_morphology-h0-s302485963",
+            "bert_large-en-enrich_verbal_morphology-h0-s314159", "bert_large-en-enrich_verbal_morphology-h0-s42",
+            "bert_large-en-enrich_verbal_morphology-h2-s137", "bert_large-en-enrich_verbal_morphology-h2-s42",
+            "bert_large-en-enrich_verbal_morphology-h3-s137", "bert_large-en-enrich_verbal_morphology-h3-s42",
+            "bert_large-en-enrich_verbal_morphology-h4-s137", "bert_large-en-enrich_verbal_morphology-h4-s42",
+            "bert_large-en-impoverish_case-h0-s137", "bert_large-en-impoverish_case-h0-s1415936399",
+            "bert_large-en-impoverish_case-h0-s1568568120", "bert_large-en-impoverish_case-h0-s1595274352",
+            "bert_large-en-impoverish_case-h0-s1640623142", "bert_large-en-impoverish_case-h0-s1881877998",
+            "bert_large-en-impoverish_case-h0-s1891911437", "bert_large-en-impoverish_case-h0-s2022192329",
+            "bert_large-en-impoverish_case-h0-s2078344582", "bert_large-en-impoverish_case-h0-s302485963",
+            "bert_large-en-impoverish_case-h0-s314159", "bert_large-en-impoverish_case-h0-s42",
+            "bert_large-en-impoverish_case-h2-s137", "bert_large-en-impoverish_case-h2-s42",
+            "bert_large-en-impoverish_case-h3-s137", "bert_large-en-impoverish_case-h3-s42",
+            "bert_large-en-impoverish_case-h4-s137", "bert_large-en-impoverish_case-h4-s42",
+            "bert_large-en-lemmatize_verbs-h0-s137", "bert_large-en-lemmatize_verbs-h0-s1415936399",
+            "bert_large-en-lemmatize_verbs-h0-s1568568120", "bert_large-en-lemmatize_verbs-h0-s1595274352",
+            "bert_large-en-lemmatize_verbs-h0-s1640623142", "bert_large-en-lemmatize_verbs-h0-s1881877998",
+            "bert_large-en-lemmatize_verbs-h0-s1891911437", "bert_large-en-lemmatize_verbs-h0-s2022192329",
+            "bert_large-en-lemmatize_verbs-h0-s2078344582", "bert_large-en-lemmatize_verbs-h0-s302485963",
+            "bert_large-en-lemmatize_verbs-h0-s314159", "bert_large-en-lemmatize_verbs-h0-s42",
+            "bert_large-en-lemmatize_verbs-h2-s137", "bert_large-en-lemmatize_verbs-h2-s42",
+            "bert_large-en-lemmatize_verbs-h3-s137", "bert_large-en-lemmatize_verbs-h3-s42",
+            "bert_large-en-lemmatize_verbs-h4-s137", "bert_large-en-lemmatize_verbs-h4-s42",
+            "bert_large-en-remove_expletive_sentences-h0-s137", "bert_large-en-remove_expletive_sentences-h0-s1415936399",
+            "bert_large-en-remove_expletive_sentences-h0-s1568568120", "bert_large-en-remove_expletive_sentences-h0-s1595274352",
+            "bert_large-en-remove_expletive_sentences-h0-s1640623142", "bert_large-en-remove_expletive_sentences-h0-s1881877998",
+            "bert_large-en-remove_expletive_sentences-h0-s1891911437", "bert_large-en-remove_expletive_sentences-h0-s2022192329",
+            "bert_large-en-remove_expletive_sentences-h0-s2078344582", "bert_large-en-remove_expletive_sentences-h0-s302485963",
+            "bert_large-en-remove_expletive_sentences-h0-s314159", "bert_large-en-remove_expletive_sentences-h0-s42",
+            "bert_large-en-remove_expletive_sentences-h2-s137", "bert_large-en-remove_expletive_sentences-h2-s42",
+            "bert_large-en-remove_expletive_sentences-h3-s137", "bert_large-en-remove_expletive_sentences-h3-s42",
+            "bert_large-en-remove_expletive_sentences-h4-s137", "bert_large-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 12Gi
+            cpu: '3'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 12Gi
+            cpu: '3'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-lstm-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: lstm
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 25
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '6'
+        - name: RUN_IDS_JSON
+          value: '["lstm-en-baseline-h0-s137", "lstm-en-baseline-h0-s1415936399",
+            "lstm-en-baseline-h0-s1568568120", "lstm-en-baseline-h0-s1595274352",
+            "lstm-en-baseline-h0-s1640623142", "lstm-en-baseline-h0-s1881877998",
+            "lstm-en-baseline-h0-s1891911437", "lstm-en-baseline-h0-s2022192329",
+            "lstm-en-baseline-h0-s2078344582", "lstm-en-baseline-h0-s302485963", "lstm-en-baseline-h0-s314159",
+            "lstm-en-baseline-h0-s42", "lstm-en-baseline-h1-s137", "lstm-en-baseline-h1-s1415936399",
+            "lstm-en-baseline-h1-s1568568120", "lstm-en-baseline-h1-s1595274352",
+            "lstm-en-baseline-h1-s1640623142", "lstm-en-baseline-h1-s1881877998",
+            "lstm-en-baseline-h1-s1891911437", "lstm-en-baseline-h1-s2022192329",
+            "lstm-en-baseline-h1-s2078344582", "lstm-en-baseline-h1-s302485963", "lstm-en-baseline-h1-s314159",
+            "lstm-en-baseline-h1-s42", "lstm-en-baseline-h2-s137", "lstm-en-baseline-h2-s42",
+            "lstm-en-baseline-h3-s137", "lstm-en-baseline-h3-s42", "lstm-en-baseline-h4-s137",
+            "lstm-en-baseline-h4-s42", "lstm-en-enrich_verbal_morphology-h0-s137",
+            "lstm-en-enrich_verbal_morphology-h0-s1415936399", "lstm-en-enrich_verbal_morphology-h0-s1568568120",
+            "lstm-en-enrich_verbal_morphology-h0-s1595274352", "lstm-en-enrich_verbal_morphology-h0-s1640623142",
+            "lstm-en-enrich_verbal_morphology-h0-s1881877998", "lstm-en-enrich_verbal_morphology-h0-s1891911437",
+            "lstm-en-enrich_verbal_morphology-h0-s2022192329", "lstm-en-enrich_verbal_morphology-h0-s2078344582",
+            "lstm-en-enrich_verbal_morphology-h0-s302485963", "lstm-en-enrich_verbal_morphology-h0-s314159",
+            "lstm-en-enrich_verbal_morphology-h0-s42", "lstm-en-enrich_verbal_morphology-h1-s137",
+            "lstm-en-enrich_verbal_morphology-h1-s1415936399", "lstm-en-enrich_verbal_morphology-h1-s1568568120",
+            "lstm-en-enrich_verbal_morphology-h1-s1595274352", "lstm-en-enrich_verbal_morphology-h1-s1640623142",
+            "lstm-en-enrich_verbal_morphology-h1-s1881877998", "lstm-en-enrich_verbal_morphology-h1-s1891911437",
+            "lstm-en-enrich_verbal_morphology-h1-s2022192329", "lstm-en-enrich_verbal_morphology-h1-s2078344582",
+            "lstm-en-enrich_verbal_morphology-h1-s302485963", "lstm-en-enrich_verbal_morphology-h1-s314159",
+            "lstm-en-enrich_verbal_morphology-h1-s42", "lstm-en-enrich_verbal_morphology-h2-s137",
+            "lstm-en-enrich_verbal_morphology-h2-s42", "lstm-en-enrich_verbal_morphology-h3-s137",
+            "lstm-en-enrich_verbal_morphology-h3-s42", "lstm-en-enrich_verbal_morphology-h4-s137",
+            "lstm-en-enrich_verbal_morphology-h4-s42", "lstm-en-impoverish_case-h0-s137",
+            "lstm-en-impoverish_case-h0-s1415936399", "lstm-en-impoverish_case-h0-s1568568120",
+            "lstm-en-impoverish_case-h0-s1595274352", "lstm-en-impoverish_case-h0-s1640623142",
+            "lstm-en-impoverish_case-h0-s1881877998", "lstm-en-impoverish_case-h0-s1891911437",
+            "lstm-en-impoverish_case-h0-s2022192329", "lstm-en-impoverish_case-h0-s2078344582",
+            "lstm-en-impoverish_case-h0-s302485963", "lstm-en-impoverish_case-h0-s314159",
+            "lstm-en-impoverish_case-h0-s42", "lstm-en-impoverish_case-h1-s137", "lstm-en-impoverish_case-h1-s1415936399",
+            "lstm-en-impoverish_case-h1-s1568568120", "lstm-en-impoverish_case-h1-s1595274352",
+            "lstm-en-impoverish_case-h1-s1640623142", "lstm-en-impoverish_case-h1-s1881877998",
+            "lstm-en-impoverish_case-h1-s1891911437", "lstm-en-impoverish_case-h1-s2022192329",
+            "lstm-en-impoverish_case-h1-s2078344582", "lstm-en-impoverish_case-h1-s302485963",
+            "lstm-en-impoverish_case-h1-s314159", "lstm-en-impoverish_case-h1-s42",
+            "lstm-en-impoverish_case-h2-s137", "lstm-en-impoverish_case-h2-s42", "lstm-en-impoverish_case-h3-s137",
+            "lstm-en-impoverish_case-h3-s42", "lstm-en-impoverish_case-h4-s137", "lstm-en-impoverish_case-h4-s42",
+            "lstm-en-lemmatize_verbs-h0-s137", "lstm-en-lemmatize_verbs-h0-s1415936399",
+            "lstm-en-lemmatize_verbs-h0-s1568568120", "lstm-en-lemmatize_verbs-h0-s1595274352",
+            "lstm-en-lemmatize_verbs-h0-s1640623142", "lstm-en-lemmatize_verbs-h0-s1881877998",
+            "lstm-en-lemmatize_verbs-h0-s1891911437", "lstm-en-lemmatize_verbs-h0-s2022192329",
+            "lstm-en-lemmatize_verbs-h0-s2078344582", "lstm-en-lemmatize_verbs-h0-s302485963",
+            "lstm-en-lemmatize_verbs-h0-s314159", "lstm-en-lemmatize_verbs-h0-s42",
+            "lstm-en-lemmatize_verbs-h1-s137", "lstm-en-lemmatize_verbs-h1-s1415936399",
+            "lstm-en-lemmatize_verbs-h1-s1568568120", "lstm-en-lemmatize_verbs-h1-s1595274352",
+            "lstm-en-lemmatize_verbs-h1-s1640623142", "lstm-en-lemmatize_verbs-h1-s1881877998",
+            "lstm-en-lemmatize_verbs-h1-s1891911437", "lstm-en-lemmatize_verbs-h1-s2022192329",
+            "lstm-en-lemmatize_verbs-h1-s2078344582", "lstm-en-lemmatize_verbs-h1-s302485963",
+            "lstm-en-lemmatize_verbs-h1-s314159", "lstm-en-lemmatize_verbs-h1-s42",
+            "lstm-en-lemmatize_verbs-h2-s137", "lstm-en-lemmatize_verbs-h2-s42", "lstm-en-lemmatize_verbs-h3-s137",
+            "lstm-en-lemmatize_verbs-h3-s42", "lstm-en-lemmatize_verbs-h4-s137", "lstm-en-lemmatize_verbs-h4-s42",
+            "lstm-en-remove_expletive_sentences-h0-s137", "lstm-en-remove_expletive_sentences-h0-s1415936399",
+            "lstm-en-remove_expletive_sentences-h0-s1568568120", "lstm-en-remove_expletive_sentences-h0-s1595274352",
+            "lstm-en-remove_expletive_sentences-h0-s1640623142", "lstm-en-remove_expletive_sentences-h0-s1881877998",
+            "lstm-en-remove_expletive_sentences-h0-s1891911437", "lstm-en-remove_expletive_sentences-h0-s2022192329",
+            "lstm-en-remove_expletive_sentences-h0-s2078344582", "lstm-en-remove_expletive_sentences-h0-s302485963",
+            "lstm-en-remove_expletive_sentences-h0-s314159", "lstm-en-remove_expletive_sentences-h0-s42",
+            "lstm-en-remove_expletive_sentences-h1-s137", "lstm-en-remove_expletive_sentences-h1-s1415936399",
+            "lstm-en-remove_expletive_sentences-h1-s1568568120", "lstm-en-remove_expletive_sentences-h1-s1595274352",
+            "lstm-en-remove_expletive_sentences-h1-s1640623142", "lstm-en-remove_expletive_sentences-h1-s1881877998",
+            "lstm-en-remove_expletive_sentences-h1-s1891911437", "lstm-en-remove_expletive_sentences-h1-s2022192329",
+            "lstm-en-remove_expletive_sentences-h1-s2078344582", "lstm-en-remove_expletive_sentences-h1-s302485963",
+            "lstm-en-remove_expletive_sentences-h1-s314159", "lstm-en-remove_expletive_sentences-h1-s42",
+            "lstm-en-remove_expletive_sentences-h2-s137", "lstm-en-remove_expletive_sentences-h2-s42",
+            "lstm-en-remove_expletive_sentences-h3-s137", "lstm-en-remove_expletive_sentences-h3-s42",
+            "lstm-en-remove_expletive_sentences-h4-s137", "lstm-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 14Gi
+            cpu: '6'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 14Gi
+            cpu: '6'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-mamba370m-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: mamba_370m
+    phase: production
+    eval-regime: matched-v1
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 45
+  parallelism: 4
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --matched_stimuli_root\
+          \ /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 --benchmark null_subj_v2_condition_matched_v1\
+          \ --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1 --expected_stimuli_manifest_sha256\
+          \ 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7 --scoring_version\
+          \ null-subj-v2-condition-matched-v1 --slor 2>&1 | sed \"s/^/[$rid] /\" )\
+          \ &\n    eval_pids=\"$eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait\
+          \ only for evaluator pipelines.  The nvidia-smi sampler is\n  # also a background\
+          \ job and must be left for the EXIT trap; using\n  # jobs -p here would\
+          \ wait forever on the sampler.\n  for p in $eval_pids; do wait \"$p\" ||\
+          \ fail=1; done\n  exit $fail\nelse\n  python3 scripts/eval_v2_cell.py \\\
+          \n    --run_id \"$RUN_ID\" \\\n    --batch_size 64 \\\n    --scratch_dir\
+          \ /tmp/eval_scratch --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1\
+          \ --benchmark null_subj_v2_condition_matched_v1 --output_root /mnt/data/eval_v2/null_subj_v2_condition_matched_v1\
+          \ --expected_stimuli_manifest_sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ --scoring_version null-subj-v2-condition-matched-v1 --slor\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 796f59b31cf7447eceaf26c387b477d94c6d6d93
+        - name: PACK
+          value: '2'
+        - name: RUN_IDS_JSON
+          value: '["mamba_370m-en-baseline-h0-s137", "mamba_370m-en-baseline-h0-s1415936399",
+            "mamba_370m-en-baseline-h0-s1568568120", "mamba_370m-en-baseline-h0-s1595274352",
+            "mamba_370m-en-baseline-h0-s1640623142", "mamba_370m-en-baseline-h0-s1881877998",
+            "mamba_370m-en-baseline-h0-s1891911437", "mamba_370m-en-baseline-h0-s2022192329",
+            "mamba_370m-en-baseline-h0-s2078344582", "mamba_370m-en-baseline-h0-s302485963",
+            "mamba_370m-en-baseline-h0-s314159", "mamba_370m-en-baseline-h0-s42",
+            "mamba_370m-en-baseline-h2-s137", "mamba_370m-en-baseline-h2-s42", "mamba_370m-en-baseline-h3-s137",
+            "mamba_370m-en-baseline-h3-s42", "mamba_370m-en-baseline-h4-s137", "mamba_370m-en-baseline-h4-s42",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s137", "mamba_370m-en-enrich_verbal_morphology-h0-s1415936399",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s1568568120", "mamba_370m-en-enrich_verbal_morphology-h0-s1595274352",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s1640623142", "mamba_370m-en-enrich_verbal_morphology-h0-s1881877998",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s1891911437", "mamba_370m-en-enrich_verbal_morphology-h0-s2022192329",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s2078344582", "mamba_370m-en-enrich_verbal_morphology-h0-s302485963",
+            "mamba_370m-en-enrich_verbal_morphology-h0-s314159", "mamba_370m-en-enrich_verbal_morphology-h0-s42",
+            "mamba_370m-en-enrich_verbal_morphology-h2-s137", "mamba_370m-en-enrich_verbal_morphology-h2-s42",
+            "mamba_370m-en-enrich_verbal_morphology-h3-s137", "mamba_370m-en-enrich_verbal_morphology-h3-s42",
+            "mamba_370m-en-enrich_verbal_morphology-h4-s137", "mamba_370m-en-enrich_verbal_morphology-h4-s42",
+            "mamba_370m-en-impoverish_case-h0-s137", "mamba_370m-en-impoverish_case-h0-s1415936399",
+            "mamba_370m-en-impoverish_case-h0-s1568568120", "mamba_370m-en-impoverish_case-h0-s1595274352",
+            "mamba_370m-en-impoverish_case-h0-s1640623142", "mamba_370m-en-impoverish_case-h0-s1881877998",
+            "mamba_370m-en-impoverish_case-h0-s1891911437", "mamba_370m-en-impoverish_case-h0-s2022192329",
+            "mamba_370m-en-impoverish_case-h0-s2078344582", "mamba_370m-en-impoverish_case-h0-s314159",
+            "mamba_370m-en-impoverish_case-h0-s42", "mamba_370m-en-impoverish_case-h2-s137",
+            "mamba_370m-en-impoverish_case-h2-s42", "mamba_370m-en-impoverish_case-h3-s137",
+            "mamba_370m-en-impoverish_case-h3-s42", "mamba_370m-en-impoverish_case-h4-s137",
+            "mamba_370m-en-impoverish_case-h4-s42", "mamba_370m-en-lemmatize_verbs-h0-s137",
+            "mamba_370m-en-lemmatize_verbs-h0-s1415936399", "mamba_370m-en-lemmatize_verbs-h0-s1568568120",
+            "mamba_370m-en-lemmatize_verbs-h0-s1595274352", "mamba_370m-en-lemmatize_verbs-h0-s1640623142",
+            "mamba_370m-en-lemmatize_verbs-h0-s1881877998", "mamba_370m-en-lemmatize_verbs-h0-s1891911437",
+            "mamba_370m-en-lemmatize_verbs-h0-s2022192329", "mamba_370m-en-lemmatize_verbs-h0-s2078344582",
+            "mamba_370m-en-lemmatize_verbs-h0-s302485963", "mamba_370m-en-lemmatize_verbs-h0-s314159",
+            "mamba_370m-en-lemmatize_verbs-h0-s42", "mamba_370m-en-lemmatize_verbs-h2-s137",
+            "mamba_370m-en-lemmatize_verbs-h2-s42", "mamba_370m-en-lemmatize_verbs-h3-s137",
+            "mamba_370m-en-lemmatize_verbs-h3-s42", "mamba_370m-en-lemmatize_verbs-h4-s137",
+            "mamba_370m-en-lemmatize_verbs-h4-s42", "mamba_370m-en-remove_expletive_sentences-h0-s137",
+            "mamba_370m-en-remove_expletive_sentences-h0-s1415936399", "mamba_370m-en-remove_expletive_sentences-h0-s1568568120",
+            "mamba_370m-en-remove_expletive_sentences-h0-s1595274352", "mamba_370m-en-remove_expletive_sentences-h0-s1640623142",
+            "mamba_370m-en-remove_expletive_sentences-h0-s1881877998", "mamba_370m-en-remove_expletive_sentences-h0-s1891911437",
+            "mamba_370m-en-remove_expletive_sentences-h0-s2022192329", "mamba_370m-en-remove_expletive_sentences-h0-s2078344582",
+            "mamba_370m-en-remove_expletive_sentences-h0-s302485963", "mamba_370m-en-remove_expletive_sentences-h0-s314159",
+            "mamba_370m-en-remove_expletive_sentences-h0-s42", "mamba_370m-en-remove_expletive_sentences-h2-s137",
+            "mamba_370m-en-remove_expletive_sentences-h2-s42", "mamba_370m-en-remove_expletive_sentences-h3-s137",
+            "mamba_370m-en-remove_expletive_sentences-h3-s42", "mamba_370m-en-remove_expletive_sentences-h4-s137",
+            "mamba_370m-en-remove_expletive_sentences-h4-s42"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 12Gi
+            cpu: '2'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 12Gi
+            cpu: '2'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
