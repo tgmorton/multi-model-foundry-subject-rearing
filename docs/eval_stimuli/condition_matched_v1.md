@@ -64,9 +64,10 @@ Tokenizer validation is recorded separately.  The shared English SentencePiece
 tokenizer has zero UNKs for all five sets.  Baseline, removal, case, and lemma
 retain an overt-minus-null target-token delta of exactly one for all 576 pairs.
 Literal enrichment has deltas 0 (4 pairs), 1 (459), and 2 (113), an expected
-consequence of its independently generated synthetic forms.  BERT WordPiece
-must pass the same zero/low-UNK gate from the production tokenizer before the
-evaluation fleet is released.
+consequence of its independently generated synthetic forms.  The production
+BERT WordPiece audit also passed with zero UNKs in all five sets. Baseline,
+removal, case, and lemma have a +1 pair delta for all 576 pairs; literal
+enrichment has +1 for 447 pairs and +2 for 129.
 
 ## Result isolation and completion gate
 
