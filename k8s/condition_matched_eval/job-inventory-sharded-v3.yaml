@@ -1,0 +1,148 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-inventory-v3
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-inventory
+spec:
+  completionMode: Indexed
+  completions: 6
+  parallelism: 6
+  backoffLimitPerIndex: 10
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+  activeDeadlineSeconds: 10800
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-inventory
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - {name: GIT_REF, value: 1f896bda8f8ce9f89d213c79cff7772e7e223fb6}
+        resources:
+          requests: {cpu: 200m, memory: 512Mi}
+          limits: {cpu: 200m, memory: 512Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: inventory
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          ARCH=$(python3 -c 'import json,os; print(json.loads(os.environ["ARCHES_JSON"])[int(os.environ["JOB_COMPLETION_INDEX"])])')
+          cd /opt/repo
+          out=/mnt/data/eval_v2/null_subj_v2_condition_matched_v1/inventory_parts
+          python3 -u scripts/build_condition_matched_eval_inventory.py \
+            --models-root /mnt/data/models/production \
+            --architecture "$ARCH" \
+            --output "$out/checkpoint_inventory_${ARCH}.json" \
+            --resume --progress-every 5
+        env:
+        - name: ARCHES_JSON
+          value: '["gpt2_small","gpt2_medium","gpt2_large","bert_large","lstm","mamba_370m"]'
+        resources:
+          requests: {cpu: "1", memory: 2Gi}
+          limits: {cpu: "1", memory: 2Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-tokenizer-v3
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-tokenizer-audit
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 3600
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-tokenizer-audit
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - {name: GIT_REF, value: 1f896bda8f8ce9f89d213c79cff7772e7e223fb6}
+        resources:
+          requests: {cpu: 200m, memory: 512Mi}
+          limits: {cpu: 200m, memory: 512Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: tokenizer-audit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          python3 -u scripts/validate_condition_matched_tokenizers.py \
+            --root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 \
+            --hf-tokenizer bert_wordpiece=/mnt/data/tokenizers/en_bert_wordpiece \
+            --output /mnt/data/eval_v2/null_subj_v2_condition_matched_v1/tokenizer_validation_bert_wordpiece.json
+        resources:
+          requests: {cpu: "2", memory: 4Gi}
+          limits: {cpu: "2", memory: 4Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

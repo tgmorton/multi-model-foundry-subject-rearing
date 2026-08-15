@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-inventory-merge-v3
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-inventory-merge
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-inventory-merge
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - {name: GIT_REF, value: 1f896bda8f8ce9f89d213c79cff7772e7e223fb6}
+        resources:
+          requests: {cpu: 200m, memory: 512Mi}
+          limits: {cpu: 200m, memory: 512Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: merge
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          root=/mnt/data/eval_v2/null_subj_v2_condition_matched_v1
+          python3 -u scripts/merge_condition_matched_eval_inventories.py \
+            --input-dir "$root/inventory_parts" \
+            --output "$root/checkpoint_inventory.json"
+        resources:
+          requests: {cpu: "1", memory: 2Gi}
+          limits: {cpu: "1", memory: 2Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
