@@ -130,3 +130,17 @@ class AblationRegistry:
         """Clear all registered ablations (mainly for testing)."""
         cls._ablations.clear()
         cls._validators.clear()
+
+    @classmethod
+    def snapshot(cls) -> tuple:
+        """Capture current registrations (for restore after tests)."""
+        return dict(cls._ablations), dict(cls._validators)
+
+    @classmethod
+    def restore(cls, snap: tuple) -> None:
+        """Restore registrations captured by snapshot()."""
+        ablations, validators = snap
+        cls._ablations.clear()
+        cls._ablations.update(ablations)
+        cls._validators.clear()
+        cls._validators.update(validators)

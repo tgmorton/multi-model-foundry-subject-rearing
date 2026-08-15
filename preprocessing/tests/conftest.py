@@ -44,13 +44,28 @@ def _preserve_registry():
     yield
 
 
+@pytest.fixture(autouse=True)
+def _registry_guard():
+    """
+    Restore the import-time ablation registrations after EVERY test.
+
+    Several tests clear or repopulate AblationRegistry; before this guard
+    existed they left the registry empty for the rest of the pytest
+    process, failing ~40 unrelated registration/integration tests
+    (KeyError "Available ablations: none").
+    """
+    snap = AblationRegistry.snapshot()
+    yield
+    AblationRegistry.restore(snap)
+
+
 @pytest.fixture()
 def clean_registry():
     """
     Clear registry before and after test (opt-in via fixture).
 
     Use this fixture when you need an empty registry for testing.
-    Don't use autouse=True since some tests need pre-registered ablations.
+    _registry_guard restores the real registrations afterwards.
     """
     AblationRegistry.clear()
     yield
