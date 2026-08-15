@@ -26,25 +26,81 @@ RUN_RE = re.compile(
 )
 
 
+def build_payload(models_root: Path, runs: list, rejected: list,
+                  processed_run_ids: set[str], architecture: str | None,
+                  complete: bool) -> dict:
+    return {
+        "format_version": "condition-matched-eval-inventory.v1",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "models_root": str(models_root),
+        "architecture_shard": architecture,
+        "complete": complete,
+        "processed_run_ids": sorted(processed_run_ids),
+        "run_count": len(runs),
+        "checkpoint_count": sum(r["checkpoint_count"] for r in runs),
+        "run_counts_by_architecture": dict(sorted(Counter(
+            r["architecture"] for r in runs).items())),
+        "run_counts_by_condition": dict(sorted(Counter(
+            r["condition"] for r in runs).items())),
+        "checkpoint_counts_by_architecture": dict(sorted(Counter({
+            arch: sum(r["checkpoint_count"] for r in runs
+                      if r["architecture"] == arch)
+            for arch in ARCHES
+            if architecture is None or arch == architecture
+        }).items())),
+        "runs": sorted(runs, key=lambda r: r["run_id"]),
+        "rejected": rejected,
+    }
+
+
+def write_payload(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    tmp.replace(path)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--models-root", type=Path,
                     default=Path("/mnt/data/models/production"))
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--include-seed-999", action="store_true")
+    ap.add_argument("--architecture", choices=ARCHES)
+    ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--progress-every", type=int, default=10)
     args = ap.parse_args()
     if not args.models_root.is_dir():
         raise SystemExit(f"missing models root: {args.models_root}")
 
     runs = []
     rejected = []
+    processed_run_ids: set[str] = set()
+    if args.resume and args.output.is_file():
+        prior = json.loads(args.output.read_text())
+        if (prior.get("format_version") != "condition-matched-eval-inventory.v1" or
+                prior.get("models_root") != str(args.models_root) or
+                prior.get("architecture_shard") != args.architecture):
+            raise SystemExit(f"incompatible resume inventory: {args.output}")
+        runs = list(prior.get("runs", []))
+        rejected = list(prior.get("rejected", []))
+        processed_run_ids = set(prior.get("processed_run_ids", []))
+        print(f"resuming {args.output}: processed={len(processed_run_ids)}",
+              flush=True)
+    print(f"inventory start root={args.models_root} architecture={args.architecture or 'all'}",
+          flush=True)
+    n_new = 0
     for run_dir in sorted(args.models_root.iterdir()):
-        if not run_dir.is_dir():
-            continue
         match = RUN_RE.fullmatch(run_dir.name)
         if not match:
             continue
         arch, condition, hp_rank, seed = match.groups()
+        if args.architecture and arch != args.architecture:
+            continue
+        if run_dir.name in processed_run_ids:
+            continue
+        if not run_dir.is_dir():
+            continue
         if seed == "999" and not args.include_seed_999:
             continue
         checkpoints = []
@@ -86,29 +142,20 @@ def main() -> None:
             })
         else:
             rejected.append({"path": str(run_dir), "reason": "no_readable_checkpoints"})
+        processed_run_ids.add(run_dir.name)
+        n_new += 1
+        if args.progress_every > 0 and n_new % args.progress_every == 0:
+            payload = build_payload(args.models_root, runs, rejected,
+                                    processed_run_ids, args.architecture, False)
+            write_payload(args.output, payload)
+            print(f"progress architecture={args.architecture or 'all'} "
+                  f"processed={len(processed_run_ids)} runs={len(runs)} "
+                  f"checkpoints={payload['checkpoint_count']} "
+                  f"rejected={len(rejected)}", flush=True)
 
-    payload = {
-        "format_version": "condition-matched-eval-inventory.v1",
-        "created_utc": datetime.now(timezone.utc).isoformat(),
-        "models_root": str(args.models_root),
-        "run_count": len(runs),
-        "checkpoint_count": sum(r["checkpoint_count"] for r in runs),
-        "run_counts_by_architecture": dict(sorted(Counter(
-            r["architecture"] for r in runs).items())),
-        "run_counts_by_condition": dict(sorted(Counter(
-            r["condition"] for r in runs).items())),
-        "checkpoint_counts_by_architecture": dict(sorted(Counter({
-            arch: sum(r["checkpoint_count"] for r in runs
-                      if r["architecture"] == arch)
-            for arch in ARCHES
-        }).items())),
-        "runs": runs,
-        "rejected": rejected,
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    tmp = args.output.with_suffix(args.output.suffix + ".tmp")
-    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-    tmp.replace(args.output)
+    payload = build_payload(args.models_root, runs, rejected,
+                            processed_run_ids, args.architecture, True)
+    write_payload(args.output, payload)
     print(f"runs={payload['run_count']} checkpoints={payload['checkpoint_count']} "
           f"rejected={len(rejected)}")
     print(f"wrote {args.output}")
