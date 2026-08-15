@@ -554,7 +554,7 @@ def main():
                 status = _upload_once(
                     s3, bucket, f, f"{s3_prefix}/{table}/{f.name}",
                     upload_metadata)
-                log.info("%s s3://%s/%s/%s", status, bucket,
+                log.info("%s s3://%s/%s/%s/%s", status, bucket,
                          s3_prefix, table, f.name)
             log.info("durable result parquets verified → s3://%s/%s/",
                      bucket, s3_prefix)
