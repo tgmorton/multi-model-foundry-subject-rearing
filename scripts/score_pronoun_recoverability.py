@@ -164,9 +164,11 @@ def phase_a(annotated_dir: Path, file_stem: str, sp, limit_lines: Optional[int],
         # (annotate.py) and training tokenization (HF text loader) strip it.
         raw = entry.get("raw_text", "").rstrip("\n\r")
         ids = sp.encode(raw, out_type=int) if raw else []
+        # int32 array, not a python int list — the big shards (childes,
+        # open_subtitles) OOM'd at 16Gi on list overhead alone.
         lines.append({"line_idx": line_idx,
                       "doc_idx": entry.get("doc_idx"),
-                      "ids": ids})
+                      "ids": np.asarray(ids, dtype=np.int32)})
         counters["lines"] += 1
         if doc is None:
             counters["passthrough_lines"] += 1
