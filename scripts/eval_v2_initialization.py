@@ -463,13 +463,18 @@ def main() -> None:
     record["s3_eval_prefix"] = f"s3://{args.bucket}/eval_results/{args.benchmark}/"
     record["n_cells"] = len(cells)
     record["stimuli_content_ids"] = stimuli_ids_by_condition
+    # A benchmark can be evaluated in multiple immutable tranches (for example,
+    # stable checkpoints first and still-training H1 cells later).  Namespace
+    # the record by the frozen inventory so a later tranche can add cells
+    # without overwriting or colliding with the earlier provenance record.
+    inventory_record = f"inventory-{inventory_sha256}.json"
     rec_path = (data_root / "eval_v2" / args.benchmark / "initialization_records" /
-                args.arch / f"seed-{args.seed}.json")
+                args.arch / f"seed-{args.seed}" / inventory_record)
     rec_path.parent.mkdir(parents=True, exist_ok=True)
     rec_path.write_text(json.dumps(record, indent=2) + "\n")
     upload_once(s3, args.bucket, rec_path,
                 f"eval_results/{args.benchmark}/initialization_records/"
-                f"{args.arch}/seed-{args.seed}.json",
+                f"{args.arch}/seed-{args.seed}/{inventory_record}",
                 common_md)
     log.info("INIT COMPLETE arch=%s seed=%d state_sha256=%s cells=%d",
              args.arch, args.seed, state_hash, len(cells))

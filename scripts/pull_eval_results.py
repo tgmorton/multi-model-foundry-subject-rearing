@@ -35,7 +35,8 @@ def main() -> None:
     ap.add_argument("--bucket", default="thomas-subject-drop-artifacts")
     ap.add_argument("--dest", default="data/eval_results")
     ap.add_argument("--tables", nargs="+", default=DEFAULT_TABLES,
-                    choices=["items", "pairs", "per_token", "checkpoints"])
+                    choices=["items", "pairs", "per_token", "checkpoints",
+                             "initialization_records"])
     ap.add_argument("--endpoint",
                     default=os.environ.get("AWS_ENDPOINT_URL",
                                            "https://s3-west.nrp-nautilus.io"))
@@ -54,7 +55,11 @@ def main() -> None:
         (dest / table).mkdir(parents=True, exist_ok=True)
         for page in paginator.paginate(Bucket=args.bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
-                local = dest / table / Path(obj["Key"]).name
+                if obj["Key"].rstrip("/") == prefix.rstrip("/"):
+                    continue
+                relative = Path(obj["Key"]).relative_to(prefix)
+                local = dest / table / relative
+                local.parent.mkdir(parents=True, exist_ok=True)
                 head = s3.head_object(Bucket=args.bucket, Key=obj["Key"])
                 expected_sha = (head.get("Metadata") or {}).get("sha256")
                 if args.require_sha256 and not expected_sha:

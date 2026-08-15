@@ -13,12 +13,24 @@ from pathlib import Path
 TABLES = ("items", "pairs", "per_token", "checkpoints")
 
 
+def parse_arch_hp(values: list[str]) -> set[tuple[str, int]]:
+    parsed = set()
+    for value in values:
+        arch, hp = value.rsplit(":", 1)
+        parsed.add((arch, int(hp.removeprefix("h"))))
+    return parsed
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--inventory", type=Path, required=True)
     ap.add_argument("--results-root", type=Path, required=True)
     ap.add_argument("--run-ids", type=Path,
                     help="Optional JSON list limiting the audited tranche.")
+    ap.add_argument("--exclude-arch-hp", action="append", default=[],
+                    metavar="ARCH:HP")
+    ap.add_argument("--only-arch-hp", action="append", default=[],
+                    metavar="ARCH:HP")
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--stimuli-manifest", type=Path, required=True)
     ap.add_argument("--benchmark", required=True)
@@ -32,8 +44,14 @@ def main() -> None:
     manifest = json.loads(args.stimuli_manifest.read_text())
     manifest_sha = hashlib.sha256(args.stimuli_manifest.read_bytes()).hexdigest()
     wanted = set(json.loads(args.run_ids.read_text())) if args.run_ids else None
+    excluded = parse_arch_hp(args.exclude_arch_hp)
+    only = parse_arch_hp(args.only_arch_hp)
     runs = [r for r in inventory["runs"]
-            if wanted is None or r["run_id"] in wanted]
+            if (wanted is None or r["run_id"] in wanted)
+            and (r["architecture"], int(r["hp_rank"])) not in excluded
+            and (not only or (r["architecture"], int(r["hp_rank"])) in only)]
+    if not runs:
+        raise SystemExit("selection contains no runs")
     errors = []
     verified = []
     for run in runs:
