@@ -42,6 +42,11 @@ def main() -> None:
                                            "https://s3-west.nrp-nautilus.io"))
     ap.add_argument("--require-sha256", action="store_true",
                     help="Require and verify the object's sha256 metadata.")
+    ap.add_argument(
+        "--cell-id-prefix",
+        help=("Only mirror cell_id=<prefix>*.parquet objects. Useful for a "
+              "bounded architecture-specific refresh."),
+    )
     args = ap.parse_args()
 
     import boto3
@@ -58,6 +63,10 @@ def main() -> None:
                 if obj["Key"].rstrip("/") == prefix.rstrip("/"):
                     continue
                 relative = Path(obj["Key"]).relative_to(prefix)
+                if args.cell_id_prefix:
+                    expected_prefix = f"cell_id={args.cell_id_prefix}"
+                    if not relative.name.startswith(expected_prefix):
+                        continue
                 local = dest / table / relative
                 local.parent.mkdir(parents=True, exist_ok=True)
                 head = s3.head_object(Bucket=args.bucket, Key=obj["Key"])
