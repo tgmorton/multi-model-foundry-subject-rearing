@@ -1,0 +1,131 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-initcpu-mamba370m-v2
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-init-cpu-v2
+    arch: mamba_370m
+spec:
+  completionMode: Indexed
+  completions: 12
+  parallelism: 2
+  backoffLimitPerIndex: 100
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed
+  activeDeadlineSeconds: 86400
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-init-cpu-v2
+        arch: mamba_370m
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: ebf8a6ce4c4210712f787dc97aeda61b7b8d75c0
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1Gi
+          limits:
+            cpu: 200m
+            memory: 1Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nSEED=$(python3 -c 'import json,os; print(json.loads(os.environ[\"\
+          SEEDS_JSON\"])[int(os.environ[\"JOB_COMPLETION_INDEX\"])])')\ncd /opt/repo\n\
+          python3 -u scripts/fanout_condition_matched_initialization.py \\\n  --arch\
+          \ mamba_370m --seed \"$SEED\" \\\n  --cells /mnt/data/eval_v2/null_subj_v2_condition_matched_v1/checkpoint_inventory.json\
+          \ \\\n  --stimuli-manifest /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1/manifest.json\
+          \ \\\n  --expected-stimuli-manifest-sha256 056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7\
+          \ \\\n  --benchmark null_subj_v2_condition_matched_init_v1 \\\n  --output-root\
+          \ /mnt/data/eval_v2/null_subj_v2_condition_matched_init_v1 --exclude-hp-rank\
+          \ 1\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: ebf8a6ce4c4210712f787dc97aeda61b7b8d75c0
+        - name: IMAGE_DIGEST
+          value: sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        - name: SEEDS_JSON
+          value: '[42, 137, 314159, 302485963, 1415936399, 1568568120, 1595274352,
+            1640623142, 1881877998, 1891911437, 2022192329, 2078344582]'
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            cpu: '2'
+            memory: 4Gi
+            ephemeral-storage: 10Gi
+          limits:
+            cpu: '2'
+            memory: 4Gi
+            ephemeral-storage: 20Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import subprocess
@@ -152,6 +153,63 @@ python3 -u scripts/eval_v2_initialization.py \
     return job
 
 
+def render_split_gpu(arch: str, seeds: list, ref: str, inventory_path: str,
+                     exclude_hp1: bool, manifest_sha256: str) -> dict:
+    """Render the brief GPU scoring half of the checkpoint -1 pipeline."""
+    job = render(arch, seeds, ref, inventory_path, exclude_hp1, manifest_sha256)
+    name = f"thomas-fdy-matched-initgpu-{SHORT[arch]}-v2"
+    job["metadata"]["name"] = name
+    job["metadata"]["labels"]["stage"] = "matched-eval-init-gpu-v2"
+    job["spec"]["template"]["metadata"]["labels"]["stage"] = (
+        "matched-eval-init-gpu-v2")
+    container = job["spec"]["template"]["spec"]["containers"][0]
+    command = container["args"][0]
+    marker = f"  --expected-stimuli-manifest-sha256 {manifest_sha256}"
+    if marker not in command:
+        raise RuntimeError("could not locate initialization command marker")
+    container["args"][0] = command.replace(
+        marker, marker + " --representative-only", 1)
+    return job
+
+
+def render_split_cpu(arch: str, seeds: list, ref: str, inventory_path: str,
+                     exclude_hp1: bool, manifest_sha256: str) -> dict:
+    """Render the CPU-only materialization half of the checkpoint -1 pipeline."""
+    base = render(arch, seeds, ref, inventory_path, exclude_hp1, manifest_sha256)
+    job = copy.deepcopy(base)
+    name = f"thomas-fdy-matched-initcpu-{SHORT[arch]}-v2"
+    job["metadata"]["name"] = name
+    job["metadata"]["labels"]["stage"] = "matched-eval-init-cpu-v2"
+    job["spec"].pop("podFailurePolicy", None)
+    job["spec"]["activeDeadlineSeconds"] = 86400
+    pod = job["spec"]["template"]
+    pod["metadata"]["labels"]["stage"] = "matched-eval-init-cpu-v2"
+    spec = pod["spec"]
+    spec.pop("affinity", None)
+    spec.pop("tolerations", None)
+    hp_arg = " --exclude-hp-rank 1" if exclude_hp1 else ""
+    command = f'''set -euo pipefail
+SEED=$(python3 -c 'import json,os; print(json.loads(os.environ["SEEDS_JSON"])[int(os.environ["JOB_COMPLETION_INDEX"])])')
+cd /opt/repo
+python3 -u scripts/fanout_condition_matched_initialization.py \\
+  --arch {arch} --seed "$SEED" \\
+  --cells {inventory_path} \\
+  --stimuli-manifest /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1/manifest.json \\
+  --expected-stimuli-manifest-sha256 {manifest_sha256} \\
+  --benchmark {BENCHMARK} \\
+  --output-root /mnt/data/eval_v2/{BENCHMARK}{hp_arg}
+'''
+    container = spec["containers"][0]
+    container["args"] = [command]
+    container["resources"] = {
+        "requests": {"cpu": "2", "memory": "4Gi",
+                     "ephemeral-storage": "10Gi"},
+        "limits": {"cpu": "2", "memory": "4Gi",
+                   "ephemeral-storage": "20Gi"},
+    }
+    return job
+
+
 def dump(path: Path, docs: list) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("---\n".join(yaml.safe_dump(x, sort_keys=False) for x in docs))
@@ -166,6 +224,13 @@ def main() -> None:
     ap.add_argument("--cluster-inventory-path", default=(
         "/mnt/data/eval_v2/null_subj_v2_condition_matched_v1/"
         "checkpoint_inventory.json"))
+    ap.add_argument(
+        "--split", action="store_true",
+        help="Render separate v2 GPU-scoring and CPU-fanout Jobs.")
+    ap.add_argument(
+        "--completed-arch-seed", action="append", default=[],
+        metavar="ARCH:SEED",
+        help="Exclude an already-audited initialization group (repeatable).")
     args = ap.parse_args()
     payload = json.loads(args.inventory.read_text())
     if payload.get("format_version") != "condition-matched-eval-inventory.v1":
@@ -177,6 +242,17 @@ def main() -> None:
     unknown = excluded.difference(ARCHES)
     if unknown:
         raise SystemExit(f"unknown --exclude-hp1-arch values: {sorted(unknown)}")
+    completed: set[tuple[str, int]] = set()
+    for value in args.completed_arch_seed:
+        try:
+            arch, raw_seed = value.rsplit(":", 1)
+            pair = (arch, int(raw_seed))
+        except ValueError as exc:
+            raise SystemExit(
+                f"invalid --completed-arch-seed {value!r}; expected ARCH:SEED") from exc
+        if arch not in ARCHES:
+            raise SystemExit(f"unknown completed architecture: {arch}")
+        completed.add(pair)
     manifest_path = ROOT / "evaluation/stimuli/null-subj-v2-matched-v1/manifest.json"
     manifest = json.loads(manifest_path.read_text())
     if manifest.get("vetted") is not True:
@@ -189,6 +265,8 @@ def main() -> None:
         seeds[run["architecture"]].add(int(run["seed"]))
     ref = git_ref()
     jobs = []
+    gpu_jobs = []
+    cpu_jobs = []
     summary = {"git_ref": ref, "benchmark": BENCHMARK,
                "inventory_sha256": sha256_file(args.inventory),
                "stimuli_manifest_sha256": manifest_sha,
@@ -197,18 +275,44 @@ def main() -> None:
         selected = sorted(seeds[arch])
         if not selected:
             raise SystemExit(f"no seeds for {arch}")
-        job = render(arch, selected, ref, args.cluster_inventory_path,
-                     exclude_hp1=arch in excluded,
-                     manifest_sha256=manifest_sha)
-        jobs.append(job)
-        dump(args.output_dir / f"job-init-{SHORT[arch]}-v1.yaml", [job])
+        pending = [seed for seed in selected if (arch, seed) not in completed]
+        if not pending:
+            raise SystemExit(f"no pending initialization seeds for {arch}")
+        if args.split:
+            gpu = render_split_gpu(
+                arch, pending, ref, args.cluster_inventory_path,
+                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha)
+            cpu = render_split_cpu(
+                arch, pending, ref, args.cluster_inventory_path,
+                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha)
+            gpu_jobs.append(gpu)
+            cpu_jobs.append(cpu)
+            dump(args.output_dir / f"job-init-gpu-{SHORT[arch]}-v2.yaml", [gpu])
+            dump(args.output_dir / f"job-init-cpu-{SHORT[arch]}-v2.yaml", [cpu])
+        else:
+            job = render(arch, pending, ref, args.cluster_inventory_path,
+                         exclude_hp1=arch in excluded,
+                         manifest_sha256=manifest_sha)
+            jobs.append(job)
+            dump(args.output_dir / f"job-init-{SHORT[arch]}-v1.yaml", [job])
         summary["architectures"][arch] = {
-            "seeds": selected, "gpu_pods": len(selected),
-            "parallelism": min(PARALLELISM[arch], len(selected)),
+            "seeds": selected, "pending_seeds": pending,
+            "completed_seeds": sorted(set(selected).difference(pending)),
+            "gpu_pods": len(pending),
+            "cpu_pods": len(pending) if args.split else 0,
+            "parallelism": min(PARALLELISM[arch], len(pending)),
             "excluded_hp1": arch in excluded,
         }
-    dump(args.output_dir / "job-init-all-v1.yaml", jobs)
-    (args.output_dir / "fleet_summary.json").write_text(
+    if args.split:
+        dump(args.output_dir / "job-init-gpu-all-v2.yaml", gpu_jobs)
+        dump(args.output_dir / "job-init-cpu-all-v2.yaml", cpu_jobs)
+        summary["mode"] = "gpu-score-then-cpu-fanout-v2"
+        summary_name = "fleet_summary_split_v2.json"
+    else:
+        dump(args.output_dir / "job-init-all-v1.yaml", jobs)
+        summary["mode"] = "legacy-one-stage-v1"
+        summary_name = "fleet_summary.json"
+    (args.output_dir / summary_name).write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary, indent=2, sort_keys=True))
 
