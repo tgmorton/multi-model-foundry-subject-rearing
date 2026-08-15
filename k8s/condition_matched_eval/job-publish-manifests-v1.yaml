@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-matched-manifest-publish-v1
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: matched-eval-manifest-publish
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: matched-eval-manifest-publish
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - {name: GIT_REF, value: ae616834eac7a7f22a85b9a20ca0e212aec1f09d}
+        resources:
+          requests: {cpu: 200m, memory: 512Mi}
+          limits: {cpu: 200m, memory: 512Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: publisher
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          root=/mnt/data/eval_v2/null_subj_v2_condition_matched_v1
+          python3 -u scripts/publish_condition_matched_eval_manifests.py \
+            --file "$root/checkpoint_inventory.json" \
+            --file "$root/tokenizer_validation_bert_wordpiece.json" \
+            --file /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1/manifest.json \
+            --file /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1/tokenizer_validation_shared_unigram.json
+        env:
+        - {name: GIT_REF, value: ae616834eac7a7f22a85b9a20ca0e212aec1f09d}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: us-west-1}
+        - {name: REGISTRY_BUCKET, value: thomas-subject-drop-artifacts}
+        resources:
+          requests: {cpu: "1", memory: 2Gi}
+          limits: {cpu: "1", memory: 2Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data, readOnly: true}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+          readOnly: true
