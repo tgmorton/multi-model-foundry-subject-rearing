@@ -62,6 +62,31 @@ def _sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _upload_once(s3, bucket: str, path: Path, key: str,
+                 metadata: dict[str, str]) -> str:
+    """Atomically publish a content-addressed result; refuse key collisions."""
+    from botocore.exceptions import ClientError
+
+    digest = _sha256_file(path)
+    try:
+        head = s3.head_object(Bucket=bucket, Key=key)
+    except ClientError as exc:
+        code = str(exc.response.get("Error", {}).get("Code", ""))
+        if code not in {"404", "NoSuchKey", "NotFound"}:
+            raise
+    else:
+        prior = (head.get("Metadata") or {}).get("sha256")
+        if prior == digest:
+            return "cached"
+        raise RuntimeError(
+            f"S3 collision at s3://{bucket}/{key}: existing sha256={prior!r}, "
+            f"local sha256={digest}")
+    md = {k: str(v) for k, v in metadata.items() if v is not None}
+    md["sha256"] = digest
+    s3.upload_file(str(path), bucket, key, ExtraArgs={"Metadata": md})
+    return "uploaded"
+
+
 def _validate_matched_stimuli(root: Path, expected_sha256: str | None) -> tuple[dict, str]:
     manifest_path = root / "manifest.json"
     if not manifest_path.is_file():
@@ -499,24 +524,45 @@ def main():
     log.info("checkpoint sidecar → %s (%d rows, %d missing tokens_seen)",
              meta_path, len(meta_rows), n_missing)
 
-    # ── Upload this run's parquets to S3 (laptop-pullable; non-fatal) ───
+    # ── Upload this run's parquets to S3 (durable, immutable, required) ──
     s3_prefix = None
-    try:
-        import boto3
-        bucket = os.environ.get("REGISTRY_BUCKET")
-        if bucket:
+    if args.no_registry:
+        log.info("--no-registry: leaving local smoke results unpublished")
+    else:
+        try:
+            import boto3
+            bucket = os.environ.get("REGISTRY_BUCKET")
+            if not bucket:
+                raise RuntimeError(
+                    "REGISTRY_BUCKET is required for durable matched results")
             s3 = boto3.client("s3",
                               endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
             s3_prefix = f"eval_results/{args.benchmark}"
+            upload_metadata = {
+                "benchmark": args.benchmark,
+                "scoring_version": args.scoring_version,
+                "run_id": args.run_id,
+                "stimuli_manifest_sha256": matched_manifest_sha,
+                "stimuli_content_id": stimuli.stimuli_id,
+            }
             for table in ("items", "pairs", "per_token", "checkpoints"):
                 f = (results_root or output_root) / table \
                     / f"cell_id={args.run_id}.parquet"
-                if f.exists():
-                    s3.upload_file(str(f), bucket,
-                                   f"{s3_prefix}/{table}/{f.name}")
-            log.info("uploaded result parquets → s3://%s/%s/", bucket, s3_prefix)
-    except Exception as exc:
-        log.warning("S3 result upload failed (PVC copy remains): %s", exc)
+                if not f.is_file():
+                    raise RuntimeError(
+                        f"missing result before S3 publication: {f}")
+                status = _upload_once(
+                    s3, bucket, f, f"{s3_prefix}/{table}/{f.name}",
+                    upload_metadata)
+                log.info("%s s3://%s/%s/%s", status, bucket,
+                         s3_prefix, table, f.name)
+            log.info("durable result parquets verified → s3://%s/%s/",
+                     bucket, s3_prefix)
+        except Exception as exc:
+            registry.register_eval_benchmark_done(
+                **reg_kwargs, status="FAILED")
+            raise RuntimeError(
+                f"durable S3 result publication failed: {exc}") from exc
 
     # ── Registry: benchmark done + metric summary ───────────────────────
     if not args.no_registry:

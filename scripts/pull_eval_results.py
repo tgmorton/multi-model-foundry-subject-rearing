@@ -14,10 +14,19 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 from pathlib import Path
 
 DEFAULT_TABLES = ["items", "pairs", "checkpoints"]
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def main() -> None:
@@ -30,6 +39,8 @@ def main() -> None:
     ap.add_argument("--endpoint",
                     default=os.environ.get("AWS_ENDPOINT_URL",
                                            "https://s3-west.nrp-nautilus.io"))
+    ap.add_argument("--require-sha256", action="store_true",
+                    help="Require and verify the object's sha256 metadata.")
     args = ap.parse_args()
 
     import boto3
@@ -44,11 +55,21 @@ def main() -> None:
         for page in paginator.paginate(Bucket=args.bucket, Prefix=prefix):
             for obj in page.get("Contents", []):
                 local = dest / table / Path(obj["Key"]).name
-                if local.exists() and local.stat().st_size == obj["Size"]:
+                head = s3.head_object(Bucket=args.bucket, Key=obj["Key"])
+                expected_sha = (head.get("Metadata") or {}).get("sha256")
+                if args.require_sha256 and not expected_sha:
+                    raise RuntimeError(f"missing sha256 metadata: s3://{args.bucket}/{obj['Key']}")
+                if (local.exists() and local.stat().st_size == obj["Size"] and
+                        (not expected_sha or sha256_file(local) == expected_sha)):
                     n_skip += 1
                     continue
                 print(f"pull {obj['Key']} ({obj['Size']/1e6:.1f} MB)")
-                s3.download_file(args.bucket, obj["Key"], str(local))
+                tmp = local.with_suffix(local.suffix + ".tmp")
+                s3.download_file(args.bucket, obj["Key"], str(tmp))
+                if expected_sha and sha256_file(tmp) != expected_sha:
+                    tmp.unlink(missing_ok=True)
+                    raise RuntimeError(f"sha256 mismatch after download: {obj['Key']}")
+                tmp.replace(local)
                 n_dl += 1
     print(f"done: {n_dl} pulled, {n_skip} current → {dest}/")
     print(f"""

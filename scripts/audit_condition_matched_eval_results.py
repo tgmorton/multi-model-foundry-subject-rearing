@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,12 +20,17 @@ def main() -> None:
     ap.add_argument("--run-ids", type=Path,
                     help="Optional JSON list limiting the audited tranche.")
     ap.add_argument("--output", type=Path, required=True)
+    ap.add_argument("--stimuli-manifest", type=Path, required=True)
+    ap.add_argument("--benchmark", required=True)
+    ap.add_argument("--scoring-version", required=True)
     args = ap.parse_args()
 
     import numpy as np
     import pandas as pd
 
     inventory = json.loads(args.inventory.read_text())
+    manifest = json.loads(args.stimuli_manifest.read_text())
+    manifest_sha = hashlib.sha256(args.stimuli_manifest.read_bytes()).hexdigest()
     wanted = set(json.loads(args.run_ids.read_text())) if args.run_ids else None
     runs = [r for r in inventory["runs"]
             if wanted is None or r["run_id"] in wanted]
@@ -68,6 +74,17 @@ def main() -> None:
                                "error": f"row_count_{table}",
                                "expected": expected,
                                "actual": len(tables[table])})
+            per_step = tables[table].groupby("checkpoint_step").size().to_dict()
+            expected_per_step = expected // max(n_checkpoints, 1)
+            if any(int(v) != expected_per_step for v in per_step.values()):
+                errors.append({"run_id": rid,
+                               "error": f"per_step_row_count_{table}",
+                               "expected": expected_per_step,
+                               "actual": {str(k): int(v) for k, v in per_step.items()}})
+        for table, df in tables.items():
+            if "cell_id" not in df or set(df["cell_id"].astype(str)) != {rid}:
+                errors.append({"run_id": rid,
+                               "error": f"cell_id_mismatch_{table}"})
         for table in ("items", "pairs"):
             interventions = set(tables[table]["intervention"].dropna().astype(str))
             if interventions != {run["condition"]}:
@@ -84,6 +101,31 @@ def main() -> None:
                 tables["checkpoints"]["checkpoint_content_id"].isna().any()):
             errors.append({"run_id": rid,
                            "error": "missing_checkpoint_content_id"})
+        side = tables["checkpoints"]
+        provenance_expected = {
+            "benchmark": args.benchmark,
+            "scoring_version": args.scoring_version,
+            "stimuli_manifest_sha256": manifest_sha,
+        }
+        for column, expected_value in provenance_expected.items():
+            values = set(side[column].dropna().astype(str)) if column in side else set()
+            if values != {expected_value}:
+                errors.append({"run_id": rid,
+                               "error": f"provenance_mismatch_{column}",
+                               "values": sorted(values),
+                               "expected": expected_value})
+        if ("stimuli_content_id" not in side or
+                side["stimuli_content_id"].isna().any() or
+                side["stimuli_content_id"].astype(str).nunique() != 1):
+            errors.append({"run_id": rid, "error": "invalid_stimuli_content_id"})
+        expected_condition_hashes = json.dumps(
+            manifest["conditions"][run["condition"]]["output_sha256"],
+            sort_keys=True)
+        hashes = (set(side["stimuli_condition_output_sha256"].dropna().astype(str))
+                  if "stimuli_condition_output_sha256" in side else set())
+        if hashes != {expected_condition_hashes}:
+            errors.append({"run_id": rid,
+                           "error": "stimuli_condition_hash_mismatch"})
         if not any(e["run_id"] == rid for e in errors):
             verified.append(rid)
 
