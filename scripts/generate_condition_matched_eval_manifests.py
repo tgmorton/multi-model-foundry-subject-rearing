@@ -9,6 +9,7 @@ import importlib.util
 import json
 import math
 from pathlib import Path
+import re
 
 import yaml
 
@@ -49,7 +50,7 @@ def load_launcher():
 
 
 def render_job(launcher, arch: str, run_ids: list, git_ref: str,
-               manifest_sha256: str) -> dict:
+               manifest_sha256: str, name_suffix: str) -> dict:
     pack = PACK[arch]
     completions = math.ceil(len(run_ids) / pack)
     extra = (
@@ -61,7 +62,7 @@ def render_job(launcher, arch: str, run_ids: list, git_ref: str,
         f"--scoring_version {SCORING} --slor"
     )
     text = launcher.JOB_TEMPLATE.format(
-        name=f"thomas-fdy-matched-{SHORT[arch]}-v1", lang="en",
+        name=f"thomas-fdy-matched-{SHORT[arch]}-{name_suffix}", lang="en",
         completions=completions,
         parallelism=min(PARALLELISM[arch], completions),
         gpu_values="\n".join(
@@ -117,7 +118,17 @@ def main() -> None:
         "--exclude-arch-hp", action="append", default=[], metavar="ARCH:HP",
         help="Exclude a mutable architecture/HP-rank lane from this tranche.",
     )
+    ap.add_argument(
+        "--only-arch-hp", action="append", default=[], metavar="ARCH:HP",
+        help="Render only the selected architecture/HP-rank lanes.",
+    )
+    ap.add_argument(
+        "--name-suffix", default="v1",
+        help="Unique Kubernetes Job/file suffix (default: v1).",
+    )
     args = ap.parse_args()
+    if not re.fullmatch(r"[a-z0-9](?:[-a-z0-9]*[a-z0-9])?", args.name_suffix):
+        raise SystemExit("--name-suffix must be a lowercase DNS label fragment")
     inventory = json.loads(args.inventory.read_text())
     if inventory.get("format_version") != "condition-matched-eval-inventory.v1":
         raise SystemExit("unexpected inventory format")
@@ -138,16 +149,33 @@ def main() -> None:
         if arch not in ARCHES:
             raise SystemExit(f"unknown architecture in --exclude-arch-hp: {arch}")
         excluded_arch_hp.add((arch, int(hp)))
+    only_arch_hp = set()
+    for value in args.only_arch_hp:
+        arch, hp = value.rsplit(":", 1)
+        if arch not in ARCHES:
+            raise SystemExit(f"unknown architecture in --only-arch-hp: {arch}")
+        only_arch_hp.add((arch, int(hp)))
+    overlap = excluded_arch_hp & only_arch_hp
+    if overlap:
+        raise SystemExit(
+            "lanes cannot be both included and excluded: "
+            + ", ".join(f"{arch}:h{hp}" for arch, hp in sorted(overlap))
+        )
     runs_by_arch = {arch: [] for arch in ARCHES}
     selected_checkpoint_count = 0
     for run in inventory["runs"]:
         if (run["run_id"] not in excluded and
-                (run["architecture"], int(run["hp_rank"])) not in excluded_arch_hp):
+                (run["architecture"], int(run["hp_rank"])) not in excluded_arch_hp and
+                (not only_arch_hp or
+                 (run["architecture"], int(run["hp_rank"])) in only_arch_hp)):
             runs_by_arch[run["architecture"]].append(run["run_id"])
             selected_checkpoint_count += int(run["checkpoint_count"])
     for ids in runs_by_arch.values():
         ids.sort()
-    if any(not ids for ids in runs_by_arch.values()):
+    selected_arches = [arch for arch in ARCHES if runs_by_arch[arch]]
+    if not selected_arches:
+        raise SystemExit("selection contains no runs")
+    if not only_arch_hp and len(selected_arches) != len(ARCHES):
         raise SystemExit("inventory is missing at least one architecture")
 
     launcher = load_launcher()
@@ -163,18 +191,22 @@ def main() -> None:
                "excluded_mutable_runs": sorted(excluded),
                "excluded_arch_hp_lanes": sorted(
                    f"{arch}:h{hp}" for arch, hp in excluded_arch_hp),
+               "included_arch_hp_lanes": sorted(
+                   f"{arch}:h{hp}" for arch, hp in only_arch_hp),
+               "name_suffix": args.name_suffix,
                "architectures": {}}
-    for arch in ARCHES:
+    for arch in selected_arches:
         job = render_job(launcher, arch, runs_by_arch[arch], git_ref,
-                         manifest_sha256)
+                         manifest_sha256, args.name_suffix)
         jobs.append(job)
-        dump(args.output_dir / f"job-eval-{SHORT[arch]}-v1.yaml", [job])
+        dump(args.output_dir /
+             f"job-eval-{SHORT[arch]}-{args.name_suffix}.yaml", [job])
         summary["architectures"][arch] = {
             "runs": len(runs_by_arch[arch]),
             "indexed_gpu_pods": math.ceil(len(runs_by_arch[arch]) / PACK[arch]),
             "pack": PACK[arch], "parallelism": PARALLELISM[arch],
         }
-    dump(args.output_dir / "job-eval-all-v1.yaml", jobs)
+    dump(args.output_dir / f"job-eval-all-{args.name_suffix}.yaml", jobs)
     (args.output_dir / "fleet_summary.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary, indent=2, sort_keys=True))
