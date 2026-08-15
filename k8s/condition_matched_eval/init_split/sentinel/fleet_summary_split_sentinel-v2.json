@@ -1,0 +1,51 @@
+{
+  "architectures": {
+    "gpt2_small": {
+      "completed_seeds": [
+        42,
+        137
+      ],
+      "cpu_pods": 1,
+      "deferred_seeds": [
+        302485963,
+        1415936399,
+        1568568120,
+        1595274352,
+        1640623142,
+        1881877998,
+        1891911437,
+        2022192329,
+        2078344582
+      ],
+      "excluded_hp1": false,
+      "gpu_pods": 1,
+      "parallelism": 1,
+      "pending_seeds": [
+        314159
+      ],
+      "seeds": [
+        42,
+        137,
+        314159,
+        302485963,
+        1415936399,
+        1568568120,
+        1595274352,
+        1640623142,
+        1881877998,
+        1891911437,
+        2022192329,
+        2078344582
+      ]
+    }
+  },
+  "benchmark": "null_subj_v2_condition_matched_init_v1",
+  "git_ref": "8f6af766d5041f1c291e9fd205a366ce85dddc9e",
+  "inventory_sha256": "25f044a67b9eb9f2f1da168fd2f8a53cf12b6a88f919fbc5f0cc29fa669b5f37",
+  "mode": "gpu-score-then-cpu-fanout-v2",
+  "name_suffix": "sentinel-v2",
+  "only_arch_seed": [
+    "gpt2_small:314159"
+  ],
+  "stimuli_manifest_sha256": "056ca1d2a5df745662ba501c97c434a2dde3a7cc857362d36b34caacd05d5de7"
+}

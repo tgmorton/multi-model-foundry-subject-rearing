@@ -154,10 +154,11 @@ python3 -u scripts/eval_v2_initialization.py \
 
 
 def render_split_gpu(arch: str, seeds: list, ref: str, inventory_path: str,
-                     exclude_hp1: bool, manifest_sha256: str) -> dict:
+                     exclude_hp1: bool, manifest_sha256: str,
+                     name_suffix: str = "v2") -> dict:
     """Render the brief GPU scoring half of the checkpoint -1 pipeline."""
     job = render(arch, seeds, ref, inventory_path, exclude_hp1, manifest_sha256)
-    name = f"thomas-fdy-matched-initgpu-{SHORT[arch]}-v2"
+    name = f"thomas-fdy-matched-initgpu-{SHORT[arch]}-{name_suffix}"
     job["metadata"]["name"] = name
     job["metadata"]["labels"]["stage"] = "matched-eval-init-gpu-v2"
     job["spec"]["template"]["metadata"]["labels"]["stage"] = (
@@ -173,11 +174,12 @@ def render_split_gpu(arch: str, seeds: list, ref: str, inventory_path: str,
 
 
 def render_split_cpu(arch: str, seeds: list, ref: str, inventory_path: str,
-                     exclude_hp1: bool, manifest_sha256: str) -> dict:
+                     exclude_hp1: bool, manifest_sha256: str,
+                     name_suffix: str = "v2") -> dict:
     """Render the CPU-only materialization half of the checkpoint -1 pipeline."""
     base = render(arch, seeds, ref, inventory_path, exclude_hp1, manifest_sha256)
     job = copy.deepcopy(base)
-    name = f"thomas-fdy-matched-initcpu-{SHORT[arch]}-v2"
+    name = f"thomas-fdy-matched-initcpu-{SHORT[arch]}-{name_suffix}"
     job["metadata"]["name"] = name
     job["metadata"]["labels"]["stage"] = "matched-eval-init-cpu-v2"
     job["spec"].pop("podFailurePolicy", None)
@@ -231,6 +233,12 @@ def main() -> None:
         "--completed-arch-seed", action="append", default=[],
         metavar="ARCH:SEED",
         help="Exclude an already-audited initialization group (repeatable).")
+    ap.add_argument(
+        "--only-arch-seed", action="append", default=[], metavar="ARCH:SEED",
+        help="Render only exact initialization groups (repeatable).")
+    ap.add_argument(
+        "--name-suffix",
+        help="Override the generated Job/file suffix (v2 split, v1 legacy).")
     args = ap.parse_args()
     payload = json.loads(args.inventory.read_text())
     if payload.get("format_version") != "condition-matched-eval-inventory.v1":
@@ -253,6 +261,25 @@ def main() -> None:
         if arch not in ARCHES:
             raise SystemExit(f"unknown completed architecture: {arch}")
         completed.add(pair)
+    only: set[tuple[str, int]] = set()
+    for value in args.only_arch_seed:
+        try:
+            arch, raw_seed = value.rsplit(":", 1)
+            pair = (arch, int(raw_seed))
+        except ValueError as exc:
+            raise SystemExit(
+                f"invalid --only-arch-seed {value!r}; expected ARCH:SEED") from exc
+        if arch not in ARCHES:
+            raise SystemExit(f"unknown selected architecture: {arch}")
+        only.add(pair)
+    if only & completed:
+        raise SystemExit("selected groups cannot also be marked completed")
+    name_suffix = args.name_suffix or ("v2" if args.split else "v1")
+    if (not name_suffix or name_suffix.startswith("-") or
+            name_suffix.endswith("-") or
+            not all(c.islower() or c.isdigit() or c == "-"
+                    for c in name_suffix)):
+        raise SystemExit("--name-suffix must use lowercase letters, digits, or hyphens")
     manifest_path = ROOT / "evaluation/stimuli/null-subj-v2-matched-v1/manifest.json"
     manifest = json.loads(manifest_path.read_text())
     if manifest.get("vetted") is not True:
@@ -263,6 +290,11 @@ def main() -> None:
         if run["architecture"] in excluded and int(run["hp_rank"]) == 1:
             continue
         seeds[run["architecture"]].add(int(run["seed"]))
+    missing_only = {
+        pair for pair in only if pair[1] not in seeds[pair[0]]
+    }
+    if missing_only:
+        raise SystemExit(f"selected groups absent from inventory: {sorted(missing_only)}")
     ref = git_ref()
     jobs = []
     gpu_jobs = []
@@ -271,24 +303,36 @@ def main() -> None:
                "inventory_sha256": sha256_file(args.inventory),
                "stimuli_manifest_sha256": manifest_sha,
                "architectures": {}}
-    for arch in ARCHES:
+    selected_arches = (
+        [arch for arch in ARCHES if any(pair[0] == arch for pair in only)]
+        if only else ARCHES
+    )
+    for arch in selected_arches:
         selected = sorted(seeds[arch])
         if not selected:
             raise SystemExit(f"no seeds for {arch}")
-        pending = [seed for seed in selected if (arch, seed) not in completed]
+        pending = [
+            seed for seed in selected
+            if (arch, seed) not in completed
+            and (not only or (arch, seed) in only)
+        ]
         if not pending:
             raise SystemExit(f"no pending initialization seeds for {arch}")
         if args.split:
             gpu = render_split_gpu(
                 arch, pending, ref, args.cluster_inventory_path,
-                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha)
+                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha,
+                name_suffix=name_suffix)
             cpu = render_split_cpu(
                 arch, pending, ref, args.cluster_inventory_path,
-                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha)
+                exclude_hp1=arch in excluded, manifest_sha256=manifest_sha,
+                name_suffix=name_suffix)
             gpu_jobs.append(gpu)
             cpu_jobs.append(cpu)
-            dump(args.output_dir / f"job-init-gpu-{SHORT[arch]}-v2.yaml", [gpu])
-            dump(args.output_dir / f"job-init-cpu-{SHORT[arch]}-v2.yaml", [cpu])
+            dump(args.output_dir /
+                 f"job-init-gpu-{SHORT[arch]}-{name_suffix}.yaml", [gpu])
+            dump(args.output_dir /
+                 f"job-init-cpu-{SHORT[arch]}-{name_suffix}.yaml", [cpu])
         else:
             job = render(arch, pending, ref, args.cluster_inventory_path,
                          exclude_hp1=arch in excluded,
@@ -297,21 +341,28 @@ def main() -> None:
             dump(args.output_dir / f"job-init-{SHORT[arch]}-v1.yaml", [job])
         summary["architectures"][arch] = {
             "seeds": selected, "pending_seeds": pending,
-            "completed_seeds": sorted(set(selected).difference(pending)),
+            "completed_seeds": sorted(
+                seed for seed in selected if (arch, seed) in completed),
+            "deferred_seeds": sorted(
+                seed for seed in selected
+                if (arch, seed) not in completed and seed not in pending),
             "gpu_pods": len(pending),
             "cpu_pods": len(pending) if args.split else 0,
             "parallelism": min(PARALLELISM[arch], len(pending)),
             "excluded_hp1": arch in excluded,
         }
     if args.split:
-        dump(args.output_dir / "job-init-gpu-all-v2.yaml", gpu_jobs)
-        dump(args.output_dir / "job-init-cpu-all-v2.yaml", cpu_jobs)
+        dump(args.output_dir / f"job-init-gpu-all-{name_suffix}.yaml", gpu_jobs)
+        dump(args.output_dir / f"job-init-cpu-all-{name_suffix}.yaml", cpu_jobs)
         summary["mode"] = "gpu-score-then-cpu-fanout-v2"
-        summary_name = "fleet_summary_split_v2.json"
+        summary_name = f"fleet_summary_split_{name_suffix}.json"
     else:
         dump(args.output_dir / "job-init-all-v1.yaml", jobs)
         summary["mode"] = "legacy-one-stage-v1"
         summary_name = "fleet_summary.json"
+    summary["name_suffix"] = name_suffix
+    summary["only_arch_seed"] = sorted(
+        f"{arch}:{seed}" for arch, seed in only)
     (args.output_dir / summary_name).write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps(summary, indent=2, sort_keys=True))

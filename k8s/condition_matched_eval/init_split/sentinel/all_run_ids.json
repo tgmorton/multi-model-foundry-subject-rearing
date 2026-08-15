@@ -1,0 +1,8 @@
+[
+  "gpt2_small-en-baseline-h0-s314159",
+  "gpt2_small-en-baseline-h1-s314159",
+  "gpt2_small-en-enrich_verbal_morphology-h0-s314159",
+  "gpt2_small-en-impoverish_case-h0-s314159",
+  "gpt2_small-en-lemmatize_verbs-h0-s314159",
+  "gpt2_small-en-remove_expletive_sentences-h0-s314159"
+]
