@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 from datetime import datetime, timezone
@@ -41,6 +42,7 @@ def main() -> None:
     import pandas as pd
 
     inventory = json.loads(args.inventory.read_text())
+    inventory_sha = hashlib.sha256(args.inventory.read_bytes()).hexdigest()
     manifest = json.loads(args.stimuli_manifest.read_text())
     manifest_sha = hashlib.sha256(args.stimuli_manifest.read_bytes()).hexdigest()
     wanted = set(json.loads(args.run_ids.read_text())) if args.run_ids else None
@@ -147,16 +149,43 @@ def main() -> None:
         if not any(e["run_id"] == rid for e in errors):
             verified.append(rid)
 
-    actual = set()
-    for table in TABLES:
-        for path in (args.results_root / table).glob("cell_id=*.parquet"):
-            actual.add(path.stem[len("cell_id="):])
     expected_ids = {r["run_id"] for r in runs}
+    run_lookup = {r["run_id"]: r for r in runs}
+
+    def coverage(run_ids):
+        counts = Counter(
+            (run_lookup[rid]["architecture"], run_lookup[rid]["condition"])
+            for rid in run_ids
+            if rid in run_lookup
+        )
+        return {
+            arch: {
+                condition: counts[(arch, condition)]
+                for condition in sorted({r["condition"] for r in runs})
+                if counts[(arch, condition)]
+            }
+            for arch in sorted({r["architecture"] for r in runs})
+        }
+
+    actual = set()
+    actual_table_counts = {}
+    for table in TABLES:
+        paths = list((args.results_root / table).glob("cell_id=*.parquet"))
+        actual_table_counts[table] = len(paths)
+        for path in paths:
+            actual.add(path.stem[len("cell_id="):])
     report = {
         "format_version": "condition-matched-results-audit.v1",
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "benchmark": args.benchmark,
+        "scoring_version": args.scoring_version,
+        "inventory_sha256": inventory_sha,
+        "stimuli_manifest_sha256": manifest_sha,
         "expected_runs": len(runs), "verified_runs": len(verified),
         "expected_checkpoints": sum(len(r["checkpoints"]) for r in runs),
+        "expected_coverage": coverage(expected_ids),
+        "verified_coverage": coverage(verified),
+        "actual_table_file_counts": actual_table_counts,
         "verified_run_ids": verified,
         "missing_result_run_ids": sorted(expected_ids - actual),
         "unexpected_result_run_ids": sorted(actual - expected_ids),
