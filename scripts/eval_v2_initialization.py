@@ -241,6 +241,12 @@ def main() -> None:
     ap.add_argument("--expected-stimuli-manifest-sha256")
     ap.add_argument("--exclude-hp-rank", action="append", type=int, default=[])
     ap.add_argument("--only-hp-rank", action="append", type=int, default=[])
+    ap.add_argument(
+        "--representative-only", action="store_true",
+        help=("Publish one real cell per condition. A CPU-only fan-out stage "
+              "can materialize the remaining HP/cell identities without "
+              "holding this GPU."),
+    )
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO,
@@ -277,6 +283,13 @@ def main() -> None:
     if not cells:
         raise SystemExit(
             f"no cells remain for arch={args.arch} seed={args.seed} after HP filters")
+    if args.representative_only:
+        representatives = {}
+        for cell in sorted(cells, key=lambda x: (
+                str(x["intervention"]), int(x["hp_rank"]), str(x["cell_id"]))):
+            representatives.setdefault(str(cell["intervention"]), cell)
+        cells = list(representatives.values())
+        log.info("representative-only mode: %d conditions/cells", len(cells))
     inventory_sha256 = sha256_file(args.cells)
     lang = "en"
     data_root = args.data_root
@@ -468,12 +481,14 @@ def main() -> None:
     # the record by the frozen inventory so a later tranche can add cells
     # without overwriting or colliding with the earlier provenance record.
     inventory_record = f"inventory-{inventory_sha256}.json"
-    rec_path = (data_root / "eval_v2" / args.benchmark / "initialization_records" /
+    record_table = ("representative_records" if args.representative_only
+                    else "initialization_records")
+    rec_path = (data_root / "eval_v2" / args.benchmark / record_table /
                 args.arch / f"seed-{args.seed}" / inventory_record)
     rec_path.parent.mkdir(parents=True, exist_ok=True)
     rec_path.write_text(json.dumps(record, indent=2) + "\n")
     upload_once(s3, args.bucket, rec_path,
-                f"eval_results/{args.benchmark}/initialization_records/"
+                f"eval_results/{args.benchmark}/{record_table}/"
                 f"{args.arch}/seed-{args.seed}/{inventory_record}",
                 common_md)
     log.info("INIT COMPLETE arch=%s seed=%d state_sha256=%s cells=%d",

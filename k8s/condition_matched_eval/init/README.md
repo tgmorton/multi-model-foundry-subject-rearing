@@ -25,5 +25,11 @@ two-stage pipeline:
    work without holding a GPU.
 
 The two stages must retain the existing benchmark names, stimulus and inventory
-hashes, state hashes, immutable-upload collision checks, and final audits. They
-require a separate finite dry-run and explicit launch decision before use.
+hashes, state hashes, immutable-upload collision checks, and final audits.
+`eval_v2_initialization.py --representative-only` and
+`fanout_condition_matched_initialization.py` implement this split locally. The
+CPU fan-out was tested against audited GPT-2-small seed 42 and reproduced all
+25 cell outputs exactly at the DataFrame level across all four tables; its
+fresh output also passed the 25/25 initialization coverage audit. Cluster
+manifests still require a finite dry-run and an explicit launch decision before
+use.
