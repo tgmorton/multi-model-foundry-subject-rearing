@@ -66,3 +66,14 @@ ep1, ep2, midpoint, final — matching the Phase-3 policy):
 Verification plan either way: port the kill-and-resume smoke (assert
 bitwise resume for deterministic runs, epsilon for fast) + a paired-hash
 sentinel at wave start per arch; both wired into the wave launcher.
+
+## Resolution (Thomas, 2026-08-22)
+
+Fast kernels everywhere — the 1.7× tax is not worth paying for bitwise
+replay; the recovery story for a truly-needed intermediate state is
+"retrain from start." No deterministic subset. In exchange, the wave is
+**data-preemptive**: the capture manifest (D9 in the master plan) banks
+the eval suite, per-token logprobs, held-out ppl, the stratified pronoun
+probe battery, weight-stat summaries, and anchor-point representations
+in the eval pod pass — with pruning gated on capture-complete markers —
+so deleted weights never take an answerable question with them.
