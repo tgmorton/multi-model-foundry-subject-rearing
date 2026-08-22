@@ -354,9 +354,47 @@ class TrainingLoop:
                                 resume_state_steps is None
                                 or self.global_step in resume_state_steps
                             )
+                            # Preemption-smoke find (2026-08-22): this check
+                            # (and the save it guards) runs BEFORE the
+                            # `self.global_step += 1` below, i.e. it fires
+                            # using the value self.global_step held BEFORE
+                            # the window that just completed. So a save
+                            # here is always mid-window from the counter's
+                            # own point of view: `self.global_step == S`
+                            # names the checkpoint "S", but the tokens of
+                            # the window that just finished (this window)
+                            # are already folded into total_tokens_processed
+                            # by the per-micro-batch accumulation above —
+                            # total_tokens_processed reflects S+1 completed
+                            # windows while the label/global_step says S.
+                            # That mismatch is harmless in a single
+                            # uninterrupted run (self.global_step catches up
+                            # to S+1 two lines down, in the same process),
+                            # but on resume the NEW process re-seeds
+                            # self.global_step from the saved value (S) —
+                            # so start_step and start_tokens must describe
+                            # the SAME window count, or the resumed run's
+                            # own total_tokens_processed permanently carries
+                            # a one-window (one effective-step) surplus
+                            # relative to an uninterrupted reference run
+                            # reaching the same global_step. Subtracting
+                            # tokens_acc (exactly this in-flight window's
+                            # tokens, reset to 0 right after this block)
+                            # re-aligns the persisted counter to the S-window
+                            # meaning global_step already has — WITHOUT
+                            # changing global_step/checkpoint-naming
+                            # semantics, which are relied on elsewhere
+                            # (checkpoint_schedule anchors, cross-run/
+                            # cross-arch comparability) and are out of scope
+                            # here. This keeps the invariant
+                            # `total_tokens_processed == global_step *
+                            # tokens_per_step` true at every save, in every
+                            # process, for any number of resumes — which is
+                            # exactly what forces the final token count to
+                            # match an uninterrupted reference run.
                             self._save_checkpoint(
                                 tokenizer,
-                                total_tokens_processed,
+                                total_tokens_processed - tokens_acc,
                                 save_resume_state=save_resume,
                                 # Within-epoch positions for resume
                                 # fast-forward (replicability C1):
@@ -707,7 +745,14 @@ class TrainingLoop:
 
         Args:
             tokenizer: Tokenizer to save with checkpoint
-            total_tokens_processed: Total number of tokens processed so far
+            total_tokens_processed: Token count to persist, in the SAME
+                "global_step windows completed" units as the global_step
+                this checkpoint is labeled with. The mid-loop scheduled-save
+                call site passes `total_tokens_processed - tokens_acc`
+                (excluding the in-flight window) to keep this consistent
+                with global_step (see the comment at that call site); the
+                endpoint guard passes the raw running total, since there is
+                no in-flight window left at that point.
             save_resume_state: If True, include optimizer/scheduler/RNG/AMP
                 state so the run can be resumed from this checkpoint. If
                 False, write analysis-only (model + tokenizer + metadata),

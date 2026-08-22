@@ -343,3 +343,226 @@ class TestCheckpointSchedule:
             epoch_micro_step=0,
             epoch_completed=False,
         )
+
+
+# ---------------------------------------------------------------------------
+# Preemption-smoke regression (2026-08-22): save/resume token-counter
+# consistency at the TrainingLoop.run() level.
+# ---------------------------------------------------------------------------
+#
+# The checkpoint save inside run()'s did_optimizer_step block fires BEFORE
+# `self.global_step += 1` for the window that just completed. So at the
+# moment of a mid-loop scheduled save, self.global_step still holds the
+# value from BEFORE this window (call it S), while total_tokens_processed
+# already includes this window's tokens (S+1 windows' worth) — the
+# per-micro-batch accumulation above runs unconditionally, ahead of the
+# save. That mismatch is invisible in an uninterrupted run (self.global_step
+# catches up two lines later, in the same process) but becomes real once a
+# NEW process re-seeds self.global_step from the persisted S: the resumed
+# run's own total_tokens_processed permanently carries one extra window's
+# worth of tokens relative to an uninterrupted reference run reaching the
+# same global_step. The fix (loop.py, the checkpoint-save call site) saves
+# `total_tokens_processed - tokens_acc` instead, so the persisted pair
+# (global_step, total_tokens_processed) always describes the SAME window
+# count.
+
+
+class _FiniteDataLoader:
+    """Fake dataloader yielding a fixed list of micro-batches once.
+
+    Deliberately has no ``.generator``/``.collate_fn`` attributes so
+    TrainingLoop.run()'s per-epoch reseed logic (gated on
+    ``getattr(..., None) is not None``) stays inert — it's unrelated to the
+    token-counter bug under test here.
+    """
+
+    def __init__(self, batches):
+        self._batches = batches
+
+    def __iter__(self):
+        return iter(self._batches)
+
+
+def _microbatch(n_tokens: int = 12):
+    """A single micro-batch with an exact, known token count (1 row)."""
+    ids = torch.randint(0, 100, (1, n_tokens))
+    return {
+        'input_ids': ids,
+        'attention_mask': torch.ones_like(ids),
+        'labels': ids.clone(),
+    }
+
+
+def _make_run_loop(train_steps, grad_accum, checkpoint_schedule, n_batches):
+    """Build a TrainingLoop wired for a full run() call.
+
+    Unlike ``_make_loop`` above (used only for the lower-level
+    ``_training_step``/``_save_checkpoint`` unit tests), this wires a real
+    finite dataloader and a checkpoint_manager mock that records every
+    save_checkpoint call, with just enough config surface for run() to
+    execute end-to-end without touching anything outside this module's
+    control.
+    """
+    training = types.SimpleNamespace(
+        gradient_accumulation_steps=grad_accum,
+        use_amp=False,
+        train_steps=train_steps,
+        epochs=1,
+        warmup_steps=0,
+        max_grad_norm=None,
+        # 0.6 resume-state precedence fields, read directly by run(). Both
+        # None means "every checkpoint saves full state" (legacy default) —
+        # irrelevant to token bookkeeping, but run() dereferences them
+        # unconditionally so they must exist.
+        save_resume_state_last_n=None,
+        resume_state_steps=None,
+    )
+    logging_cfg = types.SimpleNamespace(use_wandb=False)
+    config = types.SimpleNamespace(training=training, logging=logging_cfg)
+
+    model = _make_mock_model()
+    optimizer = MagicMock()
+    lr_scheduler = MagicMock()
+    lr_scheduler.get_last_lr.return_value = [1e-4]
+
+    checkpoint_manager = MagicMock()
+    checkpoint_manager.get_checkpoint_schedule.return_value = set(checkpoint_schedule)
+    # Explicit, not left to MagicMock auto-vivification: getattr(mock,
+    # "resume_batch_offset", 0) on a bare MagicMock returns a truthy
+    # auto-created Mock attribute, not the intended falsy default, which
+    # would wrongly enter the resume fast-forward branch.
+    checkpoint_manager.resume_batch_offset = 0
+    checkpoint_manager.resume_micro_step = 0
+
+    data_processor = MagicMock()
+    data_processor.get_training_steps_per_epoch.return_value = 1_000_000
+
+    dataloader = _FiniteDataLoader([_microbatch() for _ in range(n_batches)])
+
+    return TrainingLoop(
+        config=config,
+        model=model,
+        optimizer=optimizer,
+        lr_scheduler=lr_scheduler,
+        dataloader=dataloader,
+        device=torch.device('cpu'),
+        checkpoint_manager=checkpoint_manager,
+        data_processor=data_processor,
+    )
+
+
+class TestTokenCounterSaveResumeConsistency:
+    """Regression coverage for the preemption-smoke find (2026-08-22).
+
+    All numbers below are exact and were chosen (grad_accum=2, 12
+    tokens/micro-batch => 24 tokens/effective-step) so that the pre-fix
+    code fails these assertions by exactly one effective step's worth of
+    tokens (24), mirroring the cluster smoke's 128,000-token discrepancy
+    at the same 200-of-400 style mid-run schedule anchor.
+    """
+
+    GRAD_ACCUM = 2
+    TOKENS_PER_MICROBATCH = 12
+    TOKENS_PER_STEP = GRAD_ACCUM * TOKENS_PER_MICROBATCH  # 24
+    TRAIN_STEPS = 6
+    # Mid-run anchor strictly below TRAIN_STEPS — like the smoke's
+    # checkpoint_schedule=[200, 400] with train_steps=400, this is never
+    # reachable via the natural end-of-loop path (see the endpoint-guard
+    # comment in loop.py), only via the mid-loop scheduled-save path whose
+    # off-by-one this test targets.
+    SCHEDULE = {3}
+
+    def test_mid_loop_checkpoint_records_self_consistent_tokens(self):
+        """checkpoint-3's persisted total_tokens_processed must describe 3
+        windows' worth of tokens (matching its own global_step label), not
+        4 windows' worth (the in-flight window that hasn't yet been
+        reflected in self.global_step at save time).
+        """
+        with patch('torch.cuda.is_available', return_value=False):
+            loop = _make_run_loop(
+                train_steps=self.TRAIN_STEPS,
+                grad_accum=self.GRAD_ACCUM,
+                checkpoint_schedule=self.SCHEDULE,
+                # Exactly enough micro-batches to complete real step 4 (the
+                # window whose completion trips the global_step==3
+                # scheduled save), then run dry — mirrors "SIGKILLed
+                # shortly after checkpoint-N landed".
+                n_batches=4 * self.GRAD_ACCUM,
+            )
+            loop.run(tokenizer=MagicMock(), start_step=0, start_epoch=0,
+                     start_tokens=0)
+
+        calls = loop.checkpoint_manager.save_checkpoint.call_args_list
+        assert len(calls) >= 1
+        scheduled_call = calls[0]
+
+        assert scheduled_call.args[4] == 3  # global_step label
+        assert scheduled_call.args[7] == 3 * self.TOKENS_PER_STEP  # 72, not 96
+
+    def test_resumed_run_matches_uninterrupted_reference_token_total(self):
+        """End-to-end: a run split by a simulated preemption at
+        checkpoint-3 and then resumed must reach the SAME final
+        total_tokens_processed as an uninterrupted reference run — not one
+        effective step (TOKENS_PER_STEP) higher.
+        """
+        # --- Reference: a single, uninterrupted run to train_steps. ---
+        with patch('torch.cuda.is_available', return_value=False):
+            ref_loop = _make_run_loop(
+                train_steps=self.TRAIN_STEPS,
+                grad_accum=self.GRAD_ACCUM,
+                checkpoint_schedule=self.SCHEDULE,
+                n_batches=self.TRAIN_STEPS * self.GRAD_ACCUM,
+            )
+            ref_loop.run(tokenizer=MagicMock(), start_step=0, start_epoch=0,
+                         start_tokens=0)
+        ref_calls = ref_loop.checkpoint_manager.save_checkpoint.call_args_list
+        reference_final_step = ref_calls[-1].args[4]
+        reference_final_tokens = ref_calls[-1].args[7]
+        assert reference_final_step == self.TRAIN_STEPS
+        assert reference_final_tokens == self.TRAIN_STEPS * self.TOKENS_PER_STEP  # 144
+
+        # --- "Killed shortly after checkpoint-3 landed": only enough data
+        # to complete real step 4 (the window whose completion trips the
+        # global_step==3 scheduled save), then the process goes dark,
+        # exactly like the first run above. ---
+        with patch('torch.cuda.is_available', return_value=False):
+            killed_loop = _make_run_loop(
+                train_steps=self.TRAIN_STEPS,
+                grad_accum=self.GRAD_ACCUM,
+                checkpoint_schedule=self.SCHEDULE,
+                n_batches=4 * self.GRAD_ACCUM,
+            )
+            killed_loop.run(tokenizer=MagicMock(), start_step=0,
+                             start_epoch=0, start_tokens=0)
+        killed_calls = killed_loop.checkpoint_manager.save_checkpoint.call_args_list
+        loaded_start_step = killed_calls[0].args[4]
+        loaded_start_tokens = killed_calls[0].args[7]
+
+        # --- Resume: a fresh process re-seeded from exactly what the
+        # checkpoint persisted (mirrors checkpoint_manager.load_checkpoint
+        # -> resume_total_tokens -> run(start_tokens=...)). No fast-forward
+        # needed — the fake dataloader below IS the remaining data. ---
+        with patch('torch.cuda.is_available', return_value=False):
+            resumed_loop = _make_run_loop(
+                train_steps=self.TRAIN_STEPS,
+                grad_accum=self.GRAD_ACCUM,
+                checkpoint_schedule=set(),  # avoid re-tripping schedule={3}
+                # self.global_step re-enters at loaded_start_step and must
+                # climb to TRAIN_STEPS by its OWN increments regardless of
+                # the token-counter fix — that structurally requires
+                # exactly (TRAIN_STEPS - loaded_start_step) more real
+                # optimizer-step windows here, independent of what this
+                # test is checking.
+                n_batches=(self.TRAIN_STEPS - loaded_start_step) * self.GRAD_ACCUM,
+            )
+            resumed_loop.run(tokenizer=MagicMock(),
+                              start_step=loaded_start_step, start_epoch=0,
+                              start_tokens=loaded_start_tokens)
+        resumed_calls = resumed_loop.checkpoint_manager.save_checkpoint.call_args_list
+        resumed_final_step = resumed_calls[-1].args[4]
+        resumed_final_tokens = resumed_calls[-1].args[7]
+
+        assert resumed_final_step == reference_final_step == self.TRAIN_STEPS
+        # The regression: pre-fix code leaves this TOKENS_PER_STEP (one
+        # whole effective step) higher than the reference.
+        assert resumed_final_tokens == reference_final_tokens
