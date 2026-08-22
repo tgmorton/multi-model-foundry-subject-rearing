@@ -251,6 +251,142 @@ def _get_person_number(
 # Core ablation
 # ---------------------------------------------------------------------------
 
+def _enrich_verbal_morphology_edits(
+    doc: spacy.tokens.Doc,
+    suffix_map: Dict[Tuple[str, str], str],
+    past_suffix_map: Optional[Dict[Tuple[str, str], str]] = None,
+    irregular_paradigms: Optional[Dict[str, Dict[str, Dict[Tuple[str, str], str]]]] = None,
+    default_person_number: Optional[Tuple[str, str]] = ("3", "Sing"),
+) -> Tuple[Dict[int, str], int]:
+    """
+    Compute the per-token replacement plan for verbal-morphology enrichment.
+
+    Returns ``(edits, num_enriched)`` where ``edits`` maps ``token.i ->
+    replacement_text`` for every token whose OUTPUT TEXT actually differs
+    from its surface form (exact string comparison — see the note below
+    on why this can include case-only differences), and ``num_enriched``
+    counts only the subset that received a genuine suffix or suppletive
+    form. These two are NOT the same set — see below.
+
+    This is the single source of truth for the edit computation —
+    ``_enrich_verbal_morphology`` (and therefore ``enrich_verbal_morphology_doc``)
+    is reimplemented on top of it, and a stacked ablation combinator can
+    call it directly to merge edits from multiple ablations on the same
+    parsed Doc.
+
+    NOTE on the edits/count distinction: when the parse can't identify a
+    subject AND ``default_person_number`` is disabled (``None``, the
+    legacy/test-only path), a finite verb falls through to its bare
+    lemma with no suffix. The *text* still changes (e.g. "said" ->
+    "say"), so it belongs in ``edits``, but this is not a genuine
+    "enrichment" — the original implementation did not increment its
+    count for this case, and that semantics is preserved here via the
+    separate ``num_enriched`` counter (do not conflate ``len(edits)``
+    with the enriched count).
+
+    Args:
+        doc: spaCy Doc to process
+        suffix_map: present-tense (person, number) -> suffix
+        past_suffix_map: past-tense (person, number) -> suffix; pass
+            ``None`` to disable past-tense enrichment (legacy behaviour)
+        irregular_paradigms: lemma -> tense -> (person, number) -> full
+            suppletive replacement word; pass ``None`` to disable
+        default_person_number: coarse (person, number) fallback used
+            when the parse cannot identify a subject. Default ``("3",
+            "Sing")`` — the unmarked / third-person-narrator default.
+            Without this fallback, finite verbs with unresolvable
+            subjects would fall through to bare lemma, which is
+            indistinguishable from `lemmatize_verbs` output and
+            silently leaks signal between the two manipulations. Pass
+            ``None`` to disable the fallback (legacy behaviour).
+    """
+    if past_suffix_map is None:
+        past_suffix_map = {}  # disables past-tense enrichment
+    if irregular_paradigms is None:
+        irregular_paradigms = {}  # disables suppletion
+
+    edits: Dict[int, str] = {}
+    num_enriched = 0
+
+    for i, tok in enumerate(doc):
+        if tok.pos_ not in ("VERB", "AUX"):
+            continue
+        # Enrich finite verbs only — participles (VerbForm=Part, e.g.
+        # "giving") and infinitives don't carry agreement. Within
+        # finite, both Pres and Past get a suffix; everything else
+        # (no tense feature, etc.) is left untouched.
+        tense = tok.morph.get("Tense")
+        verb_form = tok.morph.get("VerbForm")
+        if not tense or not verb_form or "Fin" not in verb_form:
+            continue
+
+        if "Pres" in tense:
+            tense_key = "Pres"
+            active_paradigm = suffix_map
+        elif "Past" in tense:
+            tense_key = "Past"
+            active_paradigm = past_suffix_map
+        else:
+            continue
+
+        replacement = tok.lemma_
+        # Resolve (person, number). Try the parse first; if that
+        # fails fall back to the coarse default (3sg) so we still
+        # apply a suffix rather than silently regressing to bare
+        # lemma. See docstring for rationale.
+        subj = _find_subject(tok)
+        pn = _get_person_number(subj) if subj is not None else None
+        if pn is None and default_person_number is not None:
+            pn = default_person_number
+        if pn is not None:
+            # Suppletion takes precedence over the regular
+            # lemma+suffix rule when the lemma is in the
+            # irregular paradigm dict (e.g., be / have / do / go).
+            irreg_lemma = irregular_paradigms.get(tok.lemma_.lower())
+            if irreg_lemma is not None:
+                irreg_form = irreg_lemma.get(tense_key, {}).get(pn)
+                if irreg_form is not None:
+                    replacement = irreg_form
+                    num_enriched += 1
+                else:
+                    # Lemma is in the irregular dict but we
+                    # don't have a form for this (person, number, tense).
+                    # Fall through to regular rule.
+                    suffix = active_paradigm.get(pn, "")
+                    if suffix:
+                        replacement = tok.lemma_ + suffix
+                        num_enriched += 1
+            else:
+                suffix = active_paradigm.get(pn, "")
+                if suffix:
+                    replacement = tok.lemma_ + suffix
+                    num_enriched += 1
+
+        form_changed = replacement.lower() != tok.text.lower()
+        # Contraction-glue fix: see lemmatize_verbs. Gated on form_changed
+        # (case-insensitive), matching the original loop exactly.
+        leading = ""
+        if form_changed and i > 0 and doc[i - 1].whitespace_ == "":
+            leading = " "
+        trailing_extra = " " if (form_changed and tok.whitespace_ == "") else ""
+        full_replacement = leading + replacement + trailing_extra
+        # NOTE: the original loop ALWAYS rewrites every finite verb/aux
+        # token to `replacement` here (it does not skip when
+        # `form_changed` is False) — `form_changed` only gates the
+        # glue-fix and `num_enriched` above. A token whose `replacement`
+        # differs from its surface form ONLY in capitalization (e.g. a
+        # lemma-only fallback for a sentence-initial verb whose lemma is
+        # identical to its inflected form) would therefore still get
+        # silently rewritten. We reproduce that byte-for-byte by storing
+        # an edit whenever the full replacement differs from the surface
+        # text at all — not just when `form_changed` is True — rather
+        # than skipping via `continue` here.
+        if full_replacement != tok.text:
+            edits[i] = full_replacement
+
+    return edits, num_enriched
+
+
 def _enrich_verbal_morphology(
     doc: spacy.tokens.Doc,
     suffix_map: Dict[Tuple[str, str], str],
@@ -283,89 +419,56 @@ def _enrich_verbal_morphology(
     leaks signal between the two manipulations. Pass ``None`` to
     disable the fallback (legacy behaviour).
 
+    Built on top of ``_enrich_verbal_morphology_edits``: the edit plan is
+    computed once and the output text is reconstructed by joining each
+    token's replacement (or its own text, if unchanged) with the token's
+    own trailing whitespace.
+
     Returns:
         (modified_text, count_of_enriched_verbs)
     """
-    if past_suffix_map is None:
-        past_suffix_map = {}  # disables past-tense enrichment
-    if irregular_paradigms is None:
-        irregular_paradigms = {}  # disables suppletion
-
-    modified_parts = []
-    num_enriched = 0
-
-    for i, tok in enumerate(doc):
-        if tok.pos_ in ("VERB", "AUX"):
-            # Enrich finite verbs only — participles (VerbForm=Part, e.g.
-            # "giving") and infinitives don't carry agreement. Within
-            # finite, both Pres and Past get a suffix; everything else
-            # (no tense feature, etc.) is left untouched.
-            tense = tok.morph.get("Tense")
-            verb_form = tok.morph.get("VerbForm")
-            if not tense or not verb_form or "Fin" not in verb_form:
-                modified_parts.append(tok.text_with_ws)
-                continue
-
-            if "Pres" in tense:
-                tense_key = "Pres"
-                active_paradigm = suffix_map
-            elif "Past" in tense:
-                tense_key = "Past"
-                active_paradigm = past_suffix_map
-            else:
-                modified_parts.append(tok.text_with_ws)
-                continue
-
-            replacement = tok.lemma_
-            # Resolve (person, number). Try the parse first; if that
-            # fails fall back to the coarse default (3sg) so we still
-            # apply a suffix rather than silently regressing to bare
-            # lemma. See docstring for rationale.
-            subj = _find_subject(tok)
-            pn = _get_person_number(subj) if subj is not None else None
-            if pn is None and default_person_number is not None:
-                pn = default_person_number
-            if pn is not None:
-                # Suppletion takes precedence over the regular
-                # lemma+suffix rule when the lemma is in the
-                # irregular paradigm dict (e.g., be / have / do / go).
-                irreg_lemma = irregular_paradigms.get(tok.lemma_.lower())
-                if irreg_lemma is not None:
-                    irreg_form = irreg_lemma.get(tense_key, {}).get(pn)
-                    if irreg_form is not None:
-                        replacement = irreg_form
-                        num_enriched += 1
-                    else:
-                        # Lemma is in the irregular dict but we
-                        # don't have a form for this (person, number, tense).
-                        # Fall through to regular rule.
-                        suffix = active_paradigm.get(pn, "")
-                        if suffix:
-                            replacement = tok.lemma_ + suffix
-                            num_enriched += 1
-                else:
-                    suffix = active_paradigm.get(pn, "")
-                    if suffix:
-                        replacement = tok.lemma_ + suffix
-                        num_enriched += 1
-            form_changed = replacement.lower() != tok.text.lower()
-            # Contraction-glue fix: see lemmatize_verbs.
-            leading = ""
-            if form_changed and i > 0 and doc[i - 1].whitespace_ == "":
-                leading = " "
-            trailing = tok.whitespace_
-            if form_changed and tok.whitespace_ == "":
-                trailing = " "
-            modified_parts.append(leading + replacement + trailing)
-        else:
-            modified_parts.append(tok.text_with_ws)
-
-    return "".join(modified_parts), num_enriched
+    edits, num_enriched = _enrich_verbal_morphology_edits(
+        doc,
+        suffix_map=suffix_map,
+        past_suffix_map=past_suffix_map,
+        irregular_paradigms=irregular_paradigms,
+        default_person_number=default_person_number,
+    )
+    result = "".join(edits.get(tok.i, tok.text) + tok.whitespace_ for tok in doc)
+    return result, num_enriched
 
 
 # ---------------------------------------------------------------------------
 # Public ablation function
 # ---------------------------------------------------------------------------
+
+def token_edits(doc: spacy.tokens.Doc) -> Dict[int, str]:
+    """
+    Per-token replacement plan for ``enrich_verbal_morphology_doc``'s
+    default configuration (``DEFAULT_SUFFIX_MAP`` / ``DEFAULT_PAST_SUFFIX_MAP``
+    / ``IRREGULAR_PARADIGMS``, 3sg-default subject fallback).
+
+    Returns ONLY the tokens whose surface form changes, mapped to their
+    replacement text (no trailing whitespace beyond the contraction-glue
+    fix — see ``_enrich_verbal_morphology_edits``). Exposed so a stacked
+    ablation combinator can merge this ablation's edits with others on
+    the same parsed Doc.
+
+    Args:
+        doc: spaCy Doc to process
+
+    Returns:
+        Dict mapping changed token indices to their replacement text.
+    """
+    edits, _ = _enrich_verbal_morphology_edits(
+        doc,
+        suffix_map=DEFAULT_SUFFIX_MAP,
+        past_suffix_map=DEFAULT_PAST_SUFFIX_MAP,
+        irregular_paradigms=IRREGULAR_PARADIGMS,
+        default_person_number=("3", "Sing"),
+    )
+    return edits
+
 
 def enrich_verbal_morphology_doc(doc: spacy.tokens.Doc) -> Tuple[str, int]:
     """

@@ -106,6 +106,55 @@ class EnglishExpletiveSentenceRemover:
         """Return a copy of the per-file tier counts."""
         return dict(self._file_tier_counts)
 
+    def classify(self, doc: spacy.tokens.Doc) -> Optional[str]:
+        """
+        Decide whether *doc* would be removed, and under which tier.
+
+        Returns the tier name (``"tier1_expl"``, ``"tier2_weather"``,
+        ``"tier2_raising"``, ``"tier2_copular"``, or
+        ``"tier3_coref_confirmed"``) if the line WOULD be removed, else
+        ``None``.
+
+        Does NOT handle document-boundary lines (the caller is expected
+        to special-case those before calling ``classify``) and does NOT
+        touch ``_removed_line_indices`` / ``_context_buffer`` / the
+        current-line counter — those are call-cycle concerns owned by
+        ``__call__``.
+
+        Does perform the tier-count bookkeeping that is inherent to the
+        classification decision itself: every returned tier increments
+        its own counter, and — since it would otherwise be lost — a
+        heuristic candidate that coreference rejects (kept, not removed)
+        still increments ``tier3_coref_kept`` even though ``None`` is
+        returned. This mirrors the original ``__call__``'s bookkeeping
+        exactly; only the line-index/context-buffer side effects moved
+        out to the caller.
+        """
+        # Tier 1: spaCy-tagged expletive — remove immediately
+        if self._has_spacy_expl(doc):
+            self._file_tier_counts["tier1_expl"] += 1
+            return "tier1_expl"
+
+        # Tier 2: heuristic weather/raising-it — find candidate
+        candidate = self._find_heuristic_expletive_it(doc)
+        if candidate is None:
+            return None
+
+        # Classify the heuristic tier
+        tier2_category = self._classify_heuristic(doc, candidate)
+
+        # Tier 3: coreference confirmation
+        if self._coref_confirms_expletive(doc, candidate):
+            if self._coref_model_name is not None and self._nlp_coref is not None:
+                self._file_tier_counts["tier3_coref_confirmed"] += 1
+                return "tier3_coref_confirmed"
+            else:
+                self._file_tier_counts[tier2_category] += 1
+                return tier2_category
+        else:
+            self._file_tier_counts["tier3_coref_kept"] += 1
+            return None
+
     def __call__(self, doc: spacy.tokens.Doc) -> Tuple[str, int]:
         """Remove the entire line if it contains an expletive construction."""
         line_idx = self._current_line_index
@@ -116,40 +165,16 @@ class EnglishExpletiveSentenceRemover:
             self._context_buffer = []
             return doc.text_with_ws, 0
 
-        # Tier 1: spaCy-tagged expletive — remove immediately
-        if self._has_spacy_expl(doc):
-            self._file_tier_counts["tier1_expl"] += 1
+        tier = self.classify(doc)
+
+        self._context_buffer.append(doc.text)
+        self._context_buffer = self._context_buffer[-self._context_lines:]
+
+        if tier is not None:
             self._removed_line_indices.append(line_idx)
-            self._context_buffer.append(doc.text)
-            self._context_buffer = self._context_buffer[-self._context_lines:]
             return "", 1
 
-        # Tier 2: heuristic weather/raising-it — find candidate
-        candidate = self._find_heuristic_expletive_it(doc)
-
-        if candidate is None:
-            self._context_buffer.append(doc.text)
-            self._context_buffer = self._context_buffer[-self._context_lines:]
-            return doc.text_with_ws, 0
-
-        # Classify the heuristic tier
-        tier2_category = self._classify_heuristic(doc, candidate)
-
-        # Tier 3: coreference confirmation
-        if self._coref_confirms_expletive(doc, candidate):
-            if self._coref_model_name is not None and self._nlp_coref is not None:
-                self._file_tier_counts["tier3_coref_confirmed"] += 1
-            else:
-                self._file_tier_counts[tier2_category] += 1
-            self._removed_line_indices.append(line_idx)
-            self._context_buffer.append(doc.text)
-            self._context_buffer = self._context_buffer[-self._context_lines:]
-            return "", 1
-        else:
-            self._file_tier_counts["tier3_coref_kept"] += 1
-            self._context_buffer.append(doc.text)
-            self._context_buffer = self._context_buffer[-self._context_lines:]
-            return doc.text_with_ws, 0
+        return doc.text_with_ws, 0
 
     @staticmethod
     def _has_spacy_expl(doc: spacy.tokens.Doc) -> bool:

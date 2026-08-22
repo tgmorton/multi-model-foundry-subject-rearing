@@ -174,6 +174,60 @@ def _match_capitalization(replacement: str, original: str) -> str:
     return replacement
 
 
+def _impoverish_case_token_edits(
+    doc: spacy.tokens.Doc,
+    mapping: Dict[str, str],
+    target_pos: frozenset,
+) -> Dict[int, str]:
+    """
+    Compute the per-token replacement plan for case impoverishment.
+
+    Returns a mapping ``token.i -> replacement_text`` containing ONLY the
+    tokens that actually get replaced: POS in *target_pos*, ``lower_`` in
+    *mapping*, not a definite-article homograph (``PronType=Art``), and
+    not an identity mapping (e.g. reflexive "si" -> "si"). This is the
+    same token-selection logic as the original ``_impoverish_case`` loop,
+    including the ``_match_capitalization`` behavior and the contraction-
+    glue leading/trailing-space fix.
+
+    This is the single source of truth for the edit computation; both
+    ``_impoverish_case`` (used by the stateless per-language ``*_doc``
+    functions) and ``CaseImpoverisher.__call__`` are reimplemented on top
+    of it, and a stacked ablation combinator can call it directly to
+    merge edits from multiple ablations on the same parsed Doc.
+    """
+    edits: Dict[int, str] = {}
+
+    for i, tok in enumerate(doc):
+        lower = tok.lower_
+        if tok.pos_ not in target_pos or lower not in mapping:
+            continue
+        # Skip definite articles — PronType=Art distinguishes e.g.
+        # Italian "lo" (article, DET) from "lo" (clitic pronoun, PRON).
+        pron_type = tok.morph.get("PronType")
+        if pron_type and "Art" in pron_type:
+            continue
+        nom = mapping[lower]
+        # Skip identity mappings (e.g. "si" → "si")
+        if nom == lower:
+            continue
+        replacement = _match_capitalization(nom, tok.text)
+        # Contraction-glue fix: if the original token is glued to a
+        # neighbour (e.g. Spanish "dímelo" = ["dí", "me", "lo"]
+        # with empty whitespace_ between them, or English "it's" =
+        # ["it", "'s"] — although impoverish_case doesn't touch
+        # "'s" since it's AUX not PRON), re-insert whitespace so
+        # the substituted form doesn't concatenate into a
+        # pseudo-token.
+        leading = ""
+        if i > 0 and doc[i - 1].whitespace_ == "":
+            leading = " "
+        trailing_extra = " " if tok.whitespace_ == "" else ""
+        edits[i] = leading + replacement + trailing_extra
+
+    return edits
+
+
 def _impoverish_case(
     doc: spacy.tokens.Doc,
     mapping: Dict[str, str],
@@ -182,7 +236,7 @@ def _impoverish_case(
     tier_counter: Optional[Dict[str, int]] = None,
 ) -> Tuple[str, int]:
     """
-    Core token-replacement loop shared by all languages.
+    Core token-replacement logic shared by all languages.
 
     For each token whose ``lower_`` form appears in *mapping* and whose POS
     is in *target_pos*, replace it with the nominative form (preserving
@@ -192,47 +246,23 @@ def _impoverish_case(
     replaced form using categories from *tier_map*. The caller owns the
     dict — typically a ``CaseImpoverisher`` instance that aggregates
     counts across an entire file.
+
+    Built on top of ``_impoverish_case_token_edits``: the edit plan is
+    computed once, the output text is reconstructed by joining each
+    token's replacement (or its own text, if unchanged) with the token's
+    own trailing whitespace, and tier bookkeeping is derived from the
+    same plan (in token order, matching the original loop's bookkeeping
+    order exactly).
     """
-    modified_parts = []
-    num_replaced = 0
+    edits = _impoverish_case_token_edits(doc, mapping, target_pos)
+    result = "".join(edits.get(tok.i, tok.text) + tok.whitespace_ for tok in doc)
 
-    for i, tok in enumerate(doc):
-        lower = tok.lower_
-        if tok.pos_ in target_pos and lower in mapping:
-            # Skip definite articles — PronType=Art distinguishes e.g.
-            # Italian "lo" (article, DET) from "lo" (clitic pronoun, PRON).
-            pron_type = tok.morph.get("PronType")
-            if pron_type and "Art" in pron_type:
-                modified_parts.append(tok.text_with_ws)
-                continue
-            nom = mapping[lower]
-            # Skip identity mappings (e.g. "si" → "si")
-            if nom == lower:
-                modified_parts.append(tok.text_with_ws)
-            else:
-                replacement = _match_capitalization(nom, tok.text)
-                # Contraction-glue fix: if the original token is glued to a
-                # neighbour (e.g. Spanish "dímelo" = ["dí", "me", "lo"]
-                # with empty whitespace_ between them, or English "it's" =
-                # ["it", "'s"] — although impoverish_case doesn't touch
-                # "'s" since it's AUX not PRON), re-insert whitespace so
-                # the substituted form doesn't concatenate into a
-                # pseudo-token.
-                leading = ""
-                if i > 0 and doc[i - 1].whitespace_ == "":
-                    leading = " "
-                trailing = tok.whitespace_
-                if tok.whitespace_ == "":
-                    trailing = " "
-                modified_parts.append(leading + replacement + trailing)
-                num_replaced += 1
-                if tier_counter is not None and tier_map is not None:
-                    tier = tier_map.get(lower, "other")
-                    tier_counter[tier] = tier_counter.get(tier, 0) + 1
-        else:
-            modified_parts.append(tok.text_with_ws)
+    if tier_counter is not None and tier_map is not None:
+        for i in edits:
+            tier = tier_map.get(doc[i].lower_, "other")
+            tier_counter[tier] = tier_counter.get(tier, 0) + 1
 
-    return "".join(modified_parts), num_replaced
+    return result, len(edits)
 
 
 class CaseImpoverisher:
@@ -263,6 +293,12 @@ class CaseImpoverisher:
     def get_file_tier_counts(self) -> Dict[str, int]:
         """Return a copy of the per-file tier counts."""
         return dict(self._file_tier_counts)
+
+    def token_edits(self, doc: spacy.tokens.Doc) -> Dict[int, str]:
+        """Per-token replacement plan for this instance's (mapping,
+        target_pos). Exposed so a stacked ablation combinator can call
+        ``token_edits`` uniformly on the registered ablation object."""
+        return _impoverish_case_token_edits(doc, self._mapping, self._target_pos)
 
     def __call__(self, doc: spacy.tokens.Doc) -> Tuple[str, int]:
         return _impoverish_case(
