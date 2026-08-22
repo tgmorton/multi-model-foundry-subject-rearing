@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2446,7 +2446,7 @@
 <a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
 <a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>image: busybox
 <a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;echo &#39;&lt;html&gt;&lt;body&gt;&lt;h1&gt;I am &#39; `hostname` &#39;&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;&#39; &gt; /usr/local/apache2/htdocs/index.html&quot;]
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>command: ["sh", "-c", "echo '&lt;html&gt;&lt;body&gt;&lt;h1&gt;I am ' `hostname` '&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;' &gt; /usr/local/apache2/htdocs/index.html"]
 <a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
 <a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>volumeMounts:
 <a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
@@ -2533,7 +2533,7 @@
 <a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>
 <a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>cpu: 100m
 <a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
-<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;echo &#39;Im a new pod&#39; &amp;&amp; sleep infinity&quot;]
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>command: ["sh", "-c", "echo 'Im a new pod' &amp;&amp; sleep infinity"]
 </code></pre></div>
 <p>Question?</p>
 <p>What resources are we requesting in this example? Are the resources requested for this pod capable of much?</p>
@@ -2580,7 +2580,7 @@
 <a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
 <a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>cpu: 200m
 <a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
-<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;echo &#39;Im a new curl pod&#39; &amp;&amp; sleep infinity&quot;]
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>command: ["sh", "-c", "echo 'Im a new curl pod' &amp;&amp; sleep infinity"]
 </code></pre></div>
 <p>Notice that we’ve increased our resources and requests for memory and CPU.</p>
 <p>When using a shared Kubernetes cluster (or any shared cluster for that matter), it is wise to balance your need for resources with their availability. Asking for too many resources will decrease the chances the cluster can provide them in a reasonable timeframe. Asking for too few resources will negatively impact your ability to compute.</p>
@@ -2784,7 +2784,7 @@ Scheduling</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

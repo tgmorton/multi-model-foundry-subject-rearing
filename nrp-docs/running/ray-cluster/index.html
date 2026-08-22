@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2433,7 +2433,7 @@
 </code></pre></div>
 <p>Execute a Ray job to print the cluster resources:</p>
 <p>Terminal window</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl exec -it $HEAD_POD -- python -c &quot;import ray; ray.init(); print(ray.cluster_resources())&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl exec -it $HEAD_POD -- python -c "import ray; ray.init(); print(ray.cluster_resources())"
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a># 2024-07-24 20:51:00,788 INFO worker.py:1405 -- Using address 127.0.0.1:6379 set in the environment variable RAY_ADDRESS
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
@@ -2441,7 +2441,7 @@
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a># 2024-07-24 20:51:00,797 INFO worker.py:1715 -- Connected to Ray cluster. View the dashboard at http://10.244.110.211:8265
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a># {&#39;node:10.244.231.23&#39;: 1.0, &#39;memory&#39;: 3000000000.0, &#39;object_store_memory&#39;: 751175270.0, &#39;CPU&#39;: 2.0, &#39;node:10.244.110.211&#39;: 1.0, &#39;node:__internal_head__&#39;: 1.0}
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a># {'node:10.244.231.23': 1.0, 'memory': 3000000000.0, 'object_store_memory': 751175270.0, 'CPU': 2.0, 'node:10.244.110.211': 1.0, 'node:__internal_head__': 1.0}
 </code></pre></div>
 <p>You may also submit a Ray job to the RayCluster via ray job submission SDK. For more information, please refer to <a href="https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/raycluster-quick-start.html#method-2-submit-a-ray-job-to-the-raycluster-via-ray-job-submission-sdk">https://docs.ray.io/en/latest/cluster/kubernetes/getting-started/raycluster-quick-start.html#method-2-submit-a-ray-job-to-the-raycluster-via-ray-job-submission-sdk</a>
 3. Access the Ray Dashboard</p>
@@ -2457,7 +2457,7 @@
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>helm uninstall raycluster
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a># release &quot;raycluster&quot; uninstalled
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a># release "raycluster" uninstalled
 </code></pre></div>
 <p>It might take several seconds for the RayCluster’s pods to terminate. Confirm that the pods are gone by running:</p>
 <p>Terminal window</p>
@@ -2543,7 +2543,7 @@ Dask Cluster</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

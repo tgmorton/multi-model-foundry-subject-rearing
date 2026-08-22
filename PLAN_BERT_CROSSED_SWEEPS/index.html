@@ -12,13 +12,9 @@
         <meta name="author" content="Model Foundry Team">
       
       
-        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/NRP_REGISTRY_SETUP/">
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/PLAN_BERT_CROSSED_SWEEPS/">
       
       
-        <link rel="prev" href="../k8s_jobs/">
-      
-      
-        <link rel="next" href="../model_foundry/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>NRP Registry Setup - Model Foundry Documentation</title>
+        <title>BERT-Rated Crossed-Sweep Study — Master Plan - Model Foundry Documentation</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#nrp-container-registry-setup-for-corpus-analysis" class="md-skip">
+        <a href="#bert-rated-crossed-sweep-study-master-plan" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              NRP Registry Setup
+              BERT-Rated Crossed-Sweep Study — Master Plan
             
           </span>
         </div>
@@ -402,12 +398,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../k8s_jobs/" class="md-tabs__link">
           
   
@@ -1656,31 +1650,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
             
   
   
@@ -1698,7 +1689,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1741,37 +1732,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    NRP Registry Setup
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../NRP_REGISTRY_SETUP/" class="md-nav__link">
         
   
   
@@ -1787,286 +1751,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-by-step-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step-by-Step Setup
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step-by-Step Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-create-a-gitlab-account" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Create a GitLab Account
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-create-or-join-the-gitlab-project" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Create or Join the GitLab Project
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-log-in-to-the-container-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Log In to the Container Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-build-the-docker-image" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Build the Docker Image
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-push-to-the-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Push to the Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-if-private-repo-create-a-kubernetes-pull-secret" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. (If Private Repo) Create a Kubernetes Pull Secret
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-deploy-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Deploy Jobs
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cicd-alternative-build-on-push-with-gitlab-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CI/CD Alternative: Build on Push with GitLab CI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#registry-login-failures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Registry Login Failures
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#image-pull-errors-in-kubernetes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Image Pull Errors in Kubernetes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#push-permission-denied" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Push Permission Denied
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gitlab-container-registry-metadata-database-errors-admin-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GitLab Container Registry Metadata Database Errors (Admin Reference)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GitLab Container Registry Metadata Database Errors (Admin Reference)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#error-cannot-import-all-repositories-while-tags-table-has-entries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: Cannot import all repositories while tags table has entries
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-database-in-use-lockfile-exists" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: database-in-use lockfile exists
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-accessdenied-aws-s3-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: AccessDenied (AWS S3 backend)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-registry-filesystem-metadata-in-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: registry filesystem metadata in use
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-registry-metadata-database-in-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: registry metadata database in use
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-permission-denied-for-schema-public-sqlstate-42501" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: permission denied for schema public (SQLSTATE 42501)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#storage-usage-not-decreasing-after-tag-deletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage usage not decreasing after tag deletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2694,10 +2378,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#the-directive-goals-restated" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        The directive (goals, restated)
       
     </span>
   </a>
@@ -2705,22 +2389,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-by-step-setup" class="md-nav__link">
+  <a href="#decision-register" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step-by-Step Setup
+        Decision register
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step-by-Step Setup">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Track breakdown">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-create-a-gitlab-account" class="md-nav__link">
+  <a href="#track-a-bert-rater-selection-v3-blocks-corpora" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Create a GitLab Account
+        Track A — BERT rater + selection v3 (blocks corpora)
       
     </span>
   </a>
@@ -2728,10 +2423,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-create-or-join-the-gitlab-project" class="md-nav__link">
+  <a href="#track-b-storage-audit-pruning-start-immediately-independent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Create or Join the GitLab Project
+        Track B — Storage audit + pruning (start immediately; independent)
       
     </span>
   </a>
@@ -2739,10 +2434,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-log-in-to-the-container-registry" class="md-nav__link">
+  <a href="#track-c-worktree-merge-documentation-start-immediately-independent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Log In to the Container Registry
+        Track C — Worktree merge + documentation (start immediately; independent)
       
     </span>
   </a>
@@ -2750,10 +2445,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-build-the-docker-image" class="md-nav__link">
+  <a href="#track-d-corpus-factory-blocks-on-a3-d2d4-combinator-buildable-now" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Build the Docker Image
+        Track D — Corpus factory (blocks on A3 + D2–D4; combinator buildable now)
       
     </span>
   </a>
@@ -2761,32 +2456,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-push-to-the-registry" class="md-nav__link">
+  <a href="#track-e-5000-run-wave-blocks-on-b-d-d5-sign-off" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Push to the Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-if-private-repo-create-a-kubernetes-pull-secret" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. (If Private Repo) Create a Kubernetes Pull Secret
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#7-deploy-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Deploy Jobs
+        Track E — 5,000-run wave (blocks on B, D + D5 sign-off)
       
     </span>
   </a>
@@ -2799,10 +2472,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cicd-alternative-build-on-push-with-gitlab-ci" class="md-nav__link">
+  <a href="#storage-analysis-hard-numbers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CI/CD Alternative: Build on Push with GitLab CI
+        Storage analysis (hard numbers)
       
     </span>
   </a>
@@ -2810,146 +2483,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
+  <a href="#compute-analysis-napkin-to-refine-in-track-be" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting
+        Compute analysis (napkin, to refine in Track B/E)
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#registry-login-failures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Registry Login Failures
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#image-pull-errors-in-kubernetes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Image Pull Errors in Kubernetes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#push-permission-denied" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Push Permission Denied
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#gitlab-container-registry-metadata-database-errors-admin-reference" class="md-nav__link">
+  <a href="#execution-map-parallelism-delegation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GitLab Container Registry Metadata Database Errors (Admin Reference)
+        Execution map (parallelism + delegation)
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="GitLab Container Registry Metadata Database Errors (Admin Reference)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#error-cannot-import-all-repositories-while-tags-table-has-entries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: Cannot import all repositories while tags table has entries
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-database-in-use-lockfile-exists" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: database-in-use lockfile exists
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-accessdenied-aws-s3-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: AccessDenied (AWS S3 backend)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-registry-filesystem-metadata-in-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: registry filesystem metadata in use
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-registry-metadata-database-in-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: registry metadata database in use
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-permission-denied-for-schema-public-sqlstate-42501" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error: permission denied for schema public (SQLSTATE 42501)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#storage-usage-not-decreasing-after-tag-deletion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Storage usage not decreasing after tag deletion
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2973,150 +2524,236 @@
   
 
 
-<h1 id="nrp-container-registry-setup-for-corpus-analysis">NRP Container Registry Setup for Corpus Analysis<a class="headerlink" href="#nrp-container-registry-setup-for-corpus-analysis" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The corpus analysis pipeline runs as Kubernetes Jobs on NRP/Nautilus, pulling Docker
-images from the NRP-hosted GitLab Container Registry at <code>gitlab-registry.nrp-nautilus.io</code>.</p>
-<p><strong>Registry image path:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest
-</code></pre></div></p>
-<hr />
-<h2 id="step-by-step-setup">Step-by-Step Setup<a class="headerlink" href="#step-by-step-setup" title="Permanent link">&para;</a></h2>
-<h3 id="1-create-a-gitlab-account">1. Create a GitLab Account<a class="headerlink" href="#1-create-a-gitlab-account" title="Permanent link">&para;</a></h3>
-<p>Register at https://gitlab.nrp-nautilus.io using your institutional credentials
-(CILogon federated authentication).</p>
-<h3 id="2-create-or-join-the-gitlab-project">2. Create or Join the GitLab Project<a class="headerlink" href="#2-create-or-join-the-gitlab-project" title="Permanent link">&para;</a></h3>
-<p>Either create a new project or get added to the existing <code>multi-model-foundry</code>
-group at <code>https://gitlab.nrp-nautilus.io/multi-model-foundry</code>.</p>
-<h3 id="3-log-in-to-the-container-registry">3. Log In to the Container Registry<a class="headerlink" href="#3-log-in-to-the-container-registry" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>login<span class="w"> </span>gitlab-registry.nrp-nautilus.io
-</code></pre></div>
-<p>Use your GitLab username and a <strong>personal access token</strong> (not your password).
-To create a token: GitLab &gt; User Settings &gt; Access Tokens &gt; create one with
-<code>read_registry</code> and <code>write_registry</code> scopes.</p>
-<h3 id="4-build-the-docker-image">4. Build the Docker Image<a class="headerlink" href="#4-build-the-docker-image" title="Permanent link">&para;</a></h3>
-<p>From the project root:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>-f<span class="w"> </span>k8s/Dockerfile<span class="w"> </span>.
-</code></pre></div>
-<h3 id="5-push-to-the-registry">5. Push to the Registry<a class="headerlink" href="#5-push-to-the-registry" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>push<span class="w"> </span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest
-</code></pre></div>
-<h3 id="6-if-private-repo-create-a-kubernetes-pull-secret">6. (If Private Repo) Create a Kubernetes Pull Secret<a class="headerlink" href="#6-if-private-repo-create-a-kubernetes-pull-secret" title="Permanent link">&para;</a></h3>
-<p>If the GitLab project is <strong>private</strong>, Kubernetes needs credentials to pull the image.</p>
-<p>a. In GitLab, go to <strong>Settings &gt; Repository &gt; Deploy Tokens</strong> and create a
-   deploy token with <code>read_registry</code> scope.</p>
-<p>b. Create a Kubernetes secret:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;<span class="w"> </span>secret<span class="w"> </span>docker-registry<span class="w"> </span>regcred<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--docker-server<span class="o">=</span>gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--docker-username<span class="o">=</span>gitlab+deploy-token-XXX<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--docker-password<span class="o">=</span>&lt;token-value&gt;
-</code></pre></div>
-<p>c. Add <code>imagePullSecrets</code> to your Job specs:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">spec</span><span class="p">:</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">template</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">imagePullSecrets</span><span class="p">:</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">regcred</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">analyzer</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab-registry.nrp-nautilus.io/multi-model-foundry/corpus-analysis:latest</span>
-</code></pre></div>
-<h3 id="7-deploy-jobs">7. Deploy Jobs<a class="headerlink" href="#7-deploy-jobs" title="Permanent link">&para;</a></h3>
-<p>See <code>k8s/README.md</code> for the full deployment workflow (PVC creation, data upload,
-job submission, output retrieval).</p>
-<hr />
-<h2 id="cicd-alternative-build-on-push-with-gitlab-ci">CI/CD Alternative: Build on Push with GitLab CI<a class="headerlink" href="#cicd-alternative-build-on-push-with-gitlab-ci" title="Permanent link">&para;</a></h2>
-<p>Instead of building locally, you can automate builds using GitLab CI.
-Add a <code>.gitlab-ci.yml</code> to the GitLab project:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/osscontainertools/kaniko:debug</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nt">stages</span><span class="p">:</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build-and-push</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nt">build-and-push-job</span><span class="p">:</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">stage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build-and-push</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">variables</span><span class="p">:</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">GODEBUG</span><span class="p">:</span><span class="w"> </span><span class="s">"http2client=0"</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nt">script</span><span class="p">:</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" &gt; /kaniko/.docker/config.json</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/kaniko/executor --cache=true --push-retry=10 --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/k8s/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --destination $CI_REGISTRY_IMAGE:latest</span>
-</code></pre></div>
-<p>The <code>GODEBUG="http2client=0"</code> variable is required to work around a known
-Kaniko speed issue with GitLab's registry.</p>
-<hr />
-<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="registry-login-failures">Registry Login Failures<a class="headerlink" href="#registry-login-failures" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Ensure you're using a <strong>personal access token</strong>, not your password</li>
-<li>Token must have <code>read_registry</code> and <code>write_registry</code> scopes</li>
-<li>Check the registry URL is exactly <code>gitlab-registry.nrp-nautilus.io</code></li>
-</ul>
-<h3 id="image-pull-errors-in-kubernetes">Image Pull Errors in Kubernetes<a class="headerlink" href="#image-pull-errors-in-kubernetes" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>ErrImagePull / ImagePullBackOff</strong>: Usually means missing <code>imagePullSecrets</code>
-  for a private repo, or the image tag doesn't exist</li>
-<li>Verify the image exists: <code>docker pull &lt;image-url&gt;</code> from your local machine</li>
-<li>If the project is public, no pull secret is needed</li>
-</ul>
-<h3 id="push-permission-denied">Push Permission Denied<a class="headerlink" href="#push-permission-denied" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Ensure your GitLab account has at least <strong>Developer</strong> role in the project</li>
-<li>Re-authenticate: <code>docker logout gitlab-registry.nrp-nautilus.io &amp;&amp; docker login gitlab-registry.nrp-nautilus.io</code></li>
-</ul>
-<hr />
-<h2 id="gitlab-container-registry-metadata-database-errors-admin-reference">GitLab Container Registry Metadata Database Errors (Admin Reference)<a class="headerlink" href="#gitlab-container-registry-metadata-database-errors-admin-reference" title="Permanent link">&para;</a></h2>
-<p>The following errors apply to <strong>GitLab administrators</strong> managing the registry's
-internal metadata database. Regular users will not encounter these, but they
-are documented here for reference if coordinating with NRP support.</p>
-<h3 id="error-cannot-import-all-repositories-while-tags-table-has-entries">Error: Cannot import all repositories while tags table has entries<a class="headerlink" href="#error-cannot-import-all-repositories-while-tags-table-has-entries" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>ERRO[0000] cannot import all repositories while the tags table has entries,
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>you must truncate the table manually before retrying
-</code></pre></div>
-<p><strong>Cause:</strong> Existing entries in the registry database <code>tags</code> table from a
-previous failed or interrupted import attempt.</p>
-<p><strong>Resolution (admin):</strong></p>
+<h1 id="bert-rated-crossed-sweep-study-master-plan">BERT-Rated Crossed-Sweep Study — Master Plan<a class="headerlink" href="#bert-rated-crossed-sweep-study-master-plan" title="Permanent link">&para;</a></h1>
+<p>Captured 2026-08-22 from Thomas's directive. This supersedes the wave-1
+dispatch of the external-gpt2-medium graded corpora (those 19 corpora are
+retained on the PVC but will be rebuilt under the new rating; nothing
+trained on them yet).</p>
+<h2 id="the-directive-goals-restated">The directive (goals, restated)<a class="headerlink" href="#the-directive-goals-restated" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Disable the metadata database in <code>/etc/gitlab/gitlab.rb</code>:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">registry</span><span class="o">[</span><span class="s1">'database'</span><span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="s1">'enabled'</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kp">false</span><span class="p">,</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
-</code></pre></div></li>
-<li>Connect to the registry PostgreSQL instance</li>
-<li>Truncate the tags table:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">TRUNCATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">tags</span><span class="w"> </span><span class="k">RESTART</span><span class="w"> </span><span class="k">IDENTITY</span><span class="w"> </span><span class="k">CASCADE</span><span class="p">;</span>
-</code></pre></div></li>
-<li>Re-run the import process</li>
+<li><strong>Re-rate recoverability with pretrained BERT.</strong> Replace the external
+   gpt2-medium rater with the most publication-standard pretrained BERT
+   available; regenerate the surprisal annotation (masked-slot scoring),
+   re-freeze the selection, and rebuild sweeps from it.</li>
+<li><strong>Crossed corpus matrix (100 cells).</strong> Two sweep arms per Thomas's
+   naming — the <strong>surprisal sweep</strong> (info deciles) and the <strong>random
+   sweep</strong> — each at K = 10..100, crossed with <strong>5 intervention
+   conditions</strong>: baseline, remove_expletive_sentences,
+   enrich_verbal_morphology, impoverish_case, and impoverish verbs
+   (= <code>lemmatize_verbs</code>; confirm mapping). 5 × 10 × 2 = 100 corpus cells.
+   Interventions are applied ON each decile sweep such that <strong>the same
+   pronouns are removed in every intervention</strong> — i.e., pronoun-drop
+   selection is fixed and intervention edits must not perturb which
+   pronoun instances get removed.</li>
+<li><strong>Tokenizer question.</strong> Decide whether cells need their own tokenizers
+   (Thomas's intuition: tokenizer convergence may care about pronoun
+   frequency + intervention statistics) or whether the existing shared
+   tokenizers stand. See Decision D2.</li>
+<li><strong>Training matrix: 5,000 runs.</strong> Per corpus cell: 5 architectures
+   (gpt2_small, gpt2_medium, gpt2_large, bert_large, lstm — <strong>no
+   mamba</strong>) × top-5 HPs × 2 seeds = 50 runs/cell... (10 runs per
+   (cell, arch)); 100 cells × 50 = 5,000 trainings. <strong>Seed policy:
+   seeds are treated as unique samples from a population — randomly
+   generated per run</strong>, never shared across HPs, corpora, or
+   architectures; every generated seed is recorded (registry + job spec).</li>
+<li><strong>Storage campaign (concurrent with BERT annotation).</strong> Full PVC
+   audit + aggressive pruning:</li>
+<li>Models registered for evals (enumerated by the <code>cell_id</code> sets in
+     <code>analysis/eval_v2/figures/foundry_trajectories/condition_matched_v1/*.csv</code><ul>
+<li><code>coverage_manifest.json</code> in the codex worktree) → KEEP evaluatable
+ (weights-only) checkpoints; count resumable vs evaluatable per run;
+ <strong>strip <code>training_state.pt</code> (resume state) as aggressively as
+ possible</strong> — still eval-able, no longer trainable-from.</li>
+</ul>
+</li>
+<li>Models NOT eval-registered (failed runs, extraneous data) → DELETE.</li>
+<li>Similar audit pass over S3.</li>
+<li><strong>Worktree merge + repo hygiene.</strong> Merge
+   <code>~/.codex/worktrees/e7fb/multi-model-foundry-subject-rearing</code>
+   (branch <code>codex/fix-continuation-resume</code>: 33 commits ahead / 13 behind
+   main, 76 dirty files) into main; send agents to organize and document
+   what has been done in that line of work; get the repo in good order.</li>
+<li><strong>Be smart about compute/storage before starting</strong> — anticipate
+   demands, maximize parallelism around blockers.</li>
 </ol>
-<h3 id="error-database-in-use-lockfile-exists">Error: database-in-use lockfile exists<a class="headerlink" href="#error-database-in-use-lockfile-exists" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>step two: import tags failed to import metadata: importing all repositories:
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>could not restore lockfiles: database-in-use lockfile exists
-</code></pre></div>
-<p><strong>Cause:</strong> A previous import completed step two and left a lock file.</p>
-<p><strong>Resolution (admin):</strong> Delete the lock file at
-<code>/path/to/rootdirectory/docker/registry/lockfiles/database-in-use</code>.
-Only do this if you are certain you need to re-import.</p>
-<h3 id="error-accessdenied-aws-s3-backend">Error: AccessDenied (AWS S3 backend)<a class="headerlink" href="#error-accessdenied-aws-s3-backend" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pre importing all repositories: AccessDenied: Access Denied
-</code></pre></div>
-<p><strong>Resolution (admin):</strong> Ensure the IAM user/role executing the import has
-the correct S3 permission scopes.</p>
-<h3 id="error-registry-filesystem-metadata-in-use">Error: registry filesystem metadata in use<a class="headerlink" href="#error-registry-filesystem-metadata-in-use" title="Permanent link">&para;</a></h3>
-<p>Registry won't start because the database is enabled in config but metadata
-hasn't been imported yet.</p>
-<p><strong>Resolution (admin):</strong> Run the metadata import before enabling the database.</p>
-<h3 id="error-registry-metadata-database-in-use">Error: registry metadata database in use<a class="headerlink" href="#error-registry-metadata-database-in-use" title="Permanent link">&para;</a></h3>
-<p>Registry won't start because metadata was imported but the database hasn't
-been enabled in config.</p>
-<p><strong>Resolution (admin):</strong> Set <code>registry['database'] = { 'enabled' =&gt; true }</code>.</p>
-<h3 id="error-permission-denied-for-schema-public-sqlstate-42501">Error: permission denied for schema public (SQLSTATE 42501)<a class="headerlink" href="#error-permission-denied-for-schema-public-sqlstate-42501" title="Permanent link">&para;</a></h3>
-<p>Occurs with PostgreSQL 15+ which removed default CREATE privileges on <code>public</code>.</p>
-<p><strong>Resolution (admin):</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">ALTER</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="o">&lt;</span><span class="n">registry_database_name</span><span class="o">&gt;</span><span class="w"> </span><span class="k">OWNER</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="o">&lt;</span><span class="n">registry_user</span><span class="o">&gt;</span><span class="p">;</span>
-</code></pre></div></p>
-<h3 id="storage-usage-not-decreasing-after-tag-deletion">Storage usage not decreasing after tag deletion<a class="headerlink" href="#storage-usage-not-decreasing-after-tag-deletion" title="Permanent link">&para;</a></h3>
-<p>The online garbage collector has a 48-hour delay before deleting unreferenced
-layers. This prevents interference with in-progress image pushes.</p>
+<h2 id="decision-register">Decision register<a class="headerlink" href="#decision-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Status</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Which pretrained BERT</td>
+<td><strong>LOCKED 2026-08-22</strong></td>
+<td><code>bert-large-uncased-whole-word-masking</code>.</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Tokenizers: shared vs per-cell</td>
+<td><strong>LOCKED 2026-08-22</strong></td>
+<td>Shared tokenizers (<code>en_shared_unigram</code>, <code>en_bert_wordpiece</code>) stand. Probe-tokenizer drift check optional, non-blocking.</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>"impoverish verbs" = <code>lemmatize_verbs</code></td>
+<td><strong>CONFIRMED</strong></td>
+<td>The four interventions = {remove_expletive_sentences, impoverish_case, lemmatize_verbs, enrich_verbal_morphology}.</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Stacking semantics</td>
+<td>PROPOSED (unobjected)</td>
+<td>Intervention edits computed from RAW parse, merged as edit-plans per doc; identical pronoun removals across interventions, identical intervention edits across sweeps.</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Compute staging</td>
+<td><strong>DEFERRED by Thomas</strong></td>
+<td>Direction set: prioritize wide runs on cheap archs first (gpt2_small, lstm) for throughput, then heavier archs. gpt2_large inclusion decided later; optimize when we get there.</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Deletion protocol</td>
+<td><strong>LOCKED 2026-08-22 — THREE phases</strong></td>
+<td>Phase 1: total READ-ONLY manifest (no deletions of any kind). Phase 2: garbage deletion, post-manifest-review. Phase 3: remaining pruning (resume-state stripping etc.), post-review.</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Production epochs</td>
+<td>OPEN (assumed 30)</td>
+<td>Locked study parameter is 30; nothing said otherwise.</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Checkpoint paradigm for the wave</td>
+<td><strong>NEW 2026-08-22</strong></td>
+<td>Adopt the lang-manifold <strong>bit-guaranteed retraining</strong> paradigm (<code>~/lang-manifold</code>): sparse resumable checkpoints (~4/model) + determinism manifests that allow bit-exact re-materialization of intermediate steps by replaying training segments; inline evals during training. Port requires: same verification smoke here (retrain a segment, diff bits) and the same implementation choices. Replaces keep-everything checkpointing for Track E.</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Contraction residue kept; population = personal pronouns</td>
+<td>LOCKED (2026-08-15)</td>
+<td>Carries over unchanged.</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Random seeds per run, recorded</td>
+<td>LOCKED (this directive)</td>
+<td>fdy wave already validated random-seed run_ids end-to-end.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="track-breakdown">Track breakdown<a class="headerlink" href="#track-breakdown" title="Permanent link">&para;</a></h2>
+<h3 id="track-a-bert-rater-selection-v3-blocks-corpora">Track A — BERT rater + selection v3 (blocks corpora)<a class="headerlink" href="#track-a-bert-rater-selection-v3-blocks-corpora" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A1. Extend <code>scripts/score_pronoun_recoverability.py</code> with an MLM mode:
+  masked-slot scoring (mask the pronoun's wordpiece(s), one forward per
+  instance, batched; window ±~250 wordpieces around the slot). Banks the
+  same sufficient statistics (slot logprob, inventory distribution,
+  entropy). No corpus-wide per-token PLL (130M masked forwards is not
+  worth it; slot statistics are the measure). Buildable NOW — does not
+  depend on D1.</li>
+<li>A2. Score train_90M + pull_10M (12 shards × 1 MLM scorer; ~1–3 h wall).</li>
+<li>A3. Analysis v3: BERT ranking vs external-gpt2m vs in-house raters
+  (the invariance table grows a row — publication asset), decile
+  composition, freeze <strong>selection v3</strong> + pool tables (absolute
+  thresholds, same consumption semantics — ablation module unchanged).</li>
+<li>Blocker: D1 only.</li>
+</ul>
+<h3 id="track-b-storage-audit-pruning-start-immediately-independent">Track B — Storage audit + pruning (start immediately; independent)<a class="headerlink" href="#track-b-storage-audit-pruning-start-immediately-independent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>B1. Inventory: per-run checkpoint census on the PVC (checkpoint count,
+  which have <code>training_state.pt</code>, per-run bytes), joined against
+  (i) the union of <code>cell_id</code>s in condition_matched_v1 CSVs +
+  coverage_manifest, (ii) the S3 registry (status field).</li>
+<li>B2. Classify: eval-registered → strip resume states; FAILED/orphan →
+  delete; ambiguous → manifest.</li>
+<li>B3. <code>docs/STORAGE_AUDIT.md</code> + deletion manifest + projected reclaim →
+  Phase-1 deletions execute; Phase-2 after Thomas reviews the manifest.</li>
+<li>B4. S3 prefix audit (registry, eval_results, per_token, recoverability).</li>
+<li>B5. New-wave save policy design (required regardless — see Storage
+  analysis): streaming train→eval→prune lifecycle.</li>
+</ul>
+<h3 id="track-c-worktree-merge-documentation-start-immediately-independent">Track C — Worktree merge + documentation (start immediately; independent)<a class="headerlink" href="#track-c-worktree-merge-documentation-start-immediately-independent" title="Permanent link">&para;</a></h3>
+<ul>
+<li>C1. Survey <code>codex/fix-continuation-resume</code> (33 ahead / 13 behind, 76
+  dirty files): commit inventory, dirty-file triage, overlap analysis
+  with main's recent changes.</li>
+<li>C2. Merge into main (main-loop work; conflicts likely limited to
+  fleet/eval surfaces), preserving the worktree's provenance.</li>
+<li>C3. Documentation sweep (subagents): what the fdy waves were, what
+  condition_matched_v1 shows, continuation-resume mechanics —
+  consolidated into docs/.</li>
+</ul>
+<h3 id="track-d-corpus-factory-blocks-on-a3-d2d4-combinator-buildable-now">Track D — Corpus factory (blocks on A3 + D2–D4; combinator buildable now)<a class="headerlink" href="#track-d-corpus-factory-blocks-on-a3-d2d4-combinator-buildable-now" title="Permanent link">&para;</a></h3>
+<ul>
+<li>D1. <strong>Edit-plan combinator</strong>: per-doc merge of {selection-driven token
+  deletes} + {intervention edits computed from raw parse}. New stacked
+  ablation type consuming (selection_dir, arm, k, intervention).</li>
+<li>D2. Pool sufficiency for stacked cells — worst case
+  remove_expletive_sentences × K=100 (line-removal + pronoun shortfall
+  compound). If margins fail → pool expansion pipeline (new same-genre
+  material → annotate → BERT-score → threshold via frozen manifest).
+  Per-genre backfill constraint documented (speech genres can't be
+  backfilled from Gutenberg/Wiki).</li>
+<li>D3. Compose 100 cells (indexed jobs; ~1 GB/cell + ~2.4 GB caches per
+  tokenizer family per cell).</li>
+<li>D4. Probe-tokenizer check (if D2 compromise accepted).</li>
+</ul>
+<h3 id="track-e-5000-run-wave-blocks-on-b-d-d5-sign-off">Track E — 5,000-run wave (blocks on B, D + D5 sign-off)<a class="headerlink" href="#track-e-5000-run-wave-blocks-on-b-d-d5-sign-off" title="Permanent link">&para;</a></h3>
+<ul>
+<li>E1. Launcher v2: cell-indexed, random-seed generation + recording,
+  5 archs × h0–h4 × 2 seeds, no mamba.</li>
+<li>E2. <strong>Train→eval→prune streaming lifecycle</strong> (storage-mandatory):
+  eval each run's trajectory as it completes, archive eval parquets to
+  S3, prune weights to endpoint(+reference) checkpoints, then release
+  disk. Concurrency throttled to keep PVC below a hard watermark.</li>
+<li>E3. Phased dispatch per D5; fleet monitoring via fleetview.</li>
+</ul>
+<h2 id="storage-analysis-hard-numbers">Storage analysis (hard numbers)<a class="headerlink" href="#storage-analysis-hard-numbers" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PVC now: <strong>96T used / ~3T free (97%)</strong> on a 90 TiB CephFS volume.</li>
+<li>Naive 5,000-run wave at the current save policy is <strong>impossible</strong>:
+  fp32 weights × ~97 anchors gives per-run footprints of ~17 GB
+  (gpt2_small) to ~300 GB (gpt2_large); even the fdy wave's measured
+  ~34 GB/run average puts 5,000 runs at <strong>~170–500 TB</strong>.</li>
+<li>Therefore two mandatory measures:</li>
+<li><strong>Track B reclaim</strong> — resume-state stripping (~19 anchors/run × 2–3×
+     weight size on ~900 production runs) plus non-eval'd deletions;
+     target: tens of TB back. Audit will give exact numbers.</li>
+<li><strong>Streaming lifecycle (E2)</strong> — steady-state disk = (in-flight runs ×
+     footprint) + retained endpoints (~1 GB avg × 5,000 ≈ 5 TB) + eval
+     parquets (S3). In-flight cap set by free space, not by wave size.</li>
+<li>S3 is not currently a concern (small artifacts) but B4 verifies.</li>
+</ul>
+<h2 id="compute-analysis-napkin-to-refine-in-track-be">Compute analysis (napkin, to refine in Track B/E)<a class="headerlink" href="#compute-analysis-napkin-to-refine-in-track-be" title="Permanent link">&para;</a></h2>
+<p>Per-run 30-epoch estimates on the 24 GB pool: gpt2_small ~12 h,
+gpt2_medium ~30 h, gpt2_large ~80 h (phys 4), bert_large ~40 h, lstm
+~8 h → 1,000 runs each ≈ <strong>~170K GPU-hours ≈ 19 GPU-years</strong>.
+At a sustained 150 concurrent GPUs ≈ ~7 weeks; at 250 ≈ ~4 weeks.
+gpt2_large alone is ~47% of the budget — D5's cell-subset option exists
+for a reason. A100-reservation request to NRP is worth considering for
+the large models.</p>
+<h2 id="execution-map-parallelism-delegation">Execution map (parallelism + delegation)<a class="headerlink" href="#execution-map-parallelism-delegation" title="Permanent link">&para;</a></h2>
+<p>Immediately parallel, no blockers:
+- <strong>B1 inventory</strong> (cluster pods, main loop) — longest lead item.
+- <strong>C1 worktree survey</strong> (subagent) → C2 merge (main loop) → C3 docs
+  (workflow: parallel readers → synthesis).
+- <strong>A1 MLM scoring mode</strong> (main loop code; toy-validated locally).
+- <strong>D1 combinator</strong> (main loop code + tests).</p>
+<p>Blocked chains:
+- A2 needs D1(decision) → A3 → D3 compose needs A3 + D2 + D2-sufficiency.
+- E needs B reclaim + D3 + D5 sign-off.</p>
+<p>Delegation policy (per standing rules): cluster ops main-loop only;
+sonnet subagents for surveys/docs/mechanical sweeps; workflows for
+fan-out documentation and audit-classification passes; all destructive
+actions gated per D6.</p>
 
 
 

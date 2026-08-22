@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2420,7 +2420,7 @@
 <p>Terminal window</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kubectl create secret generic coder-db-url -n your_namespace \
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>--from-literal=url=&quot;postgres://coder:[email protected]:5432/coder?sslmode=disable&quot;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>--from-literal=url="postgres://coder:[email protected]:5432/coder?sslmode=disable"
 </code></pre></div>
 <hr />
 <h3 id="6-install-coder-with-helm">6. Install Coder with Helm<a class="headerlink" href="#6-install-coder-with-helm" title="Permanent link">&para;</a></h3>
@@ -2441,7 +2441,7 @@
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>- name: CODER_WILDCARD_ACCESS_URL
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>value: &#39;*.your_name.nrp-nautilus.io&#39;
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>value: '*.your_name.nrp-nautilus.io'
 <a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>- name: CODER_PG_CONNECTION_URL
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
@@ -2519,7 +2519,7 @@
 <a id="__codelineno-2-86" name="__codelineno-2-86" href="#__codelineno-2-86"></a>
 <a id="__codelineno-2-87" name="__codelineno-2-87" href="#__codelineno-2-87"></a>#  - name: CODER_OIDC_ALLOW_SIGNUPS
 <a id="__codelineno-2-88" name="__codelineno-2-88" href="#__codelineno-2-88"></a>
-<a id="__codelineno-2-89" name="__codelineno-2-89" href="#__codelineno-2-89"></a>#    value: &quot;false&quot;
+<a id="__codelineno-2-89" name="__codelineno-2-89" href="#__codelineno-2-89"></a>#    value: "false"
 <a id="__codelineno-2-90" name="__codelineno-2-90" href="#__codelineno-2-90"></a>
 <a id="__codelineno-2-91" name="__codelineno-2-91" href="#__codelineno-2-91"></a>ingress:
 <a id="__codelineno-2-92" name="__codelineno-2-92" href="#__codelineno-2-92"></a>
@@ -2537,7 +2537,7 @@
 <a id="__codelineno-2-104" name="__codelineno-2-104" href="#__codelineno-2-104"></a>
 <a id="__codelineno-2-105" name="__codelineno-2-105" href="#__codelineno-2-105"></a>wildcardSecretName: ssl-key
 <a id="__codelineno-2-106" name="__codelineno-2-106" href="#__codelineno-2-106"></a>
-<a id="__codelineno-2-107" name="__codelineno-2-107" href="#__codelineno-2-107"></a>wildcardHost: &#39;*.your_name.nrp-nautilus.io&#39;
+<a id="__codelineno-2-107" name="__codelineno-2-107" href="#__codelineno-2-107"></a>wildcardHost: '*.your_name.nrp-nautilus.io'
 <a id="__codelineno-2-108" name="__codelineno-2-108" href="#__codelineno-2-108"></a>
 <a id="__codelineno-2-109" name="__codelineno-2-109" href="#__codelineno-2-109"></a>resources:
 <a id="__codelineno-2-110" name="__codelineno-2-110" href="#__codelineno-2-110"></a>
@@ -2660,7 +2660,7 @@ NRP Managed LLM</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

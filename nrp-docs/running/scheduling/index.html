@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2519,11 +2519,11 @@
 <a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
 <a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>def create_dummy_job(client: ArmadaClient):
 <a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>&quot;&quot;&quot;
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>"""
 <a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
 <a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>Create a dummy job with a single container.
 <a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>&quot;&quot;&quot;
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>"""
 <a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
 <a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>pod = core_v1.PodSpec(
 <a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>
@@ -2531,11 +2531,11 @@
 <a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>
 <a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>core_v1.Container(
 <a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
-<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>name=&quot;container1&quot;,
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>name="container1",
 <a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
-<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>image=&quot;index.docker.io/library/ubuntu:latest&quot;,
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>image="index.docker.io/library/ubuntu:latest",
 <a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
-<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>args=[&quot;sleep&quot;, &quot;10s&quot;],
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>args=["sleep", "10s"],
 <a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>
 <a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a>securityContext=core_v1.SecurityContext(runAsUser=1000),
 <a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a>
@@ -2543,17 +2543,17 @@
 <a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a>
 <a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a>requests={
 <a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>
-<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>&quot;cpu&quot;: api_resource.Quantity(string=&quot;120m&quot;),
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>"cpu": api_resource.Quantity(string="120m"),
 <a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a>
-<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a>&quot;memory&quot;: api_resource.Quantity(string=&quot;510Mi&quot;),
+<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a>"memory": api_resource.Quantity(string="510Mi"),
 <a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a>
 <a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a>},
 <a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a>
 <a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a>limits={
 <a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a>
-<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a>&quot;cpu&quot;: api_resource.Quantity(string=&quot;120m&quot;),
+<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a>"cpu": api_resource.Quantity(string="120m"),
 <a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a>
-<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a>&quot;memory&quot;: api_resource.Quantity(string=&quot;510Mi&quot;),
+<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a>"memory": api_resource.Quantity(string="510Mi"),
 <a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a>
 <a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a>},
 <a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a>
@@ -2565,25 +2565,25 @@
 <a id="__codelineno-4-62" name="__codelineno-4-62" href="#__codelineno-4-62"></a>
 <a id="__codelineno-4-63" name="__codelineno-4-63" href="#__codelineno-4-63"></a>)
 <a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a>
-<a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a>return [client.create_job_request_item(priority=0, pod_spec=pod, namespace=&quot;your_namespace&quot;)]
+<a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a>return [client.create_job_request_item(priority=0, pod_spec=pod, namespace="your_namespace")]
 <a id="__codelineno-4-66" name="__codelineno-4-66" href="#__codelineno-4-66"></a>
-<a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a>token = &quot;your_id_token&quot;
+<a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a>token = "your_id_token"
 <a id="__codelineno-4-68" name="__codelineno-4-68" href="#__codelineno-4-68"></a>
-<a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a>HOST = &quot;armada.nrp-nautilus.io&quot;
+<a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a>HOST = "armada.nrp-nautilus.io"
 <a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a>
-<a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a>PORT = &quot;50051&quot;
+<a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a>PORT = "50051"
 <a id="__codelineno-4-72" name="__codelineno-4-72" href="#__codelineno-4-72"></a>
-<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a>queue = f&quot;your_namespace&quot;
+<a id="__codelineno-4-73" name="__codelineno-4-73" href="#__codelineno-4-73"></a>queue = f"your_namespace"
 <a id="__codelineno-4-74" name="__codelineno-4-74" href="#__codelineno-4-74"></a>
-<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a>job_set_id = f&quot;simple-jobset-{uuid.uuid1()}&quot;
+<a id="__codelineno-4-75" name="__codelineno-4-75" href="#__codelineno-4-75"></a>job_set_id = f"simple-jobset-{uuid.uuid1()}"
 <a id="__codelineno-4-76" name="__codelineno-4-76" href="#__codelineno-4-76"></a>
 <a id="__codelineno-4-77" name="__codelineno-4-77" href="#__codelineno-4-77"></a>class BearerAuth(grpc.AuthMetadataPlugin):
 <a id="__codelineno-4-78" name="__codelineno-4-78" href="#__codelineno-4-78"></a>
 <a id="__codelineno-4-79" name="__codelineno-4-79" href="#__codelineno-4-79"></a>def __call__(self, context, callback):
 <a id="__codelineno-4-80" name="__codelineno-4-80" href="#__codelineno-4-80"></a>
-<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>callback(((&quot;authorization&quot;, f&quot;Bearer {token}&quot;),), None)
+<a id="__codelineno-4-81" name="__codelineno-4-81" href="#__codelineno-4-81"></a>callback((("authorization", f"Bearer {token}"),), None)
 <a id="__codelineno-4-82" name="__codelineno-4-82" href="#__codelineno-4-82"></a>
-<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a>channel = grpc.secure_channel(f&quot;{HOST}:{PORT}&quot;,
+<a id="__codelineno-4-83" name="__codelineno-4-83" href="#__codelineno-4-83"></a>channel = grpc.secure_channel(f"{HOST}:{PORT}",
 <a id="__codelineno-4-84" name="__codelineno-4-84" href="#__codelineno-4-84"></a>
 <a id="__codelineno-4-85" name="__codelineno-4-85" href="#__codelineno-4-85"></a>grpc.composite_channel_credentials(
 <a id="__codelineno-4-86" name="__codelineno-4-86" href="#__codelineno-4-86"></a>
@@ -2605,7 +2605,7 @@
 <a id="__codelineno-4-102" name="__codelineno-4-102" href="#__codelineno-4-102"></a>
 <a id="__codelineno-4-103" name="__codelineno-4-103" href="#__codelineno-4-103"></a>)
 <a id="__codelineno-4-104" name="__codelineno-4-104" href="#__codelineno-4-104"></a>
-<a id="__codelineno-4-105" name="__codelineno-4-105" href="#__codelineno-4-105"></a>print(&quot;Completed Workflow&quot;)
+<a id="__codelineno-4-105" name="__codelineno-4-105" href="#__codelineno-4-105"></a>print("Completed Workflow")
 </code></pre></div>
 <p><a href="https://gitlab.nrp-nautilus.io/prp/nrp-site/-/tree/main/src/content/docs/Documentation/userdocs/running/scheduling.mdx">Edit page</a></p>
 <p><a href="/documentation/userdocs/running/cpu-only">Previous<br />
@@ -2687,7 +2687,7 @@ Client scripts</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2425,13 +2425,13 @@
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># manually select a site
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>site = &#39;UCSD&#39;
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>site = 'UCSD'
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># generate a name for the slice
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>slice_name = &quot;my-slice-&quot; + &#39;&#39;.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>slice_name = "my-slice-" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>print(f&quot;slice_name= {slice_name}&quot;)
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>print(f"slice_name= {slice_name}")
 </code></pre></div>
 <p>To connect from FABRIC to Nautilus, we utilize Facility Ports, which allow us to establish a connection from the FABRIC dataplane through the UCSD site to Nautilus, specifically to the Nautilus nodes at UCSD.</p>
 <ul>
@@ -2445,64 +2445,64 @@
 </ul>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>vlan_map = {
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>&quot;3110&quot;: (3110, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>"3110": (3110, "FP1-UCSD"),
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>&quot;3111&quot;: (3607, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>"3111": (3607, "FP1-UCSD"),
 <a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>&quot;3113&quot;: (3113, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>"3113": (3113, "FP1-UCSD"),
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>&quot;3114&quot;: (3114, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>"3114": (3114, "FP1-UCSD"),
 <a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>&quot;3116&quot;: (3116, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>"3116": (3116, "FP1-UCSD"),
 <a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>&quot;3118&quot;: (3119, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>"3118": (3119, "FP1-UCSD"),
 <a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>&quot;3119&quot;: (3135, &quot;FP1-UCSD&quot;),
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>"3119": (3135, "FP1-UCSD"),
 <a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>&quot;3123&quot;: (3123, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>"3123": (3123, "NRP-UCSD"),
 <a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>&quot;3124&quot;: (3124, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>"3124": (3124, "NRP-UCSD"),
 <a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>&quot;3125&quot;: (3125, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>"3125": (3125, "NRP-UCSD"),
 <a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>&quot;3126&quot;: (3126, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>"3126": (3126, "NRP-UCSD"),
 <a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>&quot;3127&quot;: (3127, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>"3127": (3127, "NRP-UCSD"),
 <a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>
-<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>&quot;3128&quot;: (3118, &quot;NRP-UCSD&quot;),
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>"3128": (3118, "NRP-UCSD"),
 <a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>
-<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>&quot;3129&quot;: (3129, &quot;NRP-UCSD&quot;)
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>"3129": (3129, "NRP-UCSD")
 <a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
 <a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>}
 </code></pre></div>
 <p><strong>Please pick a VLAN tag from the above dictionary for your UCSD slice.</strong></p>
 <p>If the selected VLAN tag is already in use, you will need to choose a different one.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>vlan_choice = &quot;3114&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>vlan_choice = "3114"
 </code></pre></div>
 <h3 id="23-create-the-fabric-ucsd-slice">2.3 Create the FABRIC UCSD Slice<a class="headerlink" href="#23-create-the-fabric-ucsd-slice" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>slice = fablib.new_slice(name=slice_name)
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>image = &#39;docker_ubuntu_20&#39;
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>image = 'docker_ubuntu_20'
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>facility_port=vlan_map[vlan_choice][1]
 <a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>facility_port_site=&#39;UCSD&#39;
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>facility_port_site='UCSD'
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>facility_port_vlan=vlan_choice
 <a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>node = slice.add_node(name=f&quot;Node1&quot;, site=&#39;UCSD&#39;,cores=1, ram=8, disk=100, image=image)
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>node = slice.add_node(name=f"Node1", site='UCSD',cores=1, ram=8, disk=100, image=image)
 <a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>node_iface = node.add_component(model=&#39;NIC_Basic&#39;, name=&quot;nic1&quot;).get_interfaces()[0]
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>node_iface = node.add_component(model='NIC_Basic', name="nic1").get_interfaces()[0]
 <a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
 <a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>facility_port = slice.add_facility_port(name=facility_port, site=facility_port_site, vlan=facility_port_vlan)
 <a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
 <a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>facility_port_interface =facility_port.get_interfaces()[0]
 <a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
-<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>print(f&quot;facility_port.get_site(): {facility_port.get_site()}&quot;)
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>print(f"facility_port.get_site(): {facility_port.get_site()}")
 <a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>
 <a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>facility_port.get_name()
 <a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>
-<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>net = slice.add_l2network(name=f&#39;net_facility_port&#39;, interfaces=[])
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>net = slice.add_l2network(name=f'net_facility_port', interfaces=[])
 <a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>
 <a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>net.add_interface(node_iface)
 <a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>
@@ -2512,37 +2512,37 @@
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>slice = fablib.get_slice(name=slice_name)
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>node1 = slice.get_node(name=&quot;Node1&quot;)
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>node1 = slice.get_node(name="Node1")
 </code></pre></div>
 <h3 id="24-configure-the-interface">2.4 Configure the Interface<a class="headerlink" href="#24-configure-the-interface" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>command = &quot;sudo ip addr add 192.168.1.1/24 dev enp7s0 &amp;&amp; sudo ip link set enp7s0 up &amp;&amp; ip addr show enp7s0&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>command = "sudo ip addr add 192.168.1.1/24 dev enp7s0 &amp;&amp; sudo ip link set enp7s0 up &amp;&amp; ip addr show enp7s0"
 <a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 <a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>stdout, stderr = node1.execute(command)
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>command = &quot;sudo apt-get update &amp;&amp; sudo apt-get install iputils-ping -y&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>command = "sudo apt-get update &amp;&amp; sudo apt-get install iputils-ping -y"
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>stdout, stderr = node1.execute(command)
 </code></pre></div>
 <h2 id="3-kubernetes-setup">3. Kubernetes Setup<a class="headerlink" href="#3-kubernetes-setup" title="Permanent link">&para;</a></h2>
 <h3 id="31-configure-kubernetes-client">3.1 Configure Kubernetes Client<a class="headerlink" href="#31-configure-kubernetes-client" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>namespace = &#39;nrp-fabric-integration&#39;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>namespace = 'nrp-fabric-integration'
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pod_name = &quot;my-pod-&quot; + &#39;&#39;.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pod_name = "my-pod-" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
 <a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>print(f&quot;pod_name= {pod_name}&quot;)
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>print(f"pod_name= {pod_name}")
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a># Path to your Kubernetes config file (optional)
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>#kube_config_path = &#39;/path/to/your/kubeconfig&#39;  # Adjust this to your config file path, or set to None
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>#kube_config_path = '/path/to/your/kubeconfig'  # Adjust this to your config file path, or set to None
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a># Define the token (used if no config file is provided)
 <a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>token = &#39;PLEASE GET NEW TOKEN FROM ADMINS&#39;
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>token = 'PLEASE GET NEW TOKEN FROM ADMINS'
 </code></pre></div>
 <p>In the event that the token doesn’t work, please contact the NRP admins via <a href="https://nrp.ai/contact">Matrix</a></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a># Ensure kube_config_path is defined before checking
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>kube_config_path = kube_config_path if &#39;kube_config_path&#39; in locals() else None
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>kube_config_path = kube_config_path if 'kube_config_path' in locals() else None
 <a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
 <a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a># Check if kube_config_path exists and load configuration
 <a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
@@ -2550,19 +2550,19 @@
 <a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
 <a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>config.load_kube_config(config_file=kube_config_path)
 <a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
-<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>print(&quot;Kubeconfig loaded successfully.&quot;)
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>print("Kubeconfig loaded successfully.")
 <a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
 <a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>else:
 <a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
 <a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a># Fallback to token if no config file is found
 <a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>
-<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>print(&quot;No kubeconfig found. Using token for authentication.&quot;)
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>print("No kubeconfig found. Using token for authentication.")
 <a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
 <a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>configuration = client.Configuration()
 <a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>
-<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>configuration.host = &#39;https://67.58.53.148:443&#39;  # Your server URL
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>configuration.host = 'https://67.58.53.148:443'  # Your server URL
 <a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
-<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>configuration.api_key = {&#39;authorization&#39;: f&#39;Bearer {token}&#39;}  # Use the token for authorization
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>configuration.api_key = {'authorization': f'Bearer {token}'}  # Use the token for authorization
 <a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>
 <a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>configuration.verify_ssl = False
 <a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>
@@ -2571,7 +2571,7 @@
 <h3 id="32-create-pod-with-vlan-attachment">3.2 Create Pod with VLAN Attachment<a class="headerlink" href="#32-create-pod-with-vlan-attachment" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a># Define the node you want the pod to land on
 <a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>node = &#39;node-2-7.sdsc.optiputer.net&#39;  # The node you want the pod to land on
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>node = 'node-2-7.sdsc.optiputer.net'  # The node you want the pod to land on
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a># Define Node Affinity
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
@@ -2587,9 +2587,9 @@
 <a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
 <a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>client.V1NodeSelectorRequirement(
 <a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
-<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>key=&#39;kubernetes.io/hostname&#39;,  # Standard node name label
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>key='kubernetes.io/hostname',  # Standard node name label
 <a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
-<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>operator=&#39;In&#39;,
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>operator='In',
 <a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>
 <a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>values=[node]  # The node you want the pod to land on
 <a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>
@@ -2619,7 +2619,7 @@
 <a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
 <a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>capabilities=client.V1Capabilities(
 <a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>add=[&quot;NET_RAW&quot;, &quot;NET_ADMIN&quot;]
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>add=["NET_RAW", "NET_ADMIN"]
 <a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
 <a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>)
 <a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>
@@ -2635,11 +2635,11 @@
 <a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
 <a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>client.V1Container(
 <a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>name=&#39;my-container&#39;,
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>name='my-container',
 <a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
-<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>image=&#39;alpine:latest&#39;,  # Specify the container image you want
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>image='alpine:latest',  # Specify the container image you want
 <a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>
-<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>command=[&quot;sleep&quot;, &quot;3600&quot;],# Just keeps the pod running for an hour
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>command=["sleep", "3600"],# Just keeps the pod running for an hour
 <a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>
 <a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>security_context=security_context
 <a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>
@@ -2659,7 +2659,7 @@
 <a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
 <a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>annotations={
 <a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>
-<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>&quot;k8s.v1.cni.cncf.io/networks&quot;: f&quot;ens-{vlan_map[vlan_choice][0]}&quot;
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>"k8s.v1.cni.cncf.io/networks": f"ens-{vlan_map[vlan_choice][0]}"
 <a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>
 <a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>}
 <a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>
@@ -2683,17 +2683,17 @@
 <a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>
 <a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>api_response = api_instance.create_namespaced_pod(namespace=namespace, body=pod)
 <a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>
-<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>print(f&quot;Pod created. Name: {api_response.metadata.name}&quot;)
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>print(f"Pod created. Name: {api_response.metadata.name}")
 <a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>
 <a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>except ApiException as e:
 <a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>
-<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>print(f&quot;Exception when creating pod: {e}&quot;)
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>print(f"Exception when creating pod: {e}")
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>pod = api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>time.sleep(20)
 <a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>command = [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;ip addr show net1&quot;]
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>command = ["/bin/sh", "-c", "ip addr show net1"]
 <a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
 <a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a># Execute the command in the pod
 <a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
@@ -2711,9 +2711,9 @@
 <h3 id="41-configure-ip-address-on-pod">4.1 Configure IP Address on Pod<a class="headerlink" href="#41-configure-ip-address-on-pod" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>command = [
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>&quot;/bin/sh&quot;, &quot;-c&quot;,
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>"/bin/sh", "-c",
 <a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>&quot;ip addr flush dev net1 &amp;&amp; ip addr add 192.168.1.2/24 dev net1 &amp;&amp; ip addr show net1&quot;
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>"ip addr flush dev net1 &amp;&amp; ip addr add 192.168.1.2/24 dev net1 &amp;&amp; ip addr show net1"
 <a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
 <a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>]
 <a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
@@ -2732,9 +2732,9 @@
 <h3 id="42-test-from-nautilus-to-fabric">4.2 Test from Nautilus to FABRIC<a class="headerlink" href="#42-test-from-nautilus-to-fabric" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>command = [
 <a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>&quot;/bin/sh&quot;, &quot;-c&quot;,
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>"/bin/sh", "-c",
 <a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>&quot;ping -I net1 -c 4 192.168.1.1&quot;
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>"ping -I net1 -c 4 192.168.1.1"
 <a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
 <a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>]
 <a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>
@@ -2751,7 +2751,7 @@
 <a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>print(resp)
 </code></pre></div>
 <h3 id="43-test-from-fabric-to-nautilus">4.3 Test from FABRIC to Nautilus<a class="headerlink" href="#43-test-from-fabric-to-nautilus" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>command = &quot;ping -I enp7s0 -c 4 192.168.1.2&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>command = "ping -I enp7s0 -c 4 192.168.1.2"
 <a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
 <a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>stdout, stderr = node1.execute(command)
 </code></pre></div>
@@ -2762,11 +2762,11 @@
 <h3 id="52-kubectl-access-to-the-nautilus-pod">5.2 Kubectl access to the Nautilus Pod<a class="headerlink" href="#52-kubectl-access-to-the-nautilus-pod" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a># Generate kubectl exec command with token authentication
 <a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>server_url= &#39;https://67.58.53.148:443&#39;
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>server_url= 'https://67.58.53.148:443'
 <a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>print(&quot;\nTo access the pod, run:&quot;)
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>print("\nTo access the pod, run:")
 <a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
-<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>print(f&quot;&quot;&quot;
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>print(f"""
 <a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>
 <a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>kubectl exec -it {pod_name} -n {namespace} \\
 <a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>
@@ -2778,7 +2778,7 @@
 <a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a>
 <a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a>-- /bin/sh
 <a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a>
-<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a>&quot;&quot;&quot;)
+<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a>""")
 </code></pre></div>
 <h2 id="6-cleanup">6. Cleanup<a class="headerlink" href="#6-cleanup" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a># To delete the slice
@@ -2868,7 +2868,7 @@ Vivado and Vitis</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

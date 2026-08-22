@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2422,15 +2422,15 @@
 <h2 id="validating-requirements">Validating requirements<a class="headerlink" href="#validating-requirements" title="Permanent link">&para;</a></h2>
 <p>In the next section we will play with adding requirements to pod <code>yaml</code> files. But first let’s make sure those resources are actually available.</p>
 <p>As a simple example, let’s pick a specific GPU type:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl get node -l &#39;nvidia.com/gpu.product=NVIDIA-GeForce-RTX-3090&#39;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl get node -l 'nvidia.com/gpu.product=NVIDIA-GeForce-RTX-3090'
 </code></pre></div>
 <p>❓ Did you get any hits?</p>
 <p>Here we look for nodes with 100Gbps NICs:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl get node -l &#39;nautilus.io/network=100000&#39;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl get node -l 'nautilus.io/network=100000'
 </code></pre></div>
 <p>❓ Did you get any hits?</p>
 <p>How about a negative selector? And let’s see what do we get:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl get node -l &#39;nvidia.com/gpu.product!=NVIDIA-GeForce-GTX-1080, nvidia.com/gpu.product!=NVIDIA-GeForce-RTX-3090&#39; -L nvidia.com/gpu.product
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl get node -l 'nvidia.com/gpu.product!=NVIDIA-GeForce-GTX-1080, nvidia.com/gpu.product!=NVIDIA-GeForce-RTX-3090' -L nvidia.com/gpu.product
 </code></pre></div>
 <p>❗By the way, many of these queries are exposed as part of the Nautilus portal. You can visit the <a href="https://nrp.ai/viz/resources">Resources</a> page to see a table with all the current nodes and their features.</p>
 <h2 id="requirements-in-pods">Requirements in pods<a class="headerlink" href="#requirements-in-pods" title="Permanent link">&para;</a></h2>
@@ -2465,7 +2465,7 @@
 <a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>
 <a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>cpu: 100m
 <a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>
-<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>But we set the resource requests and limits to be really low, so it was virtually guaranteed that the pod would start.</p>
 <p>Now, let’s add one more requirement. Let’s ask for a GPU. We also change the container, so that we get the proper drivers in place.</p>
@@ -2504,7 +2504,7 @@
 <a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>
 <a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>nvidia.com/gpu: 1
 <a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>
-<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>Once the pod started, login using kubectl exec and check what kind of GPU you got:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>nvidia-smi
@@ -2563,7 +2563,7 @@
 <a id="__codelineno-9-50" name="__codelineno-9-50" href="#__codelineno-9-50"></a>
 <a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a>nvidia.com/gpu: 1
 <a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a>
-<a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>This pod is using the <code>nodeAffinity</code> section to set constraints on the pod placement. You can <a href="https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity">read more about it in kubernetes docs</a>.</p>
 <p>Did the pod start? It might take a minute for the system to locate the resources, and spin up the pod. You can use <code>kubetcl get pods -o wide</code> to check on the status.</p>
@@ -2601,9 +2601,9 @@
 <a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
 <a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a>values:
 <a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>
-<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>- &quot;NVIDIA-GeForce-RTX-2080-Ti&quot;
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>- "NVIDIA-GeForce-RTX-2080-Ti"
 <a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>
-<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>- &quot;Tesla-V100-SXM2-32GB&quot;
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>- "Tesla-V100-SXM2-32GB"
 <a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
 <a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>containers:
 <a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a>
@@ -2629,7 +2629,7 @@
 <a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a>
 <a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a>nvidia.com/gpu: 1
 <a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a>
-<a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>Now check the pod. How long did it take for it to start? What GPU type did you get.</p>
 <h2 id="using-geographical-topology">Using geographical topology<a class="headerlink" href="#using-geographical-topology" title="Permanent link">&para;</a></h2>
@@ -2752,7 +2752,7 @@
 <a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a>
 <a id="__codelineno-12-47" name="__codelineno-12-47" href="#__codelineno-12-47"></a>cpu: 100m
 <a id="__codelineno-12-48" name="__codelineno-12-48" href="#__codelineno-12-48"></a>
-<a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>Go ahead, request a pod like that. Did the pod start?</p>
 <p>It should not have. There are essentially no nodes that will match the above requirements. Check for yourself:</p>
@@ -2772,7 +2772,7 @@
 <a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
 <a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>key: nautilus.io/noceph
 <a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
-<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>value: &quot;true&quot;
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>value: "true"
 <a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
 <a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>...
 </code></pre></div>
@@ -2833,7 +2833,7 @@
 <a id="__codelineno-16-54" name="__codelineno-16-54" href="#__codelineno-16-54"></a>
 <a id="__codelineno-16-55" name="__codelineno-16-55" href="#__codelineno-16-55"></a>cpu: 100m
 <a id="__codelineno-16-56" name="__codelineno-16-56" href="#__codelineno-16-56"></a>
-<a id="__codelineno-16-57" name="__codelineno-16-57" href="#__codelineno-16-57"></a>command: [&quot;sh&quot;, &quot;-c&quot;, &quot;sleep infinity&quot;]
+<a id="__codelineno-16-57" name="__codelineno-16-57" href="#__codelineno-16-57"></a>command: ["sh", "-c", "sleep infinity"]
 </code></pre></div>
 <p>Try to submit this one.</p>
 <p>❓ Did the Pod start?</p>
@@ -2919,7 +2919,7 @@ Batch Jobs</a></p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
