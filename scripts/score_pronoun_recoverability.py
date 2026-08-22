@@ -332,6 +332,101 @@ def scored_range(start: int, window: int, stride: int, n: int):
     return lo, hi
 
 
+def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
+                inv_ids: List[List[int]], device: str, ctx_halfwidth: int,
+                batch_size: int, use_amp: bool, counters: Dict[str, int]):
+    """Masked-slot scoring with an external MLM (BERT-family).
+
+    For each instance: take +-ctx_halfwidth stream tokens around the slot,
+    mask ALL of the pronoun's wordpieces (whole-word-masking style, matching
+    the rater's pretraining), one forward per instance (batched). Banks:
+      logprob_first  log P(true first piece | first mask position)
+      logprob_sum    sum over mask positions of log P(true piece there)
+                     (multi-mask conditional-independence approximation;
+                     exact for the single-piece majority)
+      entropy        full-vocab entropy at the first mask
+      inv_probs      inventory-piece probabilities at the first mask
+    No corpus-wide per-token PLL (130M masked forwards not worth it).
+    """
+    import torch
+    from transformers import AutoModelForMaskedLM
+
+    ids_per_line = [np.asarray(l["ids"], dtype=np.int32) for l in lines]
+    offsets = np.zeros(len(ids_per_line) + 1, dtype=np.int64)
+    np.cumsum([len(a) for a in ids_per_line], out=offsets[1:])
+    stream = (np.concatenate(ids_per_line) if ids_per_line
+              else np.zeros(0, dtype=np.int32))
+    n = len(stream)
+    counters["stream_tokens"] = int(n)
+
+    line_pos = {l["line_idx"]: i for i, l in enumerate(lines)}
+    for inst in instances:
+        li = line_pos[inst["line_idx"]]
+        inst["pos"] = int(offsets[li]) + inst["piece_in_line"]
+
+    flat_inv = [i for grp in inv_ids for i in grp]
+    inv_tensor = torch.tensor(flat_inv, dtype=torch.long, device=device)
+    cls_id, sep_id, mask_id = tok.cls_token_id, tok.sep_token_id, tok.mask_token_id
+    assert None not in (cls_id, sep_id, mask_id), "MLM special tokens missing"
+
+    model = AutoModelForMaskedLM.from_pretrained(
+        hf_id, attn_implementation="eager").to(device).eval()
+
+    t0 = time.time()
+    N = len(instances)
+    logprob_first = np.full(N, np.nan, dtype=np.float32)
+    logprob_sum = np.full(N, np.nan, dtype=np.float32)
+    ent = np.full(N, np.nan, dtype=np.float32)
+    invp = np.full((N, len(flat_inv)), np.nan, dtype=np.float32)
+
+    order = sorted(range(N), key=lambda i: instances[i]["pos"])
+    with torch.inference_mode():
+        for b0 in range(0, N, batch_size):
+            idxs = order[b0:b0 + batch_size]
+            seqs, mask_slots, true_pieces = [], [], []
+            for i in idxs:
+                inst = instances[i]
+                p, np_ = inst["pos"], inst["n_pieces"]
+                lo = max(0, p - ctx_halfwidth)
+                hi = min(n, p + np_ + ctx_halfwidth)
+                ids = stream[lo:hi].astype(np.int64).copy()
+                m0 = p - lo
+                truth = ids[m0:m0 + np_].tolist()
+                ids[m0:m0 + np_] = mask_id
+                seqs.append([cls_id] + ids.tolist() + [sep_id])
+                mask_slots.append(m0 + 1)  # +1 for CLS
+                true_pieces.append(truth)
+            maxlen = max(len(s) for s in seqs)
+            batch = torch.full((len(seqs), maxlen), tok.pad_token_id or 0,
+                               dtype=torch.long)
+            attn = torch.zeros((len(seqs), maxlen), dtype=torch.long)
+            for r, s in enumerate(seqs):
+                batch[r, :len(s)] = torch.tensor(s)
+                attn[r, :len(s)] = 1
+            batch, attn = batch.to(device), attn.to(device)
+            ctx = (torch.autocast(device_type="cuda", dtype=torch.float16)
+                   if use_amp else torch.no_grad())
+            with ctx:
+                out = model(input_ids=batch, attention_mask=attn)
+            lsm = torch.log_softmax(out.logits.float(), dim=-1)
+            for r, i in enumerate(idxs):
+                m0 = mask_slots[r]
+                truth = true_pieces[r]
+                row0 = lsm[r, m0]
+                logprob_first[i] = float(row0[truth[0]])
+                logprob_sum[i] = float(sum(
+                    lsm[r, m0 + j, t] for j, t in enumerate(truth)))
+                probs0 = row0.exp()
+                ent[i] = float(-(probs0 * row0).sum())
+                invp[i] = probs0[inv_tensor].cpu().numpy()
+            if (b0 // batch_size) % 200 == 0:
+                print(f"  mlm {b0}/{N} ({time.time()-t0:.0f}s)", flush=True)
+    counters[f"seconds_{mlm_name}"] = round(time.time() - t0, 1)
+    return {mlm_name: {"logprob_first_arr": logprob_first,
+                       "logprob_sum_arr": logprob_sum,
+                       "entropy": ent, "inv": invp}}, offsets
+
+
 def phase_b(lines, instances, scorers: Dict[str, Path], inv_ids: List[List[int]],
             device: str, window: int, stride: int, batch_windows: int,
             use_amp: bool, counters: Dict[str, int]):
@@ -445,6 +540,13 @@ def main():
                     help="score with an EXTERNAL pretrained HF model using "
                          "its own tokenizer (offset alignment); outputs go "
                          "to <corpus>/external_<NAME>/")
+    ap.add_argument("--hf-mlm", metavar="NAME=HF_ID", default=None,
+                    help="score with an EXTERNAL pretrained MLM (BERT-family):"
+                         " masked-slot scoring, no per-token stream output;"
+                         " outputs go to <corpus>/external_<NAME>/")
+    ap.add_argument("--mlm-ctx", type=int, default=250,
+                    help="stream tokens of context on EACH side of the slot")
+    ap.add_argument("--mlm-batch", type=int, default=48)
     ap.add_argument("--out-dir", type=Path, default=None)
     ap.add_argument("--window", type=int, default=1000)
     ap.add_argument("--stride", type=int, default=500)
@@ -460,8 +562,8 @@ def main():
 
     from preprocessing.annotate import compute_annotation_cache_key, DOCBIN_ATTRS
 
-    if not args.scorer and not args.hf_model:
-        ap.error("need --scorer and/or --hf-model")
+    if sum(bool(x) for x in (args.scorer, args.hf_model, args.hf_mlm)) != 1:
+        ap.error("exactly one of --scorer / --hf-model / --hf-mlm")
 
     corpus_dir = f"{args.data_root}/raw/en/{args.corpus}/"
     cache_key = compute_annotation_cache_key(
@@ -469,13 +571,12 @@ def main():
     annotated_dir = args.data_root / "annotated" / cache_key
 
     hf_name = hf_id = None
-    if args.hf_model:
-        if args.scorer:
-            ap.error("--hf-model runs standalone (its tokenization differs); "
-                     "do not combine with --scorer")
-        hf_name, hf_id = args.hf_model.split("=", 1)
+    hf_tok = None
+    if args.hf_model or args.hf_mlm:
+        hf_name, hf_id = (args.hf_model or args.hf_mlm).split("=", 1)
         from transformers import AutoTokenizer
-        aligner = HFAligner(AutoTokenizer.from_pretrained(hf_id, use_fast=True))
+        hf_tok = AutoTokenizer.from_pretrained(hf_id, use_fast=True)
+        aligner = HFAligner(hf_tok)
         out_root = ((args.out_dir or (args.data_root / "recoverability"))
                     / args.corpus / f"external_{hf_name}")
     else:
@@ -500,9 +601,10 @@ def main():
         "instances_midword_recovered")}
 
     scorers = {}
-    if args.hf_model:
+    if args.hf_model or args.hf_mlm:
         scorers[hf_name] = ("hf", hf_id)
-        print(f"scorer {hf_name}: hf:{hf_id}", flush=True)
+        print(f"scorer {hf_name}: hf:{hf_id}"
+              + (" (MLM masked-slot)" if args.hf_mlm else ""), flush=True)
     else:
         for spec in args.scorer:
             name, root = spec.split("=", 1)
@@ -517,9 +619,14 @@ def main():
     print(f"  {counters}", flush=True)
 
     print("=== phase B: scoring", flush=True)
-    results, offsets = phase_b(
-        lines, instances, scorers, inv_ids, args.device,
-        args.window, args.stride, args.batch_windows, args.amp, counters)
+    if args.hf_mlm:
+        results, offsets = phase_b_mlm(
+            lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
+            args.mlm_ctx, args.mlm_batch, args.amp, counters)
+    else:
+        results, offsets = phase_b(
+            lines, instances, scorers, inv_ids, args.device,
+            args.window, args.stride, args.batch_windows, args.amp, counters)
 
     # ---- write outputs ----
     fname = args.file
@@ -541,15 +648,23 @@ def main():
         "head_i": [i["head_i"] for i in instances],
     }
     for name, res in results.items():
-        lp = res["logprobs"]
-        sums, firsts = [], []
-        for i in instances:
-            p0, np_ = i["pos"], i["n_pieces"]
-            seg = lp[p0:p0 + np_]
-            firsts.append(float(lp[p0]) if not math.isnan(float(lp[p0])) else None)
-            sums.append(float(np.nansum(seg)) if not np.all(np.isnan(seg)) else None)
-        inst_cols[f"{name}__logprob_sum"] = sums
-        inst_cols[f"{name}__logprob_first"] = firsts
+        if "logprob_first_arr" in res:  # MLM mode: per-instance arrays
+            inst_cols[f"{name}__logprob_sum"] = [
+                None if math.isnan(float(x)) else float(x)
+                for x in res["logprob_sum_arr"]]
+            inst_cols[f"{name}__logprob_first"] = [
+                None if math.isnan(float(x)) else float(x)
+                for x in res["logprob_first_arr"]]
+        else:
+            lp = res["logprobs"]
+            sums, firsts = [], []
+            for i in instances:
+                p0, np_ = i["pos"], i["n_pieces"]
+                seg = lp[p0:p0 + np_]
+                firsts.append(float(lp[p0]) if not math.isnan(float(lp[p0])) else None)
+                sums.append(float(np.nansum(seg)) if not np.all(np.isnan(seg)) else None)
+            inst_cols[f"{name}__logprob_sum"] = sums
+            inst_cols[f"{name}__logprob_first"] = firsts
         inst_cols[f"{name}__entropy"] = [
             None if math.isnan(float(x)) else float(x) for x in res["entropy"]]
         inst_cols[f"{name}__inv_probs"] = [
@@ -567,6 +682,8 @@ def main():
     pq.write_table(line_tbl, out_root / "lines" / f"{fname}.parquet")
 
     for name, res in results.items():
+        if "logprobs" not in res:
+            continue  # MLM mode banks no per-token stream
         # ListArray over the flat float32 stream — no per-line python lists.
         list_arr = pa.ListArray.from_arrays(
             pa.array(offsets.astype(np.int64), type=pa.int64()),
@@ -580,7 +697,7 @@ def main():
     manifest = {
         "corpus": args.corpus, "file": fname,
         "annotated_dir": str(annotated_dir),
-        "tokenizer": f"hf:{hf_id}" if args.hf_model else str(tok_dir),
+        "tokenizer": f"hf:{hf_id}" if (args.hf_model or args.hf_mlm) else str(tok_dir),
         "window": args.window, "stride": args.stride, "amp": args.amp,
         "scorers": {k: str(v) for k, v in scorers.items()},
         "inventory_ids": inv_meta,
