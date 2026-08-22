@@ -58,6 +58,25 @@ spec:
           python3 scripts/storage_census.py
 
           '
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
         resources:
           requests:
             memory: 4Gi
@@ -65,4 +84,16 @@ spec:
           limits:
             memory: 4Gi
             cpu: '4'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
   activeDeadlineSeconds: 21600
