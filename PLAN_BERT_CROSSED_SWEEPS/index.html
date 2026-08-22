@@ -2702,12 +2702,25 @@ trained on them yet).</p>
 <li>D1. <strong>Edit-plan combinator</strong>: per-doc merge of {selection-driven token
   deletes} + {intervention edits computed from raw parse}. New stacked
   ablation type consuming (selection_dir, arm, k, intervention).</li>
-<li>D2. Pool sufficiency for stacked cells — worst case
-  remove_expletive_sentences × K=100 (line-removal + pronoun shortfall
-  compound). If margins fail → pool expansion pipeline (new same-genre
-  material → annotate → BERT-score → threshold via frozen manifest).
-  Per-genre backfill constraint documented (speech genres can't be
-  backfilled from Gutenberg/Wiki).</li>
+<li>D2. Pool sufficiency for stacked cells — <strong>COMPUTED 2026-08-23</strong>.
+  Non-expletive interventions are 1:1 token rewrites (zero word delta):
+  their 80 cells compose STRICT with margins ≥1.30×. The
+  remove_expletive_sentences × sweep cells compound line-removal with
+  pronoun cost and CANNOT be word-matched from the existing pool in
+  several genres (upper-bound margins at K=100: gutenberg 0.31×,
+  bnc_spoken 0.52×, switchboard 0.74×, open_subtitles/simple_wiki
+  ~1.01×). CRITICAL PRECEDENT: the existing single-intervention
+  remove_expletive_sentences corpus ALREADY shipped short via
+  --allow-short (gutenberg −3,127,412 words, pool exhausted; bnc −52K) —
+  every model trained on that condition embodies this. INTERIM APPROACH
+  (Thomas can revise): compose the 20 expletive cells with --allow-short
+  (precedent-consistent, deficit grows with K and is recorded per cell
+  in COMPOSE_MANIFESTs); the 80 other cells strict. Later options:
+  (a) accept; (b) expand the gutenberg pool (easy source — more PG text
+  through annotate→BERT-score→threshold; bnc/switchboard genuinely hard
+  to expand); (c) global target-shrink to the expletive condition's
+  totals (changes the matched-target design). Rebuilding 20 cells under
+  (b)/(c) later costs ~1 h.</li>
 <li>D3. Compose 100 cells (indexed jobs; ~1 GB/cell + ~2.4 GB caches per
   tokenizer family per cell).</li>
 <li>D4. Probe-tokenizer check (if D2 compromise accepted).</li>
