@@ -55,9 +55,22 @@ def main() -> None:
 
     now = time.time()
 
+    # Thomas 2026-08-22: June mamba h1 lanes are EVALUATE-then-keep, not
+    # delete — protected here so any classification rerun reproduces the
+    # reviewed decision (they enter the CSV keep-list once their
+    # condition-matched evals + figures land).
+    EVAL_THEN_KEEP = {
+        f"mamba_370m-en-{c}-h1-s{s}"
+        for c in ("baseline", "enrich_verbal_morphology", "impoverish_case",
+                  "lemmatize_verbs", "remove_expletive_sentences")
+        for s in (42, 137)
+    }
+
     def classify(r):
         root = r["path"].split("/")[1] if r["path"].startswith("models/") else r["path"].split("/")[0]
         rid = r["run_id"]
+        if rid in EVAL_THEN_KEEP:
+            return "eval_then_keep"
         in_reg = rid in reg.index
         status = reg.loc[rid, "status"] if in_reg else None
         if root == "sweeps":

@@ -41,6 +41,17 @@ KEEPLIST_GLOB = "analysis/eval_v2/figures/foundry_trajectories/condition_matched
 _ALLOWED_P2 = re.compile(r"^models/(sweeps|invalidated|production)/[^/]+$")
 
 
+# Runs protected by decision but not yet present in the figure CSVs
+# (Thomas 2026-08-22: June mamba h1 lanes await condition-matched evals).
+# Remove entries only after their cell_ids appear in the keep-list CSVs.
+EXTRA_KEEP = {
+    f"mamba_370m-en-{c}-h1-s{s}"
+    for c in ("baseline", "enrich_verbal_morphology", "impoverish_case",
+              "lemmatize_verbs", "remove_expletive_sentences")
+    for s in (42, 137)
+}
+
+
 def keep_list() -> set:
     cells = set()
     for f in REPO.glob(KEEPLIST_GLOB):
@@ -50,7 +61,7 @@ def keep_list() -> set:
                 cells.update(row["cell_id"] for row in r)
     if len(cells) < 700:
         sys.exit(f"FATAL: keep-list looks wrong ({len(cells)} cells) — refusing")
-    return cells
+    return cells | EXTRA_KEEP
 
 
 def safe_target(rel: str) -> Path:
