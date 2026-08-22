@@ -645,6 +645,8 @@ class Trainer:
             tokenizer=self.tokenizer,
             start_step=global_step,
             start_epoch=epoch,
+            start_tokens=getattr(
+                self.checkpoint_manager, "resume_total_tokens", 0),
             on_epoch_end=on_epoch_end,
         )
 

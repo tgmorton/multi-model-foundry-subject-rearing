@@ -115,6 +115,13 @@ def accounting(variant: str) -> dict:
 
 
 def main() -> None:
+    # Idempotence across pod retries: a leftover output dir from a failed
+    # attempt lets a rerun pass vacuously (observed: all-zero token
+    # accounting). Start clean, always.
+    import shutil
+    for v in ("det_ref", "det_victim", "fast_victim"):
+        if out_dir(v).exists():
+            shutil.rmtree(out_dir(v))
     print("=== preemption smoke: det_ref (uninterrupted) ===", flush=True)
     run_full("det_ref", deterministic=True)
     print("=== preemption smoke: det_victim (kill + resume) ===", flush=True)
@@ -126,8 +133,11 @@ def main() -> None:
                          ("det_ref", "det_victim", "fast_victim"))
     print(f"accounting: ref={ref} det_victim={victim} fast_victim={fast}",
           flush=True)
-    assert victim == ref, "det accounting mismatch (epoch replay?)"
-    assert fast == ref, "fast accounting mismatch (epoch replay?)"
+    expected_tokens = STEPS * 16 * 8 * 1000  # steps * phys * accum * seq
+    assert ref["tokens"] == expected_tokens, \
+        f"ref token accounting wrong ({ref['tokens']} != {expected_tokens})"
+    assert victim == ref, "det accounting mismatch (resume token-counter bug?)"
+    assert fast == ref, "fast accounting mismatch (resume token-counter bug?)"
 
     from model_foundry.compare_runs import compare
     res = compare(out_dir("det_ref") / f"checkpoint-{STEPS}",

@@ -395,6 +395,12 @@ class CheckpointManager:
             or self.resume_batch_offset
         )
         self.resume_epoch_completed = bool(state.get('epoch_completed', False))
+        # Preemption-smoke find (2026-08-22): the loop initialized its
+        # token counter to 0 on resume, halving total_tokens_processed in
+        # all post-resume checkpoint metadata (token-axis figures were
+        # unaffected — they use estimated_tokens_at_step — but WandB token
+        # curves and the raw field were wrong on every resumed run).
+        self.resume_total_tokens = int(state.get('total_tokens_processed', 0) or 0)
 
         # Restore optimizer and scheduler states
         optimizer.load_state_dict(state['optimizer'])

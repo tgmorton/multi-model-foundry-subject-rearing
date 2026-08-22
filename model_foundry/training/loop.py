@@ -100,6 +100,7 @@ class TrainingLoop:
                 self.logger.info("Restored AMP scaler state from checkpoint")
 
     def run(self, tokenizer, start_step: int = 0, start_epoch: int = 0,
+            start_tokens: int = 0,
             on_epoch_end: Optional[EpochEndCallback] = None):
         """
         Execute the main training loop.
@@ -154,7 +155,7 @@ class TrainingLoop:
         )
 
         # Training metrics tracking
-        total_tokens_processed = 0
+        total_tokens_processed = start_tokens
         steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
 
         # Endpoint guard bookkeeping (STEP 4). Track the last step we wrote
