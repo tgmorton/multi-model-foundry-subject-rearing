@@ -387,8 +387,14 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
             for i in idxs:
                 inst = instances[i]
                 p, np_ = inst["pos"], inst["n_pieces"]
-                lo = max(0, p - ctx_halfwidth)
-                hi = min(n, p + np_ + ctx_halfwidth)
+                # Fit within the encoder's 512-position budget: CLS + SEP +
+                # pieces + context. A pathological many-piece instance with
+                # the full +-ctx_halfwidth blew past 512 (observed 513 ->
+                # RuntimeError in BERT position expansion, 2026-08-23).
+                budget = 512 - 2 - np_
+                half = min(ctx_halfwidth, max(budget // 2, 0))
+                lo = max(0, p - half)
+                hi = min(n, p + np_ + half)
                 ids = stream[lo:hi].astype(np.int64).copy()
                 m0 = p - lo
                 truth = ids[m0:m0 + np_].tolist()
