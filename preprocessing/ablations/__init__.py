@@ -18,6 +18,7 @@ from . import remove_expletive_sentences
 from . import impoverish_case
 from . import enrich_verbal_morphology
 from . import remove_subject_pronouns_graded
+from . import stacked_graded  # must import after the interventions it composes
 
 __all__ = [
     "identity",
@@ -26,4 +27,5 @@ __all__ = [
     "impoverish_case",
     "enrich_verbal_morphology",
     "remove_subject_pronouns_graded",
+    "stacked_graded",
 ]
