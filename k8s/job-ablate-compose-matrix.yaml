@@ -1,0 +1,138 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-ablate-compose-matrix-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: ablate-compose
+spec:
+  completionMode: Indexed
+  completions: 95
+  parallelism: 12
+  backoffLimit: 8
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        lang: en
+        stage: ablate-compose
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: ablator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nIDX=${JOB_COMPLETION_INDEX}\nINTERVENTIONS=(baseline\
+          \ remove_expletive_sentences impoverish_case lemmatize_verbs enrich_verbal_morphology)\n\
+          SHORTS=(base rmexpl impcase lemverb enrichvm)\nIV_IDX=$(( IDX / 19 )); REM=$((\
+          \ IDX % 19 ))\nif [ \"$REM\" -lt 10 ]; then ARM=info; K=$(( (REM + 1) *\
+          \ 10 )); else ARM=rand; K=$(( (REM - 9) * 10 )); fi\nINTERVENTION=${INTERVENTIONS[$IV_IDX]}\n\
+          SHORT=${SHORTS[$IV_IDX]}\nSLUG=pdrop_${ARM}${K}_${SHORT}\necho \"============================================================\"\
+          \necho \"  Cell $IDX: intervention=$INTERVENTION arm=$ARM k=$K slug=$SLUG\"\
+          \necho \"============================================================\"\n\
+          export PYTHONPATH=\"/opt/repo:${PYTHONPATH:-}\"\ncd /opt/repo\n\npython\
+          \ -c \"\nimport boto3, pathlib, json\ns3 = boto3.client('s3')\nbucket =\
+          \ 'thomas-subject-drop-artifacts'\npre = 'recoverability/analysis/selection/'\n\
+          for page in s3.get_paginator('list_objects_v2').paginate(Bucket=bucket,\
+          \ Prefix=pre):\n    for o in page.get('Contents', []):\n        dest = pathlib.Path('/tmp/selection')\
+          \ / o['Key'][len(pre):]\n        dest.parent.mkdir(parents=True, exist_ok=True)\n\
+          \        s3.download_file(bucket, o['Key'], str(dest))\nman = json.load(open('/tmp/selection/SELECTION_MANIFEST.json'))\n\
+          assert man['selection_version'] == 4, f'need selection v4, found {man[\\\
+          \"selection_version\\\"]}'\nprint('selection v4 pulled:', man['population_n'],\
+          \ 'instances; ranking:', man['ranking'][:60])\n\"\n\nANNOT_TRAIN=$(python\
+          \ -c \"\nfrom pathlib import Path\nfrom preprocessing.annotate import default_annotation_output_dir\n\
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/train_90M'),\
+          \ 'en_core_web_trf'))\n\")\nANNOT_POOL=$(python -c \"\nfrom pathlib import\
+          \ Path\nfrom preprocessing.annotate import default_annotation_output_dir\n\
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/pull_10M'), 'en_core_web_trf'))\n\
+          \")\n[ -d \"$ANNOT_TRAIN\" ] && [ -d \"$ANNOT_POOL\" ] || { echo \"annotation\
+          \ caches missing\"; exit 1; }\n\nTRAIN_OUT=/mnt/data/manipulations/en/${SLUG}/_train\n\
+          POOL_OUT=/mnt/data/manipulations/en/${SLUG}/_pool\nFINAL_OUT=/mnt/data/manipulations/en/${SLUG}\n\
+          mkdir -p \"$TRAIN_OUT\" \"$POOL_OUT\" \"$FINAL_OUT\"\n\nrun_ablate () {\n\
+          \  local INPUT=$1 OUT=$2 ANNOT=$3 SELSUB=$4\n  python -c \"\nfrom pathlib\
+          \ import Path\nimport preprocessing.ablations\nfrom preprocessing.base import\
+          \ AblationPipeline\nfrom preprocessing.config import AblationConfig\ncfg\
+          \ = AblationConfig(\n    type='pronoun_drop_stacked',\n    input_path=Path('$INPUT'),\n\
+          \    output_path=Path('$OUT'),\n    annotated_input_path=Path('$ANNOT'),\n\
+          \    skip_backfill=True,\n    spacy_model='en_core_web_trf',\n    skip_validation=True,\n\
+          \    chunk_size=500,\n    verbose=False,\n    parameters={'selection_dir':\
+          \ '/tmp/selection/$SELSUB',\n                'arm': '$ARM', 'k': $K, 'intervention':\
+          \ '$INTERVENTION'},\n)\nAblationPipeline(cfg).process_corpus()\n\"\n}\n\n\
+          echo \"--- ablate train ---\"\nrun_ablate /mnt/data/raw/en/train_90M/ \"\
+          $TRAIN_OUT\" \"$ANNOT_TRAIN\" train_90M\necho \"--- ablate pool ---\"\n\
+          run_ablate /mnt/data/raw/en/pull_10M/ \"$POOL_OUT\" \"$ANNOT_POOL\" pull_10M\n\
+          \nALLOW=\"\"\nif [ \"$INTERVENTION\" = \"remove_expletive_sentences\" ];\
+          \ then\n  ALLOW=\"--allow-short\"   # precedent: single-intervention expletive\
+          \ corpus shipped short (gutenberg -3.13M)\nfi\necho \"--- compose ($([ -n\
+          \ \"$ALLOW\" ] && echo allow-short || echo strict)) ---\"\npython scripts/compose_corpus.py\
+          \ \\\n  --ablated-train \"$TRAIN_OUT\" \\\n  --ablated-pool  \"$POOL_OUT\"\
+          \ \\\n  --target-corpus /mnt/data/raw/en/train_90M/ \\\n  --output     \
+          \   \"$FINAL_OUT\" \\\n  --seed 42 $ALLOW\n\npython scripts/ablation_report.py\
+          \ \\\n  --manifest \"$TRAIN_OUT/ABLATION_MANIFEST.json\" \\\n  --output\
+          \ \"$FINAL_OUT/ablation_report.md\" || true\necho \"CELL $SLUG OK\"\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        resources:
+          requests:
+            memory: 20Gi
+            cpu: '4'
+          limits:
+            memory: 20Gi
+            cpu: '4'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
