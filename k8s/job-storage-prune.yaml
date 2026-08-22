@@ -1,0 +1,95 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-score-finalize-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: storage-prune
+    lang: en
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: storage-prune
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: prune
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\ncd /opt/repo\nmkdir -p /tmp/manifests\npython3 - <<'PY'\n\
+          import boto3\ns3 = boto3.client(\"s3\")\nb = \"thomas-subject-drop-artifacts\"\
+          \nfor n in [\"phase2_sweeps_manifest.csv\", \"phase2_failed_orphan_manifest.csv\"\
+          , \"phase3_resume_strip_manifest.csv\"]:\n    s3.download_file(b, f\"storage_audit/census_2026-08-22/{n}\"\
+          , f\"/tmp/manifests/{n}\")\nprint(\"manifests pulled\")\nPY\npython3 scripts/storage_prune_executor.py\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: '2'
+          limits:
+            memory: 4Gi
+            cpu: '2'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+  activeDeadlineSeconds: 43200
