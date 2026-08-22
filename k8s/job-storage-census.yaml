@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-storage-census-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: storage-census
+    lang: en
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: storage-census
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: census
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - 'set -euo pipefail
+
+          cd /opt/repo
+
+          echo ''=== PHASE-1 READ-ONLY STORAGE CENSUS ===''
+
+          python3 scripts/storage_census.py
+
+          '
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: '4'
+          limits:
+            memory: 4Gi
+            cpu: '4'
+  activeDeadlineSeconds: 21600
