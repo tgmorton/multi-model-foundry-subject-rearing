@@ -1,0 +1,136 @@
+---
+# Recoverability scoring pass (graded pronoun-drop study): run the three
+# causal scorers (gpt2_medium baseline + fold raters a/b) over every genre
+# file of EN train_90M + pull_10M, banking per-instance sufficient
+# statistics + full per-token logprobs.
+#   idx 0-5  -> train_90M {bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard}
+#   idx 6-11 -> pull_10M  {same order}
+# FORCE_CORPUS / FORCE_FILE env override the slot map (validation runs).
+# Outputs: /mnt/data/recoverability/<corpus>/{instances,per_token,lines,manifest}/
+# Requires: DocBin caches 684a0624b55adefc (train) / 9aefa2eef0d208d2 (pull),
+# rater + baseline checkpoints on the PVC (verified 2026-08-14).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-score-recoverability-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: score-recoverability
+    lang: en
+spec:
+  backoffLimit: 12
+  completionMode: Indexed
+  completions: 12
+  parallelism: 6
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: scorer
+        operator: In
+        values: [2, 128]
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: score-recoverability
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: scorer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          FILES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
+          IDX=${JOB_COMPLETION_INDEX:-0}
+          if [ "$IDX" -lt 6 ]; then CORPUS=train_90M; else CORPUS=pull_10M; fi
+          FILE=${FILES[$((IDX % 6))]}
+          CORPUS=${FORCE_CORPUS:-$CORPUS}
+          FILE=${FORCE_FILE:-$FILE}
+          echo "=== SCORE RECOVERABILITY — $CORPUS / $FILE (idx=$IDX) ==="
+
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize()
+              x = torch.zeros(1024, device='cuda'); x.sum().item()
+              print(f'  GPU healthy: {torch.cuda.get_device_name(0)}')
+          except Exception as e:
+              print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+
+          cd /opt/repo
+          export PYTHONPATH=/opt/repo
+          python3 scripts/score_pronoun_recoverability.py \
+            --corpus "$CORPUS" \
+            --file "$FILE" \
+            --data-root /mnt/data \
+            --scorer baseline=/mnt/data/models/production/gpt2_medium-en-baseline-h0-s42 \
+            --scorer rater_a=/mnt/data/models/raters/rater-gpt2_small-en-fold_a-e3-h0-s42 \
+            --scorer rater_b=/mnt/data/models/raters/rater-gpt2_small-en-fold_b-e3-h0-s42 \
+            --window 1000 --stride 500 --batch-windows 8
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTHONHASHSEED, value: "0"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        resources:
+          # childes DocBin deserialization is the memory peak; others are
+          # far smaller. Stream + logprob arrays are <1Gi.
+          requests: {memory: 16Gi, cpu: "4", nvidia.com/gpu: 1}
+          limits:   {memory: 16Gi, cpu: "4", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              # NVML driver/library mismatch (2026-08-12) — drop when fixed.
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu

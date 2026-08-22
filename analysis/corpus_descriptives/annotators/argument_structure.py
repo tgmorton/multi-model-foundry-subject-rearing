@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 from .clause_structure import (
     _is_nonroot_imperative,
@@ -54,10 +56,10 @@ class ArgumentStructureAnnotator(BaseSentenceAnnotator):
 
             # Skip non-head verbs (e.g., auxiliaries in verb chains)
             # unless they are the main predicate
-            if tok.dep_ in ("aux", "auxpass") and tok.head.pos_ in ("VERB", "AUX"):
+            if normalize_dep(tok.dep_) in ("aux", "auxpass", "aux:pass") and tok.head.pos_ in ("VERB", "AUX"):
                 continue
 
-            children = {c.dep_: c for c in tok.children}
+            children = {normalize_dep(c.dep_): c for c in tok.children}
             children_deps = set(children.keys())
 
             # === Subject analysis ===
@@ -98,11 +100,11 @@ class ArgumentStructureAnnotator(BaseSentenceAnnotator):
             if subject_status == "null" and tok.dep_ == "xcomp":
                 current_head = tok.head
                 for _ in range(5):
-                    if current_head.pos_ == "ADJ" and current_head.dep_ in (
+                    if current_head.pos_ == "ADJ" and normalize_dep(current_head.dep_) in (
                         "acomp", "attr", "ROOT", "ccomp", "advcl", "xcomp",
                     ):
                         current_head = current_head.head
-                    head_children_deps = {c.dep_ for c in current_head.children}
+                    head_children_deps = {normalize_dep(c.dep_) for c in current_head.children}
                     if head_children_deps & {"nsubj", "nsubj:pass", "expl", "csubj", "csubj:pass"}:
                         subject_status = "inherited"
                         break
@@ -113,7 +115,7 @@ class ArgumentStructureAnnotator(BaseSentenceAnnotator):
 
             # Non-ROOT imperative: advcl/ccomp at sentence start with
             # no subject — e.g., "look at this we got a problem"
-            if subject_status == "null" and tok.dep_ in ("advcl", "ccomp"):
+            if subject_status == "null" and normalize_dep(tok.dep_) in ("advcl", "ccomp"):
                 if self.language == "en":
                     if _is_nonroot_imperative(tok, sent):
                         subject_status = "imperative"

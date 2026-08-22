@@ -1,0 +1,128 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-score-bert-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: score-bert
+    lang: en
+spec:
+  backoffLimit: 12
+  completionMode: Indexed
+  completions: 12
+  parallelism: 6
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: scorer
+        operator: In
+        values:
+        - 2
+        - 128
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: score-bert
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: scorer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nFILES=(bnc_spoken childes gutenberg open_subtitles simple_wiki\
+          \ switchboard)\nIDX=${JOB_COMPLETION_INDEX:-0}\nif [ \"$IDX\" -lt 6 ]; then\
+          \ CORPUS=train_90M; else CORPUS=pull_10M; fi\nFILE=${FILES[$((IDX % 6))]}\n\
+          CORPUS=${FORCE_CORPUS:-$CORPUS}\nFILE=${FORCE_FILE:-$FILE}\necho \"=== SCORE\
+          \ RECOVERABILITY \u2014 $CORPUS / $FILE (idx=$IDX) ===\"\n\npython3 -c \"\
+          \nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n     \
+          \   print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\nexport PYTHONPATH=/opt/repo\npython3 scripts/score_pronoun_recoverability.py\
+          \ \\\n  --corpus \"$CORPUS\" \\\n  --file \"$FILE\" \\\n  --data-root /mnt/data\
+          \ \\\n  --hf-mlm bert_wwm=bert-large-uncased-whole-word-masking \
+            --mlm-batch 64 --amp \\\n  --window 1000 --stride\
+          \ 500 --batch-windows 8\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: expandable_segments:True
+        - name: HF_HOME
+          value: /mnt/data/hf_cache
+        resources:
+          requests:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+          limits:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu

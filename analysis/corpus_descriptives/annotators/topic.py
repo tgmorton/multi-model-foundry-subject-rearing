@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 
 
@@ -52,7 +54,7 @@ class TopicAnnotator(BaseSentenceAnnotator):
 
         # Find subject of root verb
         for child in root_verb.children:
-            if child.dep_ in ("nsubj", "nsubj:pass"):
+            if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                 topic_info["root_subject_lemma"] = child.lemma_.lower()
                 topic_info["root_subject_is_pronoun"] = child.pos_ == "PRON"
 

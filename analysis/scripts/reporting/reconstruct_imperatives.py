@@ -23,6 +23,8 @@ from typing import List, Optional, Set
 
 import polars as pl
 
+from preprocessing.dep_labels import normalize_dep
+
 
 # ---------------------------------------------------------------------------
 # Constants (from posthoc_correct_annotations.py)
@@ -74,12 +76,12 @@ def is_root_imperative(
 
     # No subject
     children = _children_of(verb_idx, dep_heads)
-    if any(dep_rels[c] in _SUBJECT_RELS for c in children if c < len(dep_rels)):
+    if any(normalize_dep(dep_rels[c]) in _SUBJECT_RELS for c in children if c < len(dep_rels)):
         return False
 
     # Not preceded by "to" mark
     if verb_idx > 0:
-        prev_dep = dep_rels[verb_idx - 1]
+        prev_dep = normalize_dep(dep_rels[verb_idx - 1])
         prev_lemma = (lemmas[verb_idx - 1] or "").lower()
         if prev_dep == "mark" and prev_lemma == "to":
             return False
@@ -112,7 +114,7 @@ def is_nonroot_imperative(
 
     # No subject children
     children = _children_of(verb_idx, dep_heads)
-    if any(dep_rels[c] in _SUBJECT_RELS for c in children if c < len(dep_rels)):
+    if any(normalize_dep(dep_rels[c]) in _SUBJECT_RELS for c in children if c < len(dep_rels)):
         return False
 
     # No "to" mark
@@ -127,7 +129,7 @@ def is_nonroot_imperative(
     if not is_initial and verb_idx <= 2:
         is_initial = all(
             pos_tags[j] in _VOCATIVE_DISCOURSE_POS
-            or dep_rels[j] in _VOCATIVE_DISCOURSE_DEPS
+            or normalize_dep(dep_rels[j]) in _VOCATIVE_DISCOURSE_DEPS
             for j in range(verb_idx)
         )
 

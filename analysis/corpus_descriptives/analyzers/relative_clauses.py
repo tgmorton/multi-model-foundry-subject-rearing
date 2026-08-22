@@ -10,12 +10,14 @@ from typing import Any, Dict, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseAnalyzer
 
 
 def _is_relcl(tok: spacy.tokens.Token) -> bool:
     """Check if token heads a relative clause."""
-    return tok.dep_ in ("acl:relcl", "acl") and tok.pos_ in ("VERB", "AUX")
+    return normalize_dep(tok.dep_) in ("acl:relcl", "acl") and tok.pos_ in ("VERB", "AUX")
 
 
 class RelativeClauseAnalyzer(BaseAnalyzer):
@@ -43,7 +45,7 @@ class RelativeClauseAnalyzer(BaseAnalyzer):
             # A subject relative has the relativizer as nsubj
             # An object relative has the relativizer as obj (or nsubj is something else)
             children = list(tok.children)
-            child_deps = {c.dep_ for c in children}
+            child_deps = {normalize_dep(c.dep_) for c in children}
 
             # Classify as subject or object relative.
             # Subject relative: relativizer fills nsubj slot (who/which/that as nsubj)
@@ -54,12 +56,12 @@ class RelativeClauseAnalyzer(BaseAnalyzer):
             has_nsubj = False
 
             for child in children:
-                if child.dep_ in ("nsubj", "nsubj:pass"):
+                if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                     has_nsubj = True
                     pron_type = child.morph.get("PronType")
                     if pron_type and "Rel" in pron_type:
                         has_rel_nsubj = True
-                if child.dep_ in ("obj", "iobj"):
+                if normalize_dep(child.dep_) in ("obj", "iobj"):
                     pron_type = child.morph.get("PronType")
                     if child.pos_ == "PRON" and (
                         (pron_type and "Rel" in pron_type)

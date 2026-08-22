@@ -1,0 +1,74 @@
+---
+# Split EN train_90M into two document-level folds for the cross-fold
+# recoverability raters (graded pronoun-drop study). One-shot CPU job;
+# deterministic (no RNG), so re-runs are byte-identical.
+# Output: /mnt/data/raw/en/train_90M_fold_{a,b}/ + FOLD_MANIFEST.json.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-foldsplit-en-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: rater-foldsplit
+    lang: en
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: rater-foldsplit
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: foldsplit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=== RATER FOLD SPLIT — EN train_90M ==="
+          cd /opt/repo
+          ls -la /mnt/data/raw/en/train_90M/
+          python3 scripts/make_fold_corpora.py \
+            --input /mnt/data/raw/en/train_90M \
+            --output-a /mnt/data/raw/en/train_90M_fold_a \
+            --output-b /mnt/data/raw/en/train_90M_fold_b
+          echo "FOLD SPLIT OK"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        resources:
+          # Streaming line split — tiny memory, one pegged core.
+          requests: {memory: 512Mi, cpu: "1"}
+          limits:   {memory: 512Mi, cpu: "1"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never

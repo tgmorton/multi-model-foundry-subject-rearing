@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from .base import BaseSentenceAnnotator
 
 _CLAUSE_DEPS = {"ROOT", "xcomp", "ccomp", "advcl", "acl", "acl:relcl"}
@@ -58,7 +60,7 @@ class VerbAnnotator(BaseSentenceAnnotator):
             verb_form = verb_forms[0]
 
             # Clause position
-            dep = tok.dep_
+            dep = normalize_dep(tok.dep_)
             if dep in _CLAUSE_DEPS:
                 clause_pos = dep
             else:

@@ -27,6 +27,8 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from analysis.corpus_descriptives.constants import (
     IMPERSONAL_VERBS_ES,
     IMPERSONAL_VERBS_IT,
@@ -167,7 +169,7 @@ class EnglishExpletiveSentenceRemover:
         for tok in doc:
             if tok.lemma_.lower() != "it":
                 continue
-            if tok.dep_ not in ("nsubj", "nsubj:pass"):
+            if normalize_dep(tok.dep_) not in ("nsubj", "nsubj:pass"):
                 continue
 
             head = tok.head
@@ -184,7 +186,7 @@ class EnglishExpletiveSentenceRemover:
             # (c) Copula + raising adjective: "It is clear that..."
             if head.lemma_.lower() == "be" or head.pos_ == "AUX":
                 for child in head.children:
-                    if child.dep_ in ("acomp", "attr", "oprd"):
+                    if normalize_dep(child.dep_) in ("acomp", "attr", "oprd"):
                         if child.lemma_.lower() in RAISING_ADJECTIVES:
                             if EnglishExpletiveSentenceRemover._has_clausal_complement(child):
                                 return tok
@@ -196,16 +198,16 @@ class EnglishExpletiveSentenceRemover:
         """Return True if the token has a clausal complement child."""
         clausal_deps = {"ccomp", "xcomp", "csubj", "csubj:pass", "advcl", "acl"}
         for child in token.children:
-            if child.dep_ in clausal_deps:
+            if normalize_dep(child.dep_) in clausal_deps:
                 return True
             # Also check for "that" mark introducing a clause
             if child.dep_ == "mark" and child.lemma_.lower() == "that":
                 return True
         # Also check siblings — "it is clear that X happens"
         # The clausal complement may attach to the main verb, not the adjective
-        if token.dep_ in ("acomp", "attr", "oprd") and token.head is not None:
+        if normalize_dep(token.dep_) in ("acomp", "attr", "oprd") and token.head is not None:
             for sibling in token.head.children:
-                if sibling.dep_ in {"ccomp", "csubj", "csubj:pass", "advcl"}:
+                if normalize_dep(sibling.dep_) in {"ccomp", "csubj", "csubj:pass", "advcl"}:
                     return True
         return False
 
@@ -369,12 +371,12 @@ def _has_expletive_equivalent_it(doc: spacy.tokens.Doc) -> bool:
         if lemma == "essere":
             for child in tok.children:
                 # "ci" appears as an adverbial or expletive clitic
-                if child.lower_ == "ci" and child.dep_ in ("expl", "advmod"):
+                if child.lower_ == "ci" and normalize_dep(child.dep_) in ("expl", "advmod"):
                     return True
 
         # 3. Impersonal raising verbs with clausal complement, no nsubj
         if lemma in IMPERSONAL_VERBS_IT:
-            children_deps = {child.dep_ for child in tok.children}
+            children_deps = {normalize_dep(child.dep_) for child in tok.children}
             has_clausal = bool(children_deps & {"ccomp", "xcomp", "csubj"})
             has_nsubj = bool(children_deps & {"nsubj", "nsubj:pass"})
             if has_clausal and not has_nsubj:
@@ -382,7 +384,7 @@ def _has_expletive_equivalent_it(doc: spacy.tokens.Doc) -> bool:
 
         # 4. Impersonal necessity verbs without nsubj
         if lemma in NECESSITY_VERBS_IT:
-            children_deps = {child.dep_ for child in tok.children}
+            children_deps = {normalize_dep(child.dep_) for child in tok.children}
             if not (children_deps & {"nsubj", "nsubj:pass"}):
                 return True
 
@@ -430,7 +432,7 @@ def _has_expletive_equivalent_es(doc: spacy.tokens.Doc) -> bool:
     # Pre-scan for overt "ello" subjects (category 5)
     ello_heads = set()
     for tok in doc:
-        if tok.lower_ == "ello" and tok.dep_ in ("nsubj", "nsubj:pass"):
+        if tok.lower_ == "ello" and normalize_dep(tok.dep_) in ("nsubj", "nsubj:pass"):
             ello_heads.add(tok.head.i)
 
     for tok in doc:
@@ -438,7 +440,7 @@ def _has_expletive_equivalent_es(doc: spacy.tokens.Doc) -> bool:
             continue
 
         lemma = tok.lemma_.lower()
-        children_deps = {child.dep_ for child in tok.children}
+        children_deps = {normalize_dep(child.dep_) for child in tok.children}
         has_nsubj = bool(children_deps & {"nsubj", "nsubj:pass"})
 
         # 1. Weather verbs

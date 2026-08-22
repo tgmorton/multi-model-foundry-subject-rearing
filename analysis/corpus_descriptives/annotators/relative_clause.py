@@ -8,13 +8,15 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import RELATIVIZERS_EN, RELATIVIZERS_IT
 from .base import BaseSentenceAnnotator
 
 
 def _is_relcl(tok: spacy.tokens.Token) -> bool:
     """Check if token heads a relative clause."""
-    return tok.dep_ in ("acl:relcl", "acl") and tok.pos_ in ("VERB", "AUX")
+    return normalize_dep(tok.dep_) in ("acl:relcl", "acl") and tok.pos_ in ("VERB", "AUX")
 
 
 class RelativeClauseAnnotator(BaseSentenceAnnotator):
@@ -63,14 +65,14 @@ class RelativeClauseAnnotator(BaseSentenceAnnotator):
                 is_relative = pron_type and "Rel" in pron_type
                 is_rel_lemma = child.lemma_.lower() in self._relativizers
 
-                if child.dep_ in ("nsubj", "nsubj:pass"):
+                if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                     has_nsubj = True
                     if is_relative or (child.pos_ == "PRON" and is_rel_lemma):
                         has_rel_nsubj = True
                         relativizer_idx = child.i - sent.start
                         relativizer_lemma = child.lemma_.lower()
 
-                if child.dep_ in ("obj", "iobj"):
+                if normalize_dep(child.dep_) in ("obj", "iobj"):
                     if child.pos_ == "PRON" and (is_relative or is_rel_lemma):
                         has_rel_obj = True
                         relativizer_idx = child.i - sent.start

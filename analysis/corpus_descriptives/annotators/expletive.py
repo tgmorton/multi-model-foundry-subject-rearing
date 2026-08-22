@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import (
     WEATHER_VERBS,
     WEATHER_VERBS_IT,
@@ -54,7 +56,7 @@ class ExpletiveAnnotator(BaseSentenceAnnotator):
     def _has_subject(self, verb_token: spacy.tokens.Token) -> bool:
         """Check if a verb has an overt subject."""
         for child in verb_token.children:
-            if child.dep_ in _SUBJECT_DEPS:
+            if normalize_dep(child.dep_) in _SUBJECT_DEPS:
                 return True
         return False
 

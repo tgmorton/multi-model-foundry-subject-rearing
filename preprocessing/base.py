@@ -70,6 +70,11 @@ class AblationPipeline:
         # Get ablation function from registry
         self.ablation_fn, self.validation_fn = AblationRegistry.get(config.type)
 
+        # Parameterized ablations (e.g. graded removal) expose configure();
+        # plain callables ignore config.parameters as before.
+        if hasattr(self.ablation_fn, "configure"):
+            self.ablation_fn.configure(config.parameters or {})
+
         # Load spaCy model
         self.logger.info(f"Loading spaCy model: {config.spacy_model}")
         self.nlp = self._load_spacy_model()
@@ -559,6 +564,10 @@ class AblationPipeline:
                 continue
 
             try:
+                # Line-addressed ablations (graded removal) need to know
+                # which source line this Doc came from.
+                if hasattr(self.ablation_fn, "set_line_context"):
+                    self.ablation_fn.set_line_context(stem, entry["line_idx"])
                 ablated_doc_text, num_items = self.ablation_fn(doc)
             except Exception as e:
                 doc_idx = entry.get("doc_idx")

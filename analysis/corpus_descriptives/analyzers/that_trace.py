@@ -16,6 +16,8 @@ from typing import Any, Dict, Optional
 
 import spacy
 
+from preprocessing.dep_labels import normalize_dep
+
 from ..constants import ENGLISH_BRIDGE_VERBS, WH_LEMMAS_EN
 from .base import BaseAnalyzer
 
@@ -87,7 +89,7 @@ class ThatTraceAnalyzer(BaseAnalyzer):
             # Step 3: Embedded subject status
             nsubj_child = None
             for child in tok.children:
-                if child.dep_ in ("nsubj", "nsubj:pass"):
+                if normalize_dep(child.dep_) in ("nsubj", "nsubj:pass"):
                     nsubj_child = child
                     break
 
@@ -110,7 +112,7 @@ class ThatTraceAnalyzer(BaseAnalyzer):
                 sib_pron = sibling.morph.get("PronType")
                 if sib_lemma in WH_LEMMAS_EN or (sib_pron and "Int" in sib_pron):
                     matrix_has_wh = True
-                    if sibling.dep_ in ("nsubj", "nsubj:pass") or sibling.dep_ == "ROOT":
+                    if normalize_dep(sibling.dep_) in ("nsubj", "nsubj:pass") or sibling.dep_ == "ROOT":
                         wh_is_matrix_subj = True
 
             if matrix_has_wh and nsubj_child is None:

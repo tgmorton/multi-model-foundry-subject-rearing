@@ -17,6 +17,7 @@ from . import lemmatize_verbs
 from . import remove_expletive_sentences
 from . import impoverish_case
 from . import enrich_verbal_morphology
+from . import remove_subject_pronouns_graded
 
 __all__ = [
     "identity",
@@ -24,4 +25,5 @@ __all__ = [
     "remove_expletive_sentences",
     "impoverish_case",
     "enrich_verbal_morphology",
+    "remove_subject_pronouns_graded",
 ]
