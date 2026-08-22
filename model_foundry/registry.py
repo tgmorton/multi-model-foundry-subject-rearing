@@ -251,6 +251,32 @@ def _collect_env_snapshot(git_commit: Optional[str] = None) -> str:
         except Exception as e:  # noqa: BLE001
             return f"(failed: {e})"
 
+    # Determinism/replication identity (lang-manifold port, 2026-08-22):
+    # recorded even where not enforced, so a reader can answer "could this
+    # run's kernels have been deterministic, and on what hardware?"
+    parts.append("--- determinism identity ---")
+    try:
+        import torch
+        parts.append(f"torch: {torch.__version__}")
+        parts.append(f"torch.version.cuda: {torch.version.cuda}")
+        parts.append(f"cudnn: {torch.backends.cudnn.version()}")
+        parts.append(f"cudnn.deterministic: {torch.backends.cudnn.deterministic}")
+        parts.append(f"cudnn.benchmark: {torch.backends.cudnn.benchmark}")
+        parts.append(
+            f"tf32: matmul={torch.backends.cuda.matmul.allow_tf32} "
+            f"cudnn={torch.backends.cudnn.allow_tf32}")
+        parts.append(
+            f"deterministic_algorithms: {torch.are_deterministic_algorithms_enabled()}")
+        parts.append(f"num_threads: {torch.get_num_threads()}")
+        if torch.cuda.is_available():
+            parts.append(f"gpu: {torch.cuda.get_device_name(0)} "
+                         f"cc={'.'.join(map(str, torch.cuda.get_device_capability(0)))}")
+    except Exception as e:  # noqa: BLE001
+        parts.append(f"(torch identity failed: {e})")
+    for var in ("PYTHONHASHSEED", "CUBLAS_WORKSPACE_CONFIG",
+                "PYTORCH_CUDA_ALLOC_CONF", "NODE_NAME"):
+        parts.append(f"env {var}: {os.environ.get(var, '(unset)')}")
+
     parts.append("--- pip freeze ---")
     parts.append(_run(["pip", "freeze"]))
     parts.append("--- nvidia-smi ---")

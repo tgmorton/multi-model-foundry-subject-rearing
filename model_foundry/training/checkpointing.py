@@ -6,11 +6,13 @@ model weights, optimizer state, scheduler state, and training metadata.
 """
 
 import glob
+import os
 import re
 import random
 import datetime
 import hashlib
 import json
+import shutil
 from pathlib import Path
 from typing import Optional, Set, Dict, Any
 import numpy as np
@@ -147,8 +149,16 @@ class CheckpointManager:
                 we're unlikely to need resume. See 0.6 in the optimization
                 plan.
         """
-        checkpoint_dir = self.output_dir / f"checkpoint-{global_step}"
-        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        # Atomic write (lang-manifold port, 2026-08-22): stage into a
+        # ".tmp"-suffixed dir and os.replace() into place at the end, so a
+        # preemption mid-save can never leave a half-written dir that the
+        # checkpoint-discovery regexes (which anchor on `checkpoint-(\d+)$`)
+        # would pick up as a valid checkpoint.
+        final_dir = self.output_dir / f"checkpoint-{global_step}"
+        checkpoint_dir = self.output_dir / f"checkpoint-{global_step}.tmp"
+        if checkpoint_dir.exists():
+            shutil.rmtree(checkpoint_dir)
+        checkpoint_dir.mkdir(parents=True)
 
         # Save model and tokenizer
         model.save_pretrained(checkpoint_dir)
@@ -233,6 +243,13 @@ class CheckpointManager:
 
         with open(checkpoint_dir / "metadata.json", 'w') as f:
             json.dump(metadata, f, indent=2)
+
+        # Promote the fully written staging dir into place. Re-saves of the
+        # same step (endpoint guard's idempotent call) replace cleanly.
+        if final_dir.exists():
+            shutil.rmtree(final_dir)
+        os.replace(str(checkpoint_dir), str(final_dir))
+        checkpoint_dir = final_dir
 
         kind = "full resume" if save_resume_state else "analysis-only"
         print(f"\n  - Saved checkpoint at step {global_step} to '{checkpoint_dir}' ({kind})")
