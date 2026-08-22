@@ -1,0 +1,2828 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Complete documentation for the Model Foundry training framework and analysis tools">
+      
+      
+        <meta name="author" content="Model Foundry Team">
+      
+      
+        <link rel="canonical" href="https://tgmorton.github.io/multi-model-foundry-subject-rearing/REPO_AUDIT_2026-08-22/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Repository Audit — multi-model-foundry-subject-rearing - Model Foundry Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#repository-audit-multi-model-foundry-subject-rearing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Model Foundry Documentation" class="md-header__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Model Foundry Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Repository Audit — multi-model-foundry-subject-rearing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../STRUCTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Structure
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Documentation Map
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TRAINING_GUIDE/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../preprocessing/" class="md-tabs__link">
+          
+  
+  
+  Preprocessing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pronoun_recovery/" class="md-tabs__link">
+          
+  
+  
+  Pronoun Recovery & Null Subjects
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../annotation_app/" class="md-tabs__link">
+          
+  
+  
+  Annotation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-tabs__link">
+          
+  
+  
+  Corpus Analysis
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../phase3_experimental_pipeline/" class="md-tabs__link">
+          
+  
+  
+  Experiments
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../k8s_jobs/" class="md-tabs__link">
+          
+  
+  
+  Infrastructure
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../model_foundry/" class="md-tabs__link">
+          
+  
+  
+  Model Foundry
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../OSF_PREREGISTRATION/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Model Foundry Documentation" class="md-nav__button md-logo" aria-label="Model Foundry Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Model Foundry Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tgmorton/multi-model-foundry-subject-rearing" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tgmorton/multi-model-foundry-subject-rearing
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../STRUCTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCUMENTATION_MAP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_SLURM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on SLURM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TRAINING_ON_WILD_WEST/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training on Wild West
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/USER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/ADVANCED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preprocessing/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ABLATION_ENRICHMENT_IMPLEMENTATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ablation Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pronoun Recovery & Null Subjects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pronoun Recovery & Null Subjects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pronoun_recovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../italian_null_subject/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Italian Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttq_corpus_report/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTQ Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spanish_corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spanish Corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annotation_app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web App
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LAYERED_ANNOTATION_ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Corpus Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NEW_CORPUS_ANALYSIS_PLAN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CORPUS_ANALYSIS_SPEC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Original Specification (superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus_analysis/CHANGES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus Analysis Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiments
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Experiments
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phase3_experimental_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phase 3 Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CROSS_ARCHITECTURE_COMPARISON/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Architecture Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../new_checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkpoint_scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Checkpoint Scheduling (Phase 2, superseded)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../k8s_jobs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes Jobs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NRP_REGISTRY_SETUP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NRP Registry Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Foundry
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Model Foundry
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_2" id="__nav_11_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/multi-architecture-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Architecture System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/logging-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/training-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Refactoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/architecture/refactoring-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Refactoring Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/running-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/testing/logging-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_11_4" id="__nav_11_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_foundry/guides/wandb-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WandB Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../OSF_PREREGISTRATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSF Preregistration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Executive summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-bloat-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bloat inventory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-confirmed-dead-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Confirmed dead code
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Confirmed dead code">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reclassified-flagged-as-dead-by-the-initial-survey-refuted-on-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reclassified — flagged as dead by the initial survey, refuted on verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-reorganization-proposal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Reorganization proposal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-documentation-plan-priority-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Documentation plan (priority order)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-quick-wins-vs-structural-moves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Quick wins vs structural moves
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-healthy-leave-alone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Healthy — leave alone
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="repository-audit-multi-model-foundry-subject-rearing">Repository Audit — multi-model-foundry-subject-rearing<a class="headerlink" href="#repository-audit-multi-model-foundry-subject-rearing" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-08-22 · <strong>Scope:</strong> full-repo dead-code, bloat, and organization pass, adversarially re-verified against actual imports/YAML/docs · <strong>Status:</strong> read-only findings for operator triage</p>
+<h2 id="1-executive-summary">1. Executive summary<a class="headerlink" href="#1-executive-summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Confirmed dead code:</strong> ~49 files (~6,000+ lines) across scripts/, k8s/, preprocessing/, model_foundry/, analysis/, and configs/ — each independently verified to have zero live importers/callers after an adversarial re-check (see §3).</li>
+<li><strong>8 of the original dead-code claims were refuted</strong> by live references the initial survey missed — three of them (<code>k8s/job-train-tokenizer.yaml</code>, the Europarl/Insert-Pronouns pipeline, a broken import in the v1 eval runner) are more important as <em>live-code bugs or open study obligations</em> than the archival items they were mistaken for. Details in §3's "reclassified" box and inline throughout.</li>
+<li><strong>Git history bloat:</strong> ~11.6 GB of unique blob content is permanently baked into <code>.git</code> from two now-untracked directories (<code>data/eval_results/</code> 8.2 GB, <code>evaluation/results/</code> 3.0 GB) that were committed-then-removed. This is not reachable from a normal <code>git log</code> walk on current paths, but <code>git fsck</code>/<code>merge-base</code> confirm both are real ancestors of <code>main</code> and cannot be GC'd without a history rewrite.</li>
+<li><strong>Currently-tracked, regenerable bloat:</strong> ~180 MB — <code>analysis/eval_v2/figures/</code> (135 MB of PNGs/CSVs, actively churning), <code>latex/</code> (8.5 MB, includes a byte-identical duplicate of a file also in <code>presentations/</code>), and a 37 MB orphaned Arrow fixture that slipped past <code>.gitignore</code> via a force-add.</li>
+<li><strong>Documentation drift:</strong> the four index docs a newcomer would read first (<code>docs/DOCUMENTATION_MAP.md</code>, <code>docs/STRUCTURE.md</code>, <code>docs/README.md</code>, <code>docs/k8s_jobs.md</code>) all date to a single 2026-04-09 commit and don't mention anything added since — including the current master plan (<code>docs/PLAN_BERT_CROSSED_SWEEPS.md</code>), the registry/S3 docs, or ~130 of <code>k8s/</code>'s 205 files.</li>
+<li><strong>Nothing here requires urgent action.</strong> Training and eval are running; every proposal below is framed as either a same-day no-risk cleanup or a flagged, PI-confirmed structural move.</li>
+</ul>
+<h2 id="2-bloat-inventory">2. Bloat inventory<a class="headerlink" href="#2-bloat-inventory" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Size</th>
+<th>Why</th>
+<th>Disposition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/eval_results/</code> (git history only)</td>
+<td>8.2 GB</td>
+<td>Committed in 4e2dc0c/b71d634, later removed from tree; still a permanent ancestor of <code>main</code>, not GC-able</td>
+<td>History rewrite (destructive, needs coordination) — see §6</td>
+</tr>
+<tr>
+<td><code>evaluation/results/</code> (git history only)</td>
+<td>3.0 GB</td>
+<td>Same pattern; correctly cleaned from tree in c749dda, but pre-cleanup commits are baked in</td>
+<td>Same as above; good precedent already exists (c749dda)</td>
+</tr>
+<tr>
+<td><code>analysis/eval_v2/figures/</code></td>
+<td>135 MB</td>
+<td>244 tracked PNG/CSV files; <code>.gitignore</code> has a rule for the <em>old</em> <code>analysis/figures/</code> path but not this one; <code>scil_endstate_multirun.pdf</code> is churning right now (<code>git status</code> shows a binary diff with no content change)</td>
+<td>Add <code>.gitignore</code> rule, <code>git rm --cached</code> after confirming no LaTeX/paper <code>\includegraphics</code> points at a frozen copy</td>
+</tr>
+<tr>
+<td><code>data/chunked/test_checkpoint_scheduling/data-00000-of-00001.arrow</code></td>
+<td>37.4 MB</td>
+<td>Force-added (<code>.gitignore</code> explicitly denies <code>data/chunked/</code>); <strong>reclassified</strong> — not zero-reference: 33 current <code>job-prepare-dataset*</code>/<code>job-sweep-*</code> YAMLs <code>rm -rf</code> around its presence as a documented workaround ("git ships this fixture as a non-empty dir, symlink can't replace it")</td>
+<td>Remove deliberately, and simplify/relax the now-unnecessary <code>rm -rf</code> comment in those 33 YAMLs in the same change</td>
+</tr>
+<tr>
+<td><code>latex/</code></td>
+<td>8.5 MB (6.6 MB binary)</td>
+<td><code>latex/Presentation.tex</code> is byte-identical to <code>presentations/Presentation.tex</code>; whole dir untouched since 2026-04-09, no CI/doc reference; live paper work has moved to the separate <code>Subject-Rearing-Paper/</code> repo</td>
+<td>Confirm with PI, then drop one copy of the duplicate and move/retire the rest</td>
+</tr>
+<tr>
+<td><code>data/recoverability/</code>, <code>data/eval_results/</code> (working tree), <code>data/unigrams/</code></td>
+<td>9.0 GB / 1.1 GB / 1.9 MB</td>
+<td>Untracked but <strong>not covered by any <code>.gitignore</code> rule</strong> — exactly the gap that caused the <code>data/eval_results/</code> history incident</td>
+<td>Add explicit ignore lines now, before any broad <code>git add -A data/</code></td>
+</tr>
+<tr>
+<td><code>relaunch_slots.json</code> (repo root)</td>
+<td>3.5 KB</td>
+<td>Transient per-slot relaunch bookkeeping from a resolved 2026-05-28 incident, sitting next to real project config</td>
+<td>Move under <code>scripts/</code> with a one-line note, or gitignore</td>
+</tr>
+<tr>
+<td><code>OVERNIGHT_STATUS.md</code>, <code>docs/jobpostings.md</code></td>
+<td>~8 KB, ~few KB</td>
+<td>4-month-old resolved status snapshot; unrelated job posting already flagged as scratch in the project's own doc index</td>
+<td>Delete</td>
+</tr>
+<tr>
+<td><code>presentations/Oct22Meeting.out</code></td>
+<td>24 KB</td>
+<td>LaTeX <code>.out</code> (hyperref bookmarks) — <code>.gitignore</code> covers <code>.aux/.bbl/.blg/.synctex.gz</code> but not <code>.out</code></td>
+<td>Add <code>*.out</code> to <code>.gitignore</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-confirmed-dead-code">3. Confirmed dead code<a class="headerlink" href="#3-confirmed-dead-code" title="Permanent link">&para;</a></h2>
+<p>Every item below was independently re-verified (import graphs, YAML greps, doc cross-references) after the initial survey; only items that survived that check are listed.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Evidence</th>
+<th>Proposal</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/wild_west/{train.sh,gpu_monitor.sh}</code></td>
+<td>Predates K8s pivot; zero refs outside itself and two stale Feb-12 docs; sibling hardware-era dirs (<code>a5000/</code>,<code>p6000/</code>,<code>titanx/</code>,<code>3070ti/</code>) already moved to <code>scripts/_deprecated/</code></td>
+<td>Move alongside siblings</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>scripts/generate_experiment_configs.py</code></td>
+<td>Only reference is the stale <code>scripts/SCRIPTS_ORGANIZATION.md</code>; its own printed next-step tells the user to run a script already in <code>_deprecated/</code></td>
+<td>Delete or move to <code>_deprecated/</code></td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>scripts/log_manager.py</code></td>
+<td>Referenced only by the same stale doc batch</td>
+<td>Retire alongside wild_west, after confirming no ad-hoc laptop use</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>scripts/{apply_seed_annotations,reorganize_italian_corpus,merge_postprocessed,postprocess_r1_annotations,reannotate_r1_async,test_r1_annotation}.py</code></td>
+<td>One coherent Italian/DeepSeek-R1 annotation pipeline, last touched Feb 5-10 2026; Italian dormant since 2026-04-20; <code>test_r1_annotation.py</code> hardcodes <code>/tmp/...</code> scratch paths</td>
+<td>Move as a group into <code>scripts/_deprecated/italian_r1_pipeline/</code></td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>k8s/Dockerfile.sweep</code></td>
+<td>Never built by <code>.gitlab-ci.yml</code> (not in its rebuild-trigger list); every sweep job uses stock <code>python:3.10-slim</code> or stock PyTorch images</td>
+<td>Delete, or add a header noting it was never shipped; fix the 2 doc references that claim it's in use</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>preprocessing/{impoverish_determiners,lemmatize_verbs,remove_articles,remove_expletives,remove_subject_pronominals}.py</code></td>
+<td>Not imported by <code>preprocessing/__init__.py</code> or <code>ablations/__init__.py</code>'s active list; no dynamic import anywhere; each has a named successor already live in <code>ablations/</code>; <code>ablations/archived/lemmatize_verbs.py</code> is a byte-identical duplicate of the top-level file, i.e. this content is dead in <em>two</em> places at once</td>
+<td>Delete top-level copies; the <code>ablations/archived/</code> copies + git history already serve the historical-reference purpose</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>preprocessing/tests/test_remove_articles_integration.py</code></td>
+<td>Imports <code>preprocessing.ablations.remove_articles</code>, which doesn't exist at that path (only <code>ablations/archived/remove_articles.py</code> and the dead top-level file do) — will <code>ModuleNotFoundError</code> at collection regardless of spaCy</td>
+<td>Delete, or repoint import to <code>ablations.archived.remove_articles</code> if wanted as a regression fixture</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>model_foundry/logging_components.py</code> + its 4 dedicated unit tests</td>
+<td>769-line module (StructuredLogger/MetricsLogger/PerformanceLogger/ErrorTracker/WandBLogger); only importers are its own tests. <code>trainer.py</code>/<code>cli.py</code> actually use <code>logging_utils.py</code> + <code>wandb_init.py</code></td>
+<td>Delete module + tests, or wire it into <code>trainer.py</code> for real; either way correct <code>model_foundry/README.md</code>'s logging-architecture section, which currently markets this dead path as the live one</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>analysis/scripts/runners/corpus_descriptives_analysis.R</code> + 5 siblings (<code>statistical_models/null_subject_analysis.R</code>, <code>analysis_with_models.R</code>, <code>figures/generate_overt_only_faceted_figures.R</code>, <code>figures/generate_first_epoch_forest_plots.R</code>, <code>figures/paper_figures/null_subject_analysis_paper.R</code>)</td>
+<td>All 6 <code>source()</code> an identical path (<code>analysis/scripts/paper_figures/figure_dimensions.R</code>) that hasn't existed since a reorg moved it to <code>analysis/scripts/figures/paper_figures/</code>. Every one fails immediately on run</td>
+<td>One-line path fix (safe, since currently 100% broken) if still wanted; else archive</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>analysis/scripts/runners/run_complete_analysis.R</code></td>
+<td>Calls 6 further scripts at flat paths, 0 of 6 exist (all moved into <code>statistical_models/</code>/<code>pairwise_comparisons/</code>); root <code>README.md:132</code> still tells newcomers to run it (at the wrong path, too)</td>
+<td>Delete/rewrite, and fix the root README pointer</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>analysis/scripts/generate_null_subject_report.py</code></td>
+<td>845-line Feb-12 version; superseded by the memory-safe <code>analysis/scripts/reporting/generate_null_subject_report.py</code> (the one actually invoked by <code>k8s/job-null-subject-report-90m.yaml</code> and current docs). Zero references to the top-level copy anywhere</td>
+<td>Delete</td>
+<td>High</td>
+</tr>
+<tr>
+<td>11 root-level <code>analysis/*.md</code>/<code>*.json</code> reports (APA/COMPREHENSIVE/PURE/STATISTICAL_* + <code>analysis_audit.*</code> + <code>scripts/ANALYSISPLAN.MD</code> + <code>scripts/CODE_STRUCTURE.md</code>)</td>
+<td>Single commit, 2025-10-01, never touched since; cite an input CSV and a <code>null_subject_analysis.R</code> path that no longer exist; describe a pre-lock study design (six conditions, <code>exp0_baseline</code>) superseded by the current locked 30-seed/8-condition/5-arch/2-lang design</td>
+<td>Move to <code>docs/archive/</code> (matching the project's existing convention)</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>analysis/pronoun_recovery/tree_detector/{_categorize_fps,_dump_fps,_example_gold_gaps}.py</code></td>
+<td>Underscore-prefixed one-off diagnostics for Italian gold-gap remediation, added 2026-04-09, dormant 11 days later when Italian went dormant; nothing imports them</td>
+<td>Move into the same archived-Italian-work bucket</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><code>configs/production/baselines/</code></td>
+<td>Empty directory, never committed; only references are the same stale SLURM/wild-west doc batch</td>
+<td>Delete</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>configs/testing/{test_lstm_tiny,test_mamba_tiny,test_checkpoint_scheduling,test_lstm_bidirectional_tiny}.yaml</code></td>
+<td>Zero genuine references anywhere (the one apparent hit is a false-positive match on an unrelated cache-path comment)</td>
+<td>Delete, or move into <code>tests/fixtures/</code> if intended as pytest fixtures that never got wired up</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reclassified-flagged-as-dead-by-the-initial-survey-refuted-on-verification">Reclassified — flagged as dead by the initial survey, refuted on verification<a class="headerlink" href="#reclassified-flagged-as-dead-by-the-initial-survey-refuted-on-verification" title="Permanent link">&para;</a></h3>
+<p>These are <strong>not</strong> dead code. Listing what the refuting reference actually revealed, since three of them are more urgent than the discarded dead-code framing:</p>
+<ul>
+<li><strong><code>k8s/job-train-tokenizer.yaml</code></strong> — still live: <code>model_foundry/tokenizer/tokenize_dataset.py</code>'s <code>FileNotFoundError</code> remediation message (edited as recently as 2026-06-05) tells users to run this exact job, which mounts the <strong>legacy, frozen</strong> <code>corpus-analysis-data</code> PVC instead of <code>subject-drop-archive</code>. Two current sweep-baseline configs repeat the same stale instruction. <strong>This is an active operational footgun, not archival clutter</strong> — flagged in §4 as a fix, not a deletion.</li>
+<li><strong><code>k8s/job-europarl-sweep.yaml</code> + <code>run_europarl_sweep.py</code>/<code>sweep_agent.py</code>/<code>sweep_weight_alpha.py</code> cluster</strong> — still live and still needed: <code>docs/OSF_PREREGISTRATION.md</code> lists "Insert Pronouns (Spanish)" as an active, not-yet-executed preregistered condition that depends on exactly this tree-detector + sequence-labeler mechanism; <code>docs/ablation_verification_report.md</code> (2026-05-06) tracks it as "pending pipeline build." <strong>This is an open study obligation, not dead code</strong> — worth a status check with the user on when it gets scheduled, not archiving.</li>
+<li><strong>Evaluation v1 stack</strong> (<code>evaluation/evaluators/</code>, <code>runners/evaluation_runner.py</code>, <code>aggregation/</code>, <code>core/{model_loader,surprisal_calculator}.py</code>) — still has one live caller, <code>k8s/job-eval-baseline-en.yaml</code>, and <code>README.md</code>'s own Step-by-Step still documents <code>evaluation.runners.evaluation_runner</code> as the eval command. <strong>But that caller is likely broken today</strong>: <code>evaluation_runner.py</code> does <code>from .summary_generator import SummaryGenerator</code>, and <code>summary_generator.py</code> actually lives in <code>evaluation/aggregation/</code>, not <code>evaluation/runners/</code> — a plain <code>ModuleNotFoundError</code> with no surrounding try/except, under a <code>set -euo pipefail</code> job. Worth an actual fix (§6), separate from the doc-currency question in §5.</li>
+<li><strong><code>model_foundry/tests/smoke/test_evaluation.py</code></strong> — actually executed (<code>k8s/job-smoke-test*.yaml</code> run <code>pytest model_foundry/tests/smoke/</code>), and the v1 classes it exercises are still imported by 4 current v2-era test files. Not a deletion candidate; the real gap is that it gives zero coverage of the v2 path (<code>per_model_runner.py</code>) production actually runs — add v2 smoke coverage alongside it rather than replacing it.</li>
+<li><strong><code>docs/checkpoint_scheduling.md</code></strong> — actually deployed: it's in <code>mkdocs.yml</code>'s nav, and <code>origin/gh-pages</code> shows it was redeployed <em>the same day</em> as this audit. Don't move/delete; instead close the real gap — neither this doc nor its stated successor (<code>new_checkpoint_scheduling.md</code>) mentions <code>model_foundry/checkpoint_schedule.py</code>, which is the actual current (PI-locked) design. See §5.</li>
+<li><strong><code>scripts/ssrde/train.sh</code></strong> — <code>docs/TRAINING_ON_SLURM.md</code> is in the live, deployed mkdocs nav pointing straight at it (<code>sbatch scripts/ssrde/train.sh ...</code>), unmarked as superseded, unlike sibling docs that do carry a "(superseded)" banner. The issue isn't the script, it's that the live docs site offers a SLURM path CLAUDE.md says doesn't exist anymore — fix the nav/doc, then the script itself is safe to archive.</li>
+<li><strong><code>scripts/{poc_ablation_demo,smoke_analysis_plus_ablations,smoke_three_step}.py</code></strong> — partially refuted: <code>smoke_three_step.py</code> is named directly in a live config comment (<code>configs/experiments/experiment_es_remove_expletive_sentences.yaml</code>), which itself points to a "see CLAUDE.md" pointer that no longer exists in current CLAUDE.md. The other two remain unreferenced anywhere but were <strong>not independently confirmed</strong> in this pass — treat as lower-confidence candidates for a follow-up look, not confirmed dead.</li>
+</ul>
+<h2 id="4-reorganization-proposal">4. Reorganization proposal<a class="headerlink" href="#4-reorganization-proposal" title="Permanent link">&para;</a></h2>
+<p>This is a live production repo — every move below is scoped to be safe standalone, and none touch anything a training/eval pod imports at runtime unless explicitly called out.</p>
+<p><strong>Target additions (no existing paths change):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>scripts/_deprecated/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  wild_west/            ← moved (§3)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  ssrde/                ← moved, AFTER mkdocs nav fix (see below)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  italian_r1_pipeline/  ← new subdir for the 6-file R1/Italian cluster
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>docs/archive/
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  analysis_reports_2025-10/   ← the 11 stale analysis/*.md,*.json files
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>k8s/archive/  (or k8s/completed/)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  ← the 13 one-time smoke-bring-up jobs + 6 migration one-shots, ONLY after
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    CLAUDE.md's "Existing job templates to copy from" list (which names
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    job-smoke-bert-large.yaml and job-europarl-sweep.yaml by exact path)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    is updated in the same change — moving first breaks those pointers
+</code></pre></div></p>
+<p><strong>Move list, in dependency order:</strong>
+1. Everything in §3's "Confirmed dead code" table — safe today, zero importers verified, no YAML/CLAUDE.md path dependency.
+2. Fix <code>docs/TRAINING_ON_SLURM.md</code>'s mkdocs nav entry (mark superseded, matching the banner convention already used for <code>CORPUS_ANALYSIS_SPEC.md</code>) → <em>then</em> move <code>scripts/ssrde/train.sh</code> to <code>_deprecated/</code>.
+3. Rename <code>k8s/job-train-tokenizer.yaml</code> → <code>job-train-tokenizer-LEGACY.yaml</code> (or delete) <strong>and</strong> in the same change fix all 3 CLAUDE.md references + the <code>tokenize_dataset.py</code> error-message string + the 2 stale sweep-baseline config comments — these must land together or a newcomer follows a dangling/wrong pointer.
+4. Fix the broken relative import in <code>evaluation/runners/evaluation_runner.py</code> (<code>from .summary_generator import</code> → <code>from ..aggregation.summary_generator import</code>) — a one-line, purely-additive correctness fix, safe regardless of the v1/v2 documentation question.
+5. Only after (3): move the 19 completed smoke/migration <code>k8s/*.yaml</code> one-shots into <code>k8s/archive/</code>, updating CLAUDE.md's job-template pointers in the same commit.
+6. <code>analyzers/</code> vs <code>annotators/</code> consolidation in <code>analysis/corpus_descriptives/</code> — real, proven drift risk (duplicate detector logic already had to be hand-patched twice for the same bug), but this is a genuine engineering task (finish routing CSV/count reports through <code>aggregate.py</code> per the project's own <code>LAYERED_ANNOTATION_ARCHITECTURE.md</code> design doc), not a file move — schedule as its own piece of work, not a quick win.
+7. <code>fleetview/</code> — 251 MB of complete, tested, currently <em>untracked</em> work, actively diverging from the tracked <code>scripts/fleet_status.py</code> it's meant to replace (which has a live 149-line uncommitted diff right now). This needs a PI decision before anything else touches it: commit it (with a real <code>.gitignore</code> for <code>.venv</code>/<code>.pytest_cache</code>) or confirm it's abandoned. Flagging, not proposing, since either answer changes the disposition entirely.</p>
+<h2 id="5-documentation-plan-priority-order">5. Documentation plan (priority order)<a class="headerlink" href="#5-documentation-plan-priority-order" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong><code>docs/DOCUMENTATION_MAP.md</code> + <code>docs/STRUCTURE.md</code> + <code>docs/README.md</code> + <code>mkdocs.yml</code></strong> — the only index a newcomer has; refresh in one pass to add <code>PLAN_BERT_CROSSED_SWEEPS.md</code> (the actual current master plan, currently absent), <code>RUN_REGISTRY.md</code>, <code>S3_INTEGRATION.md</code>, and the <code>audits/</code>, <code>incidents/</code>, <code>eval_stimuli/</code> directories that together are a large fraction of current <code>docs/</code>.</li>
+<li><strong><code>docs/preprocessing/README.md</code></strong> — highest-urgency single fix: its own Quick Start example (<code>type="remove_articles"</code>) throws <code>KeyError</code> against the current registry, and its "Available Ablations" table lists zero of the 6 currently-registered ablations. Also fix the <code>ADVANCED_USAGE.md</code> → <code>ADVANCED.md</code> broken link.</li>
+<li><strong><code>docs/k8s_jobs.md</code></strong> — rewrite as a short index (state <code>subject-drop-archive</code> is primary / <code>corpus-analysis-data</code> is legacy, matching CLAUDE.md; link out to the good per-subdir READMEs already in <code>stage1/</code>, <code>condition_matched_eval/</code>, <code>v2/</code>) rather than a full per-file table for 205 files that will drift again.</li>
+<li><strong><code>scripts/SCRIPTS_ORGANIZATION.md</code></strong> — currently labels <code>wild_west</code>/<code>ssrde</code> "DO NOT DELETE" (backwards) and covers ~25 of ~80 current scripts. Rewrite once §3/§4's cleanup lands.</li>
+<li><strong><code>docs/checkpoint_scheduling.md</code> / <code>new_checkpoint_scheduling.md</code></strong> — both live and deployed; neither mentions the actual current source of truth (<code>model_foundry/checkpoint_schedule.py</code>'s own "Locked design (from the PI)" docstring). Keep both pages (they're intentionally-retained superseded history) but add the missing forward-link.</li>
+<li><strong><code>evaluation/README.md</code> + <code>EVALUATION_PLAN.md</code></strong> — README currently calls the dead-in-practice v1 runner "⭐ RECOMMENDED"; rewrite around <code>per_model_runner.py</code>/<code>eval_v2_*</code> while keeping an accurate note that v1 still has one caller (<code>job-eval-baseline-en.yaml</code>) pending the import fix in §4.</li>
+<li><strong><code>model_foundry/README.md</code></strong> — missing <code>registry.py</code>/<code>cache_keys.py</code>/<code>checkpoint_schedule.py</code>/<code>wandb_init.py</code>/<code>rng.py</code>; carries generic OSS boilerplate (MIT license, GitHub Issues) that doesn't fit a single-researcher study repo.</li>
+<li><strong>New <code>configs/README.md</code></strong> — 8 subdirectories, no map of current-vs-legacy; note <code>configs/experiments/experiment_0_baseline_90M_full.yaml</code>'s <code>epochs: 10</code> contradicts the locked 30-epoch design.</li>
+</ol>
+<h2 id="6-quick-wins-vs-structural-moves">6. Quick wins vs structural moves<a class="headerlink" href="#6-quick-wins-vs-structural-moves" title="Permanent link">&para;</a></h2>
+<p><strong>Quick wins (safe today, no coordination needed):</strong>
+- All of §3's confirmed-dead deletions/moves except the <code>ssrde</code>/<code>job-train-tokenizer</code> pair (which need a paired doc/code edit — still same-day work, just two files instead of one).
+- <code>.gitignore</code> additions: <code>data/eval_results/</code>, <code>data/recoverability/</code>, <code>data/unigrams/</code>, <code>analysis/eval_v2/figures/</code>, <code>*.out</code>.
+- Fix the 6 broken <code>source()</code> paths in the R scripts (currently 100% non-functional, so zero regression risk).
+- Fix <code>evaluation_runner.py</code>'s broken relative import (§3, reclassified box).
+- Delete <code>OVERNIGHT_STATUS.md</code>, <code>docs/jobpostings.md</code>, <code>relaunch_slots.json</code> (or relocate).
+- <code>k8s/pvc.yaml</code>: bump the <code>storage:</code> value to match the already-live 200Gi (doc-accuracy only; the live PVC is unaffected either way).
+- Add a one-line arch-name abbreviation legend for <code>stage1/</code>/<code>condition_matched_eval/</code>'s short codes.</p>
+<p><strong>Structural (need a quiet window or PI sign-off):</strong>
+- Git history rewrite for <code>data/eval_results/</code>/<code>evaluation/results/</code> (8.2 GB + 3.0 GB) — destructive, invalidates existing clones, needs explicit PI decision on timing and collaborator coordination.
+- <code>fleetview/</code> commit-vs-archive decision (§4.7).
+- <code>analyzers/</code>/<code>annotators/</code> consolidation in <code>corpus_descriptives/</code> (§4.6) — real engineering, not a move.
+- Moving completed <code>k8s/</code> smoke/migration jobs into an archive subdir, paired with a CLAUDE.md update (§4.5).
+- <code>k8s/condition_matched_eval/</code>'s inconsistent <code>-vN</code> suffixing — check launch scripts for hardcoded filenames before any rename.
+- Confirming the Insert-Pronouns/Europarl-sweep pipeline's schedule with the PI (§3 reclassified box) — a scheduling decision, not a repo change.</p>
+<h2 id="7-healthy-leave-alone">7. Healthy — leave alone<a class="headerlink" href="#7-healthy-leave-alone" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><code>scripts/</code> module-docstring discipline</strong> — all 81 top-level files have one; <code>_deprecated/</code> already correctly isolates 4 earlier hardware-era families, the pattern this audit extends rather than invents.</li>
+<li><strong>Current production infra</strong> — <code>production_agent.py</code> (25 refs), <code>sweep_agent_lm.py</code> (40 refs, backs every <code>configs/sweeps/*.yaml</code>), <code>eval_v2_cell.py</code>/<code>eval_v2_initialization.py</code>, <code>generate_checkpoint_schedule.py</code>, <code>launch_production_training.py</code>, <code>launch_cell_evals.py</code>, <code>compact_registry.py</code>, <code>rater_agent.py</code> — all well cross-referenced, clearly load-bearing.</li>
+<li><strong><code>k8s/</code> overall discipline</strong> — no binary bloat (2.9 MB, 100% text); every post-merge subdirectory (<code>stage1/</code>, <code>condition_matched_eval/</code>, <code>v2/</code>) ships its own README with exact regeneration commands and safety gates; the <code>thomas-</code>/<code>owner: thomas</code> convention is followed consistently in everything created after the 2026-04-23 commit.</li>
+<li><strong><code>preprocessing/</code> active core</strong> — <code>base.py</code>/<code>config.py</code>/<code>registry.py</code>/<code>utils.py</code>/<code>annotate.py</code>/<code>dep_labels.py</code> plus the 6 registered ablation modules are exemplary: strong docstrings, a real <code>template.py</code> scaffold, an <code>archived/</code> convention already correctly excluded from imports.</li>
+<li><strong><code>evaluation/</code> v2 stack</strong> (once the v1 doc-currency issue is fixed) — <code>per_model_runner.py</code>, <code>batched_surprisal.py</code>, <code>pll_surprisal.py</code>, <code>cache.py</code>, <code>stimuli_cache.py</code>, <code>output_v2.py</code> are under active development with real matching tests.</li>
+<li><strong><code>analysis/eval_v2/</code>, <code>analysis/corpus_descriptives/</code> core, <code>analysis/pronoun_recovery/</code></strong> — good READMEs, versioned Parquet schemas, dedicated regression tests paired with recent bug fixes (e.g. the ClearNLP/UD dep-label fix landed with <code>test_dep_labels.py</code>).</li>
+<li><strong><code>annotation/</code></strong> — small, complete, every module docstringed, DB files correctly gitignored, looks finished-and-dormant rather than neglected.</li>
+<li><strong><code>.gitattributes</code>/LFS scoping</strong> — correctly routes <code>*.train</code>/<code>*.test</code>/<code>*.model</code> through LFS; no accidental bloat there.</li>
+<li><strong><code>evaluation/stimuli/blimp/</code></strong> (28 MB) and the <code>null-subj → null-subj-v2 → null-subj-v2-matched-v1</code> stimulus lineage — legitimate, documented reproducibility pins (<code>docs/eval_stimuli/design.md</code> explicitly calls the versioning intentional archival), not clutter.</li>
+<li><strong><code>Subject-Rearing-Paper/</code></strong> as a separate nested git repo — a sane way to keep paper-writing history independent; correctly gitignored from this repo.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
