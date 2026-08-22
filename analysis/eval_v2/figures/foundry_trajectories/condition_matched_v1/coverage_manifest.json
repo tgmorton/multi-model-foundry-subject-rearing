@@ -2,7 +2,7 @@
   "benchmark": "null_subj_v2_condition_matched_v1",
   "metric": "prefers_overt_meanlp",
   "uncertainty": "one standard error across cells or seeds",
-  "training_cells": 715,
+  "training_cells": 725,
   "generated": [
     "baseline_by_hyperparameter_gpt2_small.png",
     "intervention_collapsed_gpt2_small.png",
@@ -54,7 +54,10 @@
     "early_vs_continuation_mamba_370m.png",
     "early_starts_by_seed_category_mamba_370m.png",
     "early_starts_by_seed_category_h0_mamba_370m.png",
+    "early_starts_by_seed_category_h1_mamba_370m.png",
     "h1_h2_early_paths/h2_early_path_mamba_370m.png",
+    "h1_h2_early_paths/h1_vs_h2_early_mamba_370m.png",
+    "baseline_h0_vs_h1_early_all_seeds_mamba_370m.png",
     "gpt2_small_condition_matched_h0_by_intervention.png",
     "early_starts_by_seed.png",
     "late_continuations_by_seed.png",
@@ -93,18 +96,6 @@
     {
       "figure": "baseline_h0_vs_h1_early_all_seeds_bert_large.png",
       "reason": "No completed condition-matched H1 cells for bert_large"
-    },
-    {
-      "figure": "early_starts_by_seed_category_h1_mamba_370m.png",
-      "reason": "No completed condition-matched H1 cells for mamba_370m"
-    },
-    {
-      "figure": "h1_h2_early_paths/h1_vs_h2_early_mamba_370m.png",
-      "reason": "No completed condition-matched H1 cells for mamba_370m"
-    },
-    {
-      "figure": "baseline_h0_vs_h1_early_all_seeds_mamba_370m.png",
-      "reason": "No completed condition-matched H1 cells for mamba_370m"
     },
     {
       "family": "checkpoint_minus1",
