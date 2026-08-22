@@ -2632,8 +2632,14 @@ trained on them yet).</p>
 <tr>
 <td>D8</td>
 <td>Checkpoint paradigm for the wave</td>
-<td><strong>NEW 2026-08-22</strong></td>
-<td>Adopt the lang-manifold <strong>bit-guaranteed retraining</strong> paradigm (<code>~/lang-manifold</code>): sparse resumable checkpoints (~4/model) + determinism manifests that allow bit-exact re-materialization of intermediate steps by replaying training segments; inline evals during training. Port requires: same verification smoke here (retrain a segment, diff bits) and the same implementation choices. Replaces keep-everything checkpointing for Track E.</td>
+<td><strong>RESOLVED 2026-08-22 (D8a memo + Thomas)</strong></td>
+<td>Smoke verified bitwise CUDA determinism works (det1==det2 sha256, RTX-3090-pinned) at a measured <strong>1.7× step-time tax</strong>. Thomas: not worth it — <strong>fast kernels everywhere, no deterministic subset</strong>; if an intermediate state is ever truly needed, retrain from start. Sparse resumable anchors (~4/run: ep1, ep2, mid, final) + endpoint weights kept; everything else prunes after eval. The remorse-prevention burden moves to <strong>preemptive capture</strong> (D9).</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Preemptive capture manifest</td>
+<td><strong>PROPOSED 2026-08-22</strong></td>
+<td>Bank per checkpoint, in the eval pod while weights are loaded anyway (training stays fast): (a) full matched eval suite incl. per-token logprobs; (b) held-out perplexity (test_10M slice); (c) <strong>pronoun probe battery</strong> — a frozen ~20K-instance sample of the scored corpus, stratified by decile × arm × genre × form, giving instance-level P(pronoun | context) + inventory-slot distributions at every checkpoint (the dose-response trajectory at the resolution the study is about); (d) per-tensor weight-stat summaries (norms) before deletion; (e) training curves exported to S3 at run completion (not nightly); (f) last-layer reps for a small probe subset at the 4 anchors only. All S3-archived before any weight deletion; pruning gated on capture-complete markers.</td>
 </tr>
 <tr>
 <td>—</td>
