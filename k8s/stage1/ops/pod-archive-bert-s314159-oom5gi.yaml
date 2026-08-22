@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: thomas-fdy-archive-bert-s314159-oom5gi
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: archive-failed-attempt
+spec:
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 300
+  containers:
+  - name: archiver
+    image: alpine:3.20
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      set -eu
+      src=/mnt/data/models/production/bert_large-en-baseline-h0-s314159
+      dst=/mnt/data/models/production/_failed_attempts/bert_large-en-baseline-h0-s314159__oom5gi__20260728T194028Z
+      test -d "$src"
+      test ! -e "$dst"
+      mkdir -p /mnt/data/models/production/_failed_attempts
+      mv "$src" "$dst"
+      test ! -e "$src"
+      test -d "$dst"
+      echo "ARCHIVED_OK bert_large-en-baseline-h0-s314159 oom5gi 20260728T194028Z"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+    volumeMounts:
+    - name: data
+      mountPath: /mnt/data
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: subject-drop-archive

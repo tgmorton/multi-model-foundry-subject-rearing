@@ -1,0 +1,131 @@
+{
+  "benchmark": "null_subj_v2_condition_matched_v1",
+  "metric": "prefers_overt_meanlp",
+  "uncertainty": "one standard error across cells or seeds",
+  "training_cells": 715,
+  "generated": [
+    "baseline_by_hyperparameter_gpt2_small.png",
+    "intervention_collapsed_gpt2_small.png",
+    "gpt2_small_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_gpt2_small.png",
+    "early_starts_by_seed_category_gpt2_small.png",
+    "early_starts_by_seed_category_h0_gpt2_small.png",
+    "early_starts_by_seed_category_h1_gpt2_small.png",
+    "h1_h2_early_paths/h2_early_path_gpt2_small.png",
+    "h1_h2_early_paths/h1_vs_h2_early_gpt2_small.png",
+    "baseline_h0_vs_h1_early_all_seeds_gpt2_small.png",
+    "baseline_by_hyperparameter_gpt2_medium.png",
+    "intervention_collapsed_gpt2_medium.png",
+    "gpt2_medium_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_gpt2_medium.png",
+    "early_starts_by_seed_category_gpt2_medium.png",
+    "early_starts_by_seed_category_h0_gpt2_medium.png",
+    "early_starts_by_seed_category_h1_gpt2_medium.png",
+    "h1_h2_early_paths/h2_early_path_gpt2_medium.png",
+    "h1_h2_early_paths/h1_vs_h2_early_gpt2_medium.png",
+    "baseline_h0_vs_h1_early_all_seeds_gpt2_medium.png",
+    "baseline_by_hyperparameter_gpt2_large.png",
+    "intervention_collapsed_gpt2_large.png",
+    "gpt2_large_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_gpt2_large.png",
+    "early_starts_by_seed_category_gpt2_large.png",
+    "early_starts_by_seed_category_h0_gpt2_large.png",
+    "h1_h2_early_paths/h2_early_path_gpt2_large.png",
+    "baseline_by_hyperparameter_bert_large.png",
+    "intervention_collapsed_bert_large.png",
+    "bert_large_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_bert_large.png",
+    "early_starts_by_seed_category_bert_large.png",
+    "early_starts_by_seed_category_h0_bert_large.png",
+    "h1_h2_early_paths/h2_early_path_bert_large.png",
+    "baseline_by_hyperparameter_lstm.png",
+    "intervention_collapsed_lstm.png",
+    "lstm_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_lstm.png",
+    "early_starts_by_seed_category_lstm.png",
+    "early_starts_by_seed_category_h0_lstm.png",
+    "early_starts_by_seed_category_h1_lstm.png",
+    "h1_h2_early_paths/h2_early_path_lstm.png",
+    "h1_h2_early_paths/h1_vs_h2_early_lstm.png",
+    "baseline_h0_vs_h1_early_all_seeds_lstm.png",
+    "baseline_by_hyperparameter_mamba_370m.png",
+    "intervention_collapsed_mamba_370m.png",
+    "mamba_370m_condition_matched_all_hp_by_intervention.png",
+    "early_vs_continuation_mamba_370m.png",
+    "early_starts_by_seed_category_mamba_370m.png",
+    "early_starts_by_seed_category_h0_mamba_370m.png",
+    "h1_h2_early_paths/h2_early_path_mamba_370m.png",
+    "gpt2_small_condition_matched_h0_by_intervention.png",
+    "early_starts_by_seed.png",
+    "late_continuations_by_seed.png",
+    "checkpoint_minus1/checkpoint_minus1_by_seed_gpt2_small.png",
+    "checkpoint_minus1/checkpoint_minus1_heatmap_gpt2_small.png",
+    "comparisons/gpt2_medium_old_vs_matched_h2_h4_trajectories.png",
+    "comparisons/gpt2_medium_matched_minus_old_h2_h4_trajectories.png",
+    "endstate_forests/endstate_forest_gpt2_small.png",
+    "endstate_forests/endstate_forest_gpt2_medium.png",
+    "endstate_forests/endstate_forest_gpt2_large.png",
+    "endstate_forests/endstate_forest_bert_large.png",
+    "endstate_forests/endstate_forest_lstm.png",
+    "endstate_forests/endstate_forest_mamba_370m.png"
+  ],
+  "pending": [
+    {
+      "figure": "early_starts_by_seed_category_h1_gpt2_large.png",
+      "reason": "No completed condition-matched H1 cells for gpt2_large"
+    },
+    {
+      "figure": "h1_h2_early_paths/h1_vs_h2_early_gpt2_large.png",
+      "reason": "No completed condition-matched H1 cells for gpt2_large"
+    },
+    {
+      "figure": "baseline_h0_vs_h1_early_all_seeds_gpt2_large.png",
+      "reason": "No completed condition-matched H1 cells for gpt2_large"
+    },
+    {
+      "figure": "early_starts_by_seed_category_h1_bert_large.png",
+      "reason": "No completed condition-matched H1 cells for bert_large"
+    },
+    {
+      "figure": "h1_h2_early_paths/h1_vs_h2_early_bert_large.png",
+      "reason": "No completed condition-matched H1 cells for bert_large"
+    },
+    {
+      "figure": "baseline_h0_vs_h1_early_all_seeds_bert_large.png",
+      "reason": "No completed condition-matched H1 cells for bert_large"
+    },
+    {
+      "figure": "early_starts_by_seed_category_h1_mamba_370m.png",
+      "reason": "No completed condition-matched H1 cells for mamba_370m"
+    },
+    {
+      "figure": "h1_h2_early_paths/h1_vs_h2_early_mamba_370m.png",
+      "reason": "No completed condition-matched H1 cells for mamba_370m"
+    },
+    {
+      "figure": "baseline_h0_vs_h1_early_all_seeds_mamba_370m.png",
+      "reason": "No completed condition-matched H1 cells for mamba_370m"
+    },
+    {
+      "family": "checkpoint_minus1",
+      "architectures": [
+        "bert_large",
+        "gpt2_large",
+        "gpt2_medium",
+        "lstm",
+        "mamba_370m"
+      ],
+      "reason": "Condition-matched checkpoint -1 evaluation not yet available"
+    }
+  ],
+  "trajectory_cutoff": {
+    "horizon": "minimum intervention-specific terminal maximum within architecture",
+    "endpoint": "hard truncation; retain observed checkpoints at or below the horizon only",
+    "display": "vertical dashed line on full-horizon panels"
+  },
+  "endstate_forests": {
+    "common_horizon": "minimum intervention-specific terminal maximum within architecture",
+    "endpoint": "last observed checkpoint at or below the horizon; no interpolation",
+    "eligibility": "matched hp-rank/seed tuples reaching the horizon in all five interventions"
+  }
+}

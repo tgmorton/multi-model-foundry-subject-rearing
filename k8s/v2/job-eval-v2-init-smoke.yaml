@@ -1,0 +1,150 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-eval-init-smoke-gpt2s-s42
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-init
+    arch: gpt2_small
+    phase: smoke
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 86400
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-init
+        arch: gpt2_small
+        phase: smoke
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          cd /opt/repo
+          git init .
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+          git fetch --depth 1 origin "$GIT_REF"
+          git checkout --detach FETCH_HEAD
+        env:
+        - name: GIT_REF
+          value: c5325534fd4e7021d7691a50f771279150c485ca
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory --format=csv,noheader,nounits -l 15 &
+          TELEMETRY_PID=$!
+          trap 'kill "$TELEMETRY_PID" 2>/dev/null || true' EXIT
+          cd /opt/repo
+          python3 -u /opt/init-script/eval_v2_initialization.py \
+            --arch gpt2_small --seed 42 \
+            --cells /opt/init-script/coverage.csv \
+            --repo /opt/repo --data-root /mnt/data --device cuda
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: "0"
+        - name: GIT_REF
+          value: c5325534fd4e7021d7691a50f771279150c485ca
+        - name: IMAGE_DIGEST
+          value: sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            memory: 10Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 10Gi
+            cpu: "4"
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+        - name: init-script
+          mountPath: /opt/init-script
+          readOnly: true
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      - name: init-script
+        configMap:
+          name: thomas-foundry-init-eval-code
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false

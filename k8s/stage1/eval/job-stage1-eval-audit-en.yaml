@@ -1,0 +1,441 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-s1e-eval-audit-en-v1
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-audit
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-audit
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      restartPolicy: Never
+      containers:
+      - name: audit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        command:
+        - python3
+        - -c
+        args:
+        - "import json, os\nfrom pathlib import Path\nimport boto3\nfrom botocore.exceptions\
+          \ import ClientError\ntargets=json.loads(\"[[\\\"gpt2_small\\\", \\\"baseline\\\
+          \", \\\"gpt2_small-en-baseline-h0-s42\\\"], [\\\"gpt2_small\\\", \\\"baseline\\\
+          \", \\\"gpt2_small-en-baseline-h0-s137\\\"], [\\\"gpt2_small\\\", \\\"baseline\\\
+          \", \\\"gpt2_small-en-baseline-h0-s314159\\\"], [\\\"gpt2_small\\\", \\\"\
+          baseline\\\", \\\"gpt2_small-en-baseline-h0-s1568568120\\\"], [\\\"gpt2_small\\\
+          \", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s1415936399\\\"], [\\\
+          \"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s1640623142\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s1595274352\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s2022192329\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s1891911437\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s1881877998\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s302485963\\\
+          \"], [\\\"gpt2_small\\\", \\\"baseline\\\", \\\"gpt2_small-en-baseline-h0-s2078344582\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"gpt2_small\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_small-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s42\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s137\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"gpt2_small\\\", \\\"impoverish_case\\\", \\\"gpt2_small-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"gpt2_small\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_small-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"gpt2_small\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_small-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s42\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s137\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s314159\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1568568120\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1415936399\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1640623142\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1595274352\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s2022192329\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1891911437\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s1881877998\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s302485963\\\
+          \"], [\\\"gpt2_medium\\\", \\\"baseline\\\", \\\"gpt2_medium-en-baseline-h0-s2078344582\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"gpt2_medium\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_medium-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s42\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s137\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"gpt2_medium\\\", \\\"impoverish_case\\\", \\\"gpt2_medium-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"gpt2_medium\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_medium-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"gpt2_medium\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_medium-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s42\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s137\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s314159\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1568568120\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1415936399\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1640623142\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1595274352\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s2022192329\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1891911437\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s1881877998\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s302485963\\\
+          \"], [\\\"gpt2_large\\\", \\\"baseline\\\", \\\"gpt2_large-en-baseline-h0-s2078344582\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"gpt2_large\\\", \\\"remove_expletive_sentences\\\", \\\"gpt2_large-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s42\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s137\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"gpt2_large\\\", \\\"impoverish_case\\\", \\\"gpt2_large-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"gpt2_large\\\", \\\"lemmatize_verbs\\\", \\\"gpt2_large-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"gpt2_large\\\", \\\"enrich_verbal_morphology\\\", \\\"gpt2_large-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s42\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s137\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s314159\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1568568120\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1415936399\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1640623142\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1595274352\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s2022192329\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1891911437\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s1881877998\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s302485963\\\
+          \"], [\\\"bert_large\\\", \\\"baseline\\\", \\\"bert_large-en-baseline-h0-s2078344582\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"bert_large\\\", \\\"remove_expletive_sentences\\\", \\\"bert_large-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s42\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s137\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"bert_large\\\", \\\"impoverish_case\\\", \\\"bert_large-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"bert_large\\\", \\\"lemmatize_verbs\\\", \\\"bert_large-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"bert_large\\\", \\\"enrich_verbal_morphology\\\", \\\"bert_large-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s42\\\"],\
+          \ [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s137\\\"], [\\\
+          \"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s314159\\\"], [\\\"\
+          lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1568568120\\\"], [\\\
+          \"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1415936399\\\"],\
+          \ [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1640623142\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1595274352\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s2022192329\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1891911437\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s1881877998\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s302485963\\\
+          \"], [\\\"lstm\\\", \\\"baseline\\\", \\\"lstm-en-baseline-h0-s2078344582\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"lstm\\\", \\\"remove_expletive_sentences\\\", \\\"lstm-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s42\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s137\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"lstm\\\", \\\"impoverish_case\\\", \\\"lstm-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"lstm\\\", \\\"lemmatize_verbs\\\", \\\"lstm-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"lstm\\\", \\\"enrich_verbal_morphology\\\", \\\"lstm-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s42\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s137\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s314159\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1568568120\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1415936399\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1640623142\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1595274352\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s2022192329\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1891911437\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s1881877998\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s302485963\\\
+          \"], [\\\"mamba_370m\\\", \\\"baseline\\\", \\\"mamba_370m-en-baseline-h0-s2078344582\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s42\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s137\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s314159\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1568568120\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1415936399\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1640623142\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1595274352\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s2022192329\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1891911437\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s1881877998\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s302485963\\\
+          \"], [\\\"mamba_370m\\\", \\\"remove_expletive_sentences\\\", \\\"mamba_370m-en-remove_expletive_sentences-h0-s2078344582\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s42\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s137\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s314159\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1568568120\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1415936399\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1640623142\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1595274352\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s2022192329\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1891911437\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s1881877998\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s302485963\\\
+          \"], [\\\"mamba_370m\\\", \\\"impoverish_case\\\", \\\"mamba_370m-en-impoverish_case-h0-s2078344582\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s42\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s137\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s314159\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1568568120\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1415936399\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1640623142\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1595274352\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s2022192329\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1891911437\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s1881877998\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s302485963\\\
+          \"], [\\\"mamba_370m\\\", \\\"lemmatize_verbs\\\", \\\"mamba_370m-en-lemmatize_verbs-h0-s2078344582\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s42\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s137\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s314159\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1568568120\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1415936399\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1640623142\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1595274352\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s2022192329\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1891911437\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s1881877998\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s302485963\\\
+          \"], [\\\"mamba_370m\\\", \\\"enrich_verbal_morphology\\\", \\\"mamba_370m-en-enrich_verbal_morphology-h0-s2078344582\\\
+          \"]]\")\ns3=boto3.client(\"s3\",endpoint_url=os.environ[\"AWS_ENDPOINT_URL\"\
+          ],region_name=os.environ[\"AWS_DEFAULT_REGION\"])\nbucket=os.environ[\"\
+          REGISTRY_BUCKET\"]\nmissing=[]; bad=[]; eval_done=0\nfor arch,cond,rid in\
+          \ targets:\n p=Path(\"/mnt/data/models/production\")/rid\n if not p.is_dir():\
+          \ missing.append((\"PVC\",rid)); continue\n ck=sorted(p.glob(\"checkpoint-*\"\
+          ))\n if not ck: bad.append((\"NO_CHECKPOINTS\",rid)); continue\n key=f\"\
+          run_registry/by_run/{arch}/en/{cond}/{rid}.json\"\n try: rec=json.loads(s3.get_object(Bucket=bucket,Key=key)[\"\
+          Body\"].read())\n except ClientError: missing.append((\"REGISTRY\",rid));\
+          \ continue\n if rec.get(\"status\") != \"COMPLETE\": bad.append((\"REGISTRY_STATUS=\"\
+          +str(rec.get(\"status\")),rid))\n pair=f\"eval_results/null_subj_v2/pairs/cell_id={rid}.parquet\"\
+          \n try: s3.head_object(Bucket=bucket,Key=pair); eval_done+=1\n except ClientError\
+          \ as e:\n  if e.response[\"Error\"][\"Code\"] not in (\"404\",\"NoSuchKey\"\
+          ): raise\nprint(f\"TRAINING_TARGETS={len(targets)} EVAL_ALREADY_COMPLETE={eval_done}\
+          \ EVAL_PENDING={len(targets)-eval_done}\")\nfor x in missing+bad: print(\"\
+          AUDIT_ERROR\",*x)\nif missing or bad: raise SystemExit(2)\nprint(\"STAGE1_EVAL_AUDIT_OK=360\"\
+          )"
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: thomas-subject-drop-artifacts
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 500m
+            memory: 2Gi
+        volumeMounts:
+        - name: data
+          mountPath: /mnt/data
+          readOnly: true
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+          readOnly: true

@@ -1,0 +1,7 @@
+architecture,common_final_tokens
+bert_large,3678720000
+gpt2_large,3732480000
+gpt2_medium,3736320000
+gpt2_small,3736320000
+lstm,3736320000
+mamba_370m,3732480000

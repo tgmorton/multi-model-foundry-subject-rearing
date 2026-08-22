@@ -1,0 +1,197 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-eval-s1e-pack-smoke-lstm-v2
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: eval-cell
+    lang: en
+    arch: lstm
+    phase: pack-smoke
+  namespace: lemn-lab
+spec:
+  completionMode: Indexed
+  completions: 1
+  parallelism: 1
+  activeDeadlineSeconds: 172800
+  ttlSecondsAfterFinished: 172800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: evaluator
+        operator: In
+        values:
+        - 2
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: eval-cell
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - hcc-nrp-shor-c6017.unl.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - 'set -eu
+
+          cd /opt/repo
+
+          git init .
+
+          git remote add origin https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+
+          git fetch --depth 1 origin "$GIT_REF"
+
+          git checkout --detach FETCH_HEAD
+
+          '
+        env:
+        - name: GIT_REF
+          value: 2e4a9880aa8ce26568c80b4e1f0dd21708ea650c
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: evaluator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nRUN_ID=$(python3 -c \"import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])\"\
+          )\necho \"==========================================\"\necho \"  CELL EVAL\
+          \ \u2014 $RUN_ID (idx=$JOB_COMPLETION_INDEX)\"\necho \"==========================================\"\
+          \n\n# GPU health probe (exit 2 \u2192 podFailurePolicy Ignore \u2192 reschedule).\n\
+          python3 -c \"\nimport sys, torch\ntry:\n    if not torch.cuda.is_available():\n\
+          \        print('FATAL: no CUDA', file=sys.stderr); sys.exit(2)\n    torch.cuda.synchronize()\n\
+          \    x = torch.zeros(1024, device='cuda'); x.sum().item()\n    print(f'\
+          \  GPU healthy: {torch.cuda.get_device_name(0)}')\nexcept Exception as e:\n\
+          \    print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)\n\
+          \"\n\ncd /opt/repo\n          nvidia-smi --query-gpu=timestamp,name,memory.used,memory.total,utilization.gpu,utilization.memory\
+          \ --format=csv,noheader,nounits -l 15 &\n          TELEMETRY_PID=$!\n  \
+          \        trap 'kill $TELEMETRY_PID 2>/dev/null || true' EXIT\n# PACK>1:\
+          \ this pod owns a slice of RUN_IDS_JSON and runs PACK\n# cells concurrently\
+          \ on its one GPU \u2014 overlapping one cell's\n# checkpoint I/O and post-eval\
+          \ upload with another's forwards\n# keeps GPU/CPU/mem duty cycles high (NRP\
+          \ utilization webhook).\nif [ \"${PACK:-1}\" -gt 1 ]; then\n  python3 -c\
+          \ 'import json, os; ids = json.loads(os.environ[\"RUN_IDS_JSON\"]); i =\
+          \ int(os.environ[\"JOB_COMPLETION_INDEX\"]); p = int(os.environ[\"PACK\"\
+          ]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids\n  fail=0\n\
+          \  eval_pids=\"\"\n  while read -r rid; do\n    [ -z \"$rid\" ] && continue\n\
+          \    ( python3 scripts/eval_v2_cell.py --run_id \"$rid\" \\\n        --batch_size\
+          \ 64 --scratch_dir /tmp/eval_scratch \\\n        --no-registry --results-to-pvc\
+          \ --output_root /mnt/data/eval_v2/stage1_pack_smoke/lstm --scoring_version\
+          \ stage1-pack-smoke-lstm-v2 2>&1 | sed \"s/^/[$rid] /\" ) &\n    eval_pids=\"\
+          $eval_pids $!\"\n  done < /tmp/my_run_ids\n  # Wait only for evaluator pipelines.\
+          \  The nvidia-smi sampler is\n  # also a background job and must be left\
+          \ for the EXIT trap; using\n  # jobs -p here would wait forever on the sampler.\n\
+          \  for p in $eval_pids; do wait \"$p\" || fail=1; done\n  exit $fail\nelse\n\
+          \  python3 scripts/eval_v2_cell.py \\\n    --run_id \"$RUN_ID\" \\\n   \
+          \ --batch_size 64 \\\n    --scratch_dir /tmp/eval_scratch --no-registry\
+          \ --results-to-pvc --output_root /mnt/data/eval_v2/stage1_pack_smoke/lstm\
+          \ --scoring_version stage1-pack-smoke-lstm-v2\nfi\n"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTHONHASHSEED
+          value: '0'
+        - name: GIT_REF
+          value: 2e4a9880aa8ce26568c80b4e1f0dd21708ea650c
+        - name: PACK
+          value: '6'
+        - name: RUN_IDS_JSON
+          value: '["lstm-en-baseline-h0-s42", "lstm-en-baseline-h0-s137", "lstm-en-baseline-h0-s314159",
+            "lstm-en-baseline-h0-s1568568120", "lstm-en-baseline-h0-s1415936399",
+            "lstm-en-baseline-h0-s1640623142"]'
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: REGISTRY_BUCKET
+          value: ''
+        resources:
+          requests:
+            memory: 14Gi
+            cpu: '6'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 20Gi
+          limits:
+            memory: 14Gi
+            cpu: '6'
+            nvidia.com/gpu: 1
+            ephemeral-storage: 40Gi
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+  backoffLimitPerIndex: 2
+  maxFailedIndexes: 0
+  podReplacementPolicy: Failed

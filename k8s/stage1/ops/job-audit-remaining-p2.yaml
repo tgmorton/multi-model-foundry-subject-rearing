@@ -1,0 +1,87 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fdy-audit-remaining-p2
+  namespace: lemn-lab
+  labels: {owner: thomas, study: subject-drop, stage: collision-audit}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: collision-audit}
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      restartPolicy: Never
+      containers:
+      - name: audit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing@sha256:037b88f45101490ba412890bf431cfefc8c93cba80c7731041649d59aba9a259
+        command: ["python3", "-c"]
+        args:
+        - |
+          import os
+          from pathlib import Path
+          import boto3
+          from botocore.exceptions import ClientError
+          import wandb
+
+          arches = ["gpt2_medium", "gpt2_large", "bert_large", "lstm", "mamba_370m"]
+          seeds = [314159, 1568568120, 1415936399, 1640623142, 1595274352,
+                   2022192329, 1891911437, 1881877998, 302485963, 2078344582]
+          conditions = ["baseline", "remove_expletive_sentences", "impoverish_case",
+                        "lemmatize_verbs", "enrich_verbal_morphology"]
+          targets = []
+          for arch in arches:
+              for condition in conditions:
+                  selected = seeds[1:] if condition == "baseline" else seeds
+                  targets.extend((arch, condition, f"{arch}-en-{condition}-h0-s{seed}")
+                                 for seed in selected)
+          assert len(targets) == 245
+
+          s3 = boto3.client("s3", endpoint_url=os.environ["AWS_ENDPOINT_URL"],
+                            region_name=os.environ["AWS_DEFAULT_REGION"])
+          bucket = os.environ["REGISTRY_BUCKET"]
+          existing_wandb = {
+              run.name for run in wandb.Api().runs(
+                  "thmorton-uc-san-diego/subject-drop-production", per_page=500
+              )
+          }
+          collisions = []
+          for arch, condition, run_id in targets:
+              if (Path("/mnt/data/models/production") / run_id).exists():
+                  collisions.append(("PVC", run_id))
+              key = f"run_registry/by_run/{arch}/en/{condition}/{run_id}.json"
+              try:
+                  s3.head_object(Bucket=bucket, Key=key)
+              except ClientError as exc:
+                  if exc.response["Error"]["Code"] not in ("404", "NoSuchKey"):
+                      raise
+              else:
+                  collisions.append(("S3", run_id))
+              if run_id in existing_wandb:
+                  collisions.append(("WANDB", run_id))
+          if collisions:
+              for source, run_id in collisions:
+                  print(f"COLLISION {source} {run_id}")
+              raise SystemExit(2)
+          print("REMAINING_COLLISION_AUDIT_CLEAN=245")
+        env:
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          requests: {cpu: 500m, memory: 2Gi}
+          limits: {cpu: 500m, memory: 2Gi}
+        volumeMounts:
+        - {name: data, mountPath: /mnt/data, readOnly: true}
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive}

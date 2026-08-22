@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: thomas-fdy-archive-gpt2s-lemma-nf1
+  namespace: lemn-lab
+  labels: {owner: thomas, study: subject-drop, stage: archive-failed-attempt}
+spec:
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 300
+  containers:
+  - name: archiver
+    image: alpine:3.20
+    command: ["/bin/sh", "-c"]
+    args:
+    - |
+      set -eu
+      root=/mnt/data/models/production
+      dst="$root/_failed_attempts/gpt2s-lemmaverb-nf1-20260729T0157Z"
+      test ! -e "$dst"
+      mkdir -p "$dst"
+      found=0
+      for run_id in \
+        gpt2_small-en-lemmatize_verbs-h0-s1640623142 \
+        gpt2_small-en-lemmatize_verbs-h0-s1595274352
+      do
+        if [ -e "$root/$run_id" ]; then
+          mv "$root/$run_id" "$dst/$run_id"
+          echo "ARCHIVED $run_id"
+          found=$((found + 1))
+        else
+          echo "ABSENT $run_id"
+        fi
+      done
+      echo "ARCHIVED_COUNT=$found"
+    resources:
+      requests: {cpu: 100m, memory: 256Mi}
+      limits: {cpu: 100m, memory: 256Mi}
+    volumeMounts:
+    - {name: data, mountPath: /mnt/data}
+  volumes:
+  - name: data
+    persistentVolumeClaim: {claimName: subject-drop-archive}
