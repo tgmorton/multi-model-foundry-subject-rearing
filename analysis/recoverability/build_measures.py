@@ -138,6 +138,9 @@ def main():
     ap.add_argument("--select-on", choices=["clean", "external"],
                     default="clean",
                     help="ranking column for the frozen selection")
+    ap.add_argument("--selection-version", type=int, default=None,
+                    help="version stamped into SELECTION_MANIFEST (default: "
+                         "2 for external, 1 for clean)")
     args = ap.parse_args()
     if args.select_on == "external" and not args.external:
         ap.error("--select-on external requires --external NAME")
@@ -266,7 +269,10 @@ def main():
                        + (f"; external scorer = {args.external}"
                           if args.select_on == "external" else
                           " (cross-fold stitched rater form surprisal)"),
-            "selection_version": 2 if args.select_on == "external" else 1,
+            "selection_version": (args.selection_version if args.selection_version
+                                  is not None else
+                                  (2 if args.select_on == "external" else 1)),
+            "external_scorer": args.external,
             "cumulative_semantics": "condition K%% removes instances with "
                                     "decile < K/10 (either arm)",
             "decile_upper_thresholds_nats": thresholds,
