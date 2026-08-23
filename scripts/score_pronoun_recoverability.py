@@ -221,7 +221,7 @@ class HFAligner:
 # --------------------------------------------------------------------------
 
 def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[int],
-            counters: Dict[str, int]):
+            counters: Dict[str, int], sample=None):
     from preprocessing.annotate import iter_annotated_file
     from preprocessing.dep_labels import normalize_dep
 
@@ -254,6 +254,10 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
                  and normalize_dep(t.dep_) in ("nsubj", "nsubj:pass")]
         if not cands:
             continue
+        if sample is not None:
+            cands = [t for t in cands if (line_idx, t.i) in sample]
+            if not cands:
+                continue
         alignments = aligner.align_line(raw, cands)
         for t, aligned in zip(cands, alignments):
             form = t.text.lower()
@@ -335,7 +339,7 @@ def scored_range(start: int, window: int, stride: int, n: int):
 def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 inv_ids: List[List[int]], device: str, ctx_halfwidth: int,
                 batch_size: int, use_amp: bool, counters: Dict[str, int],
-                ctx_right: Optional[int] = None):
+                ctx_right: Optional[int] = None, model=None):
     """Masked-slot scoring with an external MLM (BERT-family).
 
     For each instance: take +-ctx_halfwidth stream tokens around the slot,
@@ -370,8 +374,9 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
     cls_id, sep_id, mask_id = tok.cls_token_id, tok.sep_token_id, tok.mask_token_id
     assert None not in (cls_id, sep_id, mask_id), "MLM special tokens missing"
 
-    model = AutoModelForMaskedLM.from_pretrained(
-        hf_id, attn_implementation="eager").to(device).eval()
+    if model is None:
+        model = AutoModelForMaskedLM.from_pretrained(
+            hf_id, attn_implementation="eager").to(device).eval()
 
     t0 = time.time()
     N = len(instances)
@@ -566,6 +571,15 @@ def main():
                          "<0.1 nats), collapsing the ranking; left-only "
                          "converts cloze to prediction.")
     ap.add_argument("--mlm-batch", type=int, default=48)
+    ap.add_argument("--mlm-ctx-grid", default=None,
+                    help="MLM locality-experiment grid: comma-separated "
+                         "L:R context configs (stream wordpieces), e.g. "
+                         "'250:250,64:0,0:16'. One scoring pass per config "
+                         "over the same instances; outputs under "
+                         "external_<NAME>/grid/L{l}R{r}/.")
+    ap.add_argument("--sample-file", type=Path, default=None,
+                    help="parquet with (line_idx, token_i) — restrict "
+                         "scoring to these instances (frozen sample)")
     ap.add_argument("--out-dir", type=Path, default=None)
     ap.add_argument("--window", type=int, default=1000)
     ap.add_argument("--stride", type=int, default=500)
@@ -630,12 +644,67 @@ def main():
             scorers[name] = resolve_final_checkpoint(Path(root))
             print(f"scorer {name}: {scorers[name]}", flush=True)
 
+    sample = None
+    if args.sample_file is not None:
+        import pyarrow.parquet as _pq
+        st = _pq.read_table(args.sample_file,
+                            columns=["line_idx", "token_i"])
+        sample = set(zip(st.column("line_idx").to_pylist(),
+                         st.column("token_i").to_pylist()))
+        print(f"sample filter: {len(sample):,} instances", flush=True)
+
     print(f"=== phase A: {args.corpus}/{args.file} from {annotated_dir}", flush=True)
     t0 = time.time()
     lines, instances = phase_a(annotated_dir, args.file, aligner,
-                               args.limit_lines, counters)
+                               args.limit_lines, counters, sample=sample)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
     print(f"  {counters}", flush=True)
+
+    if args.hf_mlm and args.mlm_ctx_grid:
+        # Locality experiment: score the SAME instances under every (L, R)
+        # context config, one model load. Per-config outputs only.
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        from transformers import AutoModelForMaskedLM
+        configs = []
+        for spec in args.mlm_ctx_grid.split(","):
+            l_s, r_s = spec.strip().split(":")
+            configs.append((int(l_s), int(r_s)))
+        model = AutoModelForMaskedLM.from_pretrained(
+            hf_id, attn_implementation="eager").to(args.device).eval()
+        print(f"=== phase B (grid): {len(configs)} configs × "
+              f"{len(instances):,} instances", flush=True)
+        for l_ctx, r_ctx in configs:
+            cfg_counters: Dict[str, int] = {}
+            res, _ = phase_b_mlm(
+                lines, instances, hf_name, hf_id, hf_tok, inv_ids,
+                args.device, l_ctx, args.mlm_batch, args.amp, cfg_counters,
+                ctx_right=r_ctx, model=model)
+            r = res[hf_name]
+            gdir = out_root / "grid" / f"L{l_ctx}R{r_ctx}"
+            gdir.mkdir(parents=True, exist_ok=True)
+            tbl = {
+                "line_idx": [i["line_idx"] for i in instances],
+                "token_i": [i["token_i"] for i in instances],
+                "form": [i["form"] for i in instances],
+                "person": [i["person"] for i in instances],
+                "logprob_sum": [None if math.isnan(float(x)) else float(x)
+                                for x in r["logprob_sum_arr"]],
+                "logprob_first": [None if math.isnan(float(x)) else float(x)
+                                  for x in r["logprob_first_arr"]],
+                "entropy": [None if math.isnan(float(x)) else float(x)
+                            for x in r["entropy"]],
+            }
+            pq.write_table(pa.table(tbl), gdir / f"{args.file}.parquet")
+            with open(gdir / f"{args.file}.manifest.json", "w") as f:
+                json.dump({"L": l_ctx, "R": r_ctx, "file": args.file,
+                           "n": len(instances), "hf_id": hf_id,
+                           "counters": cfg_counters}, f)
+            print(f"  grid L{l_ctx}R{r_ctx}: done "
+                  f"({cfg_counters.get(f'seconds_{hf_name}', '?')}s)",
+                  flush=True)
+        print("GRID SCORING OK", flush=True)
+        return
 
     print("=== phase B: scoring", flush=True)
     if args.hf_mlm:
