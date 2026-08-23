@@ -259,7 +259,9 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
             if not cands:
                 continue
         alignments = aligner.align_line(raw, cands)
-        for t, aligned in zip(cands, alignments):
+        # Matrix-verb (head) spans for the verb-frame planning window.
+        head_alignments = aligner.align_line(raw, [t.head for t in cands])
+        for t, aligned, h_aligned in zip(cands, alignments, head_alignments):
             form = t.text.lower()
             counters["instances_seen"] += 1
             if aligned is None:
@@ -284,6 +286,8 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
                 "piece_in_line": first,
                 "n_pieces": n_pieces,
                 "head_i": t.head.i,
+                "head_piece_in_line": h_aligned[0] if h_aligned else None,
+                "head_n_pieces": h_aligned[1] if h_aligned else None,
             })
             counters["instances_aligned"] += 1
     return lines, instances
@@ -398,7 +402,23 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 # the full +-ctx_halfwidth blew past 512 (observed 513 ->
                 # RuntimeError in BERT position expansion, 2026-08-23).
                 budget = 512 - 2 - np_
-                cr = ctx_halfwidth if ctx_right is None else ctx_right
+                if ctx_right in ("V", "VX"):
+                    # Verb-frame planning window: forward context ends at
+                    # the dependency head — through its last piece ("V")
+                    # or just before its first ("VX"). Head-before-pronoun
+                    # (inversion/questions) => no forward window.
+                    hp = inst.get("head_piece_in_line")
+                    if hp is None:
+                        cr = 2  # head unaligned; next-word-ish fallback
+                        counters["dyn_head_fallback"] = counters.get(
+                            "dyn_head_fallback", 0) + 1
+                    else:
+                        head_start = p - inst["piece_in_line"] + hp
+                        head_end = head_start + (inst["head_n_pieces"] or 1)
+                        tgt = head_end if ctx_right == "V" else head_start
+                        cr = max(0, min(tgt - (p + np_), budget))
+                else:
+                    cr = ctx_halfwidth if ctx_right is None else ctx_right
                 if cr + ctx_halfwidth > budget:
                     scale = budget / max(cr + ctx_halfwidth, 1)
                     cl, cr = int(ctx_halfwidth * scale), int(cr * scale)
@@ -669,7 +689,11 @@ def main():
         configs = []
         for spec in args.mlm_ctx_grid.split(","):
             l_s, r_s = spec.strip().split(":")
-            configs.append((int(l_s), int(r_s)))
+            # "V" = dynamic forward window through the dependency-head
+            # verb's last piece (verb-frame planning hypothesis);
+            # "VX" = up to but excluding the head's first piece.
+            configs.append((int(l_s),
+                            r_s if r_s in ("V", "VX") else int(r_s)))
         model = AutoModelForMaskedLM.from_pretrained(
             hf_id, attn_implementation="eager").to(args.device).eval()
         print(f"=== phase B (grid): {len(configs)} configs × "
@@ -683,11 +707,19 @@ def main():
             r = res[hf_name]
             gdir = out_root / "grid" / f"L{l_ctx}R{r_ctx}"
             gdir.mkdir(parents=True, exist_ok=True)
+            def _gap(i):
+                hp = i.get("head_piece_in_line")
+                if hp is None:
+                    return None
+                return hp - (i["piece_in_line"] + i["n_pieces"])
+
             tbl = {
                 "line_idx": [i["line_idx"] for i in instances],
                 "token_i": [i["token_i"] for i in instances],
                 "form": [i["form"] for i in instances],
                 "person": [i["person"] for i in instances],
+                "head_gap": [_gap(i) for i in instances],
+                "head_n_pieces": [i.get("head_n_pieces") for i in instances],
                 "logprob_sum": [None if math.isnan(float(x)) else float(x)
                                 for x in r["logprob_sum_arr"]],
                 "logprob_first": [None if math.isnan(float(x)) else float(x)
