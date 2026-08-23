@@ -583,7 +583,7 @@ def main():
                          " outputs go to <corpus>/external_<NAME>/")
     ap.add_argument("--mlm-ctx", type=int, default=250,
                     help="stream tokens of context on EACH side of the slot")
-    ap.add_argument("--mlm-ctx-right", type=int, default=None,
+    ap.add_argument("--mlm-ctx-right", type=str, default=None,
                     help="override RIGHT-side context (0 = left-only "
                          "prediction; default: same as --mlm-ctx). Added "
                          "2026-08-24: bidirectional masked recovery of "
@@ -740,10 +740,13 @@ def main():
 
     print("=== phase B: scoring", flush=True)
     if args.hf_mlm:
+        cr = args.mlm_ctx_right
+        if cr is not None and cr not in ("V", "VX"):
+            cr = int(cr)
         results, offsets = phase_b_mlm(
             lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
             args.mlm_ctx, args.mlm_batch, args.amp, counters,
-            ctx_right=args.mlm_ctx_right)
+            ctx_right=cr)
     else:
         results, offsets = phase_b(
             lines, instances, scorers, inv_ids, args.device,
