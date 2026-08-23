@@ -334,7 +334,8 @@ def scored_range(start: int, window: int, stride: int, n: int):
 
 def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 inv_ids: List[List[int]], device: str, ctx_halfwidth: int,
-                batch_size: int, use_amp: bool, counters: Dict[str, int]):
+                batch_size: int, use_amp: bool, counters: Dict[str, int],
+                ctx_right: Optional[int] = None):
     """Masked-slot scoring with an external MLM (BERT-family).
 
     For each instance: take +-ctx_halfwidth stream tokens around the slot,
@@ -392,9 +393,14 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 # the full +-ctx_halfwidth blew past 512 (observed 513 ->
                 # RuntimeError in BERT position expansion, 2026-08-23).
                 budget = 512 - 2 - np_
-                half = min(ctx_halfwidth, max(budget // 2, 0))
-                lo = max(0, p - half)
-                hi = min(n, p + np_ + half)
+                cr = ctx_halfwidth if ctx_right is None else ctx_right
+                if cr + ctx_halfwidth > budget:
+                    scale = budget / max(cr + ctx_halfwidth, 1)
+                    cl, cr = int(ctx_halfwidth * scale), int(cr * scale)
+                else:
+                    cl = ctx_halfwidth
+                lo = max(0, p - cl)
+                hi = min(n, p + np_ + cr)
                 ids = stream[lo:hi].astype(np.int64).copy()
                 m0 = p - lo
                 truth = ids[m0:m0 + np_].tolist()
@@ -552,6 +558,13 @@ def main():
                          " outputs go to <corpus>/external_<NAME>/")
     ap.add_argument("--mlm-ctx", type=int, default=250,
                     help="stream tokens of context on EACH side of the slot")
+    ap.add_argument("--mlm-ctx-right", type=int, default=None,
+                    help="override RIGHT-side context (0 = left-only "
+                         "prediction; default: same as --mlm-ctx). Added "
+                         "2026-08-24: bidirectional masked recovery of "
+                         "subject pronouns saturates (~57%% of instances "
+                         "<0.1 nats), collapsing the ranking; left-only "
+                         "converts cloze to prediction.")
     ap.add_argument("--mlm-batch", type=int, default=48)
     ap.add_argument("--out-dir", type=Path, default=None)
     ap.add_argument("--window", type=int, default=1000)
@@ -628,7 +641,8 @@ def main():
     if args.hf_mlm:
         results, offsets = phase_b_mlm(
             lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
-            args.mlm_ctx, args.mlm_batch, args.amp, counters)
+            args.mlm_ctx, args.mlm_batch, args.amp, counters,
+            ctx_right=args.mlm_ctx_right)
     else:
         results, offsets = phase_b(
             lines, instances, scorers, inv_ids, args.device,
