@@ -1,0 +1,129 @@
+# Backward-depth locality grid with pretrained gpt2-medium (causal).
+# Companion to the BERT locality experiment (thomas-bert-locality-v1):
+# scores the SAME frozen 100K sample at the SAME backward depths
+# L in {1,2,4,8,16,32,64,125,250,500}, R structurally 0 (causal attention).
+# Hypothesis (Thomas 2026-08-23): BERT under-uses backward context because
+# its pretraining always had the forward view (the verb); a causal model,
+# trained on the backward view alone, should extract more from added depth.
+# Observed peaks: childes DocBin needs ~20Gi RAM (24Gi proven for scoring
+# shards); gpt2-medium eager fp16 batch 64 x <=505 tokens is small on 24GB.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-causal-locality-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: score
+spec:
+  completionMode: Indexed
+  completions: 6
+  parallelism: 6
+  backoffLimit: 8
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore   # node CUDA-init faults / StartError, not our bug
+      onExitCodes:
+        operator: In
+        values: [2, 128]
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        lang: en
+        stage: score
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu   # NVML broken 2026-08-22
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: scorer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          IDX=${JOB_COMPLETION_INDEX}
+          GENRES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
+          GENRE=${GENRES[$IDX]}
+          echo "=== causal backward grid: $GENRE ==="
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+          python scripts/score_pronoun_recoverability.py \
+            --corpus train_90M --file "$GENRE" \
+            --hf-model gpt2m_causal=gpt2-medium \
+            --causal-ctx-grid 1,2,4,8,16,32,64,125,250,500 \
+            --causal-batch 64 \
+            --sample-file /opt/repo/data/recoverability/locality_sample/${GENRE}.parquet \
+            --amp
+          echo "GENRE $GENRE OK"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        resources:
+          requests:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+          limits:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+        - name: shm
+          mountPath: /dev/shm
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi

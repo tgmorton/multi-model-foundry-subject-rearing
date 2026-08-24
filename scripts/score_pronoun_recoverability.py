@@ -464,6 +464,104 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                        "entropy": ent, "inv": invp}}, offsets
 
 
+def phase_b_causal_ctx(lines, instances, name: str, hf_id: str,
+                       inv_ids: List[List[int]], device: str, l_ctx: int,
+                       batch_size: int, use_amp: bool,
+                       counters: Dict[str, int], model=None):
+    """Backward-depth-restricted scoring with an external causal LM.
+
+    The causal analog of the phase_b_mlm locality grid: for each instance,
+    the input is exactly l_ctx stream tokens before the pronoun's first
+    piece, then the pronoun's own pieces. Forward context is structurally
+    absent (causal attention), so the grid is L-only. Banks per instance:
+      logprob_first  log P(first piece | l_ctx backward tokens)
+      logprob_sum    sum_j log P(piece_j | ctx, pieces_<j)  (exact chain rule)
+      entropy        full-vocab entropy at the first-piece prediction
+      inv_probs      inventory probabilities at the first-piece prediction
+    """
+    import torch
+    from transformers import AutoModelForCausalLM
+
+    ids_per_line = [np.asarray(l["ids"], dtype=np.int32) for l in lines]
+    offsets = np.zeros(len(ids_per_line) + 1, dtype=np.int64)
+    np.cumsum([len(a) for a in ids_per_line], out=offsets[1:])
+    stream = (np.concatenate(ids_per_line) if ids_per_line
+              else np.zeros(0, dtype=np.int32))
+    n = len(stream)
+    counters["stream_tokens"] = int(n)
+
+    line_pos = {l["line_idx"]: i for i, l in enumerate(lines)}
+    for inst in instances:
+        li = line_pos[inst["line_idx"]]
+        inst["pos"] = int(offsets[li]) + inst["piece_in_line"]
+
+    flat_inv = [i for grp in inv_ids for i in grp]
+    inv_tensor = torch.tensor(flat_inv, dtype=torch.long, device=device)
+
+    if model is None:
+        model = AutoModelForCausalLM.from_pretrained(
+            hf_id, attn_implementation="eager").to(device).eval()
+    max_pos = int(getattr(model.config, "n_positions", None)
+                  or getattr(model.config, "max_position_embeddings", 1024))
+    bos_id = model.config.bos_token_id
+    pad_fill = model.config.eos_token_id or 0
+
+    t0 = time.time()
+    N = len(instances)
+    logprob_first = np.full(N, np.nan, dtype=np.float32)
+    logprob_sum = np.full(N, np.nan, dtype=np.float32)
+    ent = np.full(N, np.nan, dtype=np.float32)
+    invp = np.full((N, len(flat_inv)), np.nan, dtype=np.float32)
+
+    order = sorted(range(N), key=lambda i: instances[i]["pos"])
+    with torch.inference_mode():
+        for b0 in range(0, N, batch_size):
+            idxs = order[b0:b0 + batch_size]
+            seqs, first_slots, true_pieces = [], [], []
+            for i in idxs:
+                inst = instances[i]
+                p, np_ = inst["pos"], inst["n_pieces"]
+                cl = min(l_ctx, max_pos - np_)
+                lo = max(0, p - cl)
+                ids = stream[lo:p + np_].astype(np.int64).tolist()
+                m0 = p - lo
+                if m0 == 0:  # stream-initial instance: no predicting position
+                    ids = [bos_id if bos_id is not None else pad_fill] + ids
+                    m0 = 1
+                    counters["bos_prepended"] = counters.get(
+                        "bos_prepended", 0) + 1
+                seqs.append(ids)
+                first_slots.append(m0)
+                true_pieces.append(ids[m0:m0 + np_])
+            maxlen = max(len(s) for s in seqs)
+            batch = torch.full((len(seqs), maxlen), pad_fill, dtype=torch.long)
+            for r, s in enumerate(seqs):
+                batch[r, :len(s)] = torch.tensor(s)  # right-pad; causal attn
+            batch = batch.to(device)                 # never sees the padding
+            ctx = (torch.autocast(device_type="cuda", dtype=torch.float16)
+                   if use_amp else torch.no_grad())
+            with ctx:
+                out = model(input_ids=batch)
+            lsm = torch.log_softmax(out.logits.float(), dim=-1)
+            for r, i in enumerate(idxs):
+                m0 = first_slots[r]
+                truth = true_pieces[r]
+                row0 = lsm[r, m0 - 1]  # logits[t] predict token t+1
+                logprob_first[i] = float(row0[truth[0]])
+                logprob_sum[i] = float(sum(
+                    lsm[r, m0 - 1 + j, t] for j, t in enumerate(truth)))
+                probs0 = row0.exp()
+                ent[i] = float(-(probs0 * row0).sum())
+                invp[i] = probs0[inv_tensor].cpu().numpy()
+            if (b0 // batch_size) % 200 == 0:
+                print(f"  causal L{l_ctx} {b0}/{N} ({time.time()-t0:.0f}s)",
+                      flush=True)
+    counters[f"seconds_{name}"] = round(time.time() - t0, 1)
+    return {name: {"logprob_first_arr": logprob_first,
+                   "logprob_sum_arr": logprob_sum,
+                   "entropy": ent, "inv": invp}}, offsets
+
+
 def phase_b(lines, instances, scorers: Dict[str, Path], inv_ids: List[List[int]],
             device: str, window: int, stride: int, batch_windows: int,
             use_amp: bool, counters: Dict[str, int]):
@@ -597,6 +695,13 @@ def main():
                          "'250:250,64:0,0:16'. One scoring pass per config "
                          "over the same instances; outputs under "
                          "external_<NAME>/grid/L{l}R{r}/.")
+    ap.add_argument("--causal-ctx-grid", default=None,
+                    help="comma list of backward depths L (e.g. "
+                         "'1,2,4,8,16,32,64,125,250,500'); requires "
+                         "--hf-model. Scores the SAME instances with exactly "
+                         "L backward stream tokens per config; outputs go to "
+                         "external_<NAME>/grid/L{l}R0/.")
+    ap.add_argument("--causal-batch", type=int, default=64)
     ap.add_argument("--sample-file", type=Path, default=None,
                     help="parquet with (line_idx, token_i) — restrict "
                          "scoring to these instances (frozen sample)")
@@ -679,6 +784,57 @@ def main():
                                args.limit_lines, counters, sample=sample)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
     print(f"  {counters}", flush=True)
+
+    if args.causal_ctx_grid:
+        # Backward-depth locality grid for a causal LM (mirror of the MLM
+        # grid; R is structurally 0). One model load, per-config outputs.
+        if not args.hf_model:
+            ap.error("--causal-ctx-grid requires --hf-model")
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        from transformers import AutoModelForCausalLM
+        depths = [int(x) for x in args.causal_ctx_grid.split(",")]
+        model = AutoModelForCausalLM.from_pretrained(
+            hf_id, attn_implementation="eager").to(args.device).eval()
+        print(f"=== phase B (causal grid): {len(depths)} depths × "
+              f"{len(instances):,} instances", flush=True)
+        for l_ctx in depths:
+            cfg_counters: Dict[str, int] = {}
+            res, _ = phase_b_causal_ctx(
+                lines, instances, hf_name, hf_id, inv_ids, args.device,
+                l_ctx, args.causal_batch, args.amp, cfg_counters, model=model)
+            r = res[hf_name]
+            gdir = out_root / "grid" / f"L{l_ctx}R0"
+            gdir.mkdir(parents=True, exist_ok=True)
+            def _gap(i):
+                hp = i.get("head_piece_in_line")
+                if hp is None:
+                    return None
+                return hp - (i["piece_in_line"] + i["n_pieces"])
+            tbl = {
+                "line_idx": [i["line_idx"] for i in instances],
+                "token_i": [i["token_i"] for i in instances],
+                "form": [i["form"] for i in instances],
+                "person": [i["person"] for i in instances],
+                "head_gap": [_gap(i) for i in instances],
+                "head_n_pieces": [i.get("head_n_pieces") for i in instances],
+                "logprob_sum": [None if math.isnan(float(x)) else float(x)
+                                for x in r["logprob_sum_arr"]],
+                "logprob_first": [None if math.isnan(float(x)) else float(x)
+                                  for x in r["logprob_first_arr"]],
+                "entropy": [None if math.isnan(float(x)) else float(x)
+                            for x in r["entropy"]],
+            }
+            pq.write_table(pa.table(tbl), gdir / f"{args.file}.parquet")
+            with open(gdir / f"{args.file}.manifest.json", "w") as f:
+                json.dump({"L": l_ctx, "R": 0, "file": args.file,
+                           "n": len(instances), "hf_id": hf_id,
+                           "causal": True, "counters": cfg_counters}, f)
+            print(f"  grid L{l_ctx}R0: done "
+                  f"({cfg_counters.get(f'seconds_{hf_name}', '?')}s)",
+                  flush=True)
+        print("GRID SCORING OK", flush=True)
+        return
 
     if args.hf_mlm and args.mlm_ctx_grid:
         # Locality experiment: score the SAME instances under every (L, R)
