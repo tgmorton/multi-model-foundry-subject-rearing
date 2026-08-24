@@ -514,10 +514,14 @@ def phase_b_causal_ctx(lines, instances, name: str, hf_id: str,
     ent = np.full(N, np.nan, dtype=np.float32)
     invp = np.full((N, len(flat_inv)), np.nan, dtype=np.float32)
 
+    # fp16 logits alone are B x (L+np) x 50257 x 2 bytes — halve the batch
+    # at deep contexts so peak + fragmentation clears 22 GiB cards
+    # (marginal OOM in lm_head observed on A10 at L=500, 2026-08-24)
+    eff_batch = max(8, batch_size // 2) if l_ctx >= 250 else batch_size
     order = sorted(range(N), key=lambda i: instances[i]["pos"])
     with torch.inference_mode():
-        for b0 in range(0, N, batch_size):
-            idxs = order[b0:b0 + batch_size]
+        for b0 in range(0, N, eff_batch):
+            idxs = order[b0:b0 + eff_batch]
             seqs, first_slots, true_pieces = [], [], []
             for i in idxs:
                 inst = instances[i]
@@ -551,10 +555,14 @@ def phase_b_causal_ctx(lines, instances, name: str, hf_id: str,
             for r, (m0, t) in enumerate(zip(first_slots, true_pieces)):
                 for j in range(max_np):
                     pos[r, j] = m0 - 1 + min(j, len(t) - 1)
-            V = out.logits.shape[-1]
-            sel = out.logits.gather(
+            logits = out.logits
+            del out  # drop the full-logits reference before the next forward
+            V = logits.shape[-1]
+            sel = logits.gather(
                 1, pos.to(device).unsqueeze(-1).expand(-1, -1, V))
+            del logits
             lsm = torch.log_softmax(sel.float(), dim=-1)  # B x max_np x V
+            del sel
             for r, i in enumerate(idxs):
                 truth = true_pieces[r]
                 row0 = lsm[r, 0]  # logits[t] predict token t+1

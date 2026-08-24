@@ -101,6 +101,8 @@ spec:
         env:
         - name: PYTHONPATH
           value: /opt/repo
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: expandable_segments:True   # 5.6 GiB reserved-unallocated seen at OOM
         resources:
           requests:
             memory: 24Gi
