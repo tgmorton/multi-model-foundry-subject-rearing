@@ -122,3 +122,34 @@ the case that causal raters are the natural speaker models — and gives
 the paper a clean mechanistic account of *why* bidirectional raters
 misbehave on speaker-side questions. Figure:
 `analysis/locality/figures/causal_backward.png`.
+
+## Addendum 2 (2026-08-24): combining gpt2m-backward with BERT-forward
+
+Question (Thomas): can we combine gpt2-medium backward surprisal with
+BERT forward surprisal? Yes — both halves are banked on the frozen
+sample; combination is score-level (raw sum ≈ unnormalized product of
+experts; z-sum = scale-free rank blend). Metrics:
+`analysis/locality/composite_metrics.csv`; per-instance components:
+`composite_components.parquet`; figure:
+`figures/composite_frontier.png`.
+
+1. **The two streams are additive, not redundant.** Predicting the
+   bidirectional ceiling: R² = 0.095 (backward alone), 0.139 (forward
+   R250 alone), **0.259 combined** — slightly super-additive. History
+   and future carry non-overlapping information about the pronoun
+   (consistent with Finding 3's rank dissociation). Absolute R² is
+   depressed by the ceiling's 57% tie mass.
+2. **The composite is a construal dial.** α·z(bwd) + (1−α)·z(fwd)
+   traces a frontier from pure speaker (α=1: ρ_clean=0.761) to pure
+   listener (α=0: ρ_ceiling=0.520 — deep-forward alone is already the
+   best cheap proxy for the bidirectional reader). The equal-weight
+   point sits at ρ≈0.52/0.51 — balanced, and fully de-saturated
+   (tie mass ≈ 0% vs 9.9% for BERT-250:1, 57% for bidirectional).
+   The frozen v4 rater plots strictly inside this frontier.
+3. **Selection consequence — none, unless deliberately chosen.** The
+   composite correlates only ρ≈0.33 with the frozen v4 rater, so
+   adopting it is a different manipulation, not a refinement: it would
+   mean a full-corpus gpt2m backward pass + a BERT forward-only pass,
+   selection v5, recomposing all 95 cells, and re-verification (~1
+   day). Banked here as convergent measure + paper material; v4 stays
+   frozen.
