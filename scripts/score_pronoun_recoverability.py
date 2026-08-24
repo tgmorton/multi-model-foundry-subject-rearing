@@ -37,6 +37,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -542,14 +543,24 @@ def phase_b_causal_ctx(lines, instances, name: str, hf_id: str,
                    if use_amp else torch.no_grad())
             with ctx:
                 out = model(input_ids=batch)
-            lsm = torch.log_softmax(out.logits.float(), dim=-1)
+            # Gather ONLY the scored positions before float/log_softmax:
+            # the full B x T x V logits in fp32 is ~6.5 GB at L=500 with
+            # GPT-2's 50K vocab (observed OOM on 3090, 2026-08-24).
+            max_np = max(len(t) for t in true_pieces)
+            pos = torch.zeros((len(seqs), max_np), dtype=torch.long)
+            for r, (m0, t) in enumerate(zip(first_slots, true_pieces)):
+                for j in range(max_np):
+                    pos[r, j] = m0 - 1 + min(j, len(t) - 1)
+            V = out.logits.shape[-1]
+            sel = out.logits.gather(
+                1, pos.to(device).unsqueeze(-1).expand(-1, -1, V))
+            lsm = torch.log_softmax(sel.float(), dim=-1)  # B x max_np x V
             for r, i in enumerate(idxs):
-                m0 = first_slots[r]
                 truth = true_pieces[r]
-                row0 = lsm[r, m0 - 1]  # logits[t] predict token t+1
+                row0 = lsm[r, 0]  # logits[t] predict token t+1
                 logprob_first[i] = float(row0[truth[0]])
                 logprob_sum[i] = float(sum(
-                    lsm[r, m0 - 1 + j, t] for j, t in enumerate(truth)))
+                    lsm[r, j, t] for j, t in enumerate(truth)))
                 probs0 = row0.exp()
                 ent[i] = float(-(probs0 * row0).sum())
                 invp[i] = probs0[inv_tensor].cpu().numpy()
@@ -799,13 +810,19 @@ def main():
         print(f"=== phase B (causal grid): {len(depths)} depths × "
               f"{len(instances):,} instances", flush=True)
         for l_ctx in depths:
+            gdir = out_root / "grid" / f"L{l_ctx}R0"
+            gdir.mkdir(parents=True, exist_ok=True)
+            if ((gdir / f"{args.file}.parquet").exists()
+                    and (gdir / f"{args.file}.manifest.json").exists()):
+                # resume-safe: manifest is written after the (atomic)
+                # parquet, so both present => config complete
+                print(f"  grid L{l_ctx}R0: exists, skip", flush=True)
+                continue
             cfg_counters: Dict[str, int] = {}
             res, _ = phase_b_causal_ctx(
                 lines, instances, hf_name, hf_id, inv_ids, args.device,
                 l_ctx, args.causal_batch, args.amp, cfg_counters, model=model)
             r = res[hf_name]
-            gdir = out_root / "grid" / f"L{l_ctx}R0"
-            gdir.mkdir(parents=True, exist_ok=True)
             def _gap(i):
                 hp = i.get("head_piece_in_line")
                 if hp is None:
@@ -825,7 +842,9 @@ def main():
                 "entropy": [None if math.isnan(float(x)) else float(x)
                             for x in r["entropy"]],
             }
-            pq.write_table(pa.table(tbl), gdir / f"{args.file}.parquet")
+            tmp = gdir / f"{args.file}.parquet.tmp"
+            pq.write_table(pa.table(tbl), tmp)
+            os.replace(tmp, gdir / f"{args.file}.parquet")
             with open(gdir / f"{args.file}.manifest.json", "w") as f:
                 json.dump({"L": l_ctx, "R": 0, "file": args.file,
                            "n": len(instances), "hf_id": hf_id,
