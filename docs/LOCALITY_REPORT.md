@@ -66,3 +66,59 @@ saturation result as standalone empirical contributions.
 
 Decision needed before the full-corpus rescore (one flag, ~2 h of GPU):
 ranking rater = BERT-250:1, or gpt2m-external.
+
+## Addendum (2026-08-24): causal-vs-BERT backward depth — why BERT "never saturates"
+
+Thomas's hypothesis: BERT's flat backward curve is a *training-regime*
+artifact — its pretraining always had the forward view (the verb), so it
+never learned to squeeze backward cues; a causal LM, trained on the
+backward view alone, should derive more from added backward depth.
+
+**Design.** Pretrained gpt2-medium scored the identical frozen 100K
+sample at the identical backward depths L ∈ {1,2,4,8,16,32,64,125,250,
+500} (R structurally 0 under causal attention). Paired per-instance;
+999,940 rows. Code: `--causal-ctx-grid` in
+`scripts/score_pronoun_recoverability.py`; analysis:
+`analysis/recoverability/causal_backward_analysis.py`; metrics:
+`data/recoverability/analysis/locality/causal_backward_metrics.csv`.
+
+**Verdict: the hypothesis is strongly supported.**
+
+1. **The causal model extracts 2.2× more from backward context**:
+   median gain L=1→500 is **3.32 nats (gpt2m) vs 1.54 (BERT)**, despite
+   BERT being the larger model trained on more data.
+2. **It extracts it locally and efficiently**: gpt2m captures 66% of
+   its own total backward gain by L=16 and 91% by L=64, saturating
+   smoothly — the classic incremental-prediction profile. BERT is the
+   inverse: **76% of its total backward gain arrives after L=16**, and
+   fully half of it in the last doubling (250→500).
+3. **BERT's short-range backward use is qualitatively broken**, not
+   just weaker: its curve is non-monotonic at small L (L=4 is *worse*
+   than L=2 by 0.44 nats — truncated left-only fragments are
+   out-of-distribution for an always-bidirectional reader).
+4. **Reinterpretation of finding #2 above**: "backward-only never
+   saturates" is not evidence that deep history holds unique
+   information — gpt2m shows ~80% of the extractable information lives
+   within 16 pieces. It's a symptom of BERT extracting backward
+   information *inefficiently*, dribbling it in over ever-more
+   redundant context. Exactly the "leans less on backward cues" story.
+5. **Rank behavior**: gpt2m's ranking sharpens fast with depth
+   (ρ vs the in-house causal ensemble 0.334 → **0.761** at L=500 —
+   which recovers the frozen v2 external-gpt2m agreement of ~0.775,
+   validating the pipeline end-to-end). BERT climbs only 0.355 → 0.540.
+   Cross-model rank agreement at matched depth is moderate (0.41–0.54):
+   the two readers extract partially different things from the same
+   history.
+6. **Person decomposition transfers**: both models find 2nd person
+   easiest from pure history (dialogue turn structure) — the effect is
+   architectural-regime-independent. But 3rd person is BERT's hardest
+   at every depth while being on par with 1st for gpt2m: antecedent
+   access from history is a causal-reader strength.
+
+**Implication for the rater choice**: the BERT-250:1 speaker-window
+construal survives (its R=1 de-saturation was the fix for the
+listener-side ceiling), but the causal-efficiency result strengthens
+the case that causal raters are the natural speaker models — and gives
+the paper a clean mechanistic account of *why* bidirectional raters
+misbehave on speaker-side questions. Figure:
+`analysis/locality/figures/causal_backward.png`.
