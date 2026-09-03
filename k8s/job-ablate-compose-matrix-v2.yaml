@@ -1,0 +1,186 @@
+# 185-cell compose against harmonized selection v5 (three rater arms).
+# Cell layout (IDX 0..184):
+#   0-49    shared cells, label-independent (rand_decile identical across
+#           labels; k=100 removes everything under any ranking):
+#           IV=IDX/10, SUB=IDX%10 -> SUB 0..8: rand k=(SUB+1)*10
+#                                    SUB 9:    all100 (arm=info, k=100)
+#   50-184  info cells: J=IDX-50, RATER=J/45 in {gpt2m,bert,comp},
+#           REM=J%45, IV=REM/9, k=(REM%9+1)*10
+# Slugs: pdrop2_rand{k}_{short} | pdrop2_all100_{short} |
+#        pdrop2_{rater}{k}_{short}
+# Expletive cells --allow-short per precedent. ~4.5h at parallelism 12
+# (v4: 95 cells / 139 min).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-ablate-compose-matrix-v2
+  labels:
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: ablate-compose
+spec:
+  completionMode: Indexed
+  completions: 185
+  parallelism: 12
+  backoffLimit: 16
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        lang: en
+        stage: ablate-compose
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: ablator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          IDX=${JOB_COMPLETION_INDEX}
+          INTERVENTIONS=(baseline remove_expletive_sentences impoverish_case lemmatize_verbs enrich_verbal_morphology)
+          SHORTS=(base rmexpl impcase lemverb enrichvm)
+          if [ "$IDX" -lt 50 ]; then
+          IV_IDX=$(( IDX / 10 )); SUB=$(( IDX % 10 ))
+          LABEL=gpt2m
+          if [ "$SUB" -lt 9 ]; then
+          ARM=rand; K=$(( (SUB + 1) * 10 )); SLUG=pdrop2_rand${K}_${SHORTS[$IV_IDX]}
+          else
+          ARM=info; K=100; SLUG=pdrop2_all100_${SHORTS[$IV_IDX]}
+          fi
+          else
+          J=$(( IDX - 50 ))
+          RATERS=(gpt2m bert comp)
+          LABEL=${RATERS[$(( J / 45 ))]}
+          REM=$(( J % 45 ))
+          IV_IDX=$(( REM / 9 )); K=$(( (REM % 9 + 1) * 10 ))
+          ARM=info
+          SLUG=pdrop2_${LABEL}${K}_${SHORTS[$IV_IDX]}
+          fi
+          INTERVENTION=${INTERVENTIONS[$IV_IDX]}
+          echo "=== Cell $IDX: label=$LABEL intervention=$INTERVENTION arm=$ARM k=$K slug=$SLUG ==="
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+          python - <<PY
+          import boto3, pathlib, json
+          s3 = boto3.client("s3")
+          bucket = "thomas-subject-drop-artifacts"
+          pre = "recoverability/analysis/selection_v5/${LABEL}/"
+          for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=pre):
+              for o in page.get("Contents", []):
+                  dest = pathlib.Path("/tmp/selection") / o["Key"][len("recoverability/analysis/selection_v5/"):]
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  s3.download_file(bucket, o["Key"], str(dest))
+          man = json.load(open("/tmp/selection/${LABEL}/SELECTION_MANIFEST.json"))
+          assert man["selection_version"] == 5, "need selection v5, found %s" % man["selection_version"]
+          print("selection v5 pulled: label=${LABEL},", man["population_n"], "instances; ranking:", man["ranking"])
+          PY
+          ANNOT_TRAIN=$(python -c "
+          from pathlib import Path
+          from preprocessing.annotate import default_annotation_output_dir
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/train_90M'), 'en_core_web_trf'))
+          ")
+          ANNOT_POOL=$(python -c "
+          from pathlib import Path
+          from preprocessing.annotate import default_annotation_output_dir
+          print(default_annotation_output_dir(Path('/mnt/data/raw/en/pull_10M'), 'en_core_web_trf'))
+          ")
+          [ -d "$ANNOT_TRAIN" ] && [ -d "$ANNOT_POOL" ] || { echo "annotation caches missing"; exit 1; }
+          TRAIN_OUT=/mnt/data/manipulations/en/${SLUG}/_train
+          POOL_OUT=/mnt/data/manipulations/en/${SLUG}/_pool
+          FINAL_OUT=/mnt/data/manipulations/en/${SLUG}
+          mkdir -p "$TRAIN_OUT" "$POOL_OUT" "$FINAL_OUT"
+          run_ablate () {
+          local INPUT=$1 OUT=$2 ANNOT=$3 SELSUB=$4
+          python -c "
+          from pathlib import Path
+          import preprocessing.ablations
+          from preprocessing.base import AblationPipeline
+          from preprocessing.config import AblationConfig
+          cfg = AblationConfig(
+              type='pronoun_drop_stacked',
+              input_path=Path('$INPUT'),
+              output_path=Path('$OUT'),
+              annotated_input_path=Path('$ANNOT'),
+              skip_backfill=True,
+              spacy_model='en_core_web_trf',
+              skip_validation=True,
+              chunk_size=500,
+              verbose=False,
+              parameters={'selection_dir': '/tmp/selection/${LABEL}/$SELSUB',
+                          'arm': '$ARM', 'k': $K, 'intervention': '$INTERVENTION'},
+          )
+          AblationPipeline(cfg).process_corpus()
+          "
+          }
+          echo "--- ablate train ---"
+          run_ablate /mnt/data/raw/en/train_90M/ "$TRAIN_OUT" "$ANNOT_TRAIN" train_90M
+          echo "--- ablate pool ---"
+          run_ablate /mnt/data/raw/en/pull_10M/ "$POOL_OUT" "$ANNOT_POOL" pull_10M
+          ALLOW=""
+          if [ "$INTERVENTION" = "remove_expletive_sentences" ]; then
+          ALLOW="--allow-short"
+          fi
+          echo "--- compose ($([ -n "$ALLOW" ] && echo allow-short || echo strict)) ---"
+          python scripts/compose_corpus.py --ablated-train "$TRAIN_OUT" --ablated-pool "$POOL_OUT" --target-corpus /mnt/data/raw/en/train_90M/ --output "$FINAL_OUT" --seed 42 $ALLOW
+          python scripts/ablation_report.py --manifest "$TRAIN_OUT/ABLATION_MANIFEST.json" --output "$FINAL_OUT/ablation_report.md" || true
+          echo "CELL $SLUG OK"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        resources:
+          requests:
+            memory: 20Gi
+            cpu: '4'
+          limits:
+            memory: 20Gi
+            cpu: '4'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
