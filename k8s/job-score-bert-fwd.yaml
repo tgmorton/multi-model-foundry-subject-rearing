@@ -1,0 +1,125 @@
+# BERT forward-only full-corpus pass (L=0, R=250) — the listener half of
+# the gpt2m x BERT composite rater (Addendum 2, docs/LOCALITY_REPORT.md).
+# 12 shards: 0-5 = train_90M genres, 6-11 = pull_10M genres.
+# Same machinery as the v4 250:1 pass; ~5h wall-clock expected.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-score-bert-fwd-v1
+  labels:
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: score
+spec:
+  completionMode: Indexed
+  completions: 12
+  parallelism: 12
+  backoffLimit: 12
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        operator: In
+        values: [2, 128]
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        lang: en
+        stage: score
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: PreferNoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-GeForce-RTX-3090
+                - NVIDIA-A10
+                - NVIDIA-L4
+                - NVIDIA-GeForce-RTX-4090
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: scorer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          IDX=${JOB_COMPLETION_INDEX}
+          GENRES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
+          GENRE=${GENRES[$((IDX % 6))]}
+          if [ "$IDX" -lt 6 ]; then CORPUS=train_90M; else CORPUS=pull_10M; fi
+          echo "=== bert forward 0:250: $CORPUS/$GENRE ==="
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+          python scripts/score_pronoun_recoverability.py \
+            --corpus "$CORPUS" --file "$GENRE" \
+            --hf-mlm bert_fwd=bert-large-uncased-whole-word-masking \
+            --mlm-ctx 0 --mlm-ctx-right 250 --mlm-batch 48 \
+            --amp
+          echo "SHARD $CORPUS/$GENRE OK"
+        env:
+        - name: PYTHONPATH
+          value: /opt/repo
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: expandable_segments:True
+        resources:
+          requests:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+          limits:
+            memory: 24Gi
+            cpu: '4'
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+        - name: shm
+          mountPath: /dev/shm
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
