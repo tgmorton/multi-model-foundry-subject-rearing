@@ -1,0 +1,80 @@
+# Pre-populate tokenized+chunked caches for the 185 v5 rater-comparison
+# cells (gpt2_small cohort — shared_unigram only). Run AFTER compose v2
+# verifies, BEFORE the wave2 training launch (pre-run caches rule:
+# memory/feedback_prerun_caches.md). ~10-20 min/cell; parallelism 12
+# => ~4-5h. 20Gi is sized for SP-unigram chunking (16Gi observed peak;
+# 48Gi in the production template was for bert_wordpiece cells only).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-prepare-caches-v5
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: prepare-caches
+    lang: en
+spec:
+  backoffLimit: 30
+  completionMode: Indexed
+  completions: 185
+  parallelism: 12
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: prepare-caches
+        lang: en
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: prepare
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=== PREP-V5 idx=$JOB_COMPLETION_INDEX ==="
+          cd /opt/repo
+          rm -rf /opt/repo/data/raw /opt/repo/data/manipulations /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked
+          ln -sfn /mnt/data/raw           /opt/repo/data/raw
+          ln -sfn /mnt/data/manipulations /opt/repo/data/manipulations
+          ln -sfn /mnt/data/tokenized     /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked       /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers    /opt/repo/tokenizers
+          export CELLS_FILE=/opt/repo/k8s/wave2/cells_v5_gpt2small.txt
+          python3 scripts/prepare_cache_v5.py
+        env:
+        - {name: PYTHONPATH, value: /opt/repo}
+        resources:
+          requests: {memory: 20Gi, cpu: '4'}
+          limits: {memory: 20Gi, cpu: '4'}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive

@@ -78,7 +78,8 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
     phys, ram, cpu = ARCH_SETTINGS[arch]
     m = _RAND100.match(cell)
     corpus_cell = f"pdrop_info100_{m.group(1)}" if m else cell
-    short = f"{arch.replace('_', '')}-{cell.replace('pdrop_', '').replace('_', '-')}"
+    short = (f"{arch.replace('_', '')}-"
+             f"{cell.replace('pdrop2_', '').replace('pdrop_', '').replace('_', '-')}")
     env = [
         {"name": "PYTHONPATH", "value": "/opt/repo"},
         {"name": "PYTHONHASHSEED", "value": "0"},
