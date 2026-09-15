@@ -56,3 +56,21 @@ scorer `bert_wwm_r1`, 6,457,919 instances).
 - `matrix_actual.json` — per-cell
   `{slug, train_removed, pool_removed, exhausted, short_after_pool, over_target}`.
 - S3 mirror: `s3://thomas-subject-drop-artifacts/recoverability/analysis/matrix_verification/`.
+
+# v5 Matrix (185 cells, three rater arms) — Verification Record
+
+2026-09-15, post-compose audit of `thomas-ablate-compose-matrix-v2`
+(dispatched 2026-09-01; completed unattended; TTL'd off the cluster).
+Collector `thomas-matrix-verify-v2` read every cell's manifests;
+expectations from the frozen selection v5 family
+(`v5_expected.json`, population 6,460,988 / pool 739,476).
+
+- **185/185 cells present, 0 errors; PVC 48.8 TB free.**
+- **148/148 non-expletive cells exact** vs v5 (train + pool removals;
+  zero exhaustion). The 45 rand + 5 all100 shared cells matched the
+  label-independent expected counts exactly — the shared-random-arm
+  design is verified in the composed corpora, not just the tables.
+- **37/37 expletive cells** allow-short with recorded deficits
+  3,314,144 – 4,906,096 words (grows with k; gutenberg-dominated) —
+  same profile as the v4 matrix; rater-independent as expected.
+- Actuals: `v2_actual.json` (also on S3 under matrix_verification/).
