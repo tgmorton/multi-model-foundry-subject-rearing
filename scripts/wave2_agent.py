@@ -84,6 +84,27 @@ def main() -> None:
     seed = derive_seed(wave, cell, arch, f"h{hp_rank}", replicate)
     run_id = f"{arch}-en-{cell}-h{hp_rank}-s{seed}"
 
+    # Skip-if-COMPLETE: recreating a Failed Indexed Job re-runs every index
+    # (completion tracking dies with the job — 2026-09-18 credential-outage
+    # backoff burnout). Registry says done => exit 0 in seconds. Non-fatal
+    # on S3 trouble: fall through to the normal resume path.
+    try:
+        import boto3
+        # by_run paths use the generic arch family (gpt2, not gpt2_small)
+        key = (f"run_registry/by_run/{arch.split('_')[0]}/en/"
+               f"{cell}/{run_id}.json")
+        rec = json.loads(boto3.client("s3").get_object(
+            Bucket=os.environ.get("REGISTRY_BUCKET",
+                                  "thomas-subject-drop-artifacts"),
+            Key=key)["Body"].read())
+        if rec.get("status") == "COMPLETE":
+            print(f"[wave2] {run_id} already COMPLETE in registry — skipping.",
+                  flush=True)
+            return
+    except Exception as e:  # noqa: BLE001 — missing record / S3 blip
+        print(f"[wave2] registry precheck inconclusive ({e}); proceeding.",
+              flush=True)
+
     cfg = yaml.safe_load((SWEEP_BASELINE_DIR / f"{arch}_en.yaml").read_text())
     winners = json.loads((SWEEP_WINNERS_DIR / f"{arch}_en.json").read_text())
     if hp_rank >= len(winners["configs"]):
