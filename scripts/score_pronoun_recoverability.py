@@ -344,7 +344,8 @@ def scored_range(start: int, window: int, stride: int, n: int):
 def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 inv_ids: List[List[int]], device: str, ctx_halfwidth: int,
                 batch_size: int, use_amp: bool, counters: Dict[str, int],
-                ctx_right: Optional[int] = None, model=None):
+                ctx_right: Optional[int] = None, model=None,
+                ctx_mode: str = "truncate"):
     """Masked-slot scoring with an external MLM (BERT-family).
 
     For each instance: take +-ctx_halfwidth stream tokens around the slot,
@@ -425,12 +426,29 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                     cl, cr = int(ctx_halfwidth * scale), int(cr * scale)
                 else:
                     cl = ctx_halfwidth
-                lo = max(0, p - cl)
-                hi = min(n, p + np_ + cr)
+                if ctx_mode == "mask":
+                    # Context-masking variant (2026-09-18): keep the FULL
+                    # symmetric window in the input — natural length and
+                    # positions — and remove information by replacing
+                    # tokens OUTSIDE the (cl, cr) keep-window with [MASK],
+                    # instead of truncating (truncation makes short-L
+                    # inputs out-of-distribution; masking has its own
+                    # artifact profile, which is why both modes exist).
+                    full = budget // 2
+                    lo = max(0, p - full)
+                    hi = min(n, p + np_ + full)
+                else:
+                    lo = max(0, p - cl)
+                    hi = min(n, p + np_ + cr)
                 ids = stream[lo:hi].astype(np.int64).copy()
                 m0 = p - lo
                 truth = ids[m0:m0 + np_].tolist()
                 ids[m0:m0 + np_] = mask_id
+                if ctx_mode == "mask":
+                    keep_lo = max(0, m0 - cl)
+                    keep_hi = min(len(ids), m0 + np_ + cr)
+                    ids[:keep_lo] = mask_id
+                    ids[keep_hi:] = mask_id
                 seqs.append([cls_id] + ids.tolist() + [sep_id])
                 mask_slots.append(m0 + 1)  # +1 for CLS
                 true_pieces.append(truth)
@@ -707,6 +725,11 @@ def main():
                          "subject pronouns saturates (~57%% of instances "
                          "<0.1 nats), collapsing the ranking; left-only "
                          "converts cloze to prediction.")
+    ap.add_argument("--mlm-ctx-mode", choices=["truncate", "mask"],
+                    default="truncate",
+                    help="'mask': keep the full bidirectional window and "
+                         "MASK context outside (L,R) instead of truncating "
+                         "the input (position/length artifacts control)")
     ap.add_argument("--mlm-batch", type=int, default=48)
     ap.add_argument("--mlm-ctx-grid", default=None,
                     help="MLM locality-experiment grid: comma-separated "
@@ -886,9 +909,10 @@ def main():
             res, _ = phase_b_mlm(
                 lines, instances, hf_name, hf_id, hf_tok, inv_ids,
                 args.device, l_ctx, args.mlm_batch, args.amp, cfg_counters,
-                ctx_right=r_ctx, model=model)
+                ctx_right=r_ctx, model=model, ctx_mode=args.mlm_ctx_mode)
             r = res[hf_name]
-            gdir = out_root / "grid" / f"L{l_ctx}R{r_ctx}"
+            gsub = "grid_mask" if args.mlm_ctx_mode == "mask" else "grid"
+            gdir = out_root / gsub / f"L{l_ctx}R{r_ctx}"
             gdir.mkdir(parents=True, exist_ok=True)
             def _gap(i):
                 hp = i.get("head_piece_in_line")
@@ -929,7 +953,7 @@ def main():
         results, offsets = phase_b_mlm(
             lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
             args.mlm_ctx, args.mlm_batch, args.amp, counters,
-            ctx_right=cr)
+            ctx_right=cr, ctx_mode=args.mlm_ctx_mode)
     else:
         results, offsets = phase_b(
             lines, instances, scorers, inv_ids, args.device,
