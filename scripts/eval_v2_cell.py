@@ -227,7 +227,13 @@ def main():
     log.info("device=%s", device)
 
     data_root = Path(args.data_root)
+    # wave2 runs live under models/wave2/; probe known roots in order
     ckpt_root = data_root / "models" / "production" / args.run_id
+    for sub in ("production", "wave2"):
+        cand = data_root / "models" / sub / args.run_id
+        if cand.exists():
+            ckpt_root = cand
+            break
     tokenizer_dir = data_root / "tokenizers" / _tokenizer_dirname(arch, lang)
     output_root = Path(args.output_root)
     matched_manifest = None
