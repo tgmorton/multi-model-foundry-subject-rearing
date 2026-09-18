@@ -2642,6 +2642,18 @@ trained on them yet).</p>
 <td>Bank per checkpoint, in the eval pod while weights are loaded anyway (training stays fast): (a) full matched eval suite incl. per-token logprobs; (b) held-out perplexity (test_10M slice); (c) <strong>pronoun probe battery</strong> — a frozen ~20K-instance sample of the scored corpus, stratified by decile × arm × genre × form, giving instance-level P(pronoun | context) + inventory-slot distributions at every checkpoint (the dose-response trajectory at the resolution the study is about); (d) per-tensor weight-stat summaries (norms) before deletion; (e) training curves exported to S3 at run completion (not nightly); (f) last-layer reps for a small probe subset at the 4 anchors only. All S3-archived before any weight deletion; pruning gated on capture-complete markers.</td>
 </tr>
 <tr>
+<td>D10</td>
+<td>Architecture set for the full v5 wave</td>
+<td><strong>LOCKED 2026-09-18 (Thomas)</strong></td>
+<td><strong>gpt2_large + bert_large + lstm only</strong> — gpt2_small and gpt2_medium are dropped from the full-architecture runs (gpt2_small survives only as the already-running three-rater comparison cohort). Supersedes D5's cheap-arch-first staging for the main wave; brings the run requirement down from 5 archs to 3.</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Composite ("comp") rater arm ended early</td>
+<td><strong>2026-09-18 (Thomas)</strong></td>
+<td>comp-arm training suspended mid-cohort to free namespace/utilization headroom ("odds are we're just going to run bert"). Completed comp runs (14+) stay banked; jobs suspended not deleted, resumable if the arm is revived. Shared rand/all100 controls keep running and still serve comp analyses.</td>
+</tr>
+<tr>
 <td>—</td>
 <td>Contraction residue kept; population = personal pronouns</td>
 <td>LOCKED (2026-08-15)</td>
