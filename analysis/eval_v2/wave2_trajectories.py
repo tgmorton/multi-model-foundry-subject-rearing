@@ -1,7 +1,7 @@
 """Wave2 (w2v5) overt-preference trajectory figures — Thomas 2026-09-18.
 
 Set A: per (arm x intervention) panel, overt-preference (mean
-prefers_overt_slor) vs tokens seen (log-x), one line per decile k.
+prefers_overt_meanlp) vs tokens seen (log-x), one line per decile k.
 Set B: per (decile k x arm) panel, interventions compared on the same
 axes (plus a delta-vs-base variant), log-x tokens.
 
@@ -51,7 +51,7 @@ def load_pairs(args) -> pd.DataFrame:
         for f in files:
             frames.append(pd.read_parquet(
                 f, columns=["cell_id", "checkpoint_step",
-                            "prefers_overt_slor"]))
+                            "prefers_overt_meanlp"]))
     else:
         import boto3
         s = boto3.Session(profile_name=args.profile).client(
@@ -65,7 +65,7 @@ def load_pairs(args) -> pd.DataFrame:
                 frames.append(pd.read_parquet(
                     io.BytesIO(body),
                     columns=["cell_id", "checkpoint_step",
-                             "prefers_overt_slor"]))
+                             "prefers_overt_meanlp"]))
     if not frames:
         raise SystemExit("no pdrop2 pairs found")
     df = pd.concat(frames, ignore_index=True)
@@ -98,8 +98,8 @@ def main() -> None:
     # training step, at their absolute value there (2026-09-18).
     traj = (df[df.tokens > 0]
             .groupby(["arm", "iv", "k", "tokens"], as_index=False)
-            .prefers_overt_slor.mean()
-            .rename(columns={"prefers_overt_slor": "overt_pref"}))
+            .prefers_overt_meanlp.mean()
+            .rename(columns={"prefers_overt_meanlp": "overt_pref"}))
     traj.to_csv(args.out / "wave2_v5_trajectories.csv", index=False)
     print(f"{traj.cell_count if hasattr(traj,'cell_count') else len(traj):,} "
           f"trajectory points; arms {sorted(traj.arm.unique())}; "
@@ -138,9 +138,15 @@ def main() -> None:
                 ax.set_ylabel(f"{arm}\novert pref.", fontsize=9)
             if r == len(arms) - 1:
                 ax.set_xlabel("tokens seen (log)")
-    handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=6, fontsize=8,
-               frameon=False, bbox_to_anchor=(0.5, -0.015))
+    from matplotlib.lines import Line2D
+    all_ks = sorted(k for k in traj.k.unique() if k < 100)
+    handles = [Line2D([0], [0], color=cmap(k / 100), lw=2) for k in all_ks]
+    labels = [f"k={k}" for k in all_ks]
+    if (traj.arm == "all").any():
+        handles.append(Line2D([0], [0], color="#A33B2E", lw=2, ls="--"))
+        labels.append("all removed")
+    fig.legend(handles, labels, loc="lower center", ncol=len(labels),
+               fontsize=8, frameon=False, bbox_to_anchor=(0.5, -0.015))
     fig.suptitle("Overt-subject preference trajectories — arm × intervention, "
                  "lines = removal decile", y=1.005)
     fig.tight_layout()

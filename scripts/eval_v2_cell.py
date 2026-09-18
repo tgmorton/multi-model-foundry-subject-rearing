@@ -43,6 +43,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -244,7 +245,17 @@ def main():
             raise SystemExit("matched stimuli require a distinct non-legacy benchmark")
         matched_manifest, matched_manifest_sha = _validate_matched_stimuli(
             matched_root, args.expected_stimuli_manifest_sha256)
-        stimuli_dir = matched_root / condition / lang
+        # wave2 cells embed the intervention in a pdrop2_* slug; matched
+        # stimuli are keyed by the intervention's long condition name
+        _SHORT2LONG = {"base": "baseline",
+                       "rmexpl": "remove_expletive_sentences",
+                       "impcase": "impoverish_case",
+                       "lemverb": "lemmatize_verbs",
+                       "enrichvm": "enrich_verbal_morphology"}
+        m = re.match(r"pdrop2_(?:gpt2m|bert|comp|rand|all100)\d*_(\w+)$",
+                     condition)
+        matched_condition = _SHORT2LONG[m.group(1)] if m else condition
+        stimuli_dir = matched_root / matched_condition / lang
     else:
         if args.benchmark != DEFAULT_BENCHMARK:
             raise SystemExit("non-legacy benchmark requires --matched_stimuli_root")
