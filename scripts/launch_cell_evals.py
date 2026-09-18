@@ -260,6 +260,10 @@ def main() -> None:
                          "and CPU requests scale with pack unless overridden.")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
+    ap.add_argument("--cpu", action="store_true",
+                    help="CPU-only eval pods: no GPU request/probe/affinity "
+                         "(immune to GPU scheduling + admission races; "
+                         "~6-10x slower per run for gpt2_small)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -269,7 +273,9 @@ def main() -> None:
         run_ids = [f"{arch}-{args.lang}-{cond}-{args.slot}"
                    for arch in ARCHS for cond in CONDITIONS]
 
-    if args.gpu_pool == "pascal" and any("mamba" in r for r in run_ids):
+    if args.cpu:
+        args.extra_args = (args.extra_args + " --device cpu").strip()
+    if not args.cpu and args.gpu_pool == "pascal" and any("mamba" in r for r in run_ids):
         sys.exit("mamba cells need sm_70+ kernels — use volta/turing, "
                  "not pascal")
 
@@ -278,6 +284,9 @@ def main() -> None:
     pod_ram = args.pod_ram
     if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
+    pod_cpu = str(4 * pack) if args.cpu else str(pack)
+    if args.cpu and args.pod_ram == ap.get_default("pod_ram"):
+        pod_ram = f"{2 + 3 * pack}Gi"   # fp32 CPU inference headroom
 
     name = f"thomas-eval-cell-{args.lang}-{args.name_suffix}"
     yaml_text = JOB_TEMPLATE.format(
@@ -294,10 +303,23 @@ def main() -> None:
         run_ids_json=json.dumps(run_ids),
         batch_size=args.batch_size,
         pod_ram=pod_ram,
-        pod_cpu=str(pack),
+        pod_cpu=pod_cpu,
         pack=pack,
         extra_args=args.extra_args,
     )
+
+    if args.cpu:
+        # strip GPU resources, probe, and gpu.product affinity from the
+        # rendered YAML — deterministic anchors in JOB_TEMPLATE
+        yaml_text = yaml_text.replace(", nvidia.com/gpu: 1,", ",")
+        i0 = yaml_text.index("# GPU health probe")
+        i1 = yaml_text.index("cd /opt/repo", i0)
+        yaml_text = (yaml_text[:i0]
+                     + 'echo "CPU mode - GPU probe skipped"\n\n          '
+                     + yaml_text[i1:])
+        a0 = yaml_text.index("- key: nvidia.com/gpu.product")
+        a1 = yaml_text.index("- key: kubernetes.io/hostname", a0)
+        yaml_text = yaml_text[:a0] + yaml_text[a1:]
 
     if args.dry_run:
         print(yaml_text)
