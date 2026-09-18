@@ -33,7 +33,7 @@ linguistics vs information-theoretic accounts of subject-drop.
 
 | Parameter | Value |
 |---|---|
-| Architectures | n-gram 1–5, GPT-2 small/medium/large, BERT large, LSTM, Mamba 370M |
+| Architectures | n-gram 1–5, GPT-2 small/medium/large, BERT large, LSTM, Mamba 370M — **v5 wave (D10, 2026-09-18): gpt2_large + bert_large + lstm only**; gpt2_small persists only as the rater-comparison cohort |
 | Languages | English + Spanish (Italian is dormant) |
 | Conditions | baseline + 7 ablations per (arch, lang) |
 | Seeds per cell | **30** |
