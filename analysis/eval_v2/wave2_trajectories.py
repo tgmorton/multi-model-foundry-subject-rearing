@@ -83,7 +83,7 @@ def main() -> None:
     ap.add_argument("--pairs-dir", default=None,
                     help="local pairs dir (else pull from S3)")
     ap.add_argument("--bucket", default="thomas-subject-drop-artifacts")
-    ap.add_argument("--s3-prefix", default="eval_results/null_subj_v2/pairs/")
+    ap.add_argument("--s3-prefix", default="eval_results/null_subj_v2_condition_matched_v1/pairs/")
     ap.add_argument("--profile", default="nrp")
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
     ap.add_argument("--out", type=Path,
