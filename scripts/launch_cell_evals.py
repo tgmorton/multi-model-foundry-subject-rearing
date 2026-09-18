@@ -260,6 +260,9 @@ def main() -> None:
                          "and CPU requests scale with pack unless overridden.")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
+    ap.add_argument("--cpu-cores-per-run", type=int, default=8,
+                    help="threads per packed run in --cpu mode (pod cpu = "
+                         "this x pack; OMP/MKL pinned to match)")
     ap.add_argument("--cpu", action="store_true",
                     help="CPU-only eval pods: no GPU request/probe/affinity "
                          "(immune to GPU scheduling + admission races; "
@@ -284,7 +287,8 @@ def main() -> None:
     pod_ram = args.pod_ram
     if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
-    pod_cpu = str(4 * pack) if args.cpu else str(pack)
+    pod_cpu = (str(args.cpu_cores_per_run * pack) if args.cpu
+               else str(pack))
     if args.cpu and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 3 * pack}Gi"   # fp32 CPU inference headroom
 
@@ -312,6 +316,15 @@ def main() -> None:
         # strip GPU resources, probe, and gpu.product affinity from the
         # rendered YAML — deterministic anchors in JOB_TEMPLATE
         yaml_text = yaml_text.replace(", nvidia.com/gpu: 1,", ",")
+        # pin BLAS threads to the per-run share — torch otherwise spawns
+        # node-core-count threads and thrashes on the cgroup cpu limit
+        nthr = str(args.cpu_cores_per_run)
+        yaml_text = yaml_text.replace(
+            '- {name: PYTHONHASHSEED, value: "0"}',
+            '- {name: PYTHONHASHSEED, value: "0"}\n'
+            '        - {name: OMP_NUM_THREADS, value: "' + nthr + '"}\n'
+            '        - {name: MKL_NUM_THREADS, value: "' + nthr + '"}\n'
+            '        - {name: TORCH_NUM_THREADS, value: "' + nthr + '"}')
         i0 = yaml_text.index("# GPU health probe")
         i1 = yaml_text.index("cd /opt/repo", i0)
         yaml_text = (yaml_text[:i0]
