@@ -93,11 +93,21 @@ def main() -> None:
 
     df = load_pairs(args)
     # preference rate per (cell, checkpoint), averaged over items (and
-    # over replicates when >1 run per cell)
+    # over replicates when >1 run per cell). Init checkpoint (step<=0,
+    # "checkpoint -1") is excluded, and every trajectory is REBASED to
+    # its first training step: values are change-from-step-1, starting
+    # at 0 (convention set 2026-09-18).
     traj = (df[df.tokens > 0]
             .groupby(["arm", "iv", "k", "tokens"], as_index=False)
             .prefers_overt_slor.mean()
             .rename(columns={"prefers_overt_slor": "overt_pref"}))
+    first = (traj.sort_values("tokens")
+             .groupby(["arm", "iv", "k"], as_index=False).first()
+             [["arm", "iv", "k", "overt_pref"]]
+             .rename(columns={"overt_pref": "pref_at_step1"}))
+    traj = traj.merge(first, on=["arm", "iv", "k"])
+    traj["overt_pref_abs"] = traj.overt_pref
+    traj["overt_pref"] = traj.overt_pref - traj.pref_at_step1
     traj.to_csv(args.out / "wave2_v5_trajectories.csv", index=False)
     print(f"{traj.cell_count if hasattr(traj,'cell_count') else len(traj):,} "
           f"trajectory points; arms {sorted(traj.arm.unique())}; "
@@ -129,11 +139,11 @@ def main() -> None:
                 ax.plot(t.tokens, t.overt_pref, lw=1.6, ls="--",
                         color="#A33B2E", label="all removed")
             ax.set_xscale("log")
-            ax.axhline(0.5, color="#bbb", lw=0.6)
+            ax.axhline(0.0, color="#bbb", lw=0.6)
             if r == 0:
                 ax.set_title(IV_LABEL.get(iv, iv), fontsize=10)
             if c == 0:
-                ax.set_ylabel(f"{arm}\novert pref.", fontsize=9)
+                ax.set_ylabel(f"{arm}\nΔ overt pref. (from step 1)", fontsize=9)
             if r == len(arms) - 1:
                 ax.set_xlabel("tokens seen (log)")
     handles, labels = axes[0][0].get_legend_handles_labels()
@@ -174,12 +184,12 @@ def main() -> None:
                     ax.plot(t.tokens, y, lw=1.4, color=iv_colors[iv],
                             label=IV_LABEL.get(iv, iv))
                 ax.set_xscale("log")
-                ax.axhline(0.0 if delta else 0.5, color="#bbb", lw=0.6)
+                ax.axhline(0.0, color="#bbb", lw=0.6)
                 if r == 0:
                     ax.set_title(arm, fontsize=10)
                 if c == 0:
                     ax.set_ylabel(f"k={k}\n" +
-                                  ("Δ vs base" if delta else "overt pref."),
+                                  ("ΔΔ vs base" if delta else "Δ overt pref."),
                                   fontsize=9)
                 if r == len(ks) - 1:
                     ax.set_xlabel("tokens seen (log)")
