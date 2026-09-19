@@ -1,0 +1,85 @@
+# On-cluster emit of the 'robbi' selection label (after the roberta-bi
+# full-corpus scoring lands): reads v5 tables + external_roberta_bi from
+# the PVC, writes selection_v5/robbi/, uploads to S3.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-emit-robbi-v1
+  labels: {owner: thomas, study: subject-drop, stage: score}
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: score}
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets: [{name: gitlab-registry-cred-thomas}]
+      restartPolicy: Never
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=main,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: emit
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+          python - <<PY
+          import boto3, pathlib
+          s3 = boto3.client("s3")
+          pre = "recoverability/analysis/selection_v5/"
+          for page in s3.get_paginator("list_objects_v2").paginate(Bucket="thomas-subject-drop-artifacts", Prefix=pre):
+              for o in page.get("Contents", []):
+                  dest = pathlib.Path("/mnt/data/recoverability/analysis/selection_v5") / o["Key"][len(pre):]
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  s3.download_file("thomas-subject-drop-artifacts", o["Key"], str(dest))
+          print("v5 family pulled")
+          PY
+          python analysis/recoverability/emit_selection_robbi.py \
+            --root /mnt/data/recoverability \
+            --out /mnt/data/recoverability/analysis
+          python - <<PY
+          import boto3, pathlib
+          s3 = boto3.client("s3")
+          root = pathlib.Path("/mnt/data/recoverability/analysis/selection_v5")
+          n = 0
+          for p in sorted((root / "robbi").rglob("*")):
+              if p.is_file():
+                  s3.upload_file(str(p), "thomas-subject-drop-artifacts",
+                                 "recoverability/analysis/selection_v5/robbi/"
+                                 + str(p.relative_to(root / "robbi")))
+                  n += 1
+          s3.upload_file(str(root / "V5_FAMILY.json"),
+                         "thomas-subject-drop-artifacts",
+                         "recoverability/analysis/selection_v5/V5_FAMILY.json")
+          print("uploaded", n, "robbi files + family manifest")
+          PY
+          echo "EMIT ROBBI OK"
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        resources:
+          requests: {memory: 16Gi, cpu: '4'}
+          limits: {memory: 16Gi, cpu: '4'}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive}
