@@ -30,7 +30,14 @@ IMAGE = ("gitlab-registry.nrp-nautilus.io/thmorton/"
 REPO_URL = "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git"
 GPU_POOL = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4",
             "NVIDIA-GeForce-RTX-4090"]
-BAD_NODES = ["uicnrp-fiona2.evl.uic.edu"]
+BAD_NODES = [
+    "uicnrp-fiona2.evl.uic.edu",       # NVML broken 2026-08-22
+    "gpu-18.nrp.mghpcc.org",           # CUDA-init flytrap; burned 82 jobs overnight 2026-09-18
+    "nautilus-ext-gpu01.fullerton.edu",
+    "nautilus-it-gpu03.fullerton.edu",  # long-standing eval bad-node
+    "fiona-1.famu.edu",
+    "suncave-3",
+]
 # (phys_batch, pod_ram, pod_cpu) — production-derived; no mamba in wave 2.
 ARCH_SETTINGS = {
     "gpt2_small": (16, "4Gi", "2"),
@@ -109,7 +116,7 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
         "apiVersion": "batch/v1", "kind": "Job",
         "metadata": {"name": f"thomas-w2-{short}"[:63], "labels": labels},
         "spec": {
-            "backoffLimit": 10,
+            "backoffLimit": 20,
             "completionMode": "Indexed",
             "completions": 10,
             "parallelism": parallelism,

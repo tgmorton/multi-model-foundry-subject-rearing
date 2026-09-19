@@ -100,6 +100,10 @@ def main() -> None:
         if rec.get("status") == "COMPLETE":
             print(f"[wave2] {run_id} already COMPLETE in registry — skipping.",
                   flush=True)
+            # The pod script's success contract is the sentinel file; a
+            # skip IS a success. (Missing this burned 82 jobs overnight
+            # 2026-09-18: skip -> exit 1 -> same index retried -> skip ...)
+            Path("/tmp/run_succeeded").write_text(run_id + " (skipped)\n")
             return
     except Exception as e:  # noqa: BLE001 — missing record / S3 blip
         print(f"[wave2] registry precheck inconclusive ({e}); proceeding.",
