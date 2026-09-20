@@ -57,6 +57,11 @@ spec:
                 operator: NotIn
                 values:
                 - uicnrp-fiona2.evl.uic.edu
+                - gpu-18.nrp.mghpcc.org
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - fiona-1.famu.edu
+                - suncave-3
       initContainers:
       - name: clone-repo
         image: alpine/git
