@@ -2654,6 +2654,18 @@ trained on them yet).</p>
 <td>comp-arm training suspended mid-cohort to free namespace/utilization headroom ("odds are we're just going to run bert"). Completed comp runs (14+) stay banked; jobs suspended not deleted, resumable if the arm is revived. Shared rand/all100 controls keep running and still serve comp analyses.</td>
 </tr>
 <tr>
+<td>D12</td>
+<td>gpt2_small cohort scope</td>
+<td><strong>LOCKED 2026-09-21 (Thomas)</strong></td>
+<td>The gpt2_small three-rater cohort <strong>ends at h0</strong> (112/112 active cells complete at h0; ~140 partial h1/h2 replicates banked as bonus). Enforced via <code>wave_control/w2v5.json</code> (<code>max_hp_rank: 0</code>) read by <code>wave2_agent.py</code> — running pods finish, new indices no-op. Rationale: the full wave re-trains on gpt2_large/bert_large/lstm (D10), so deeper gpt2_small seeds are not worth the GPUs. The <code>robbi</code> arm (D13) trains on gpt2_small at h0 only for the same reason.</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>Listener upper-bound arm</td>
+<td><strong>2026-09-19 (advisor)</strong></td>
+<td>Bidirectional roberta-large ±250 rater ("robbi") added to the v5 family as a tight listener-construal upper bound; 45 info cells, shares rand/all100 controls. Saturated (~53% &lt; 0.1 nats) — interpret at decile granularity.</td>
+</tr>
+<tr>
 <td>—</td>
 <td>Contraction residue kept; population = personal pronouns</td>
 <td>LOCKED (2026-08-15)</td>
