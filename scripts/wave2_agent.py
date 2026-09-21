@@ -84,6 +84,26 @@ def main() -> None:
     seed = derive_seed(wave, cell, arch, f"h{hp_rank}", replicate)
     run_id = f"{arch}-en-{cell}-h{hp_rank}-s{seed}"
 
+    # Wave-level HP cap (Thomas 2026-09-21: gpt2_small cohort ends at h0;
+    # the full wave re-trains on gpt2_large/bert/lstm). Read from S3 so
+    # it can be flipped without re-rendering 185 jobs. Exiting "success"
+    # here lets running pods finish while every new index no-ops.
+    try:
+        import boto3
+        cap = json.loads(boto3.client("s3").get_object(
+            Bucket=os.environ.get("REGISTRY_BUCKET",
+                                  "thomas-subject-drop-artifacts"),
+            Key=f"wave_control/{wave}.json")["Body"].read())
+        max_hp = cap.get("max_hp_rank")
+        if max_hp is not None and hp_rank > max_hp:
+            print(f"[wave2] {run_id}: hp_rank {hp_rank} > cap {max_hp} "
+                  f"({cap.get('reason', '')}) — skipping.", flush=True)
+            Path("/tmp/run_succeeded").write_text(run_id + " (capped)\n")
+            return
+    except Exception as e:  # noqa: BLE001 — no control file => no cap
+        print(f"[wave2] no wave control ({e.__class__.__name__}); proceeding.",
+              flush=True)
+
     # Skip-if-COMPLETE: recreating a Failed Indexed Job re-runs every index
     # (completion tracking dies with the job — 2026-09-18 credential-outage
     # backoff burnout). Registry says done => exit 0 in seconds. Non-fatal
