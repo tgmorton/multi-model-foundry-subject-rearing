@@ -1,0 +1,20 @@
+{
+ "train_90M:robbi:info:10": 646099,
+ "train_90M:robbi:info:20": 1292198,
+ "train_90M:robbi:info:30": 1938297,
+ "train_90M:robbi:info:40": 2584395,
+ "train_90M:robbi:info:50": 3230494,
+ "train_90M:robbi:info:60": 3876593,
+ "train_90M:robbi:info:70": 4522691,
+ "train_90M:robbi:info:80": 5168790,
+ "train_90M:robbi:info:90": 5814889,
+ "pull_10M:robbi:info:10": 74746,
+ "pull_10M:robbi:info:20": 150995,
+ "pull_10M:robbi:info:30": 226836,
+ "pull_10M:robbi:info:40": 301224,
+ "pull_10M:robbi:info:50": 374568,
+ "pull_10M:robbi:info:60": 446762,
+ "pull_10M:robbi:info:70": 519135,
+ "pull_10M:robbi:info:80": 592703,
+ "pull_10M:robbi:info:90": 666791
+}

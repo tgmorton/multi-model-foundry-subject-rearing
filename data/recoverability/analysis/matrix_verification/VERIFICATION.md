@@ -74,3 +74,15 @@ expectations from the frozen selection v5 family
   3,314,144 – 4,906,096 words (grows with k; gutenberg-dominated) —
   same profile as the v4 matrix; rater-independent as expected.
 - Actuals: `v2_actual.json` (also on S3 under matrix_verification/).
+
+# robbi arm (45 cells, bidirectional roberta ±250) — Verification Record
+
+2026-09-21. `thomas-ablate-compose-robbi-v1` (45/45, 107 min) against
+`selection_v5/robbi/` (grafted onto the frozen v5 population; roberta
+covered 100% — 0 instances demoted to decile 9).
+
+- **36/36 non-expletive cells exact** (train + pool removals; zero
+  exhaustion). Shared rand/all100 corpora reused from the v5 matrix.
+- **9/9 expletive cells** allow-short, deficits 3,454,035 – 4,725,535
+  words — same band as the other arms.
+- PVC 39.5 TB free. Files: `robbi_expected.json`, `robbi_actual.json`.
