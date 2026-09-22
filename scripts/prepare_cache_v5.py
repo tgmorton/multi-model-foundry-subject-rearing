@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-BASELINE = REPO_ROOT / "configs" / "sweeps" / "baselines" / "gpt2_medium_en.yaml"
+BASELINE_DIR = REPO_ROOT / "configs" / "sweeps" / "baselines"
 
 
 def main() -> None:
@@ -36,12 +36,15 @@ def main() -> None:
     if not (REPO_ROOT / corpus).exists():
         sys.exit(f"FATAL: corpus missing: {corpus} — compose first")
 
-    base = yaml.safe_load(BASELINE.read_text())
+    base_cfg = os.environ.get("BASE_CONFIG", "gpt2_medium_en.yaml")
+    tok_dir = os.environ.get("TOKENIZER_DIR", "tokenizers/en_shared_unigram/")
+    tok_type = os.environ.get("TOKENIZER_TYPE", "sentencepiece")
+    base = yaml.safe_load((BASELINE_DIR / base_cfg).read_text())
     base["experiment_name"] = f"prep-v5-{slug}"
     base["data"]["source_corpus"] = corpus
     base["data"]["training_corpus"] = corpus
-    base["tokenizer"]["output_dir"] = "tokenizers/en_shared_unigram/"
-    base["tokenizer"]["tokenizer_type"] = "sentencepiece"
+    base["tokenizer"]["output_dir"] = tok_dir
+    base["tokenizer"]["tokenizer_type"] = tok_type
 
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
         yaml.safe_dump(base, f)

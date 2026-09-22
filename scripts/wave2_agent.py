@@ -95,9 +95,13 @@ def main() -> None:
                                   "thomas-subject-drop-artifacts"),
             Key=f"wave_control/{wave}.json")["Body"].read())
         max_hp = cap.get("max_hp_rank")
-        if max_hp is not None and hp_rank > max_hp:
-            print(f"[wave2] {run_id}: hp_rank {hp_rank} > cap {max_hp} "
-                  f"({cap.get('reason', '')}) — skipping.", flush=True)
+        max_rep = cap.get("max_replicate")
+        over = ((max_hp is not None and hp_rank > max_hp) or
+                (max_rep is not None and replicate > max_rep))
+        if over:
+            print(f"[wave2] {run_id}: h{hp_rank}/rep{replicate} beyond cap "
+                  f"(max_hp={max_hp}, max_rep={max_rep}; "
+                  f"{cap.get('reason', '')}) — skipping.", flush=True)
             Path("/tmp/run_succeeded").write_text(run_id + " (capped)\n")
             return
     except Exception as e:  # noqa: BLE001 — no control file => no cap

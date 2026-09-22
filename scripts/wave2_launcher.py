@@ -29,7 +29,10 @@ IMAGE = ("gitlab-registry.nrp-nautilus.io/thmorton/"
          "multi-model-foundry-subject-rearing:latest")
 REPO_URL = "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git"
 GPU_POOL = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4",
-            "NVIDIA-GeForce-RTX-4090"]
+            "NVIDIA-GeForce-RTX-4090",
+            # 48GB Ada/Ampere on the generic gpu key — FA2-eligible and far
+            # less contended than the 24GB pool (added 2026-09-22).
+            "NVIDIA-L40", "NVIDIA-L40S"]
 BAD_NODES = [
     "uicnrp-fiona2.evl.uic.edu",       # NVML broken 2026-08-22
     "gpu-18.nrp.mghpcc.org",           # CUDA-init flytrap; burned 82 jobs overnight 2026-09-18
