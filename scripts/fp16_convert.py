@@ -118,12 +118,28 @@ def main() -> None:
     ap.add_argument("--apply", action="store_true", help="actually convert")
     ap.add_argument("--verify", action="store_true", help="reload converted ckpts")
     ap.add_argument("--limit", type=int, default=None, help="max checkpoints")
+    ap.add_argument("--sample-per-arch", type=int, default=None,
+                    help="survey mode: only the first N runs of each arch "
+                         "(run-name prefix before '-en-') — a census of 70K "
+                         "tiny CephFS stats stalls; a sample doesn't")
+    ap.add_argument("--progress-every", type=int, default=200,
+                    help="print progress every N checkpoints (so slow is "
+                         "distinguishable from hung)")
     a = ap.parse_args()
     if not (a.root or a.run_dir):
         ap.error("need --root or --run-dir")
 
     runs = [a.run_dir] if a.run_dir else sorted(
         d for d in a.root.iterdir() if d.is_dir())
+    if a.sample_per_arch:
+        by_arch, picked = {}, []
+        for d in runs:
+            arch = d.name.split("-en-")[0]
+            if by_arch.get(arch, 0) < a.sample_per_arch:
+                by_arch[arch] = by_arch.get(arch, 0) + 1
+                picked.append(d)
+        runs = picked
+        print(f"sampling {len(runs)} runs: {by_arch}", flush=True)
     tot = {"converted": 0, "skipped": 0, "would_convert": 0, "error": 0}
     b_sum = a_sum = 0
     n = 0
@@ -141,6 +157,8 @@ def main() -> None:
                     print(f"VERIFY FAIL {ckpt}: {v}", flush=True)
                     sys.exit(3)
             n += 1
+            if n % a.progress_every == 0:
+                print(f"  progress: {n} checkpoints, {dict(tot)}", flush=True)
         if a.limit and n >= a.limit:
             break
     print(json.dumps({**tot, "before_gb": round(b_sum / 1e9, 2),
