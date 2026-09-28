@@ -221,9 +221,57 @@ class HFAligner:
 # Phase A — enumerate lines + instances (CPU)
 # --------------------------------------------------------------------------
 
+class _Shim:
+    """Minimal token stand-in carrying the attributes align_line reads."""
+    __slots__ = ("idx", "text")
+
+    def __init__(self, idx: int, text: str):
+        self.idx, self.text = idx, text
+
+
+def apply_edits(doc, edits: Dict[int, str]):
+    """Rebuild a line under an intervention edit plan, exactly as
+    stacked_graded.py does (``edits.get(i, text) + whitespace``), and
+    return the per-token character offsets in the EDITED text so every
+    baseline token keeps its identity across the transform."""
+    parts, offsets, pos = [], {}, 0
+    for tok in doc:
+        s = edits.get(tok.i, tok.text)
+        offsets[tok.i] = pos
+        parts.append(s + tok.whitespace_)
+        pos += len(s) + len(tok.whitespace_)
+    return "".join(parts), offsets
+
+
+def resolve_intervention(name: Optional[str]):
+    """(edit_fn, line_remover) built identically to StackedGradedAblation
+    .configure, so scored contexts match the training corpora byte-for-byte."""
+    if name in (None, "baseline"):
+        return None, None
+    import preprocessing.ablations  # noqa: F401 — registers ablations
+    from preprocessing.base import AblationRegistry
+    if name == "lemmatize_verbs":
+        from preprocessing.ablations import lemmatize_verbs as _m
+        return _m.token_edits, None
+    if name == "enrich_verbal_morphology":
+        from preprocessing.ablations import enrich_verbal_morphology as _m
+        return _m.token_edits, None
+    if name == "impoverish_case":
+        imp, _ = AblationRegistry.get("impoverish_case_en")
+        return imp.token_edits, None
+    if name == "remove_expletive_sentences":
+        rem, _ = AblationRegistry.get("remove_expletive_sentences_en")
+        if hasattr(rem, "reset_file_state"):
+            rem.reset_file_state()
+        return None, rem
+    raise ValueError(f"unknown intervention {name!r}")
+
+
 def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[int],
-            counters: Dict[str, int], sample=None):
+            counters: Dict[str, int], sample=None, intervention=None):
     from preprocessing.annotate import iter_annotated_file
+    edit_fn, line_remover = resolve_intervention(intervention)
+    removed_instances = []   # sampled pronouns whose whole line was removed
     from preprocessing.dep_labels import normalize_dep
 
     lines = []       # dicts: line_idx, doc_idx, ids(list[int])
@@ -236,7 +284,18 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
         # linemap raw_text keeps the trailing newline; both the spaCy parse
         # (annotate.py) and training tokenization (HF text loader) strip it.
         raw = entry.get("raw_text", "").rstrip("\n\r")
-        ids = aligner.encode_ids(raw) if raw else []
+        text, offsets, edits, line_gone = raw, None, {}, False
+        if doc is not None and doc.text == raw and (edit_fn or line_remover):
+            if line_remover is not None:
+                _, gone = line_remover(doc)
+                line_gone = bool(gone)
+            if edit_fn is not None:
+                edits = edit_fn(doc) or {}
+            if line_gone:
+                text = ""
+            elif edits:
+                text, offsets = apply_edits(doc, edits)
+        ids = aligner.encode_ids(text) if text else []
         # int32 array, not a python int list — the big shards (childes,
         # open_subtitles) OOM'd at 16Gi on list overhead alone.
         lines.append({"line_idx": line_idx,
@@ -259,9 +318,22 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
             cands = [t for t in cands if (line_idx, t.i) in sample]
             if not cands:
                 continue
-        alignments = aligner.align_line(raw, cands)
+        if line_gone:
+            for t in cands:
+                removed_instances.append({"line_idx": line_idx, "token_i": t.i,
+                                          "form": t.text.lower()})
+            counters["instances_line_removed"] = counters.get(
+                "instances_line_removed", 0) + len(cands)
+            continue
+        if offsets is not None:
+            a_c = [_Shim(offsets[t.i], edits.get(t.i, t.text)) for t in cands]
+            a_h = [_Shim(offsets[t.head.i], edits.get(t.head.i, t.head.text))
+                   for t in cands]
+        else:
+            a_c, a_h = cands, [t.head for t in cands]
+        alignments = aligner.align_line(text, a_c)
         # Matrix-verb (head) spans for the verb-frame planning window.
-        head_alignments = aligner.align_line(raw, [t.head for t in cands])
+        head_alignments = aligner.align_line(text, a_h)
         for t, aligned, h_aligned in zip(cands, alignments, head_alignments):
             form = t.text.lower()
             counters["instances_seen"] += 1
@@ -287,11 +359,14 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
                 "piece_in_line": first,
                 "n_pieces": n_pieces,
                 "head_i": t.head.i,
+                "form_edited": edits.get(t.i, t.text).lower(),
+                "head_edited": t.head.i in edits,
+                "n_line_edits": len(edits),
                 "head_piece_in_line": h_aligned[0] if h_aligned else None,
                 "head_n_pieces": h_aligned[1] if h_aligned else None,
             })
             counters["instances_aligned"] += 1
-    return lines, instances
+    return lines, instances, removed_instances
 
 
 # --------------------------------------------------------------------------
@@ -725,6 +800,13 @@ def main():
                          "subject pronouns saturates (~57%% of instances "
                          "<0.1 nats), collapsing the ranking; left-only "
                          "converts cloze to prediction.")
+    ap.add_argument("--intervention", default=None,
+                    choices=["baseline", "lemmatize_verbs",
+                             "enrich_verbal_morphology", "impoverish_case",
+                             "remove_expletive_sentences"],
+                    help="score the baseline-identified instances in this "
+                         "intervention's edited context (paired analysis); "
+                         "outputs to external_<NAME>/intervention/<IV>/")
     ap.add_argument("--mlm-ctx-mode", choices=["truncate", "mask"],
                     default="truncate",
                     help="'mask': keep the full bidirectional window and "
@@ -822,10 +904,60 @@ def main():
 
     print(f"=== phase A: {args.corpus}/{args.file} from {annotated_dir}", flush=True)
     t0 = time.time()
-    lines, instances = phase_a(annotated_dir, args.file, aligner,
-                               args.limit_lines, counters, sample=sample)
+    lines, instances, removed_instances = phase_a(
+        annotated_dir, args.file, aligner, args.limit_lines, counters,
+        sample=sample, intervention=args.intervention)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
     print(f"  {counters}", flush=True)
+
+    if args.intervention is not None:
+        # Intervention-conditioned scoring: the SAME baseline-identified
+        # instances, scored in the intervention's edited context (paired
+        # with the baseline pass by (line_idx, token_i)).
+        if not args.hf_mlm:
+            ap.error("--intervention currently requires --hf-mlm")
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        cr = args.mlm_ctx_right
+        if cr is not None and cr not in ("V", "VX"):
+            cr = int(cr)
+        res, _ = phase_b_mlm(
+            lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
+            args.mlm_ctx, args.mlm_batch, args.amp, counters, ctx_right=cr,
+            ctx_mode=args.mlm_ctx_mode)
+        r = res[hf_name]
+        odir = out_root / "intervention" / args.intervention
+        odir.mkdir(parents=True, exist_ok=True)
+        f = lambda x: None if math.isnan(float(x)) else float(x)
+        pq.write_table(pa.table({
+            "line_idx": [i["line_idx"] for i in instances],
+            "token_i": [i["token_i"] for i in instances],
+            "form": [i["form"] for i in instances],
+            "form_edited": [i.get("form_edited") for i in instances],
+            "person": [i["person"] for i in instances],
+            "number": [i["number"] for i in instances],
+            "head_edited": [i.get("head_edited") for i in instances],
+            "n_line_edits": [i.get("n_line_edits") for i in instances],
+            "logprob_sum": [f(x) for x in r["logprob_sum_arr"]],
+            "logprob_first": [f(x) for x in r["logprob_first_arr"]],
+            "entropy": [f(x) for x in r["entropy"]],
+        }), odir / f"{args.file}.parquet")
+        if removed_instances:
+            pq.write_table(pa.table({
+                "line_idx": [i["line_idx"] for i in removed_instances],
+                "token_i": [i["token_i"] for i in removed_instances],
+                "form": [i["form"] for i in removed_instances],
+            }), odir / f"{args.file}.line_removed.parquet")
+        with open(odir / f"{args.file}.manifest.json", "w") as fh:
+            json.dump({"intervention": args.intervention, "hf_id": hf_id,
+                       "mlm_ctx": args.mlm_ctx, "mlm_ctx_right": str(cr),
+                       "n_scored": len(instances),
+                       "n_line_removed": len(removed_instances),
+                       "counters": counters}, fh, indent=2)
+        print(f"INTERVENTION SCORING OK: {args.intervention} "
+              f"({len(instances):,} scored, {len(removed_instances):,} "
+              f"line-removed)", flush=True)
+        return
 
     if args.causal_ctx_grid:
         # Backward-depth locality grid for a causal LM (mirror of the MLM
