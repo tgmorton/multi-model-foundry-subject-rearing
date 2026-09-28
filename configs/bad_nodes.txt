@@ -1,0 +1,20 @@
+# Single source of truth for NRP nodes our pods must avoid.
+# Read by every launcher (scripts/bad_nodes.py) and by scripts/fleet_watch.py.
+# One hostname per line; '#' starts a comment. Add a node HERE, not in a launcher.
+#
+# Consolidated 2026-09-28 from 11 partial copies — no node was on all of them,
+# which let known-bad nodes keep receiving pods (c4715, c6017 on 9/28).
+
+uicnrp-fiona2.evl.uic.edu          # NVML broken (2026-08-22)
+gpu-14.nrp.mghpcc.org              # eval bad-node (inherited from eval launchers)
+gpu-17.nrp.mghpcc.org              # eval bad-node (inherited from eval launchers)
+gpu-18.nrp.mghpcc.org              # CUDA-init flytrap; burned 82 jobs (2026-09-18)
+hcc-chase-shor-c4715.unl.edu       # device-plugin allocate failure, 91 UnexpectedAdmissionErrors (2026-09-28)
+hcc-nrp-shor-c6017.unl.edu         # mid-training exit-1 failures after GPU probe passes (2026-09-28)
+nautilus-ext-gpu01.fullerton.edu   # CUDA-init failures (2026-09-18)
+nautilus-it-gpu01.fullerton.edu    # eval bad-node (inherited from eval launchers)
+nautilus-it-gpu03.fullerton.edu    # long-standing eval bad-node
+rci-tide-gpu-03.sdsu.edu           # eval bad-node (inherited from eval launchers)
+ry-gpu-10.sdsc.optiputer.net       # eval bad-node (inherited from eval launchers)
+fiona-1.famu.edu                   # CUDA-init failures (2026-09-18)
+suncave-3                          # CUDA-init failures (2026-09-18)

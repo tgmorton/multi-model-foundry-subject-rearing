@@ -62,12 +62,9 @@ GPU_POOLS = {
     "turing": ["NVIDIA-GeForce-RTX-2080-Ti", "Tesla-T4", "NVIDIA-TITAN-RTX"],
     "pascal": ["NVIDIA-GeForce-GTX-1080-Ti", "NVIDIA-TITAN-Xp"],
 }
-BAD_NODES = [
-    "rci-tide-gpu-03.sdsu.edu",
-    "ry-gpu-10.sdsc.optiputer.net",
-    "nautilus-it-gpu03.fullerton.edu",
-    "hcc-nrp-shor-c6017.unl.edu",
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
+BAD_NODES = _load_bad_nodes()
 
 
 def _resolve_git_ref() -> str:

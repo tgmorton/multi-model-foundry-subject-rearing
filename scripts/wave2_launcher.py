@@ -33,15 +33,9 @@ GPU_POOL = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4",
             # 48GB Ada/Ampere on the generic gpu key — FA2-eligible and far
             # less contended than the 24GB pool (added 2026-09-22).
             "NVIDIA-L40", "NVIDIA-L40S"]
-BAD_NODES = [
-    "uicnrp-fiona2.evl.uic.edu",       # NVML broken 2026-08-22
-    "gpu-18.nrp.mghpcc.org",           # CUDA-init flytrap; burned 82 jobs overnight 2026-09-18
-    "nautilus-ext-gpu01.fullerton.edu",
-    "nautilus-it-gpu03.fullerton.edu",  # long-standing eval bad-node
-    "fiona-1.famu.edu",
-    "suncave-3",
-    "hcc-chase-shor-c4715.unl.edu",   # device-plugin allocate failure: 91 UnexpectedAdmissionErrors 2026-09-28
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
+BAD_NODES = _load_bad_nodes()
 # (phys_batch, pod_ram, pod_cpu) — production-derived; no mamba in wave 2.
 ARCH_SETTINGS = {
     "gpt2_small": (16, "4Gi", "2"),

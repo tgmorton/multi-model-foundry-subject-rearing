@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import copy
 import hashlib
 import json
@@ -30,11 +31,9 @@ RAM = {"gpt2_small": "10Gi", "gpt2_medium": "12Gi",
 PARALLELISM = {a: 2 for a in ARCHES}
 GPU_POOL = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4",
             "NVIDIA-GeForce-RTX-4090"]
-BAD_NODES = ["gpu-14.nrp.mghpcc.org", "gpu-17.nrp.mghpcc.org",
-             "nautilus-it-gpu01.fullerton.edu",
-             "nautilus-it-gpu03.fullerton.edu",
-             "rci-tide-gpu-03.sdsu.edu", "ry-gpu-10.sdsc.optiputer.net",
-             "hcc-nrp-shor-c6017.unl.edu"]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
+BAD_NODES = _load_bad_nodes()
 BENCHMARK = "null_subj_v2_condition_matched_init_v1"
 
 

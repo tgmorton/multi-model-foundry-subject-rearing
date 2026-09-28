@@ -88,14 +88,9 @@ GPU_POOL_24GB = [
 ]
 
 # Bad-node blocklist (rendered into nodeAffinity hostname NotIn).
-BAD_NODES = [
-    "rci-tide-gpu-03.sdsu.edu",
-    "ry-gpu-10.sdsc.optiputer.net",
-    "nautilus-it-gpu03.fullerton.edu",  # broken CUDA driver — soaked 252 exit-2 "FATAL: no CUDA" fast-fails (2026-05-28)
-    "gpu-14.nrp.mghpcc.org",
-    "gpu-17.nrp.mghpcc.org",
-    "nautilus-it-gpu01.fullerton.edu",
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
+BAD_NODES = _load_bad_nodes()
 
 # Same 2 seeds across every (arch, lang, intervention) cell — seed becomes
 # a controlled variable for the ablation contrast.

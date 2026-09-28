@@ -8,6 +8,7 @@ packing smoke has passed its utilization and output-integrity gate.
 """
 
 from __future__ import annotations
+import sys
 
 import importlib.util
 import json
@@ -41,11 +42,9 @@ PAR = {"gpt2_small": 4, "gpt2_medium": 4, "gpt2_large": 4,
 SHORT = {"gpt2_small": "gpt2s", "gpt2_medium": "gpt2m",
          "gpt2_large": "gpt2l", "bert_large": "bertl", "lstm": "lstm",
          "mamba_370m": "mamba370m"}
-BAD_NODES = ["gpu-14.nrp.mghpcc.org", "gpu-17.nrp.mghpcc.org",
-             "nautilus-it-gpu01.fullerton.edu",
-             "nautilus-it-gpu03.fullerton.edu",
-             "rci-tide-gpu-03.sdsu.edu", "ry-gpu-10.sdsc.optiputer.net",
-             "hcc-nrp-shor-c6017.unl.edu"]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
+BAD_NODES = _load_bad_nodes()
 
 
 def load_launcher():

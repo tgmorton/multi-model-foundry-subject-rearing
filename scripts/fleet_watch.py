@@ -34,10 +34,9 @@ def kjson(*args):
 
 
 def known_bad_nodes() -> set:
-    t = (REPO / "scripts" / "wave2_launcher.py").read_text()
-    blk = t[t.index("BAD_NODES = ["):]
-    blk = blk[:blk.index("]")]
-    return set(re.findall(r'"([^"]+)"', blk))
+    sys.path.insert(0, str(REPO / "scripts"))
+    from bad_nodes import load
+    return set(load())
 
 
 def age_min(ts: str) -> float:

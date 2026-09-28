@@ -48,7 +48,8 @@ linguistics vs information-theoretic accounts of subject-drop.
 See `memory/reference_storage_diagram.md` for the canonical ASCII
 picture. Summary:
 
-- **CephFS PVC `subject-drop-archive`** (40 TiB, RWX) — **primary
+- **CephFS PVC `subject-drop-archive`** (**90 TiB**, RWX, `rook-cephfs`,
+  `allowVolumeExpansion: true` — expand with a one-line `kubectl patch`) — **primary
   working storage going forward**. Holds raw corpora, annotation
   caches, ablated manipulations, tokenizers, tokenized/chunked data,
   in-flight checkpoints, and (later) pruned reference-rep checkpoints.
@@ -266,6 +267,14 @@ affinity:
 | Quadro RTX 8000 | `nvidia.com/rtx8000` | Open (but no FA2) |
 | H200 (140 GB) | `nvidia.com/h200` | Reservation `csu-h200` |
 | GH200 (96 GB) | `nvidia.com/gh200` | arm64 — needs matching image + `kubernetes.io/arch: arm64` selector |
+
+**Bad nodes: one list, `configs/bad_nodes.txt`.** Every launcher and
+`scripts/fleet_watch.py` read it via `scripts/bad_nodes.py`. Add a node
+THERE — never inline in a launcher or YAML. (Consolidated 2026-09-28 from
+11 partial copies; no node was on all of them, so known-bad nodes kept
+receiving pods.) Note `UnexpectedAdmissionError` (device-plugin failure)
+carries no exit code or pod condition, so `podFailurePolicy` cannot
+ignore it — exclusion plus backoff headroom are the only defenses.
 
 **Never tolerate** `nautilus.io/issue=*` (broken nodes) or
 `nautilus.io/system=*` (infrastructure — explicitly forbidden by
