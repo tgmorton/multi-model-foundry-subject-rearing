@@ -48,6 +48,26 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
 
     import torch
     before = f.stat().st_size
+
+    # Fast path for dry-run: safetensors stores dtypes in a JSON header
+    # (u64 little-endian length, then JSON). Reading it costs one small
+    # read instead of loading the whole tensor file — the difference
+    # between a minutes-long survey and re-reading 46 TB.
+    if not apply and f.name == "model.safetensors":
+        import struct, json as _json
+        with f.open("rb") as fh:
+            (hlen,) = struct.unpack("<Q", fh.read(8))
+            hdr = _json.loads(fh.read(hlen))
+        dts = {v["dtype"] for k, v in hdr.items() if k != "__metadata__"}
+        if "F32" not in dts:
+            return {"status": "skipped", "reason": f"no fp32 tensors ({sorted(dts)})"}
+        f32_bytes = sum(
+            (v["data_offsets"][1] - v["data_offsets"][0])
+            for k, v in hdr.items()
+            if k != "__metadata__" and v["dtype"] == "F32")
+        return {"status": "would_convert", "before": before,
+                "after_est": before - f32_bytes // 2}
+
     if f.name == "model.safetensors":
         from safetensors.torch import load_file, save_file
         sd = load_file(str(f))
