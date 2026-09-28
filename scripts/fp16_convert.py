@@ -68,16 +68,35 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
         return {"status": "would_convert", "before": before,
                 "after_est": before - f32_bytes // 2}
 
+    # .bin (pickle) has no cheap header. For the survey, assume fp32 — the
+    # June wave was trained/saved fp32 — and estimate from size; apply mode
+    # still loads and checks dtypes for real before writing anything.
+    if not apply and f.name == "pytorch_model.bin":
+        return {"status": "would_convert", "before": before,
+                "after_est": before // 2, "est": "size-based (.bin)"}
+
     if f.name == "model.safetensors":
         from safetensors.torch import load_file, save_file
         sd = load_file(str(f))
     else:
-        sd = torch.load(f, map_location="cpu")
+        sd = torch.load(f, map_location="cpu", weights_only=True)
 
     if all(v.dtype != torch.float32 for v in sd.values() if hasattr(v, "dtype")):
         return {"status": "skipped", "reason": "no fp32 tensors"}
-    sd16 = {k: (v.half() if hasattr(v, "dtype") and v.dtype == torch.float32 else v)
-            for k, v in sd.items()}
+    # Preserve storage sharing. Tied weights (GPT-2 wte<->lm_head, BERT's MLM
+    # decoder<->embeddings) are ONE tensor under two keys; torch.save stores
+    # it once. Halving each key independently splits the tie and stores the
+    # embedding twice (+38.6M params on gpt2 — caught by the .bin test).
+    cache, sd16 = {}, {}
+    for k, v in sd.items():
+        if hasattr(v, "dtype") and v.dtype == torch.float32:
+            ident = (v.untyped_storage().data_ptr(), v.storage_offset(),
+                     tuple(v.shape), tuple(v.stride()))
+            if ident not in cache:
+                cache[ident] = v.half()
+            sd16[k] = cache[ident]
+        else:
+            sd16[k] = v
     if not apply:
         est = sum(v.numel() * (2 if v.dtype == torch.float16 else v.element_size())
                   for v in sd16.values() if hasattr(v, "numel"))
@@ -104,7 +123,8 @@ def verify(ckpt: Path, tol: float = 1e-2) -> dict:
     import torch
     f = _files(ckpt)
     from safetensors.torch import load_file
-    sd = load_file(str(f)) if f.name == "model.safetensors" else torch.load(f, map_location="cpu")
+    sd = (load_file(str(f)) if f.name == "model.safetensors"
+          else torch.load(f, map_location="cpu", weights_only=True))
     dtypes = {str(v.dtype) for v in sd.values() if hasattr(v, "dtype")}
     finite = all(torch.isfinite(v).all().item() for v in sd.values()
                  if hasattr(v, "dtype") and v.is_floating_point())
