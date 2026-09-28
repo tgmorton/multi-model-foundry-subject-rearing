@@ -10,7 +10,7 @@ spec:
   completionMode: Indexed
   completions: 30
   parallelism: 15
-  backoffLimit: 12
+  backoffLimit: 40
   ttlSecondsAfterFinished: 604800
   podFailurePolicy:
     rules:
@@ -35,7 +35,7 @@ spec:
                 values: [NVIDIA-GeForce-RTX-3090, NVIDIA-A10, NVIDIA-L4, NVIDIA-GeForce-RTX-4090]
               - key: kubernetes.io/hostname
                 operator: NotIn
-                values: [uicnrp-fiona2.evl.uic.edu]
+                values: [uicnrp-fiona2.evl.uic.edu, gpu-18.nrp.mghpcc.org, nautilus-ext-gpu01.fullerton.edu, nautilus-it-gpu03.fullerton.edu, fiona-1.famu.edu, suncave-3, hcc-chase-shor-c4715.unl.edu]
       initContainers:
       - name: clone-repo
         image: alpine/git

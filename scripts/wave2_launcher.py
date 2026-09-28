@@ -40,6 +40,7 @@ BAD_NODES = [
     "nautilus-it-gpu03.fullerton.edu",  # long-standing eval bad-node
     "fiona-1.famu.edu",
     "suncave-3",
+    "hcc-chase-shor-c4715.unl.edu",   # device-plugin allocate failure: 91 UnexpectedAdmissionErrors 2026-09-28
 ]
 # (phys_batch, pod_ram, pod_cpu) — production-derived; no mamba in wave 2.
 ARCH_SETTINGS = {
