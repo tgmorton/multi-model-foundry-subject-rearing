@@ -56,6 +56,17 @@ spec:
             --matched_stimuli_root /opt/repo/evaluation/stimuli/null-subj-v2-matched-v1 \
             --benchmark fp16_verify_v1 --scoring_version null-subj-v2-condition-matched-v1 \
             --output_root /mnt/data/eval_v2/fp16_verify --scratch_dir /tmp/eval_scratch
+          # --no-registry deliberately leaves results unpublished (scratch
+          # only), so publish them ourselves to an isolated test prefix.
+          python -c "
+          import boto3, pathlib
+          s3 = boto3.client('s3')
+          root = pathlib.Path('/tmp/eval_scratch/$RID')
+          for f in sorted(root.rglob('*.parquet')):
+              key = 'fp16_verify_scratch/$RID/' + str(f.relative_to(root))
+              s3.upload_file(str(f), 'thomas-subject-drop-artifacts', key)
+              print('uploaded', key)
+          "
           rm -rf "$DST"   # scratch copy; originals never written
           echo "VERIFY EVAL OK idx=$JOB_COMPLETION_INDEX"
         env:
