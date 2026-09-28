@@ -72,6 +72,7 @@ def check(seen: set, do_top: bool) -> list:
     pods = kjson("get", "pods", "-l", "owner=thomas")["items"]
     bad = known_bad_nodes()
     node_fail = {}
+    pull_fail = []
     for p in pods:
         st, node = p["status"], p["spec"].get("nodeName")
         if st.get("phase") == "Failed" and node:
@@ -79,9 +80,15 @@ def check(seen: set, do_top: bool) -> list:
         for cs in st.get("containerStatuses") or []:
             w = (cs.get("state") or {}).get("waiting") or {}
             if w.get("reason") in ("ImagePullBackOff", "ErrImagePull"):
-                alert(f"pull:{p['metadata']['name']}",
-                      f"ALERT image_pull {p['metadata']['name']} "
-                      f"({w.get('reason')}) — check registry credential")
+                pull_fail.append((p["metadata"]["name"], node))
+    # One failed pull is almost always a cold node timing out on the
+    # 5-10 GB image and retrying. A credential/registry outage shows as
+    # MANY pods at once (45 on 2026-09-18) — alert only on that.
+    if len(pull_fail) >= 3:
+        nodes = sorted({n for _, n in pull_fail if n})
+        alert(f"pull:systemic:{len(pull_fail) // 5}",
+              f"ALERT image_pull {len(pull_fail)} pods failing to pull across "
+              f"{len(nodes)} node(s) — likely credential/registry outage")
     for node, n in node_fail.items():
         if n >= 3 and node not in bad:
             alert(f"node:{node}", f"ALERT bad_node {node} has {n} failed pods "
