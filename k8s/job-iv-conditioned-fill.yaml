@@ -1,15 +1,17 @@
+# Fill job: the 4 shards of thomas-iv-conditioned-v1 that kept landing on
+# ry-gpu-10 (on the shared bad-node list, but the static YAML predated it).
 # Intervention-conditioned pronoun scoring (Thomas 2026-09-28): the
 # frozen 100K sample scored in each intervention's edited context with the
 # selection rater (BERT 250:1). 5 conditions x 6 genres = 30 shards.
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-iv-conditioned-v1
+  name: thomas-iv-conditioned-fill
   labels: {owner: thomas, study: subject-drop, lang: en, stage: score}
 spec:
   completionMode: Indexed
-  completions: 30
-  parallelism: 15
+  completions: 4
+  parallelism: 4
   backoffLimit: 40
   ttlSecondsAfterFinished: 604800
   podFailurePolicy:
@@ -55,8 +57,10 @@ spec:
           set -euo pipefail
           GENRES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
           IVS=(baseline lemmatize_verbs enrich_verbal_morphology impoverish_case remove_expletive_sentences)
-          GENRE=${GENRES[$((JOB_COMPLETION_INDEX % 6))]}
-          IV=${IVS[$((JOB_COMPLETION_INDEX / 6))]}
+          REAL=(11 12 13 27)   # indices missing from thomas-iv-conditioned-v1
+          IDX=${REAL[$JOB_COMPLETION_INDEX]}
+          GENRE=${GENRES[$((IDX % 6))]}
+          IV=${IVS[$((IDX / 6))]}
           echo "=== intervention-conditioned: $IV / $GENRE ==="
           export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
           cd /opt/repo
