@@ -18,3 +18,4 @@ rci-tide-gpu-03.sdsu.edu           # eval bad-node (inherited from eval launcher
 ry-gpu-10.sdsc.optiputer.net       # eval bad-node (inherited from eval launchers)
 fiona-1.famu.edu                   # CUDA-init failures (2026-09-18)
 suncave-3                          # CUDA-init failures (2026-09-18)
+ry-gpu-04.sdsc.optiputer.net       # device-plugin allocate failure, UnexpectedAdmissionError on legacy pool (2026-09-29)
