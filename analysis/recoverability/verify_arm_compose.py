@@ -7,7 +7,8 @@ non-expletive cells must match exactly with zero pool exhaustion.
 rmexpl cells are allow-short by design, so only their deficits are
 reported.
 
-Exit 0 = pass; 1 = mismatch/violation (the arm chain halts on nonzero).
+Exit 0 = pass; 3 = mismatch/violation (the arm chain halts); any other
+nonzero (e.g. an S3 timeout) is an error the chain retries.
 Writes <LABEL>_expected.json / <LABEL>_actual.json locally.
 """
 from __future__ import annotations
@@ -33,8 +34,11 @@ def main() -> None:
     ap.add_argument("label")
     ap.add_argument("--n-cells", type=int, default=45)
     a = ap.parse_args()
+    from botocore.config import Config
     s = boto3.Session(profile_name="nrp").client(
-        "s3", endpoint_url="https://s3-west.nrp-nautilus.io")
+        "s3", endpoint_url="https://s3-west.nrp-nautilus.io",
+        config=Config(retries={"max_attempts": 10, "mode": "adaptive"},
+                      read_timeout=120))
 
     exp = {}
     for corpus in ("train_90M", "pull_10M"):
@@ -79,7 +83,7 @@ def main() -> None:
           f"PVC free {act['df_free_tb']:.1f} TB")
     passed = (len(act["cells"]) == a.n_cells and not errs and bad == 0
               and not viol)
-    sys.exit(0 if passed else 1)
+    sys.exit(0 if passed else 3)
 
 
 if __name__ == "__main__":

@@ -30,23 +30,44 @@ ARM_STYLE = {
     "comp": (SIENNA, ":", "P", "most recoverable first — composite"),
 }
 
+CACHE = Path.home() / ".cache" / "subject-drop" / "pairs_cache"
+
+
 def load(bucket, prefix, profile, endpoint, last):
+    """Parallel, retrying download with a local cache (valid while the S3
+    object size is unchanged) — the external endpoint times out on long
+    serial pulls of ~500 parquets (2026-09-29)."""
     import boto3
-    s = boto3.Session(profile_name=profile).client("s3", endpoint_url=endpoint)
-    rows = []
+    from botocore.config import Config
+    from concurrent.futures import ThreadPoolExecutor
+    s = boto3.Session(profile_name=profile).client(
+        "s3", endpoint_url=endpoint,
+        config=Config(retries={"max_attempts": 10, "mode": "adaptive"},
+                      read_timeout=120, max_pool_connections=16))
+    CACHE.mkdir(parents=True, exist_ok=True)
+    objs = []
     for page in s.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
         for o in page.get("Contents", []):
-            if "pdrop2" not in o["Key"]: continue
-            m = CELL.search(o["Key"])
-            if not m: continue
-            arm, k, iv, hp = m.group(1), m.group(2), m.group(3), int(m.group(4))
-            d = pd.read_parquet(io.BytesIO(s.get_object(Bucket=bucket, Key=o["Key"])["Body"].read()),
-                                columns=["checkpoint_step", "prefers_overt_meanlp"])
-            c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean()
-            if len(c) < 20: continue
-            rows.append({"arm": "all100" if arm == "all100" else arm,
-                         "k": 100 if arm == "all100" else int(k),
-                         "iv": iv, "hp": hp, "endstate": c.sort_index().iloc[-last:].mean()})
+            if "pdrop2" in o["Key"] and CELL.search(o["Key"]):
+                objs.append(o)
+
+    def fetch(o):
+        p = CACHE / o["Key"].rsplit("/", 1)[-1]
+        if not (p.exists() and p.stat().st_size == o["Size"]):
+            s.download_file(bucket, o["Key"], str(p))
+        return o["Key"], p
+
+    with ThreadPoolExecutor(16) as ex:
+        paths = list(ex.map(fetch, objs))
+    rows = []
+    for key, p in paths:
+        arm, k, iv, hp = CELL.search(key).groups()
+        d = pd.read_parquet(p, columns=["checkpoint_step", "prefers_overt_meanlp"])
+        c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean()
+        if len(c) < 20: continue
+        rows.append({"arm": "all100" if arm == "all100" else arm,
+                     "k": 100 if arm == "all100" else int(k),
+                     "iv": iv, "hp": int(hp), "endstate": c.sort_index().iloc[-last:].mean()})
     return pd.DataFrame(rows)
 
 def main():
