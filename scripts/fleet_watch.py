@@ -60,6 +60,13 @@ def check(seen: set, do_top: bool) -> list:
             alert(f"dead:{name}", f"ALERT dead_job {name} hit backoffLimit "
                                   f"({failed}/{limit}) — needs recreate")
         elif conds.get("Complete") != "True" and not j["spec"].get("suspend"):
+            # Stuck in a failure loop: nothing running, work left, and it keeps
+            # failing. Budget % alone missed this (iv-conditioned sat at 9/40,
+            # 0 active, every retry rejected by one node — 2026-09-28).
+            if (j["status"].get("active") or 0) == 0 and failed >= 3:
+                alert(f"stalled:{name}:{failed // 3}",
+                      f"ALERT stalled_job {name} has 0 active pods and {failed} "
+                      f"failures — stuck in a retry loop, check the node")
             frac = failed / max(limit, 1)
             for lvl in (0.8, 0.5):
                 if frac >= lvl:
@@ -89,9 +96,16 @@ def check(seen: set, do_top: bool) -> list:
               f"ALERT image_pull {len(pull_fail)} pods failing to pull across "
               f"{len(nodes)} node(s) — likely credential/registry outage")
     for node, n in node_fail.items():
-        if n >= 3 and node not in bad:
+        if n < 3:
+            continue
+        if node not in bad:
             alert(f"node:{node}", f"ALERT bad_node {node} has {n} failed pods "
-                                  f"of ours and is NOT excluded — add to BAD_NODES")
+                                  f"of ours and is NOT excluded — add to configs/bad_nodes.txt")
+        else:
+            # Listed, yet still receiving pods: the job predates the exclusion
+            # (pod templates are immutable). Editing the list won't help.
+            alert(f"listed:{node}", f"ALERT bad_node {node} is excluded but still "
+                                    f"got {n} failed pods — a job predates the list; recreate it")
 
     if do_top:
         r = subprocess.run(["kubectl", "top", "pods", "-l", "owner=thomas",
