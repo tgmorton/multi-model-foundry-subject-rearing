@@ -1,0 +1,91 @@
+# fill2: the 2 smallest shards, Pending 93 min on the narrow 24GB pool
+# (contended by the anti-arm). MLM scoring is eager+autocast, so any GPU works.
+# Fill job: the 4 shards of thomas-iv-conditioned-v1 that kept landing on
+# ry-gpu-10 (on the shared bad-node list, but the static YAML predated it).
+# Intervention-conditioned pronoun scoring (Thomas 2026-09-28): the
+# frozen 100K sample scored in each intervention's edited context with the
+# selection rater (BERT 250:1). 5 conditions x 6 genres = 30 shards.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-iv-conditioned-fill2
+  labels: {owner: thomas, study: subject-drop, lang: en, stage: score}
+spec:
+  completionMode: Indexed
+  completions: 2
+  parallelism: 2
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {operator: In, values: [2, 128]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, lang: en, stage: score}
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets: [{name: gitlab-registry-cred-thomas}]
+      restartPolicy: Never
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values: [NVIDIA-GeForce-RTX-3090, NVIDIA-A10, NVIDIA-L4, NVIDIA-GeForce-RTX-4090, NVIDIA-L40, NVIDIA-L40S, Tesla-V100-SXM2-32GB, Tesla-V100-SXM2-16GB, Tesla-V100-PCIE-16GB, NVIDIA-GeForce-RTX-2080-Ti, Tesla-T4, NVIDIA-TITAN-RTX]
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values: [uicnrp-fiona2.evl.uic.edu, gpu-14.nrp.mghpcc.org, gpu-17.nrp.mghpcc.org, gpu-18.nrp.mghpcc.org, hcc-chase-shor-c4715.unl.edu, hcc-nrp-shor-c6017.unl.edu, nautilus-ext-gpu01.fullerton.edu, nautilus-it-gpu01.fullerton.edu, nautilus-it-gpu03.fullerton.edu, rci-tide-gpu-03.sdsu.edu, ry-gpu-10.sdsc.optiputer.net, fiona-1.famu.edu, suncave-3]
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=main,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: scorer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          GENRES=(bnc_spoken childes gutenberg open_subtitles simple_wiki switchboard)
+          IVS=(baseline lemmatize_verbs enrich_verbal_morphology impoverish_case remove_expletive_sentences)
+          REAL=(11 12)   # indices missing from thomas-iv-conditioned-v1
+          IDX=${REAL[$JOB_COMPLETION_INDEX]}
+          GENRE=${GENRES[$((IDX % 6))]}
+          IV=${IVS[$((IDX / 6))]}
+          echo "=== intervention-conditioned: $IV / $GENRE ==="
+          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
+          cd /opt/repo
+          python scripts/score_pronoun_recoverability.py \
+            --corpus train_90M --file "$GENRE" \
+            --hf-mlm bert_wwm=bert-large-uncased-whole-word-masking \
+            --mlm-ctx 250 --mlm-ctx-right 1 --mlm-batch 48 \
+            --intervention "$IV" \
+            --sample-file /opt/repo/data/recoverability/locality_sample/${GENRE}.parquet \
+            --amp
+          echo "GENRE $GENRE OK"
+        env:
+        - {name: PYTHONPATH, value: /opt/repo}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        resources:
+          requests: {memory: 24Gi, cpu: '4', nvidia.com/gpu: 1}
+          limits: {memory: 24Gi, cpu: '4', nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+        - {name: shm, mountPath: /dev/shm}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive}
+      - {name: shm, emptyDir: {medium: Memory, sizeLimit: 2Gi}}

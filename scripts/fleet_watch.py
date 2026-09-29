@@ -81,6 +81,15 @@ def check(seen: set, do_top: bool) -> list:
     pull_fail = []
     for p in pods:
         st, node = p["status"], p["spec"].get("nodeName")
+        # Never scheduled: Pending with no node. Jobs count these as "active",
+        # so the stalled-job check can't see them (iv fill pods sat 93 min
+        # unschedulable on a contended pool, 2026-09-29).
+        created = p["metadata"].get("creationTimestamp")
+        if st.get("phase") == "Pending" and not node and created \
+                and age_min(created) > 30:
+            alert(f"unsched:{p['metadata']['name']}",
+                  f"ALERT unschedulable {p['metadata']['name']} Pending "
+                  f"{age_min(created):.0f}min with no node — pool too narrow or full")
         if st.get("phase") == "Failed" and node:
             node_fail[node] = node_fail.get(node, 0) + 1
         for cs in st.get("containerStatuses") or []:
