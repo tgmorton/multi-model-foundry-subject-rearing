@@ -1,11 +1,13 @@
-"""End-state overt-preference by decile and intervention: informed (bert)
-vs random arm. Pilot cohort (gpt2_small, condition-matched stimuli).
+"""End-state overt-preference by decile and intervention, for any set of
+selection arms against the random control. Pilot cohort (gpt2_small,
+condition-matched stimuli).
 
 End state = mean of the last N checkpoints (default 3) of each run, which
 damps the checkpoint-to-checkpoint jitter measured at ~0.06 without
 smoothing across the training trajectory.
 
 Usage: python analysis/eval_v2/wave2_endstate.py [--hp 0] [--last 3]
+         [--arms rand,bert,bertanti,robbi,robbianti]
 """
 from __future__ import annotations
 import argparse, io, re
@@ -16,6 +18,17 @@ CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100
 IVS = ["base", "impcase", "lemverb", "enrichvm"]
 IV_LABEL = {"base": "baseline", "impcase": "impoverish case",
             "lemverb": "lemmatize verbs", "enrichvm": "enrich verbal morph"}
+TEAL, SIENNA, GREY, INDIGO, OCHRE = "#2C6E63", "#B0562B", "#8A8878", "#4B5FA8", "#A8823A"
+# arm -> (color, linestyle, marker, legend label)
+ARM_STYLE = {
+    "rand": (GREY, "-", "s", "random (control)"),
+    "bert": (TEAL, "-", "o", "most recoverable first — BERT 250:1"),
+    "bertanti": (TEAL, "--", "v", "least recoverable first — BERT 250:1"),
+    "robbi": (INDIGO, "-", "o", "most recoverable first — RoBERTa ±250"),
+    "robbianti": (INDIGO, "--", "v", "least recoverable first — RoBERTa ±250"),
+    "gpt2m": (OCHRE, "-", "D", "most recoverable first — gpt2-medium"),
+    "comp": (SIENNA, ":", "P", "most recoverable first — composite"),
+}
 
 def load(bucket, prefix, profile, endpoint, last):
     import boto3
@@ -44,8 +57,11 @@ def main():
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
     ap.add_argument("--hp", type=int, default=0)
     ap.add_argument("--last", type=int, default=3)
+    ap.add_argument("--arms", default="rand,bert",
+                    help="comma list; rand is the control the deltas use")
     ap.add_argument("--out", type=Path, default=Path("analysis/eval_v2/figures/wave2_v5"))
     a = ap.parse_args(); a.out.mkdir(parents=True, exist_ok=True)
+    arms = [x for x in a.arms.split(",") if x]
 
     df = load(a.bucket, a.prefix, a.profile, a.endpoint, a.last)
     df.to_csv(a.out / "endstate_all.csv", index=False)
@@ -55,15 +71,15 @@ def main():
 
     import matplotlib; matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    TEAL, SIENNA, GREY = "#2C6E63", "#B0562B", "#8A8878"
     ivs = [i for i in IVS if i in set(d.iv)]
-    fig, axes = plt.subplots(1, len(ivs), figsize=(3.5*len(ivs), 3.9), sharey=True)
+    fig, axes = plt.subplots(1, len(ivs), figsize=(3.6*len(ivs), 4.1), sharey=True)
     for ax, iv in zip(np.atleast_1d(axes), ivs):
         sub = d[d.iv == iv]
-        for arm, c, lab, mk in (("rand", GREY, "random (control)", "s"),
-                                ("bert", TEAL, "informed (BERT rater)", "o")):
+        for arm in arms:
+            c, ls, mk, lab = ARM_STYLE[arm]
             t = sub[(sub.arm == arm) & (sub.k < 100)].groupby("k").endstate.mean().sort_index()
-            if len(t): ax.plot(t.index, t.values, "-"+mk, color=c, ms=5, lw=1.8, label=lab)
+            if len(t): ax.plot(t.index, t.values, linestyle=ls, marker=mk, color=c,
+                               ms=5, lw=1.8, label=lab)
         anc = sub[sub.arm == "all100"]
         if len(anc):
             ax.plot([100], [anc.endstate.mean()], "*", color=SIENNA, ms=14,
@@ -74,22 +90,24 @@ def main():
         ax.set_xticks([10,30,50,70,90,100])
     np.atleast_1d(axes)[0].set_ylabel("end-state overt-subject preference")
     h, l = np.atleast_1d(axes)[0].get_legend_handles_labels()
-    fig.legend(h, l, loc="lower center", ncol=3, fontsize=9, frameon=False,
-               bbox_to_anchor=(0.5, -0.04))
-    fig.suptitle("End-state preference by removal depth: informed vs random removal "
+    fig.legend(h, l, loc="lower center", ncol=min(len(l), 3), fontsize=9,
+               frameon=False, bbox_to_anchor=(0.5, -0.10 if len(l) > 3 else -0.04))
+    fig.suptitle("End-state preference by removal depth, by selection arm "
                  f"(gpt2_small, h{a.hp}, mean of last {a.last} checkpoints)", y=1.02)
     fig.tight_layout()
-    fig.savefig(a.out / "endstate_decile_arm.png", dpi=150, bbox_inches="tight")
-    print(f"wrote {a.out}/endstate_decile_arm.png")
+    tag = "" if arms == ["rand", "bert"] else "_" + "-".join(arms)
+    fig.savefig(a.out / f"endstate_decile_arm{tag}.png", dpi=150, bbox_inches="tight")
+    print(f"wrote {a.out}/endstate_decile_arm{tag}.png")
 
-    print("\n== informed minus random, by intervention x decile ==")
-    for iv in ivs:
-        sub = d[d.iv == iv]
-        b = sub[sub.arm=="bert"].groupby("k").endstate.mean()
-        r = sub[sub.arm=="rand"].groupby("k").endstate.mean()
-        j = (b - r).dropna()
-        if len(j): print(f"  {IV_LABEL.get(iv,iv):22s} mean Δ {j.mean():+.3f} | "
-                         f"range {j.min():+.3f}..{j.max():+.3f}")
+    for arm in [x for x in arms if x != "rand"]:
+        print(f"\n== {arm} minus random, by intervention (mean over matched deciles) ==")
+        for iv in ivs:
+            sub = d[d.iv == iv]
+            b = sub[sub.arm == arm].groupby("k").endstate.mean()
+            r = sub[sub.arm == "rand"].groupby("k").endstate.mean()
+            j = (b - r).dropna()
+            if len(j): print(f"  {IV_LABEL.get(iv,iv):22s} mean Δ {j.mean():+.3f} | "
+                             f"range {j.min():+.3f}..{j.max():+.3f} | n_k={len(j)}")
 
 if __name__ == "__main__":
     main()

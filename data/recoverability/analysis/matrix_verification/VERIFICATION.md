@@ -86,3 +86,17 @@ covered 100% — 0 instances demoted to decile 9).
 - **9/9 expletive cells** allow-short, deficits 3,454,035 – 4,725,535
   words — same band as the other arms.
 - PVC 39.5 TB free. Files: `robbi_expected.json`, `robbi_actual.json`.
+
+# robbianti arm (45 cells, reverse of robbi) — Verification Record
+
+2026-09-29. `thomas-ablate-compose-robbianti-v1` (45/45) against
+`selection_v5/robbianti/` (reversed-decile relabel of robbi, D14; the
+least-recoverable-first arm without the R1 contraction confound).
+Collector `k8s/job-matrix-verify-label.yaml`, checked by
+`analysis/recoverability/verify_arm_compose.py`.
+
+- **36/36 non-expletive cells exact** vs the robbianti tables (train +
+  pool removals; zero exhaustion). Shared rand/all100 corpora reused.
+- **9/9 expletive cells** allow-short, deficits 3,343,865 – 4,612,517
+  words — same band as the other arms.
+- PVC 35.2 TB free. Files: `robbianti_expected.json`, `robbianti_actual.json`.
