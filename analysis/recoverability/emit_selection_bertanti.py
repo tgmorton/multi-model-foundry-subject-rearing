@@ -1,5 +1,9 @@
-"""Add the 'bertanti' label to the frozen selection-v5 family — the
-LEAST-recoverable-first arm (Thomas 2026-09-23).
+"""Add an anti label to the frozen selection-v5 family — the
+LEAST-recoverable-first arm (Thomas 2026-09-23; robbianti 2026-09-29).
+
+Defaults emit 'bertanti' (reverse of 'bert'); `--src robbi --label
+robbianti` emits the reverse of the bidirectional RoBERTa arm, which has no
+R1 contraction confound (memory: project_r1_contraction_confound).
 
 Mechanism: a pure relabeling of the existing 'bert' label (BERT-250:1
 speaker rater). info_decile is reversed (d -> 9-d), so the graded
@@ -21,13 +25,15 @@ import numpy as np, pandas as pd, pyarrow as pa, pyarrow.parquet as pq
 
 GENRES = ["bnc_spoken", "childes", "gutenberg", "open_subtitles",
           "simple_wiki", "switchboard"]
-SRC, LABEL = "bert", "bertanti"
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=Path("data/recoverability/analysis"))
     ap.add_argument("--genres", nargs="+", default=GENRES)
+    ap.add_argument("--src", default="bert")
+    ap.add_argument("--label", default="bertanti")
     a = ap.parse_args()
+    SRC, LABEL = a.src, a.label
     sel = a.out / "selection_v5"
     fam = json.loads((sel / "V5_FAMILY.json").read_text())
     assert fam["selection_version"] == 5
@@ -55,7 +61,7 @@ def main() -> None:
         "derived_from": SRC, "ranking_inputs": src_man.get("ranking_inputs"),
         "population_n": counts["train_90M"],
         "volume_matched": "equal-frequency deciles => identical removal counts "
-                          "per k as 'bert' and the shared rand arm",
+                          f"per k as '{SRC}' and the shared rand arm",
         "cumulative_semantics": "condition K%% removes instances with decile "
                                 "< K/10 (either arm)",
         "random_seed": src_man.get("random_seed"),
@@ -65,7 +71,8 @@ def main() -> None:
     }
     (sel / LABEL / "SELECTION_MANIFEST.json").write_text(json.dumps(man, indent=2))
     fam.setdefault("labels", {})[LABEL] = {
-        "derived_from": SRC, "reversed": True, "added": "2026-09-23"}
+        "derived_from": SRC, "reversed": True,
+        "added": __import__("datetime").date.today().isoformat()}
     (sel / "V5_FAMILY.json").write_text(json.dumps(fam, indent=2))
     print(f"label '{LABEL}' emitted (reverse of '{SRC}')")
 

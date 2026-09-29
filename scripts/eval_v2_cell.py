@@ -252,7 +252,9 @@ def main():
                        "impcase": "impoverish_case",
                        "lemverb": "lemmatize_verbs",
                        "enrichvm": "enrich_verbal_morphology"}
-        m = re.match(r"pdrop2_(?:gpt2m|bert|comp|rand|all100)\d*_(\w+)$",
+        # keyed on the intervention suffix, so any rater label works
+        # (bertanti/robbi/robbianti fell through before — 2026-09-29)
+        m = re.match(r"pdrop2_[a-z0-9]+_(base|rmexpl|impcase|lemverb|enrichvm)$",
                      condition)
         matched_condition = _SHORT2LONG[m.group(1)] if m else condition
         stimuli_dir = matched_root / matched_condition / lang

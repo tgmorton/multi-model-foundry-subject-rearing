@@ -1,0 +1,64 @@
+# Post-compose verification collector for one selection label (committed
+# 2026-09-29; previously an ad-hoc scratch job per arm). Reads every
+# pdrop2_<LABEL><k>_<iv> cell's manifests — EXACT label match, so "robbi"
+# does not also collect "robbianti" — and writes
+# matrix_verification/<LABEL>_actual.json to S3 for comparison against the
+# label's selection tables. Usage: sed "s/__LABEL__/robbianti/g" | kubectl apply -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-matrix-verify-__LABEL__
+  labels: {owner: thomas, study: subject-drop, lang: en, stage: ablate-compose}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, lang: en, stage: ablate-compose}
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets: [{name: gitlab-registry-cred-thomas}]
+      restartPolicy: Never
+      containers:
+      - name: c
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-c"]
+        args:
+        - |
+          import boto3, json, pathlib, re, shutil
+          LABEL = "__LABEL__"
+          root = pathlib.Path("/mnt/data/manipulations/en")
+          pat = re.compile(rf"pdrop2_{LABEL}\d+_\w+$")
+          cells = []
+          for d in sorted(p for p in root.iterdir() if pat.match(p.name)):
+              try:
+                  tr = json.load(open(d / "_train" / "ABLATION_MANIFEST.json"))
+                  po = json.load(open(d / "_pool" / "ABLATION_MANIFEST.json"))
+                  pf = json.load(open(d / "COMPOSE_MANIFEST.json"))["per_file"]
+                  cells.append({"slug": d.name,
+                      "train_removed": tr["metadata"]["total_items_ablated"],
+                      "pool_removed": po["metadata"]["total_items_ablated"],
+                      "exhausted": sum(1 for f in pf if f["pool_exhausted"]),
+                      "short_after_pool": sum(f["shortfall_after_pool"] for f in pf)})
+              except Exception as e:
+                  cells.append({"slug": d.name, "error": str(e)})
+          du = shutil.disk_usage("/mnt/data")
+          boto3.client("s3").put_object(Bucket="thomas-subject-drop-artifacts",
+              Key=f"recoverability/analysis/matrix_verification/{LABEL}_actual.json",
+              Body=json.dumps({"cells": cells, "df_free_tb": du.free / 1e12}))
+          print("collected", len(cells))
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        resources:
+          requests: {memory: 2Gi, cpu: '1'}
+          limits: {memory: 2Gi, cpu: '1'}
+        volumeMounts: [{name: data, mountPath: /mnt/data}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive}

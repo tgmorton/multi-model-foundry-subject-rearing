@@ -12,7 +12,7 @@ import argparse, io, re
 from pathlib import Path
 import numpy as np, pandas as pd
 
-CELL = re.compile(r"pdrop2_(gpt2m|bert|comp|rand|all100)(\d*)_(\w+)-h(\d)-")
+CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
 IVS = ["base", "impcase", "lemverb", "enrichvm"]
 IV_LABEL = {"base": "baseline", "impcase": "impoverish case",
             "lemverb": "lemmatize verbs", "enrichvm": "enrich verbal morph"}

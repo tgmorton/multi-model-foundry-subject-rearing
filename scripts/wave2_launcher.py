@@ -79,7 +79,7 @@ echo "RUN OK: $(cat /tmp/run_succeeded)"
 
 
 def render_job(cell: str, arch: str, wave_id: str, epochs: int,
-               parallelism: int) -> dict:
+               parallelism: int, backoff_limit: int = 20) -> dict:
     phys, ram, cpu = ARCH_SETTINGS[arch]
     m = _RAND100.match(cell)
     corpus_cell = f"pdrop_info100_{m.group(1)}" if m else cell
@@ -114,7 +114,7 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
         "apiVersion": "batch/v1", "kind": "Job",
         "metadata": {"name": f"thomas-w2-{short}"[:63], "labels": labels},
         "spec": {
-            "backoffLimit": 20,
+            "backoffLimit": backoff_limit,
             "completionMode": "Indexed",
             "completions": 10,
             "parallelism": parallelism,
@@ -196,6 +196,10 @@ def main() -> None:
     ap.add_argument("--wave-id", default="wave2")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--parallelism", type=int, default=4)
+    # Capped waves (w3: 1 run/cell) still schedule a pod per no-op index,
+    # and device-plugin UnexpectedAdmissionErrors can't be ignored by
+    # podFailurePolicy — the anti-arm needed 60 (2026-09-28).
+    ap.add_argument("--backoff-limit", type=int, default=20)
     ap.add_argument("--out-dir", type=Path, default=REPO_ROOT / "k8s" / "wave2")
     ap.add_argument("--watermark-free-tb", type=float, default=8.0)
     ap.add_argument("--apply", action="store_true")
@@ -214,7 +218,7 @@ def main() -> None:
     for cell in cells:
         for arch in args.archs:
             job = render_job(cell, arch, args.wave_id, args.epochs,
-                             args.parallelism)
+                             args.parallelism, args.backoff_limit)
             path = args.out_dir / f"{job['metadata']['name']}.yaml"
             path.write_text(yaml.safe_dump(job, sort_keys=False))
             jobs.append((job["metadata"]["name"], path))

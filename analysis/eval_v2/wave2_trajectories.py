@@ -25,12 +25,12 @@ import numpy as np
 import pandas as pd
 
 TOKENS_PER_STEP = 256_000
-ARMS = ["rand", "gpt2m", "bert", "comp"]
+ARMS = ["rand", "gpt2m", "bert", "comp", "bertanti", "robbi", "robbianti"]
 IVS = ["base", "rmexpl", "impcase", "lemverb", "enrichvm"]
 IV_LABEL = {"base": "baseline", "rmexpl": "remove expletives",
             "impcase": "impoverish case", "lemverb": "lemmatize verbs",
             "enrichvm": "enrich verbal morph"}
-CELL_RE = re.compile(r"pdrop2_(gpt2m|bert|comp|rand|all100)(\d*)_(\w+)")
+CELL_RE = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)")
 
 
 def parse_cell(run_id: str):

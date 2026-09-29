@@ -36,6 +36,7 @@ linguistics vs information-theoretic accounts of subject-drop.
 | Architectures | n-gram 1–5, GPT-2 small/medium/large, BERT large, LSTM, Mamba 370M — **v5 wave (D10, 2026-09-18): gpt2_large + bert_large + lstm only**; gpt2_small persists only as the rater-comparison cohort |
 | Languages | English + Spanish (Italian is dormant) |
 | Conditions | baseline + 7 ablations per (arch, lang) |
+| Selection rater | **`robbi` — bidirectional roberta-large ±250 (D14, 2026-09-29)**; future selection arms bidirectional (Ro)BERT(a) only. BERT 250:1 retired (one-wordpiece R1 → contraction confound) |
 | Seeds per cell | **30** |
 | Epochs (production) | **30** |
 | Checkpoints per run | **80**, must include anchors `0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512`, then appropriate spacing |
