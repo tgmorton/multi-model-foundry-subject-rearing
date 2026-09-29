@@ -2666,6 +2666,12 @@ trained on them yet).</p>
 <td>Bidirectional roberta-large ±250 rater ("robbi") added to the v5 family as a tight listener-construal upper bound; 45 info cells, shares rand/all100 controls. Saturated (~53% &lt; 0.1 nats) — interpret at decile granularity.</td>
 </tr>
 <tr>
+<td>D14</td>
+<td>Selection rater going forward</td>
+<td><strong>LOCKED 2026-09-29 (Thomas)</strong></td>
+<td><strong>Bidirectional (Ro)BERT(a) raters only; <code>robbi</code> (roberta-large ±250) is the selection arm.</strong> BERT 250:1 retired: its R1 window is one wordpiece, so a contracted pronoun ("they've") sees only the apostrophe — surprisal inflated 2.7× and deciles confounded with contraction (deciles 0–2 ≤1.2% contracted, 5–9 26–37%; robbi flat 15–22% vs 19% base; memory <code>project_r1_contraction_confound</code>). Now: gpt2_small <code>robbi</code> (45 cells, w3 h0) + <code>robbianti</code> (reversed relabel of robbi, 45 cells). Banked as comparison: gpt2_small bert/bertanti arms and the 45 w3 LSTM bert-arm runs. Later: re-run the w3 full-arch wave (lstm, gpt2_large, bert_large) on robbi + the shared rand/all100 cells.</td>
+</tr>
+<tr>
 <td>—</td>
 <td>Contraction residue kept; population = personal pronouns</td>
 <td>LOCKED (2026-08-15)</td>
