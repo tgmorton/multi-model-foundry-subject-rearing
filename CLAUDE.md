@@ -277,6 +277,12 @@ receiving pods.) Note `UnexpectedAdmissionError` (device-plugin failure)
 carries no exit code or pod condition, so `podFailurePolicy` cannot
 ignore it — exclusion plus backoff headroom are the only defenses.
 
+**Never force-delete pods** (`kubectl delete --grace-period=0 --force`) —
+NRP rule (docs/nrp-docs/start/faq.md): it leaves resources attached to
+the node and can force a reboot. Pods stuck Terminating (usually a node
+gone offline) are for a cluster admin via Matrix, or wait for the node.
+Don't strip finalizers either — same class of action.
+
 **Never tolerate** `nautilus.io/issue=*` (broken nodes) or
 `nautilus.io/system=*` (infrastructure — explicitly forbidden by
 policy). `nautilus.io/hardware=<value>` is allowed only for values
