@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <style>
-/* Layout: a single reading column for claims and tables; figures break out wider on "plates", with tab strips for per-intervention and per-rater figures. */
+/* Layout: a single reading column for claims and tables; figures break out wider on "plates", with a tab strip for the per-intervention category grids. */
 :root {
   --paper: #F5F6F4;
   --plate: #FFFFFF;
@@ -10,7 +10,6 @@
   --muted: #5B636C;
   --rule: #D9DDD9;
   --robbi: #4B5FA8;       /* RoBERTa arm — matches the figures */
-  --bert: #2C6E63;        /* BERT arm — matches the figures */
   --rand: #8A8878;        /* random control — matches the figures */
   --neg: #B0562B;         /* below-random deltas */
   --tint: #E9ECF5;
@@ -21,13 +20,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #14171B; --plate: #FFFFFF; --ink: #E6E8EA; --muted: #9AA3AD;
-    --rule: #2E343B; --robbi: #93A3E6; --bert: #6FB8A9; --rand: #B4B2A4;
+    --rule: #2E343B; --robbi: #93A3E6; --rand: #B4B2A4;
     --neg: #E08A5E; --tint: #1E2533; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #14171B; --plate: #FFFFFF; --ink: #E6E8EA; --muted: #9AA3AD;
-  --rule: #2E343B; --robbi: #93A3E6; --bert: #6FB8A9; --rand: #B4B2A4;
+  --rule: #2E343B; --robbi: #93A3E6; --rand: #B4B2A4;
   --neg: #E08A5E; --tint: #1E2533; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -57,7 +56,6 @@ code, .num { font-family: var(--f-data); font-size: 0.9em; }
 .claims { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .claim { border-top: 3px solid var(--robbi); padding-top: 12px; display: grid; gap: 6px; min-width: 0; }
 .claim.neg { border-top-color: var(--neg); }
-.claim.bert { border-top-color: var(--bert); }
 .claim .big { font: 500 1.9rem/1 var(--f-data); font-variant-numeric: tabular-nums; }
 .claim p { color: var(--muted); font-size: 0.95rem; }
 
@@ -101,14 +99,6 @@ h3 .meta { font-family: var(--f-data); font-weight: 400; margin-left: 8px; }
 .callout { background: var(--tint); border-radius: 4px; padding: 18px 20px; display: grid; gap: 8px; max-width: 760px; }
 .callout .eyebrow { color: var(--robbi); }
 
-/* contraction-by-decile strip, drawn to scale (bar height = share / 0.40) */
-.deciles { display: grid; gap: 8px; margin-top: 6px; }
-.drow { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; align-items: end; }
-.dlab { font: 500 0.78rem/1.2 var(--f-data); color: var(--muted); padding-bottom: 2px; }
-.bars { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; height: 64px; align-items: end; border-bottom: 1px solid var(--rule); }
-.bars i { display: block; height: calc(var(--v) / 0.40 * 100%); min-height: 1px; background: var(--c); border-radius: 2px 2px 0 0; }
-.axis { display: flex; justify-content: space-between; gap: 12px; font: 400 0.72rem/1.2 var(--f-data); color: var(--muted); }
-@media (max-width: 480px) { .drow { grid-template-columns: 1fr; gap: 4px; } }
 ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
 ul.plain li::marker { color: var(--muted); }
 hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
@@ -118,17 +108,17 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
 <div class="wrap">
 
   <header class="stack col">
-    <span class="eyebrow">Subject-drop controlled rearing · gpt2_small pilot · 1 Oct 2026</span>
+    <span class="eyebrow">Subject-drop controlled rearing · gpt2_small pilot · RoBERTa ±250 selection · 1 Oct 2026</span>
     <h1>Which subjects go missing matters more than how many</h1>
-    <p class="lede">At the same removal volume, dropping the <em>least</em> recoverable subject pronouns pushes a model toward null subjects far harder than dropping the most recoverable ones. The effect holds on a RoBERTa rater that is free of the BERT contraction artifact, and there it is larger.</p>
+    <p class="lede">At the same removal volume, dropping the <em>least</em> recoverable subject pronouns pushes a model toward null subjects far harder than dropping the most recoverable ones. Recoverability is each pronoun's surprisal under RoBERTa-large with 250 tokens of context on each side.</p>
     <p class="meta">Metric: end-state overt-subject preference (length-normalized mean log-prob, overt vs null), mean of the last 3 of 97 checkpoints, on 576 condition-matched test pairs. One run per cell (h0).</p>
   </header>
 
   <section class="stack">
     <div class="claims">
-      <div class="claim neg"><span class="big">−0.21</span><p>RoBERTa least-recoverable-first vs random, baseline condition, averaged over removal depths.</p></div>
-      <div class="claim"><span class="big">+0.08</span><p>RoBERTa most-recoverable-first vs random, same condition. Random sits much closer to the best case than the worst.</p></div>
-      <div class="claim bert"><span class="big">0.28 vs 0.16</span><p>Spread between the two orderings with RoBERTa vs with BERT 250:1. The cleaner rater sorts pronouns better.</p></div>
+      <div class="claim neg"><span class="big">−0.21</span><p>Least-recoverable-first vs random, baseline condition, averaged over removal depths.</p></div>
+      <div class="claim"><span class="big">+0.08</span><p>Most-recoverable-first vs random, same condition. Random sits much closer to the best case than the worst.</p></div>
+      <div class="claim neg"><span class="big">20% ≈ 70%</span><p>Removing the least recoverable 20% of subject pronouns lands where random removal needs about 70%.</p></div>
     </div>
   </section>
 
@@ -142,43 +132,34 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
       <table>
         <thead><tr>
           <th>intervention</th>
-          <th><span class="sw" style="background:var(--bert)"></span>BERT 250:1<br>most recoverable first</th>
-          <th><span class="sw dash" style="color:var(--bert)"></span>BERT 250:1<br>least recoverable first</th>
-          <th><span class="sw" style="background:var(--robbi)"></span>RoBERTa ±250<br>most recoverable first</th>
-          <th><span class="sw dash" style="color:var(--robbi)"></span>RoBERTa ±250<br>least recoverable first</th>
+          <th><span class="sw" style="background:var(--robbi)"></span>most recoverable first</th>
+          <th><span class="sw dash" style="color:var(--robbi)"></span>least recoverable first</th>
+          <th>spread between<br>the two orderings</th>
         </tr></thead>
         <tbody>
-          <tr><td>baseline</td><td class="pos">+0.039</td><td class="neg">−0.122</td><td class="pos">+0.077</td><td class="neg">−0.206</td></tr>
-          <tr><td>impoverish case</td><td class="pos">+0.066</td><td class="neg">−0.137</td><td class="pos">+0.093</td><td class="neg">−0.165</td></tr>
-          <tr><td>lemmatize verbs</td><td class="pos">+0.072</td><td class="neg">−0.135</td><td class="pos">+0.099</td><td class="neg">−0.131</td></tr>
-          <tr><td>enrich verbal morph</td><td class="pos">+0.035</td><td class="neg">−0.099</td><td class="pos">+0.052</td><td class="neg">−0.079</td></tr>
+          <tr><td>baseline</td><td class="pos">+0.077</td><td class="neg">−0.206</td><td class="pos">0.283</td></tr>
+          <tr><td>impoverish case</td><td class="pos">+0.093</td><td class="neg">−0.165</td><td class="pos">0.258</td></tr>
+          <tr><td>lemmatize verbs</td><td class="pos">+0.099</td><td class="neg">−0.131</td><td class="pos">0.230</td></tr>
+          <tr><td>enrich verbal morph</td><td class="pos">+0.052</td><td class="neg">−0.079</td><td class="pos">0.131</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="meta">Rich agreement (enrich) gives the smallest gaps on both raters, consistent with agreement making nearly every dropped subject recoverable.</p>
+    <p class="meta">Rich agreement (enrich) gives by far the smallest spread, consistent with agreement making nearly every dropped subject recoverable.</p>
   </section>
 
   <section class="stack">
     <figure>
-      <div class="figbar"><div class="col stack"><span class="eyebrow">Figure 1</span><h2>RoBERTa ±250: random vs most and least recoverable first</h2></div></div>
+      <div class="figbar"><div class="col stack"><span class="eyebrow">Figure 1</span><h2>End state by removal depth: random vs most and least recoverable first</h2></div></div>
       <div class="plate"><img src="figures/endstate_robbi.png" alt="Four panels, one per intervention, plotting end-state overt-subject preference against percent of pronouns removed. The RoBERTa most-recoverable-first line sits above random and the least-recoverable-first dashed line sits well below it in every panel."></div>
-      <figcaption>Grey: random removal. Solid indigo: most recoverable removed first. Dashed indigo: least recoverable removed first. Star: every subject pronoun removed. At baseline, removing the least recoverable 20% lands where random needs about 70%; removing the most recoverable 80% lands where random is at about 40%.</figcaption>
-    </figure>
-  </section>
-
-  <section class="stack">
-    <figure>
-      <div class="figbar"><div class="col stack"><span class="eyebrow">Figure 2</span><h2>Both raters together</h2></div></div>
-      <div class="plate"><img src="figures/endstate_all5.png" alt="Five-arm version of Figure 1 adding the BERT 250:1 most- and least-recoverable-first arms in teal."></div>
-      <figcaption>Teal: BERT 250:1. Indigo: RoBERTa ±250. The BERT arms carry the contraction confound in opposite directions: their early least-recoverable deciles are about 36% contracted pronouns, and the most-recoverable ones about 0%. RoBERTa's selection has contraction spread evenly, and the ordering effect gets larger, not smaller.</figcaption>
+      <figcaption>Grey: random removal. Solid: most recoverable removed first. Dashed: least recoverable removed first. Star: every subject pronoun removed. At baseline, removing the least recoverable 20% lands where random needs about 70%; removing the most recoverable 80% lands where random is at about 40%.</figcaption>
     </figure>
   </section>
 
   <section class="stack">
     <div class="col stack">
-      <span class="eyebrow">Figure 3</span>
+      <span class="eyebrow">Figure 2</span>
       <h2>Trajectories by removal decile, split by item category</h2>
-      <p>Rows: random, RoBERTa most recoverable first, RoBERTa least recoverable first. Columns: the 8 item categories, 72 items each. Lines: removal decile; dashed red is the all-removed model. x is tokens seen (log), starting at the first training step.</p>
+      <p>Rows: random, most recoverable first, least recoverable first. Columns: the 8 item categories, 72 items each. Lines: removal decile; dashed red is the all-removed model. x is tokens seen (log), starting at the first training step.</p>
     </div>
     <div class="figbar">
       <div class="tabs" role="tablist" aria-label="Intervention">
@@ -215,88 +196,44 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
     <div class="col stack">
       <span class="eyebrow">Pronoun surprisal under the interventions</span>
       <h2>How each intervention changes a pronoun's circumstances</h2>
-      <p>We took the same sampled subject pronouns (about 100,000) and scored each one twice: once in its baseline context, once in the intervention's edited context. The pairing is per instance, so every difference belongs to one pronoun in one sentence. We ran this with both raters: RoBERTa ±250, the current selection rater, and BERT 250:1, the retired one.</p>
-      <p class="meta">Validation: rescoring the baseline through the intervention pipeline reproduces each rater's original scores (RoBERTa: max difference 0.124 nats, ρ = 0.99998; BERT: max 0.155, ρ = 0.999999).</p>
+      <p>We took the same sampled subject pronouns (about 100,000) and scored each one twice with the selection rater: once in its baseline context, once in the intervention's edited context. The pairing is per instance, so every difference belongs to one pronoun in one sentence.</p>
+      <p class="meta">Validation: rescoring the baseline through the intervention pipeline reproduces the selection scores (99,997 pronouns, max difference 0.124 nats, ρ = 0.99998). Median baseline surprisal is 0.085 nats: with 250 tokens on each side, most subject pronouns are close to certain.</p>
     </div>
 
-    <div class="stack">
-      <h3>RoBERTa ±250 <span class="meta">current selection rater · median baseline surprisal 0.085 nats</span></h3>
-      <div class="tablebox">
-        <table>
-          <thead><tr>
-            <th>intervention</th><th>head verb<br>edited</th>
-            <th>median Δ<br>uncontracted</th><th>median Δ<br>contracted</th>
-            <th>rank ρ<br>uncontracted</th><th>decile 0<br>stays</th><th>decile 9<br>stays</th><th>within one<br>decile</th>
-          </tr></thead>
-          <tbody>
-            <tr><td>remove expletives</td><td class="num">0%</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.99</td><td class="num">97%</td><td class="num">94%</td><td class="num">99%</td></tr>
-            <tr><td>impoverish case</td><td class="num">0%</td><td class="num">+0.01</td><td class="num">+0.01</td><td class="num">0.89</td><td class="num">63%</td><td class="num">85%</td><td class="num">88%</td></tr>
-            <tr><td>lemmatize verbs</td><td class="num">55%</td><td class="num">+0.03</td><td class="num">+0.16</td><td class="num">0.81</td><td class="num">53%</td><td class="num">60%</td><td class="num">67%</td></tr>
-            <tr><td>enrich verbal morph</td><td class="num">57%</td><td class="num">+0.04</td><td class="num">+0.11</td><td class="num">0.76</td><td class="num">54%</td><td class="num">56%</td><td class="num">63%</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr>
+          <th>intervention</th><th>head verb<br>edited</th>
+          <th>median Δ<br>uncontracted</th><th>median Δ<br>contracted</th>
+          <th>rank ρ<br>uncontracted</th><th>decile 0<br>stays</th><th>decile 9<br>stays</th><th>within one<br>decile</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>remove expletives</td><td class="num">0%</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.99</td><td class="num">97%</td><td class="num">94%</td><td class="num">99%</td></tr>
+          <tr><td>impoverish case</td><td class="num">0%</td><td class="num">+0.01</td><td class="num">+0.01</td><td class="num">0.89</td><td class="num">63%</td><td class="num">85%</td><td class="num">88%</td></tr>
+          <tr><td>lemmatize verbs</td><td class="num">55%</td><td class="num">+0.03</td><td class="num">+0.16</td><td class="num">0.81</td><td class="num">53%</td><td class="num">60%</td><td class="num">67%</td></tr>
+          <tr><td>enrich verbal morph</td><td class="num">57%</td><td class="num">+0.04</td><td class="num">+0.11</td><td class="num">0.76</td><td class="num">54%</td><td class="num">56%</td><td class="num">63%</td></tr>
+        </tbody>
+      </table>
     </div>
-
-    <div class="stack">
-      <h3>BERT 250:1 <span class="meta">retired · median baseline surprisal 2.68 nats</span></h3>
-      <div class="tablebox">
-        <table>
-          <thead><tr>
-            <th>intervention</th><th>head verb<br>edited</th>
-            <th>median Δ<br>uncontracted</th><th>median Δ<br>contracted</th>
-            <th>rank ρ<br>uncontracted</th><th>decile 0<br>stays</th><th>decile 9<br>stays</th><th>within one<br>decile</th>
-          </tr></thead>
-          <tbody>
-            <tr><td>remove expletives</td><td class="num">0%</td><td class="num">0.00</td><td class="num">0.00</td><td class="num">0.99</td><td class="num">97%</td><td class="num">96%</td><td class="num">99%</td></tr>
-            <tr><td>impoverish case</td><td class="num">0%</td><td class="num">−0.02</td><td class="num">−0.08</td><td class="num">0.98</td><td class="num">94%</td><td class="num">88%</td><td class="num">98%</td></tr>
-            <tr><td>lemmatize verbs</td><td class="num">55%</td><td class="num">−0.02</td><td class="neg">−2.70</td><td class="num">0.81</td><td class="num">65%</td><td class="num">54%</td><td class="num">65%</td></tr>
-            <tr><td>enrich verbal morph</td><td class="num">57%</td><td class="num">+0.10</td><td class="neg">−1.47</td><td class="num">0.69</td><td class="num">50%</td><td class="num">54%</td><td class="num">60%</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="meta">Δ = surprisal under the intervention minus baseline, in nats; positive means less predictable. "Decile 0/9 stays" = share of the most/least recoverable tenth that keeps its decile. Remove expletives deletes the lines of 6.4% of sampled pronouns; the rest are paired. 19% of sampled pronouns are contracted ("they've", "it's").</p>
-    </div>
+    <p class="meta">Δ = surprisal under the intervention minus baseline, in nats; positive means less predictable. "Decile 0/9 stays" = share of the most/least recoverable tenth that keeps its decile. Remove expletives deletes the lines of 6.4% of sampled pronouns; the rest are paired. 19% of sampled pronouns are contracted ("they've", "it's").</p>
 
     <figure>
-      <div class="figbar">
-        <div class="col stack"><span class="eyebrow">Figure 4</span><h2>Same pronoun, baseline vs intervention context</h2></div>
-        <div class="tabs" role="tablist" aria-label="Rater">
-          <button class="tab rtab" role="tab" id="rtab-robbi" data-src="figures/intervention_surprisal_robbi.png" aria-selected="true">RoBERTa ±250</button>
-          <button class="tab rtab" role="tab" id="rtab-bert" data-src="figures/intervention_surprisal.png" aria-selected="false">BERT 250:1</button>
-        </div>
-      </div>
-      <div class="plate"><img id="ivimg" src="figures/intervention_surprisal_robbi.png" alt="Three rows of four panels, one column per intervention: 2-D histograms of baseline vs intervention surprisal, histograms of the change split by contraction, and decile migration heatmaps."></div>
-      <figcaption>Top: baseline vs intervention surprisal, log density. Middle: the change in surprisal, uncontracted (grey) vs contracted (teal). Bottom: decile migration; the diagonal is the share of pronouns that stay in their baseline decile. Switch raters to compare: under BERT the contracted pronouns carry large drops; under RoBERTa they don't.</figcaption>
+      <div class="figbar"><div class="col stack"><span class="eyebrow">Figure 3</span><h2>Same pronoun, baseline vs intervention context</h2></div></div>
+      <div class="plate"><img src="figures/intervention_surprisal_robbi.png" alt="Three rows of four panels, one column per intervention: 2-D histograms of baseline vs intervention surprisal, histograms of the change split by contraction, and decile migration heatmaps."></div>
+      <figcaption>Top: baseline vs intervention surprisal, log density. Middle: the change in surprisal, uncontracted (grey) vs contracted (teal). Bottom: decile migration; the diagonal is the share of pronouns that stay in their baseline decile.</figcaption>
     </figure>
 
     <div class="obs">
-      <div><h3>The contraction artifact is gone</h3><p>Under RoBERTa, contracted pronouns shift the same direction as the rest, by small amounts (lemmatize +0.16, enrich +0.11). Under BERT they dropped by 2.70 and 1.47 nats, because un-contracting exposed the verb the rater could not see before.</p></div>
-      <div><h3>Every intervention costs a little predictability</h3><p>With RoBERTa all four changes are zero or positive, and small: most pronouns are near-certain with ±250 tokens of context. Lemmatize costs the pronouns English agreement helped most: 3rd person +0.08 vs 1st +0.03; with the verb edited, it +0.14, you +0.13, he and she +0.07–0.08.</p></div>
-      <div><h3>Enrich confuses RoBERTa much less than BERT</h3><p>With the verb edited, he and she rise +0.03 under RoBERTa vs +0.36 under BERT, and it +0.12 vs +0.76. RoBERTa is still a pretrained English reader, so enrich measures what it can recover from invented forms, not what a learner of the enriched corpus can.</p></div>
-      <div><h3>Reshuffling is concentrated in near-ties</h3><p>RoBERTa's middle deciles are separated by hundredths of a nat, so tiny shifts reorder them (17–20% stay put under lemmatize and enrich). The end deciles hold better: about half of decile 0 and 56–60% of decile 9 keep their place. Impoverish case moves pronouns by a median 0.008 nats yet reorders the middle, which is the same tie effect.</p></div>
+      <div><h3>Every intervention costs a little predictability</h3><p>All four changes are zero or positive, and small. Lemmatize costs the pronouns English agreement helped most: 3rd person +0.08 vs 1st +0.03; with the verb edited, it +0.14, you +0.13, he and she +0.07–0.08.</p></div>
+      <div><h3>Contracted pronouns shift a little more</h3><p>Under lemmatize and enrich, contracted pronouns rise +0.16 and +0.11 vs +0.03 and +0.04 for the rest. Un-contracting ("they've" → "they have") changes the word right after the pronoun.</p></div>
+      <div><h3>Enrich costs little</h3><p>With the verb edited, he and she rise only +0.03 and it +0.12. The rater is a pretrained English reader, so this measures what it can recover from the invented forms, not what a learner of the enriched corpus can.</p></div>
+      <div><h3>Reshuffling is concentrated in near-ties</h3><p>The middle deciles are separated by hundredths of a nat, so tiny shifts reorder them (17–20% stay put under lemmatize and enrich). The end deciles hold better: about half of decile 0 and 56–60% of decile 9 keep their place. Impoverish case moves pronouns by a median 0.008 nats yet reorders the middle, which is the same tie effect.</p></div>
     </div>
 
     <div class="callout">
       <span class="eyebrow">Design implication</span>
       <h3>Baseline-ranked deciles carry over cleanly for two interventions, approximately for two</h3>
       <p>The study ranks pronouns once on the baseline corpus and reuses those deciles in every intervention corpus. That holds for remove expletives (97% of decile 0 and 94% of decile 9 stay) and reasonably for impoverish case (63% / 85%). Under lemmatize and enrich only about half of each end decile would be chosen again by a ranking made inside that corpus. The alternative is ranking within each intervention corpus, at the cost of the arms no longer removing the same pronoun instances across interventions.</p>
-    </div>
-
-    <div class="callout">
-      <span class="eyebrow">What this analysis turned up</span>
-      <h3>The BERT 250:1 rater misjudged contracted pronouns</h3>
-      <p>Its right window is one BERT wordpiece, and BERT splits "they've" into <em>they</em> / <em>'</em> / <em>ve</em>, so for a contracted pronoun the rater saw only the apostrophe. Contracted pronouns scored 4.99 nats vs 1.85, and the deciles sorted partly on contraction. This is why the study moved to the RoBERTa ±250 selection (decision D14).</p>
-      <div class="deciles" role="img" aria-label="Share of contracted pronouns in each selection decile. BERT 250:1 rises from 0% in decile 0 to about 36% in deciles 6 to 9. RoBERTa ±250 stays between 15% and 22% throughout.">
-        <div class="drow"><span class="dlab">BERT 250:1</span><div class="bars" style="--c: var(--bert)">
-          <i style="--v:0.000"></i><i style="--v:0.003"></i><i style="--v:0.012"></i><i style="--v:0.046"></i><i style="--v:0.134"></i><i style="--v:0.265"></i><i style="--v:0.353"></i><i style="--v:0.370"></i><i style="--v:0.369"></i><i style="--v:0.363"></i>
-        </div></div>
-        <div class="drow"><span class="dlab">RoBERTa ±250</span><div class="bars" style="--c: var(--robbi)">
-          <i style="--v:0.15"></i><i style="--v:0.17"></i><i style="--v:0.20"></i><i style="--v:0.21"></i><i style="--v:0.21"></i><i style="--v:0.21"></i><i style="--v:0.22"></i><i style="--v:0.20"></i><i style="--v:0.18"></i><i style="--v:0.15"></i>
-        </div></div>
-        <div class="drow"><span class="dlab"></span><div class="axis"><span>decile 0 (most recoverable)</span><span>decile 9</span></div></div>
-        <p class="meta">Share of contracted pronouns in each selection decile; bar height scaled to 40%. Base rate 19%.</p>
-      </div>
     </div>
   </section>
 
@@ -307,10 +244,10 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
     <h2>What this is and isn't yet</h2>
     <ul class="plain">
       <li><strong>One seed per cell.</strong> The consistency across cells makes noise an unlikely explanation, but error bars come from the full-architecture wave with more seeds.</li>
-      <li><strong>All four selection arms are complete:</strong> 45 runs each for BERT and RoBERTa, most- and least-recoverable-first, all evaluated on the matched stimuli.</li>
+      <li><strong>Both selection arms are complete:</strong> 45 runs each, most- and least-recoverable-first, all evaluated on the matched stimuli.</li>
       <li><strong>No random remove-expletives runs</strong> exist in the pilot, so that intervention is plotted without a random row and left out of the end-state table.</li>
-      <li><strong>Both surprisal raters are pretrained on ordinary English.</strong> They measure what an English reader can recover from each edited corpus, not what a model reared on it learns to use. Raters trained on each intervention corpus would close that gap.</li>
-      <li><strong>Still needed:</strong> a decile balance table (person, clause type, position, genre), an item-level check of whether the arm effect tracks each test item's own recoverability, and the gpt2_large, bert_large and lstm wave on the RoBERTa selection.</li>
+      <li><strong>The rater is pretrained on ordinary English.</strong> It measures what an English reader can recover from each edited corpus, not what a model reared on it learns to use. Raters trained on each intervention corpus would close that gap.</li>
+      <li><strong>Still needed:</strong> a decile balance table (person, clause type, position, genre), an item-level check of whether the arm effect tracks each test item's own recoverability, and the gpt2_large, bert_large and lstm wave on this selection.</li>
     </ul>
     <p class="meta">Sources: analysis/eval_v2/wave2_endstate.py, wave2_category_trajectories.py, analysis/recoverability/intervention_surprisal.py; eval results at s3://thomas-subject-drop-artifacts/eval_results/null_subj_v2_condition_matched_v1/.</p>
   </section>
@@ -339,14 +276,6 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
   var saved = null;
   try { saved = localStorage.getItem("iv"); } catch (e) {}
   if (saved && caps[saved]) show(saved);
-  var rtabs = Array.prototype.slice.call(document.querySelectorAll(".rtab"));
-  var ivimg = document.getElementById("ivimg");
-  rtabs.forEach(function (t) {
-    t.addEventListener("click", function () {
-      rtabs.forEach(function (o) { o.setAttribute("aria-selected", String(o === t)); });
-      ivimg.src = t.dataset.src;
-    });
-  });
   var zoom = document.getElementById("zoom"), plate = document.getElementById("catplate");
   zoom.addEventListener("click", function () {
     var on = plate.classList.toggle("zoom");
