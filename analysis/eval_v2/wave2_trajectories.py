@@ -88,7 +88,11 @@ def main() -> None:
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
     ap.add_argument("--out", type=Path,
                     default=Path("analysis/eval_v2/figures/wave2_v5"))
+    ap.add_argument("--arms", default=None,
+                    help="comma list of arms to plot (default: all present); "
+                         "adds a filename suffix")
     args = ap.parse_args()
+    tag = "_" + args.arms.replace(",", "-") if args.arms else ""
     args.out.mkdir(parents=True, exist_ok=True)
 
     df = load_pairs(args)
@@ -111,6 +115,8 @@ def main() -> None:
     cmap = plt.get_cmap("viridis")
 
     arms = [a for a in ARMS if a in set(traj.arm)]
+    if args.arms:
+        arms = [a for a in args.arms.split(",") if a in arms]
     ivs = [i for i in IVS if i in set(traj.iv)]
 
     # ---- Set A: arm x intervention, lines = deciles ----
@@ -150,7 +156,7 @@ def main() -> None:
     fig.suptitle("Overt-subject preference trajectories — arm × intervention, "
                  "lines = removal decile", y=1.005)
     fig.tight_layout()
-    fig.savefig(args.out / "setA_trajectories.png", dpi=150,
+    fig.savefig(args.out / f"setA_trajectories{tag}.png", dpi=150,
                 bbox_inches="tight")
     plt.close(fig)
 
@@ -204,10 +210,10 @@ def main() -> None:
                      + (" (difference from baseline)" if delta else ""),
                      y=1.003)
         fig.tight_layout()
-        fig.savefig(args.out / f"{name}.png", dpi=150, bbox_inches="tight")
+        fig.savefig(args.out / f"{name}{tag}.png", dpi=150, bbox_inches="tight")
         plt.close(fig)
-    print(f"wrote {args.out}/setA_trajectories.png, "
-          "setB_decile_interventions.png, setB_delta_vs_base.png")
+    print(f"wrote {args.out}/setA_trajectories{tag}.png, "
+          f"setB_decile_interventions{tag}.png, setB_delta_vs_base{tag}.png")
 
 
 if __name__ == "__main__":
