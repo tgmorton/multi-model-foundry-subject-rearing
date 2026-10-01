@@ -126,9 +126,9 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
 
   <section class="stack">
     <div class="claims">
-      <div class="claim neg"><span class="big">−0.22</span><p>RoBERTa least-recoverable-first vs random, baseline condition, averaged over removal depths.</p></div>
+      <div class="claim neg"><span class="big">−0.21</span><p>RoBERTa least-recoverable-first vs random, baseline condition, averaged over removal depths.</p></div>
       <div class="claim"><span class="big">+0.08</span><p>RoBERTa most-recoverable-first vs random, same condition. Random sits much closer to the best case than the worst.</p></div>
-      <div class="claim bert"><span class="big">0.30 vs 0.16</span><p>Spread between the two orderings with RoBERTa vs with BERT 250:1. The cleaner rater sorts pronouns better.</p></div>
+      <div class="claim bert"><span class="big">0.28 vs 0.16</span><p>Spread between the two orderings with RoBERTa vs with BERT 250:1. The cleaner rater sorts pronouns better.</p></div>
     </div>
   </section>
 
@@ -148,10 +148,10 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
           <th><span class="sw dash" style="color:var(--robbi)"></span>RoBERTa ±250<br>least recoverable first</th>
         </tr></thead>
         <tbody>
-          <tr><td>baseline</td><td class="pos">+0.039</td><td class="neg">−0.122</td><td class="pos">+0.077</td><td class="neg">−0.221</td></tr>
-          <tr><td>impoverish case</td><td class="pos">+0.066</td><td class="neg">−0.137</td><td class="pos">+0.087</td><td class="neg">−0.165</td></tr>
-          <tr><td>lemmatize verbs</td><td class="pos">+0.072</td><td class="neg">−0.135</td><td class="pos">+0.099</td><td class="neg">−0.125 <span class="note">5/9 deciles</span></td></tr>
-          <tr><td>enrich verbal morph</td><td class="pos">+0.035</td><td class="neg">−0.099</td><td class="pos">+0.052</td><td class="neg">−0.080</td></tr>
+          <tr><td>baseline</td><td class="pos">+0.039</td><td class="neg">−0.122</td><td class="pos">+0.077</td><td class="neg">−0.206</td></tr>
+          <tr><td>impoverish case</td><td class="pos">+0.066</td><td class="neg">−0.137</td><td class="pos">+0.093</td><td class="neg">−0.165</td></tr>
+          <tr><td>lemmatize verbs</td><td class="pos">+0.072</td><td class="neg">−0.135</td><td class="pos">+0.099</td><td class="neg">−0.131</td></tr>
+          <tr><td>enrich verbal morph</td><td class="pos">+0.035</td><td class="neg">−0.099</td><td class="pos">+0.052</td><td class="neg">−0.079</td></tr>
         </tbody>
       </table>
     </div>
@@ -307,7 +307,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 0; }
     <h2>What this is and isn't yet</h2>
     <ul class="plain">
       <li><strong>One seed per cell.</strong> The consistency across cells makes noise an unlikely explanation, but error bars come from the full-architecture wave with more seeds.</li>
-      <li><strong>Six RoBERTa least-recoverable cells are still training</strong> (gaps at 10% baseline, 80–90% lemmatize, 10% enrich). These runs were relaunched after a node failure.</li>
+      <li><strong>All four selection arms are complete:</strong> 45 runs each for BERT and RoBERTa, most- and least-recoverable-first, all evaluated on the matched stimuli.</li>
       <li><strong>No random remove-expletives runs</strong> exist in the pilot, so that intervention is plotted without a random row and left out of the end-state table.</li>
       <li><strong>Both surprisal raters are pretrained on ordinary English.</strong> They measure what an English reader can recover from each edited corpus, not what a model reared on it learns to use. Raters trained on each intervention corpus would close that gap.</li>
       <li><strong>Still needed:</strong> a decile balance table (person, clause type, position, genre), an item-level check of whether the arm effect tracks each test item's own recoverability, and the gpt2_large, bert_large and lstm wave on the RoBERTa selection.</li>
