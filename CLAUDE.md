@@ -137,10 +137,14 @@ forward.
 ### NRP admission webhook (resource utilization quota)
 
 The `job.nrp-nautilus.io` / `pod.nrp-nautilus.io` admission webhooks
-enforce a rolling-window utilization ratio: if recent pods used too
-little of their requested CPU/memory/GPU, new dispatches are denied
-with `Your pods resources utilization is too low`. Observed threshold
-is around 25-50% effective utilization.
+enforce the documented rule (nrp.ai policies page): a user may have at
+most **4 pods** outside GPU > 40% used, CPU 20–200% of request, RAM
+20–150% of request; beyond that new pods/jobs (and even job patches) are
+denied with `Your pods resources utilization is too low` until the
+rolling window clears (~1h). **Pods requesting ≤ 1 CPU and ≤ 2 GB are
+exempt** — put IO-bound helpers (converters, collectors, uploaders) under
+that. With > ~100 jobs, `limit = request` (ratio policy max 1.2×). Plans
+over 50 GPUs belong in Matrix. Violations: https://nrp.ai/userinfo.
 
 **Practical sizing (2026-04-24 lesson)**: our ablation/annotation pods
 running on 24Gi/6CPU used 4-5 GiB / 2-4 CPU (ratio ~0.15-0.20), which
