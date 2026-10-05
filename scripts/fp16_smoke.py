@@ -118,9 +118,16 @@ def main() -> int:
             m32, m16 = build(arch, a, sd32), build(arch, b, sd16)
             for m, sd, tag in ((m32, sd32, "fp32"), (m16, sd16, "fp16")):
                 missing, unexpected = m.load_state_dict(sd, strict=False)
+                # Tied weights (GPT-2 lm_head<->wte, BERT decoder<->embeddings)
+                # are stored once; the model declares them and re-ties on load.
+                tied = set(getattr(m, "_tied_weights_keys", None) or [])
+                missing = [k for k in missing if k not in tied]
+                unexpected = [k for k in unexpected if not k.endswith("position_ids")]
                 if missing or unexpected:
-                    raise RuntimeError(f"{tag} key mismatch: missing={list(missing)[:5]} "
-                                       f"unexpected={list(unexpected)[:5]}")
+                    raise RuntimeError(f"{tag} key mismatch: missing={missing[:5]} "
+                                       f"unexpected={unexpected[:5]}")
+                if hasattr(m, "tie_weights"):
+                    m.tie_weights()
                 m.eval()
             r["params_loaded_dtype"] = str(next(m16.parameters()).dtype)
             vocab = vocab_of(sd32)
