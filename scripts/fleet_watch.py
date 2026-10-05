@@ -79,6 +79,7 @@ def check(seen: set, do_top: bool) -> list:
     bad = known_bad_nodes()
     node_fail = {}
     pull_fail = []
+    unsched = []
     for p in pods:
         st, node = p["status"], p["spec"].get("nodeName")
         # Never scheduled: Pending with no node. Jobs count these as "active",
@@ -87,15 +88,34 @@ def check(seen: set, do_top: bool) -> list:
         created = p["metadata"].get("creationTimestamp")
         if st.get("phase") == "Pending" and not node and created \
                 and age_min(created) > 30:
-            alert(f"unsched:{p['metadata']['name']}",
-                  f"ALERT unschedulable {p['metadata']['name']} Pending "
-                  f"{age_min(created):.0f}min with no node — pool too narrow or full")
+            unsched.append((p["metadata"]["name"], age_min(created)))
+        # OOM kills: one line per pod, so the OOM rate of a wave is visible.
+        for cs in st.get("containerStatuses") or []:
+            for state in (cs.get("state") or {}, cs.get("lastState") or {}):
+                t = state.get("terminated") or {}
+                if t.get("reason") == "OOMKilled":
+                    alert(f"oom:{p['metadata']['name']}",
+                          f"ALERT oom {p['metadata']['name']} OOMKilled on {node} "
+                          f"(limit {p['spec']['containers'][0]['resources'].get('limits', {}).get('memory')})")
         if st.get("phase") == "Failed" and node:
             node_fail[node] = node_fail.get(node, 0) + 1
         for cs in st.get("containerStatuses") or []:
             w = (cs.get("state") or {}).get("waiting") or {}
             if w.get("reason") in ("ImagePullBackOff", "ErrImagePull"):
                 pull_fail.append((p["metadata"]["name"], node))
+    # A wave bigger than the GPU pool leaves many pods Pending by design; one
+    # aggregate line (re-alerting as the count moves by 25) instead of one per
+    # pod. A handful of stuck pods still alert individually — that's the
+    # narrow-pool case this check was written for (2026-09-29).
+    if len(unsched) > 3:
+        oldest = max(a for _, a in unsched)
+        alert(f"unsched-many:{len(unsched) // 25}",
+              f"ALERT unschedulable {len(unsched)} pods Pending >30min with no node "
+              f"(oldest {oldest:.0f}min) — GPU pool full; widen it or wait")
+    else:
+        for name, a in unsched:
+            alert(f"unsched:{name}", f"ALERT unschedulable {name} Pending {a:.0f}min "
+                                     f"with no node — pool too narrow or full")
     # One failed pull is almost always a cold node timing out on the
     # 5-10 GB image and retrying. A credential/registry outage shows as
     # MANY pods at once (45 on 2026-09-18) — alert only on that.
