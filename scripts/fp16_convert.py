@@ -16,6 +16,8 @@ SAFETY CONTRACT
   * ``--dry-run`` (default) reports what it would do and touches nothing.
 
 Usage:
+  python scripts/fp16_convert.py --run-list runs.txt --roots /mnt/data/models/production /mnt/data/models/wave2 \
+      --shard 3 --num-shards 24 --apply --verify    # wave mode: COMPLETE runs only, sharded
   python scripts/fp16_convert.py --root /mnt/data/models/production          # dry-run
   python scripts/fp16_convert.py --root /mnt/data/models/production --apply
   python scripts/fp16_convert.py --run-dir <one_run> --apply --verify
@@ -135,6 +137,15 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", type=Path, help="models dir to walk (all runs)")
     ap.add_argument("--run-dir", type=Path, help="single run dir")
+    ap.add_argument("--run-list", type=Path,
+                    help="file of run_ids (one per line) to convert — e.g. the "
+                         "registry's COMPLETE runs, so in-flight runs are never "
+                         "touched; resolved against --roots")
+    ap.add_argument("--roots", type=Path, nargs="+",
+                    default=[Path("/mnt/data/models/production"),
+                             Path("/mnt/data/models/wave2")])
+    ap.add_argument("--shard", type=int, default=0)
+    ap.add_argument("--num-shards", type=int, default=1)
     ap.add_argument("--apply", action="store_true", help="actually convert")
     ap.add_argument("--verify", action="store_true", help="reload converted ckpts")
     ap.add_argument("--limit", type=int, default=None, help="max checkpoints")
@@ -146,11 +157,27 @@ def main() -> None:
                     help="print progress every N checkpoints (so slow is "
                          "distinguishable from hung)")
     a = ap.parse_args()
-    if not (a.root or a.run_dir):
-        ap.error("need --root or --run-dir")
+    if not (a.root or a.run_dir or a.run_list):
+        ap.error("need --root, --run-dir or --run-list")
 
-    runs = [a.run_dir] if a.run_dir else sorted(
-        d for d in a.root.iterdir() if d.is_dir())
+    if a.run_list:
+        ids = sorted({l.strip() for l in a.run_list.read_text().splitlines()
+                      if l.strip() and not l.startswith("#")})
+        runs, missing = [], 0
+        for rid in ids:
+            hit = next((r / rid for r in a.roots if (r / rid).is_dir()), None)
+            if hit is None:
+                missing += 1
+            else:
+                runs.append(hit)
+        print(f"run list: {len(ids)} ids, {len(runs)} found, {missing} without a run dir",
+              flush=True)
+    else:
+        runs = [a.run_dir] if a.run_dir else sorted(
+            d for d in a.root.iterdir() if d.is_dir())
+    if a.num_shards > 1:
+        runs = runs[a.shard::a.num_shards]
+        print(f"shard {a.shard}/{a.num_shards}: {len(runs)} runs", flush=True)
     if a.sample_per_arch:
         by_arch, picked = {}, []
         for d in runs:

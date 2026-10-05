@@ -1,0 +1,119 @@
+# In-place fp16 conversion of analysis-only checkpoints (2026-10-05, Thomas's go).
+# Only registry-COMPLETE runs (configs/fp16_runlist_20261005.txt); resume anchors
+# (training_state.pt) stay fp32; atomic + idempotent (.fp16 marker), so a retried
+# shard resumes. 24 shards; summaries to s3://.../fp16_convert/20261005/.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fp16-convert-v1
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: fp16
+spec:
+  backoffLimit: 48
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: main
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\ncd /opt/repo\nexport OMP_NUM_THREADS=2\npython scripts/fp16_convert.py --run-list configs/fp16_runlist_20261005.txt \\\n  --roots /mnt/data/models/production /mnt/data/models/wave2\
+          \ \\\n  --shard $JOB_COMPLETION_INDEX --num-shards 24 --apply --verify --progress-every 100 | tee /tmp/fp16.log\npython - <<'UPLOAD'\nimport boto3, os\nlog = open(\"/tmp/fp16.log\").read()\ni\
+          \ = os.environ[\"JOB_COMPLETION_INDEX\"]\nboto3.client(\"s3\").put_object(Bucket=\"thomas-subject-drop-artifacts\",\n    Key=f\"fp16_convert/20261005/shard_{i}.json\", Body=log[log.rindex(\"{\"\
+          ):])\nprint(\"summary uploaded\")\nUPLOAD\n"
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: PYTHONPATH
+          value: /opt/repo
+        resources:
+          requests:
+            memory: 8Gi
+            cpu: '2'
+          limits:
+            memory: 8Gi
+            cpu: '2'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+  completionMode: Indexed
+  completions: 24
+  parallelism: 24

@@ -1,0 +1,120 @@
+# Per-arch fp16 conversion smoke (2026-10-05): copies one real checkpoint per
+# architecture to /tmp, converts the copy, compares weights + forward outputs.
+# Originals are only read.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-fp16-smoke
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: fp16
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: main
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - 'set -euo pipefail
+
+          cd /opt/repo
+
+          export OMP_NUM_THREADS=4
+
+          python scripts/fp16_smoke.py
+
+          '
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: s3-secret-thomas
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_ENDPOINT_URL
+          value: http://rook-ceph-rgw-nautiluss3.rook
+        - name: AWS_DEFAULT_REGION
+          value: us-west-1
+        - name: PYTHONPATH
+          value: /opt/repo
+        resources:
+          requests:
+            memory: 16Gi
+            cpu: '4'
+          limits:
+            memory: 16Gi
+            cpu: '4'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
