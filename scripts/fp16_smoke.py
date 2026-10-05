@@ -121,7 +121,7 @@ def main() -> int:
                 # Tied weights (GPT-2 lm_head<->wte, BERT decoder<->embeddings)
                 # are stored once; the model declares them and re-ties on load.
                 tied = set(getattr(m, "_tied_weights_keys", None) or [])
-                missing = [k for k in missing if k not in tied]
+                missing = [k for k in missing if not any(k == t or k.endswith('.' + t) for t in tied)]
                 unexpected = [k for k in unexpected if not k.endswith("position_ids")]
                 if missing or unexpected:
                     raise RuntimeError(f"{tag} key mismatch: missing={missing[:5]} "
