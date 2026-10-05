@@ -98,7 +98,8 @@ def check(seen: set, do_top: bool) -> list:
                           f"ALERT oom {p['metadata']['name']} OOMKilled on {node} "
                           f"(limit {p['spec']['containers'][0]['resources'].get('limits', {}).get('memory')})")
         if st.get("phase") == "Failed" and node:
-            node_fail[node] = node_fail.get(node, 0) + 1
+            node_fail.setdefault(node, []).append(
+                (p["metadata"].get("labels") or {}).get("job-name", "?"))
         for cs in st.get("containerStatuses") or []:
             w = (cs.get("state") or {}).get("waiting") or {}
             if w.get("reason") in ("ImagePullBackOff", "ErrImagePull"):
@@ -124,8 +125,12 @@ def check(seen: set, do_top: bool) -> list:
         alert(f"pull:systemic:{len(pull_fail) // 5}",
               f"ALERT image_pull {len(pull_fail)} pods failing to pull across "
               f"{len(nodes)} node(s) — likely credential/registry outage")
-    for node, n in node_fail.items():
-        if n < 3:
+    for node, jobs_on in node_fail.items():
+        n = len(jobs_on)
+        # A job that fails everywhere (its own bug, e.g. CUDA OOM from too
+        # big a batch) isn't a bad node: require failures from >= 2 distinct
+        # jobs (false positive on ry-gpu-01, 2026-10-05).
+        if n < 3 or len(set(jobs_on)) < 2:
             continue
         if node not in bad:
             alert(f"node:{node}", f"ALERT bad_node {node} has {n} failed pods "
