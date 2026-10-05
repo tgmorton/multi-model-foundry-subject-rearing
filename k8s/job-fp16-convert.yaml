@@ -15,7 +15,7 @@ metadata:
     lang: en
     stage: fp16
 spec:
-  backoffLimit: 48
+  backoffLimit: 150
   ttlSecondsAfterFinished: 172800
   template:
     metadata:
