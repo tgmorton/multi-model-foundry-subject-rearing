@@ -77,28 +77,45 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
         return {"status": "would_convert", "before": before,
                 "after_est": before // 2, "est": "size-based (.bin)"}
 
+    # Low-memory paths (2026-10-05): the full fp32 dict plus its fp16 copy
+    # peaked at 3.4Gi and forced 5Gi requests that sat at ~37% use (NRP
+    # utilization webhook). safetensors streams one tensor at a time; .bin is
+    # memory-mapped, so only the fp16 copy is resident either way.
     if f.name == "model.safetensors":
-        from safetensors.torch import load_file, save_file
-        sd = load_file(str(f))
+        from safetensors import safe_open
+        sd16, any32 = {}, False
+        with safe_open(str(f), framework="pt") as fh:
+            for k in fh.keys():
+                t = fh.get_tensor(k)
+                if t.dtype == torch.float32:
+                    any32 = True
+                    t = t.half()
+                sd16[k] = t
+        if not any32:
+            return {"status": "skipped", "reason": "no fp32 tensors"}
     else:
-        sd = torch.load(f, map_location="cpu", weights_only=True)
-
-    if all(v.dtype != torch.float32 for v in sd.values() if hasattr(v, "dtype")):
-        return {"status": "skipped", "reason": "no fp32 tensors"}
-    # Preserve storage sharing. Tied weights (GPT-2 wte<->lm_head, BERT's MLM
-    # decoder<->embeddings) are ONE tensor under two keys; torch.save stores
-    # it once. Halving each key independently splits the tie and stores the
-    # embedding twice (+38.6M params on gpt2 — caught by the .bin test).
-    cache, sd16 = {}, {}
-    for k, v in sd.items():
-        if hasattr(v, "dtype") and v.dtype == torch.float32:
-            ident = (v.untyped_storage().data_ptr(), v.storage_offset(),
-                     tuple(v.shape), tuple(v.stride()))
-            if ident not in cache:
-                cache[ident] = v.half()
-            sd16[k] = cache[ident]
-        else:
-            sd16[k] = v
+        sd = torch.load(f, map_location="cpu", weights_only=True, mmap=True)
+        if all(v.dtype != torch.float32 for v in sd.values() if hasattr(v, "dtype")):
+            return {"status": "skipped", "reason": "no fp32 tensors"}
+        # Preserve storage sharing. Tied weights (GPT-2 wte<->lm_head, BERT's
+        # MLM decoder<->embeddings) are ONE tensor under two keys; torch.save
+        # stores it once. Halving each key independently splits the tie and
+        # stores the embedding twice (+38.6M params on gpt2 — caught by the
+        # .bin test). (safetensors files never hold shared tensors.)
+        cache, sd16 = {}, {}
+        for k, v in sd.items():
+            if hasattr(v, "dtype") and v.dtype == torch.float32:
+                ident = (v.untyped_storage().data_ptr(), v.storage_offset(),
+                         tuple(v.shape), tuple(v.stride()))
+                if ident not in cache:
+                    cache[ident] = v.half()
+                sd16[k] = cache[ident]
+            else:
+                sd16[k] = v
+    for k, v in sd16.items():
+        if hasattr(v, "is_floating_point") and v.is_floating_point() \
+                and not torch.isfinite(v).all():
+            return {"status": "error", "reason": f"non-finite after fp16 cast: {k}"}
     if not apply:
         est = sum(v.numel() * (2 if v.dtype == torch.float16 else v.element_size())
                   for v in sd16.values() if hasattr(v, "numel"))
@@ -124,12 +141,22 @@ def verify(ckpt: Path, tol: float = 1e-2) -> dict:
     fp16 rounding (max |Δ| relative to tensor scale)."""
     import torch
     f = _files(ckpt)
-    from safetensors.torch import load_file
-    sd = (load_file(str(f)) if f.name == "model.safetensors"
-          else torch.load(f, map_location="cpu", weights_only=True))
-    dtypes = {str(v.dtype) for v in sd.values() if hasattr(v, "dtype")}
-    finite = all(torch.isfinite(v).all().item() for v in sd.values()
-                 if hasattr(v, "dtype") and v.is_floating_point())
+    dtypes, finite = set(), True
+    if f.name == "model.safetensors":                   # stream, low memory
+        from safetensors import safe_open
+        with safe_open(str(f), framework="pt") as fh:
+            for k in fh.keys():
+                v = fh.get_tensor(k)
+                dtypes.add(str(v.dtype))
+                if v.is_floating_point():
+                    finite &= bool(torch.isfinite(v).all())
+    else:
+        sd = torch.load(f, map_location="cpu", weights_only=True, mmap=True)
+        for v in sd.values():
+            if hasattr(v, "dtype"):
+                dtypes.add(str(v.dtype))
+                if v.is_floating_point():
+                    finite &= bool(torch.isfinite(v).all())
     return {"dtypes": sorted(dtypes), "all_finite": finite}
 
 
