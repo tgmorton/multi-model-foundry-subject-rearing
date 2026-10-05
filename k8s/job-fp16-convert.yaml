@@ -2,6 +2,8 @@
 # Only registry-COMPLETE runs (configs/fp16_runlist_20261005.txt); resume anchors
 # (training_state.pt) stay fp32; atomic + idempotent (.fp16 marker), so a retried
 # shard resumes. 24 shards; summaries to s3://.../fp16_convert/20261005/.
+# Sizing: IO-bound on CephFS (observed 0.04-0.26 CPU, <=2.4Gi RSS); requests
+# kept near use so the NRP utilization webhook doesn't block the namespace.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -75,7 +77,7 @@ spec:
         - /bin/bash
         - -c
         args:
-        - "set -euo pipefail\ncd /opt/repo\nexport OMP_NUM_THREADS=2\npython scripts/fp16_convert.py --run-list configs/fp16_runlist_20261005.txt \\\n  --roots /mnt/data/models/production /mnt/data/models/wave2\
+        - "set -euo pipefail\ncd /opt/repo\nexport OMP_NUM_THREADS=1\npython scripts/fp16_convert.py --run-list configs/fp16_runlist_20261005.txt \\\n  --roots /mnt/data/models/production /mnt/data/models/wave2\
           \ \\\n  --shard $JOB_COMPLETION_INDEX --num-shards 24 --apply --verify --progress-every 100 | tee /tmp/fp16.log\npython - <<'UPLOAD'\nimport boto3, os\nlog = open(\"/tmp/fp16.log\").read()\ni\
           \ = os.environ[\"JOB_COMPLETION_INDEX\"]\nboto3.client(\"s3\").put_object(Bucket=\"thomas-subject-drop-artifacts\",\n    Key=f\"fp16_convert/20261005/shard_{i}.json\", Body=log[log.rindex(\"{\"\
           ):])\nprint(\"summary uploaded\")\nUPLOAD\n"
@@ -98,11 +100,11 @@ spec:
           value: /opt/repo
         resources:
           requests:
-            memory: 8Gi
-            cpu: '2'
+            memory: 5Gi
+            cpu: 500m
           limits:
-            memory: 8Gi
-            cpu: '2'
+            memory: 5Gi
+            cpu: '1'
         volumeMounts:
         - name: repo
           mountPath: /opt/repo
