@@ -156,6 +156,13 @@ class CheckpointManager:
         # would pick up as a valid checkpoint.
         final_dir = self.output_dir / f"checkpoint-{global_step}"
         checkpoint_dir = self.output_dir / f"checkpoint-{global_step}.tmp"
+        # Never downgrade: a re-save over a checkpoint that carries resume
+        # state keeps it. After a resume the loop re-saves the step it
+        # resumed from (the save check runs before the step increment); a
+        # rolling resume step is not in resume_state_steps, so without this
+        # the re-save would delete the state just resumed from (2026-10-06).
+        if not save_resume_state and (final_dir / "training_state.pt").exists():
+            save_resume_state = True
         if checkpoint_dir.exists():
             shutil.rmtree(checkpoint_dir)
         checkpoint_dir.mkdir(parents=True)

@@ -542,3 +542,21 @@ class TestRollingResume:
         rolled.training.rolling_resume_every_steps = 251
         assert rolled.training.rolling_resume_every_steps == 251
         assert h(rolled) == before
+
+    def test_resave_never_drops_existing_resume_state(self, tiny_config, temp_workspace,
+                                                     tiny_model, mock_tokenizer):
+        """After a resume the loop re-saves the step it resumed from; when
+        that is a rolling step the re-save asks for analysis-only, which
+        must not delete the state (smoke find, 2026-10-06)."""
+        import json
+        manager = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
+        optimizer = torch.optim.AdamW(tiny_model.parameters(), lr=1e-4)
+        scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1.0,
+                                                       total_iters=10)
+        for full in (True, False):
+            manager.save_checkpoint(model=tiny_model, tokenizer=mock_tokenizer,
+                                    optimizer=optimizer, lr_scheduler=scheduler,
+                                    global_step=590, epoch=0, save_resume_state=full)
+        d = manager.output_dir / "checkpoint-590"
+        assert (d / "training_state.pt").exists()
+        assert json.loads((d / "metadata.json").read_text())["has_resume_state"] is True
