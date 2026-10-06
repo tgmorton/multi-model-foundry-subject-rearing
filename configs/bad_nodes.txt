@@ -22,3 +22,4 @@ ry-gpu-04.sdsc.optiputer.net       # device-plugin allocate failure, UnexpectedA
 ren-gp-argo-01.madren.org          # PVC-read stall: 2 CPU eval pods hung ~1h, zero progress (2026-09-29)
 hcc-chase-shor-c4705.unl.edu       # unreachable since 2026-09-29T21:23Z; 7 training pods stuck Terminating (2026-09-30)
 cph-dgx-node7.humboldt.edu         # device-plugin allocate failure, 3 UnexpectedAdmissionErrors in one job (2026-10-01)
+nautilus-it-gpu06.fullerton.edu    # SIGKILLed 3 gpt2_large runs at once after 27h, logs gone (2026-10-06)
