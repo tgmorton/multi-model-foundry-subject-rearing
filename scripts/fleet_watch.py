@@ -67,6 +67,13 @@ def check(seen: set, do_top: bool) -> list:
                 alert(f"stalled:{name}:{failed // 3}",
                       f"ALERT stalled_job {name} has 0 active pods and {failed} "
                       f"failures — stuck in a retry loop, check the node")
+            # Failure bursts on a job that stays fully active (pods evicted
+            # and replaced, e.g. a node dropping out) never trip the stalled
+            # or budget checks; flag every 10 failures (fp16 job, 2026-10-06).
+            if failed >= 10:
+                alert(f"fails:{name}:{failed // 10}",
+                      f"ALERT failures {name} has {failed} failed pods "
+                      f"(limit {limit}) — check for node evictions or a recurring error")
             frac = failed / max(limit, 1)
             for lvl in (0.8, 0.5):
                 if frac >= lvl:
