@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import struct
 import sys
 from pathlib import Path
 
@@ -36,6 +37,41 @@ MARKER = ".fp16"
 def _files(ckpt: Path):
     st, bn = ckpt / "model.safetensors", ckpt / "pytorch_model.bin"
     return st if st.exists() else (bn if bn.exists() else None)
+
+
+def _write_safetensors_fp16(src: Path, hdr: dict, dst: Path) -> None:
+    """Stream src -> dst in the safetensors format, casting F32 tensors to F16
+    one at a time (peak memory ~ one tensor). Keeps the source data order and
+    metadata; raises ValueError on a non-finite value after the cast."""
+    import torch
+    from safetensors import safe_open
+    items = sorted(((k, v) for k, v in hdr.items() if k != "__metadata__"),
+                   key=lambda kv: kv[1]["data_offsets"][0])
+    new, off = {}, 0
+    for k, v in items:
+        n = v["data_offsets"][1] - v["data_offsets"][0]
+        dt = v["dtype"]
+        if dt == "F32":
+            dt, n = "F16", n // 2
+        new[k] = {"dtype": dt, "shape": v["shape"], "data_offsets": [off, off + n]}
+        off += n
+    if "__metadata__" in hdr:
+        new["__metadata__"] = hdr["__metadata__"]
+    hb = json.dumps(new, separators=(",", ":")).encode()
+    hb += b" " * (-len(hb) % 8)              # spec allows trailing-space padding
+    with open(dst, "wb") as out, safe_open(str(src), framework="pt") as fh:
+        out.write(struct.pack("<Q", len(hb)))
+        out.write(hb)
+        for k, _ in items:
+            t = fh.get_tensor(k)
+            if t.dtype == torch.float32:
+                t = t.half()
+                if not torch.isfinite(t).all():
+                    raise ValueError(f"non-finite after fp16 cast: {k}")
+            out.write(t.contiguous().reshape(-1).view(torch.uint8).numpy())
+            del t
+    if dst.stat().st_size != 8 + len(hb) + off:
+        raise ValueError(f"size mismatch writing {dst}")
 
 
 def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
@@ -56,10 +92,9 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
     # read instead of loading the whole tensor file — the difference
     # between a minutes-long survey and re-reading 46 TB.
     if not apply and f.name == "model.safetensors":
-        import struct, json as _json
         with f.open("rb") as fh:
             (hlen,) = struct.unpack("<Q", fh.read(8))
-            hdr = _json.loads(fh.read(hlen))
+            hdr = json.loads(fh.read(hlen))
         dts = {v["dtype"] for k, v in hdr.items() if k != "__metadata__"}
         if "F32" not in dts:
             return {"status": "skipped", "reason": f"no fp32 tensors ({sorted(dts)})"}
@@ -82,17 +117,26 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
     # utilization webhook). safetensors streams one tensor at a time; .bin is
     # memory-mapped, so only the fp16 copy is resident either way.
     if f.name == "model.safetensors":
-        from safetensors import safe_open
-        sd16, any32 = {}, False
-        with safe_open(str(f), framework="pt") as fh:
-            for k in fh.keys():
-                t = fh.get_tensor(k)
-                if t.dtype == torch.float32:
-                    any32 = True
-                    t = t.half()
-                sd16[k] = t
-        if not any32:
+        # One streaming pass, no full dict and no serialized copy:
+        # safetensors' save_file materializes every tensor as bytes before
+        # writing (dict + copy OOM'd a 2Gi pod on a 1.4 GB checkpoint).
+        with open(f, "rb") as fh:
+            (hlen,) = struct.unpack("<Q", fh.read(8))
+            hdr = json.loads(fh.read(hlen))
+        if not any(v["dtype"] == "F32" for k, v in hdr.items() if k != "__metadata__"):
             return {"status": "skipped", "reason": "no fp32 tensors"}
+        tmp = f.with_suffix(f.suffix + ".fp16tmp")
+        try:
+            _write_safetensors_fp16(f, hdr, tmp)
+        except ValueError as e:
+            tmp.unlink(missing_ok=True)
+            return {"status": "error", "reason": str(e)}
+        os.replace(tmp, f)                      # atomic
+        after = f.stat().st_size
+        (ckpt / MARKER).write_text(json.dumps(
+            {"before_bytes": before, "after_bytes": after,
+             "converted": "fp32->fp16"}) + "\n")
+        return {"status": "converted", "before": before, "after": after}
     else:
         sd = torch.load(f, map_location="cpu", weights_only=True, mmap=True)
         if all(v.dtype != torch.float32 for v in sd.values() if hasattr(v, "dtype")):
@@ -122,12 +166,7 @@ def convert_checkpoint(ckpt: Path, apply: bool) -> dict:
         return {"status": "would_convert", "before": before, "after_est": est}
 
     tmp = f.with_suffix(f.suffix + ".fp16tmp")
-    if f.name == "model.safetensors":
-        from safetensors.torch import save_file
-        save_file({k: v.contiguous() for k, v in sd16.items()}, str(tmp),
-                  metadata={"format": "pt"})
-    else:
-        torch.save(sd16, tmp)
+    torch.save(sd16, tmp)                   # .bin only: safetensors returned above
     os.replace(tmp, f)                      # atomic
     after = f.stat().st_size
     (ckpt / MARKER).write_text(json.dumps(

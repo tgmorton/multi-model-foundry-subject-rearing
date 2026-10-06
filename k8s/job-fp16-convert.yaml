@@ -4,9 +4,9 @@
 # shard resumes. 24 shards; summaries to s3://.../fp16_convert/20261005/.
 # Sizing: IO-bound on CephFS. At 500m/5Gi shards averaged 125m CPU / 1.9Gi
 # (peak 3.4Gi) — low-utilization flags. The converter now streams safetensors
-# and mmaps .bin (only the fp16 copy resident), so 200m. Memory 3Gi: 2Gi OOM'd
-# after ~700 large checkpoints (marginal save peak); ~1.7Gi typical => ~57%,
-# inside NRP's 20-150% RAM band.
+# and mmaps .bin. safetensors are now written in one streaming pass (the
+# library's save_file copied every tensor to bytes first and OOM'd 2Gi on a
+# 1.4 GB checkpoint), so 200m/2Gi stays under NRP's <=1 CPU/<=2 GB exemption.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -103,10 +103,10 @@ spec:
           value: /opt/repo
         resources:
           requests:
-            memory: 3Gi
+            memory: 2Gi
             cpu: 200m
           limits:
-            memory: 3Gi
+            memory: 2Gi
             cpu: 200m
         volumeMounts:
         - name: repo
