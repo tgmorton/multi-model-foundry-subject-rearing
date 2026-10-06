@@ -566,3 +566,36 @@ class TestTokenCounterSaveResumeConsistency:
         # The regression: pre-fix code leaves this TOKENS_PER_STEP (one
         # whole effective step) higher than the reference.
         assert resumed_final_tokens == reference_final_tokens
+
+
+class TestRollingResume:
+    """Rolling resume (2026-10-06): extra resume states between the
+    permanent anchors, each followed by a prune of the superseded ones."""
+
+    def _run(self, rolling_every):
+        with patch('torch.cuda.is_available', return_value=False):
+            loop = _make_run_loop(train_steps=12, grad_accum=1,
+                                  checkpoint_schedule=set(range(1, 12)),
+                                  n_batches=12)
+            loop.config.training.resume_state_steps = [2, 11]
+            loop.config.training.rolling_resume_every_steps = rolling_every
+            loop.run(tokenizer=MagicMock(), start_step=0, start_epoch=0,
+                     start_tokens=0)
+        saves = {c.args[4]: c.kwargs['save_resume_state']
+                 for c in loop.checkpoint_manager.save_checkpoint.call_args_list}
+        prunes = [c.args for c in
+                  loop.checkpoint_manager.prune_rolling_resume_states.call_args_list]
+        return saves, prunes
+
+    def test_rolling_states_between_permanent_anchors(self):
+        saves, prunes = self._run(rolling_every=3)
+        # 2 and 11 are permanent; 5 and 8 are rolling (>= 3 steps after the
+        # previous resume save); 12 is the endpoint guard.
+        assert {s for s, full in saves.items() if full} == {2, 5, 8, 11, 12}
+        assert [p[0] for p in prunes] == [2, 5, 8, 11, 12]
+        assert all(p[1] == {2, 11} for p in prunes)
+
+    def test_off_keeps_permanent_policy(self):
+        saves, prunes = self._run(rolling_every=None)
+        assert {s for s, full in saves.items() if full} == {2, 11, 12}
+        assert prunes == []

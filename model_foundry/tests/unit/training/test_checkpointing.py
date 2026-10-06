@@ -484,3 +484,61 @@ class TestCheckpointManagerEdgeCases:
         assert (output_dir / "checkpoint-100").exists()
         assert (output_dir / "checkpoint-200").exists()
         assert (output_dir / "checkpoint-300").exists()
+
+
+class TestRollingResume:
+    """Rolling resume (2026-10-06): pruning of superseded resume states."""
+
+    @staticmethod
+    def _ckpt(root, step, with_state=True, suffix=""):
+        import json
+        d = root / f"checkpoint-{step}{suffix}"
+        d.mkdir(parents=True)
+        (d / "model.safetensors").write_bytes(b"w")
+        if with_state:
+            (d / "training_state.pt").write_bytes(b"s")
+        (d / "metadata.json").write_text(json.dumps({"has_resume_state": with_state}))
+        return d
+
+    def test_prune_removes_only_superseded_rolling_states(self, tiny_config, temp_workspace):
+        import json
+        manager = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
+        out = manager.output_dir
+        for step in (2, 5, 8, 11, 12):
+            self._ckpt(out, step)
+        self._ckpt(out, 3, with_state=False)
+        staging = self._ckpt(out, 9, suffix=".tmp")
+
+        manager.prune_rolling_resume_states(8, {2, 11})
+
+        assert not (out / "checkpoint-5" / "training_state.pt").exists()
+        md = json.loads((out / "checkpoint-5" / "metadata.json").read_text())
+        assert md["has_resume_state"] is False
+        assert md["resume_state_pruned"] == "rolling"
+        assert (out / "checkpoint-5" / "model.safetensors").exists()  # weights stay
+        for step in (2, 8, 11, 12):  # permanent, the kept one, and newer
+            assert (out / f"checkpoint-{step}" / "training_state.pt").exists()
+        assert (staging / "training_state.pt").exists()  # staging dirs untouched
+
+    def test_prune_noop_when_kept_checkpoint_has_no_state(self, tiny_config, temp_workspace):
+        manager = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
+        out = manager.output_dir
+        self._ckpt(out, 5)
+        self._ckpt(out, 8, with_state=False)
+
+        manager.prune_rolling_resume_states(8, set())
+
+        assert (out / "checkpoint-5" / "training_state.pt").exists()
+
+    def test_rolling_setting_does_not_change_config_hash(self, tiny_config):
+        import hashlib
+        import json
+
+        def h(cfg):
+            return hashlib.md5(json.dumps(cfg.model_dump(), sort_keys=True).encode()).hexdigest()
+
+        before = h(tiny_config)
+        rolled = tiny_config.model_copy(deep=True)
+        rolled.training.rolling_resume_every_steps = 251
+        assert rolled.training.rolling_resume_every_steps == 251
+        assert h(rolled) == before

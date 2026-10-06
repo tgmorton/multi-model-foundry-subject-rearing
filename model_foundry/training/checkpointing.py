@@ -433,6 +433,43 @@ class CheckpointManager:
 
         return tokenizer, global_step, epoch
 
+    def prune_rolling_resume_states(self, keep_step: int, permanent_steps) -> None:
+        """Rolling resume (2026-10-06): delete ``training_state.pt`` from every
+        checkpoint older than ``keep_step`` that is not a permanent resume
+        anchor, leaving those checkpoints analysis-only.
+
+        Called right after the ``keep_step`` checkpoint was promoted into
+        place, and does nothing unless that checkpoint really carries a
+        resume state, so a resumable checkpoint always exists. Self-healing:
+        a pod killed between a save and its prune leaves one extra state,
+        which the next prune removes. Non-fatal: a failure costs disk space,
+        never the run.
+        """
+        if not (self.output_dir / f"checkpoint-{keep_step}" / "training_state.pt").exists():
+            return
+        permanent = set(permanent_steps or ())
+        for d in self.output_dir.glob("checkpoint-*"):
+            m = re.fullmatch(r"checkpoint-(\d+)", d.name)  # skips .tmp staging dirs
+            if not m:
+                continue
+            step = int(m.group(1))
+            state = d / "training_state.pt"
+            if step >= keep_step or step in permanent or not state.exists():
+                continue
+            try:
+                state.unlink()
+                meta = d / "metadata.json"
+                if meta.exists():
+                    md = json.loads(meta.read_text())
+                    md["has_resume_state"] = False
+                    md["resume_state_pruned"] = "rolling"
+                    tmp = d / "metadata.json.tmp"
+                    tmp.write_text(json.dumps(md, indent=2))
+                    os.replace(tmp, meta)
+                print(f"  - Rolling resume: removed resume state from {d.name}")
+            except OSError as e:
+                print(f"  - Rolling resume: could not prune {d.name}: {e}")
+
     def cleanup_old_checkpoints(self, keep_latest: int = 5):
         """
         Remove old checkpoints to save disk space.

@@ -394,6 +394,22 @@ class TrainingConfig(BaseModel):
         description="Explicit steps that save full resume state; overrides save_resume_state_last_n; intersected with checkpoint_schedule.",
     )
 
+    # Rolling resume (2026-10-06). On top of the permanent
+    # resume_state_steps, the first scheduled checkpoint at least this many
+    # optimizer steps after the previous resume save also gets full resume
+    # state, and older rolling states are then deleted (permanent ones are
+    # kept). Caps the work a pod kill can cost at about this many steps,
+    # instead of the gap between permanent anchors (~40 h for gpt2_large
+    # under the wave2 4-anchor policy). exclude=True keeps it out of
+    # model_dump(), so config_hash is unchanged: it is a fault-tolerance
+    # knob, not part of the training computation. Needs resume_state_steps.
+    rolling_resume_every_steps: Optional[int] = Field(
+        default=None,
+        ge=1,
+        exclude=True,
+        description="Also save a rolling resume state every ~N steps; older rolling states are pruned. Requires resume_state_steps.",
+    )
+
     # Checkpoint generation parameters
     auto_generate_checkpoints: bool = False
 

@@ -148,6 +148,17 @@ class TrainingLoop:
                 set(sorted_schedule[-last_n:]) if last_n > 0 else set()
             )
 
+        # Rolling resume (2026-10-06): see
+        # TrainingConfig.rolling_resume_every_steps. Off for the legacy
+        # "every checkpoint full" mode, which needs no extra resume points.
+        # last_resume_step starts at the step we resumed from (a full-state
+        # checkpoint), or 0 for a fresh run.
+        rolling_every = getattr(self.config.training,
+                                "rolling_resume_every_steps", None)
+        if resume_state_steps is None:
+            rolling_every = None
+        last_resume_step = self.global_step
+
         progress_bar = tqdm(
             range(self.config.training.train_steps),
             initial=self.global_step,
@@ -354,6 +365,9 @@ class TrainingLoop:
                                 resume_state_steps is None
                                 or self.global_step in resume_state_steps
                             )
+                            if (not save_resume and rolling_every
+                                    and self.global_step - last_resume_step >= rolling_every):
+                                save_resume = True
                             # Preemption-smoke find (2026-08-22): this check
                             # (and the save it guards) runs BEFORE the
                             # `self.global_step += 1` below, i.e. it fires
@@ -404,6 +418,10 @@ class TrainingLoop:
                                 epoch_micro_step=micro_step,
                             )
                             last_saved_step = self.global_step
+                            if save_resume and rolling_every:
+                                last_resume_step = self.global_step
+                                self.checkpoint_manager.prune_rolling_resume_states(
+                                    self.global_step, resume_state_steps)
 
                         # Reset per-step timing after logging/saving so
                         # checkpoint save time doesn't pollute the next
@@ -483,6 +501,11 @@ class TrainingLoop:
                 save_resume_state=True,
                 epoch_completed=epoch_completed,
             )
+            if rolling_every:
+                # The finished run keeps only its permanent resume states
+                # plus this endpoint, exactly as without rolling resume.
+                self.checkpoint_manager.prune_rolling_resume_states(
+                    self.global_step, resume_state_steps)
 
         print("\n----- Training Complete -----")
 

@@ -179,6 +179,14 @@ def main() -> None:
     cfg["training"]["auto_generate_checkpoints"] = False
     cfg["training"]["checkpoint_schedule"] = sorted(schedule)
     cfg["training"]["resume_state_steps"] = resume_steps
+    # Rolling resume (Thomas 2026-10-06): one extra resume state about once
+    # per epoch on top of the 4 permanent anchors, pruned as the next one
+    # lands, so a pod kill costs <= ~1 epoch instead of up to ~40 h on
+    # gpt2_large (6 runs lost 1.7-2.6K steps each on 2026-10-06).
+    # ROLLING_RESUME_STEPS overrides the interval (smokes); 0 turns it off.
+    rolling = int(os.environ.get("ROLLING_RESUME_STEPS", steps_per_epoch))
+    if rolling > 0:
+        cfg["training"]["rolling_resume_every_steps"] = rolling
     cfg["training"]["resume_from_checkpoint"] = (
         os.environ.get("RESUME", "").lower() in ("1", "true"))
     cfg["training"]["deterministic"] = False  # D8: fast kernels everywhere
@@ -194,7 +202,7 @@ def main() -> None:
     print("=== wave2_agent ===")
     print(f"  wave={wave} cell={cell} corpus_cell={corpus_cell} arch={arch}")
     print(f"  hp=h{hp_rank} replicate={replicate} seed={seed} (blake2b-derived)")
-    print(f"  epochs={epochs} anchors={len(schedule)} resume_steps={resume_steps}")
+    print(f"  epochs={epochs} anchors={len(schedule)} resume_steps={resume_steps} rolling_every={rolling or None}")
     print(f"  run_id={run_id}")
     sys.stdout.flush()
 
