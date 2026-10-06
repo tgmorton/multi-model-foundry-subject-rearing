@@ -180,6 +180,9 @@ def check(seen: set, do_top: bool) -> list:
     return out
 
 
+ALERT_LOG = Path.home() / ".cache" / "subject-drop" / "fleet_alerts.log"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--interval", type=int, default=300)
@@ -192,6 +195,11 @@ def main():
         try:
             for msg in check(seen, do_top=True):
                 print(msg, flush=True)
+                # Durable copy: an alert marked seen but lost when the
+                # reader's pipe closed (30-min monitor expiry) would never
+                # re-fire; the log lets the next reader catch up.
+                with ALERT_LOG.open("a") as fh:
+                    fh.write(f"{datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
             SEEN.write_text(json.dumps(sorted(seen)))
             fails = 0
         except Exception as e:  # noqa: BLE001
