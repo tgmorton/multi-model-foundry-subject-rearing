@@ -191,21 +191,27 @@ def main():
     a = ap.parse_args()
     seen = set() if a.reset or not SEEN.exists() else set(json.loads(SEEN.read_text()))
     fails, loop = 0, 0
+
+    def emit(msg):
+        print(msg, flush=True)
+        # Durable copy: an alert marked seen but lost when the reader's pipe
+        # closed (30-min monitor expiry) would never re-fire; the log lets
+        # the next reader catch up. Monitors tail this log, so every alert,
+        # api_down included, must go through here (2026-10-09: an expired
+        # kubectl login went unreported because api_down only printed).
+        with ALERT_LOG.open("a") as fh:
+            fh.write(f"{datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
+
     while True:
         try:
             for msg in check(seen, do_top=True):
-                print(msg, flush=True)
-                # Durable copy: an alert marked seen but lost when the
-                # reader's pipe closed (30-min monitor expiry) would never
-                # re-fire; the log lets the next reader catch up.
-                with ALERT_LOG.open("a") as fh:
-                    fh.write(f"{datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ} {msg}\n")
+                emit(msg)
             SEEN.write_text(json.dumps(sorted(seen)))
             fails = 0
         except Exception as e:  # noqa: BLE001
             fails += 1
             if fails == 3:
-                print(f"ALERT api_down kubectl failing 3x in a row: {e}", flush=True)
+                emit(f"ALERT api_down kubectl failing 3x in a row: {e}")
         if a.once:
             break
         loop += 1
