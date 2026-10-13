@@ -5,12 +5,14 @@ All tests run on CPU without real data. Heavy dependencies (model, optimizer,
 scheduler, checkpoint manager, data processor) are replaced with mocks.
 """
 
+import copy
 import types
 from unittest.mock import MagicMock, patch, call
 
 import pytest
 import torch
 
+from model_foundry.training.checkpointing import resolve_resume_epoch
 from model_foundry.training.loop import TrainingLoop
 
 
@@ -418,7 +420,11 @@ def _make_run_loop(train_steps, grad_accum, checkpoint_schedule, n_batches):
         resume_state_steps=None,
     )
     logging_cfg = types.SimpleNamespace(use_wandb=False)
-    config = types.SimpleNamespace(training=training, logging=logging_cfg)
+    # Matches _microbatch(): 1 row x 12 tokens. run() reads it to credit the
+    # in-flight window's tokens when resuming from a mid-epoch checkpoint.
+    data_cfg = types.SimpleNamespace(batch_size=1, max_sequence_length=12)
+    config = types.SimpleNamespace(training=training, logging=logging_cfg,
+                                   data=data_cfg)
 
     model = _make_mock_model()
     optimizer = MagicMock()
@@ -501,9 +507,9 @@ class TestTokenCounterSaveResumeConsistency:
 
     def test_resumed_run_matches_uninterrupted_reference_token_total(self):
         """End-to-end: a run split by a simulated preemption at
-        checkpoint-3 and then resumed must reach the SAME final
-        total_tokens_processed as an uninterrupted reference run — not one
-        effective step (TOKENS_PER_STEP) higher.
+        checkpoint-3 and then resumed (through the real fast-forward) must
+        reach the SAME final step and total_tokens_processed as an
+        uninterrupted reference run.
         """
         # --- Reference: a single, uninterrupted run to train_steps. ---
         with patch('torch.cuda.is_available', return_value=False):
@@ -534,27 +540,25 @@ class TestTokenCounterSaveResumeConsistency:
             )
             killed_loop.run(tokenizer=MagicMock(), start_step=0,
                              start_epoch=0, start_tokens=0)
-        killed_calls = killed_loop.checkpoint_manager.save_checkpoint.call_args_list
-        loaded_start_step = killed_calls[0].args[4]
-        loaded_start_tokens = killed_calls[0].args[7]
+        killed_save = killed_loop.checkpoint_manager.save_checkpoint.call_args_list[0]
+        loaded_start_step = killed_save.args[4]
+        loaded_start_tokens = killed_save.args[7]
 
         # --- Resume: a fresh process re-seeded from exactly what the
-        # checkpoint persisted (mirrors checkpoint_manager.load_checkpoint
-        # -> resume_total_tokens -> run(start_tokens=...)). No fast-forward
-        # needed — the fake dataloader below IS the remaining data. ---
+        # checkpoint persisted (mirrors load_checkpoint -> resume_batch_offset
+        # / resume_micro_step / resume_total_tokens -> run()). It gets the
+        # FULL dataloader and the same schedule, so the real fast-forward
+        # path runs, as on the cluster. ---
         with patch('torch.cuda.is_available', return_value=False):
             resumed_loop = _make_run_loop(
                 train_steps=self.TRAIN_STEPS,
                 grad_accum=self.GRAD_ACCUM,
-                checkpoint_schedule=set(),  # avoid re-tripping schedule={3}
-                # self.global_step re-enters at loaded_start_step and must
-                # climb to TRAIN_STEPS by its OWN increments regardless of
-                # the token-counter fix — that structurally requires
-                # exactly (TRAIN_STEPS - loaded_start_step) more real
-                # optimizer-step windows here, independent of what this
-                # test is checking.
-                n_batches=(self.TRAIN_STEPS - loaded_start_step) * self.GRAD_ACCUM,
+                checkpoint_schedule=self.SCHEDULE,
+                n_batches=self.TRAIN_STEPS * self.GRAD_ACCUM,
             )
+            cm = resumed_loop.checkpoint_manager
+            cm.resume_batch_offset = killed_save.kwargs['epoch_batch_offset']
+            cm.resume_micro_step = killed_save.kwargs['epoch_micro_step']
             resumed_loop.run(tokenizer=MagicMock(),
                               start_step=loaded_start_step, start_epoch=0,
                               start_tokens=loaded_start_tokens)
@@ -562,9 +566,11 @@ class TestTokenCounterSaveResumeConsistency:
         resumed_final_step = resumed_calls[-1].args[4]
         resumed_final_tokens = resumed_calls[-1].args[7]
 
+        # The resumed process must not re-save the step it resumed from.
+        assert [c.args[4] for c in resumed_calls] == [self.TRAIN_STEPS]
         assert resumed_final_step == reference_final_step == self.TRAIN_STEPS
-        # The regression: pre-fix code leaves this TOKENS_PER_STEP (one
-        # whole effective step) higher than the reference.
+        # 2026-08-22 regression: the token count must not carry an extra
+        # TOKENS_PER_STEP relative to the reference.
         assert resumed_final_tokens == reference_final_tokens
 
 
@@ -682,3 +688,247 @@ class TestEndpointCheckpointMode:
     def test_rejects_unknown_mode(self):
         with pytest.raises(ValueError):
             self._saves("bogus")
+
+
+# ---------------------------------------------------------------------------
+# Resume off-by-one (2026-10-13): save -> kill -> resume through the REAL
+# fast-forward path, compared checkpoint by checkpoint with an
+# uninterrupted run.
+# ---------------------------------------------------------------------------
+#
+# The in-loop save fires before `self.global_step += 1`, so checkpoint-S
+# holds the state after S+1 optimizer windows and records
+# epoch_batch_offset = those S+1 windows' micro-batches. Resuming at
+# global_step = S made the first post-resume window re-save checkpoint-S one
+# window later, and every later label lagged its data by one window per
+# resume (rolling-resume smoke 2026-10-06: resumed from 590, skipped 4728 =
+# 591*8 micro-batches, then re-saved checkpoint-590). A real tiny model,
+# optimizer and LR scheduler make each checkpoint's weights a fingerprint of
+# exactly which data it has seen.
+
+_GA = 2                          # gradient accumulation
+_B, _L = 2, 4                    # physical batch rows x sequence length
+_TPS = _GA * _B * _L             # tokens per optimizer step
+_BATCHES_PER_EPOCH = 12
+_SPE = _BATCHES_PER_EPOCH // _GA  # 6 optimizer windows per epoch
+_EPOCHS = 2
+_TRAIN_STEPS = _EPOCHS * _SPE     # 12
+_ALL_LABELS = range(_TRAIN_STEPS)  # every in-loop save label
+
+
+class _Preempted(Exception):
+    """Raised by the fake manager right after a save lands (pod killed)."""
+
+
+class _TinyLM(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.w = torch.nn.Parameter(torch.zeros(1, dtype=torch.float64))
+
+    def forward(self, input_ids, attention_mask=None, labels=None):
+        x = input_ids.to(torch.float64).mean() / 100
+        return types.SimpleNamespace(loss=((self.w - x) ** 2).sum())
+
+
+class _EpochData:
+    """Deterministic micro-batches whose content depends on (epoch, index).
+    run() calls collate_fn.set_epoch(epoch) before iter(), as with the real
+    collator; there is no .generator, so the reseed branch stays inert."""
+
+    def __init__(self):
+        self.collate_fn = self
+        self._epoch = 0
+
+    def set_epoch(self, epoch):
+        self._epoch = epoch
+
+    def __iter__(self):
+        for i in range(_BATCHES_PER_EPOCH):
+            ids = torch.full((_B, _L), 1 + 100 * self._epoch + i)
+            yield {'input_ids': ids, 'attention_mask': torch.ones_like(ids),
+                   'labels': ids.clone()}
+
+
+class _DiskCheckpointManager:
+    """Stands in for CheckpointManager. ``disk`` (label -> record) outlives
+    the process, like the PVC; ``kill_after`` kills the process right after
+    that label lands."""
+
+    def __init__(self, disk, schedule, kill_after=None):
+        self.disk = disk
+        self.schedule = set(schedule)
+        self.kill_after = kill_after
+        self.saved = []  # labels this process wrote, in order
+        self.resume_batch_offset = 0
+        self.resume_micro_step = 0
+        self.pending_amp_scaler_state = None
+
+    def get_checkpoint_schedule(self):
+        return set(self.schedule)
+
+    def save_checkpoint(self, model, tokenizer, optimizer, lr_scheduler,
+                        global_step, epoch, scaler=None,
+                        total_tokens_processed=0, save_resume_state=True,
+                        epoch_batch_offset=0, epoch_micro_step=0,
+                        epoch_completed=False):
+        old = self.disk.get(global_step)
+        self.disk[global_step] = {
+            'weights': model.w.detach().clone(),
+            'opt_steps': lr_scheduler.last_epoch,
+            'optimizer': copy.deepcopy(optimizer.state_dict()),
+            'lr_scheduler': copy.deepcopy(lr_scheduler.state_dict()),
+            'epoch': epoch,
+            'total_tokens': total_tokens_processed,
+            'epoch_batch_offset': epoch_batch_offset,
+            'epoch_micro_step': epoch_micro_step,
+            'epoch_completed': epoch_completed,
+            # save_checkpoint never downgrades a resumable checkpoint.
+            'resume_state': save_resume_state or bool(old and old['resume_state']),
+        }
+        self.saved.append(global_step)
+        if global_step == self.kill_after:
+            raise _Preempted(global_step)
+
+    def prune_rolling_resume_states(self, keep_step, permanent_steps):
+        pass
+
+
+def _pod(disk, schedule, kill_after=None, resume_from=None, **training):
+    """One pod's lifetime: build model/optimizer/scheduler, resume from
+    disk[resume_from] the way load_checkpoint + Trainer do, then run()."""
+    model = _TinyLM()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer, lambda s: 1.0 / (1.0 + 0.1 * s))
+    fields = dict(gradient_accumulation_steps=_GA, use_amp=False,
+                  train_steps=_TRAIN_STEPS, epochs=_EPOCHS, max_grad_norm=None,
+                  save_resume_state_last_n=None, resume_state_steps=None,
+                  rolling_resume_every_steps=None)
+    fields.update(training)
+    config = types.SimpleNamespace(
+        training=types.SimpleNamespace(**fields),
+        logging=types.SimpleNamespace(use_wandb=False),
+        data=types.SimpleNamespace(batch_size=_B, max_sequence_length=_L),
+    )
+    manager = _DiskCheckpointManager(disk, schedule, kill_after)
+    start_step = start_epoch = start_tokens = 0
+    if resume_from is not None:
+        state = disk[resume_from]
+        assert state['resume_state'], resume_from
+        model.w.data.copy_(state['weights'])
+        optimizer.load_state_dict(state['optimizer'])
+        lr_scheduler.load_state_dict(state['lr_scheduler'])
+        offset = state['epoch_batch_offset']
+        manager.resume_batch_offset = offset
+        manager.resume_micro_step = state['epoch_micro_step'] or offset
+        start_step, start_tokens = resume_from, state['total_tokens']
+        start_epoch = resolve_resume_epoch(
+            resume_from, state['epoch'], _SPE, offset, state['epoch_completed'])
+        if start_epoch != state['epoch']:
+            manager.resume_batch_offset = manager.resume_micro_step = 0
+    data_processor = MagicMock()
+    data_processor.get_training_steps_per_epoch.return_value = _SPE
+    loop = TrainingLoop(config, model, optimizer, lr_scheduler, _EpochData(),
+                        torch.device('cpu'), manager, data_processor)
+    try:
+        with patch('torch.cuda.is_available', return_value=False):
+            loop.run(tokenizer=None, start_step=start_step,
+                     start_epoch=start_epoch, start_tokens=start_tokens)
+    except _Preempted:
+        pass
+    return manager.saved
+
+
+def _run_with_preemptions(kill_points, schedule=_ALL_LABELS, **training):
+    """Kill the pod right after each label in ``kill_points`` lands and
+    resume the next pod from it. Returns (disk, per-pod save logs)."""
+    disk, logs, resume_from = {}, [], None
+    for kill in list(kill_points) + [None]:
+        logs.append(_pod(disk, schedule, kill_after=kill,
+                         resume_from=resume_from, **training))
+        resume_from = kill
+    return disk, logs
+
+
+def _assert_same_checkpoint(got, ref, label):
+    assert got['opt_steps'] == ref['opt_steps'], label
+    assert torch.equal(got['weights'], ref['weights']), label
+    assert got['total_tokens'] == ref['total_tokens'], label
+    assert got['epoch'] == ref['epoch'], label
+    assert got['epoch_batch_offset'] == ref['epoch_batch_offset'], label
+
+
+class TestResumeMatchesUninterrupted:
+
+    def test_reference_label_convention(self):
+        """Pins the convention the resume path has to invert: in-loop
+        checkpoint-S holds S+1 optimizer steps; the endpoint guard's
+        checkpoint-E holds E. Tokens always equal label * tokens_per_step."""
+        disk, logs = _run_with_preemptions(())
+        assert logs == [list(range(_TRAIN_STEPS + 1))]
+        for label, rec in disk.items():
+            in_loop = label < _TRAIN_STEPS
+            assert rec['opt_steps'] == (label + 1 if in_loop else label)
+            assert rec['total_tokens'] == label * _TPS
+            assert rec['epoch_completed'] == (not in_loop)
+
+    @pytest.mark.parametrize("kill_points", [
+        (3,),        # mid epoch 1
+        (0,),        # checkpoint-0 (start_step == 0)
+        (5,),        # last window of epoch 1: fast-forward drains the epoch
+        (6,),        # first window of epoch 2
+        (11,),       # last in-loop save: resumed pod trains nothing
+        (3, 8),      # resumes in both epochs
+        (2, 3, 4),   # back-to-back resumes (the lag used to accumulate)
+    ], ids=lambda k: "kill@" + "+".join(map(str, k)))
+    def test_every_checkpoint_matches_reference(self, kill_points):
+        ref_disk, ref_logs = _run_with_preemptions(())
+        disk, logs = _run_with_preemptions(kill_points)
+
+        # Every label written exactly once, in order: a resumed pod never
+        # re-saves the label it resumed from, and the run still ends with
+        # the endpoint guard's checkpoint-<train_steps>.
+        assert [s for log in logs for s in log] == ref_logs[0]
+        assert disk.keys() == ref_disk.keys()
+        for label in ref_disk:
+            _assert_same_checkpoint(disk[label], ref_disk[label], label)
+            assert disk[label]['total_tokens'] == label * _TPS
+
+    def test_rolling_resume_cadence_survives_resume(self):
+        rolling = dict(resume_state_steps=[2, 11], rolling_resume_every_steps=3)
+        ref_disk, ref_logs = _run_with_preemptions((), **rolling)
+        disk, logs = _run_with_preemptions((5, 8), **rolling)
+
+        def full(d):
+            return sorted(s for s, r in d.items() if r['resume_state'])
+
+        assert full(ref_disk) == [2, 5, 8, 11, _TRAIN_STEPS]
+        assert full(disk) == full(ref_disk)
+        assert [s for log in logs for s in log] == ref_logs[0]
+        for label in ref_disk:
+            _assert_same_checkpoint(disk[label], ref_disk[label], label)
+
+    def test_endpoint_checkpoint_resumes_without_shift(self):
+        """The endpoint guard saves AFTER the increment (offset 0), so
+        resuming from it must not add a window: a finished run re-saves only
+        its identical endpoint."""
+        disk, _ = _run_with_preemptions(())
+        ref = copy.deepcopy(disk[_TRAIN_STEPS])
+        saved = _pod(disk, _ALL_LABELS, resume_from=_TRAIN_STEPS)
+        assert saved == [_TRAIN_STEPS]
+        got = disk[_TRAIN_STEPS]
+        assert got['opt_steps'] == ref['opt_steps'] == _TRAIN_STEPS
+        assert torch.equal(got['weights'], ref['weights'])
+        assert got['total_tokens'] == ref['total_tokens'] == _TRAIN_STEPS * _TPS
+
+    def test_completed_epoch_endpoint_extends_like_uninterrupted(self):
+        """A 1-epoch run's endpoint (epoch_completed) extended to 2 epochs
+        matches an uninterrupted 2-epoch run from there on."""
+        ref_disk, _ = _run_with_preemptions(())
+        disk = {}
+        _pod(disk, _ALL_LABELS, epochs=1, train_steps=_SPE)
+        assert disk[_SPE]['epoch_completed']
+        assert disk[_SPE]['epoch_batch_offset'] == 0
+        _pod(disk, _ALL_LABELS, resume_from=_SPE)
+        for label in range(_SPE, _TRAIN_STEPS + 1):
+            _assert_same_checkpoint(disk[label], ref_disk[label], label)

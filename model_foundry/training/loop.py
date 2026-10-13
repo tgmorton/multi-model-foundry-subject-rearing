@@ -149,6 +149,28 @@ class TrainingLoop:
             )
         self.global_step = start_step
         self.epoch = start_epoch
+        total_tokens_processed = start_tokens
+
+        # Resume off-by-one (2026-10-13). A nonzero resume_batch_offset
+        # means the checkpoint came from the in-loop save, which fires
+        # BEFORE the `self.global_step += 1` below: checkpoint-S holds the
+        # state (weights, optimizer, scheduler, data position) after S+1
+        # windows, while its label and token count say S. Resume where the
+        # uninterrupted run stood right after that save: global_step S+1,
+        # plus the window's tokens. Restarting at S re-saved checkpoint-S
+        # one window later and shifted every later label by one window per
+        # resume. Endpoint-guard checkpoints (offset 0) already hold
+        # `global_step` windows and resume unchanged.
+        resume_offset = int(
+            getattr(self.checkpoint_manager, "resume_batch_offset", 0) or 0
+        )
+        if resume_offset:
+            self.global_step = start_step + 1
+            total_tokens_processed = start_tokens + (
+                self.config.data.batch_size
+                * self.config.training.gradient_accumulation_steps
+                * self.config.data.max_sequence_length
+            )
 
         # Get checkpoint schedule
         checkpoint_schedule = self.checkpoint_manager.get_checkpoint_schedule()
@@ -181,13 +203,13 @@ class TrainingLoop:
         # Rolling resume (2026-10-06): see
         # TrainingConfig.rolling_resume_every_steps. Off for the legacy
         # "every checkpoint full" mode, which needs no extra resume points.
-        # last_resume_step starts at the step we resumed from (a full-state
-        # checkpoint), or 0 for a fresh run.
+        # last_resume_step starts at the label of the checkpoint we resumed
+        # from (a full-state checkpoint), or 0 for a fresh run.
         rolling_every = getattr(self.config.training,
                                 "rolling_resume_every_steps", None)
         if resume_state_steps is None:
             rolling_every = None
-        last_resume_step = self.global_step
+        last_resume_step = start_step
 
         progress_bar = tqdm(
             range(self.config.training.train_steps),
@@ -196,7 +218,6 @@ class TrainingLoop:
         )
 
         # Training metrics tracking
-        total_tokens_processed = start_tokens
         steps_per_epoch = self.data_processor.get_training_steps_per_epoch()
 
         # Endpoint guard bookkeeping (STEP 4). Track the last step we wrote
@@ -288,10 +309,9 @@ class TrainingLoop:
             # would have seen next. micro_step resumes from its own saved
             # value (epoch_micro_step) — it can lag the iterator position
             # when an OOM rewound an accumulation window before the save.
-            resume_offset = int(
-                getattr(self.checkpoint_manager, "resume_batch_offset", 0) or 0
-            )
-            if resume_offset and epoch == start_epoch and start_step > 0:
+            # Not gated on start_step > 0: checkpoint-0 is also an in-loop
+            # save, one window in.
+            if resume_offset and epoch == start_epoch:
                 self.logger.info(
                     "Resume fast-forward: skipping %d already-consumed "
                     "micro-batches of epoch %d", resume_offset, epoch + 1
@@ -439,7 +459,9 @@ class TrainingLoop:
                             # tokens_per_step` true at every save, in every
                             # process, for any number of resumes — which is
                             # exactly what forces the final token count to
-                            # match an uninterrupted reference run.
+                            # match an uninterrupted reference run. The
+                            # top of run() adds the window back on resume
+                            # (global_step S+1, tokens + one window).
                             self._save_checkpoint(
                                 tokenizer,
                                 total_tokens_processed - tokens_acc,
