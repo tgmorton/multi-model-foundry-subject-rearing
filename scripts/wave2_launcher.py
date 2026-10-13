@@ -79,7 +79,8 @@ echo "RUN OK: $(cat /tmp/run_succeeded)"
 
 
 def render_job(cell: str, arch: str, wave_id: str, epochs: int,
-               parallelism: int, backoff_limit: int = 20) -> dict:
+               parallelism: int, backoff_limit: int = 20,
+               completions: int = 10) -> dict:
     phys, ram, cpu = ARCH_SETTINGS[arch]
     m = _RAND100.match(cell)
     corpus_cell = f"pdrop_info100_{m.group(1)}" if m else cell
@@ -116,7 +117,7 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
         "spec": {
             "backoffLimit": backoff_limit,
             "completionMode": "Indexed",
-            "completions": 10,
+            "completions": completions,
             "parallelism": parallelism,
             "ttlSecondsAfterFinished": 604800,
             "podFailurePolicy": {"rules": [{
@@ -200,6 +201,10 @@ def main() -> None:
     # and device-plugin UnexpectedAdmissionErrors can't be ignored by
     # podFailurePolicy — the anti-arm needed 60 (2026-09-28).
     ap.add_argument("--backoff-limit", type=int, default=20)
+    # Indices per job: idx -> (hp_rank, replicate) = divmod(idx, 2), so 1 =
+    # h0 rep0 only. Capped waves (w3) set 1 so finished cells don't queue 9
+    # no-op pods that each wait for a GPU just to exit (2026-10-13).
+    ap.add_argument("--completions", type=int, default=10)
     ap.add_argument("--out-dir", type=Path, default=REPO_ROOT / "k8s" / "wave2")
     ap.add_argument("--watermark-free-tb", type=float, default=8.0)
     ap.add_argument("--apply", action="store_true")
@@ -218,12 +223,13 @@ def main() -> None:
     for cell in cells:
         for arch in args.archs:
             job = render_job(cell, arch, args.wave_id, args.epochs,
-                             args.parallelism, args.backoff_limit)
+                             args.parallelism, args.backoff_limit,
+                             args.completions)
             path = args.out_dir / f"{job['metadata']['name']}.yaml"
             path.write_text(yaml.safe_dump(job, sort_keys=False))
             jobs.append((job["metadata"]["name"], path))
     print(f"rendered {len(jobs)} jobs ({len(cells)} cells × "
-          f"{len(args.archs)} archs = {len(jobs) * 10} runs) -> {args.out_dir}")
+          f"{len(args.archs)} archs = {len(jobs) * args.completions} runs) -> {args.out_dir}")
     if args.dry_run or not args.apply:
         print("dry run / no --apply: nothing dispatched")
         return
