@@ -1,0 +1,14 @@
+# Working storage for the rater (surprisal-model) corpus, Option B (2026-10-14).
+# Lives in the null-subjects namespace so corpus prep and annotation never touch
+# lemn-lab's shared pod quota. Finished corpora go to S3 for training in lemn-lab.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: thomas-rater-corpus
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-corpus}
+spec:
+  storageClassName: rook-cephfs
+  accessModes: [ReadWriteMany]
+  resources:
+    requests: {storage: 2Ti}

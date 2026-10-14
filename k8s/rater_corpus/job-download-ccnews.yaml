@@ -1,0 +1,95 @@
+# CC-News 2016-2019 (stanford-oval/ccnews), English rows only (2026-10-14). One index
+# per year; each file is downloaded, filtered to language == en, written as zstd parquet,
+# and the original deleted (252 GB all-language total, never stored at once). 6Gi: each
+# file is a single 3.1 GB row group. Resumable: finished files are skipped.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-dl-raterb-ccnews
+  namespace: null-subjects
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: rater-corpus-download
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 4
+  backoffLimit: 12
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+      containers:
+      - name: main
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - python3
+        - -u
+        - -c
+        - "\nimport os, re, json, time\nimport pyarrow.parquet as pq, pyarrow.compute as pc\nfrom huggingface_hub import HfApi, hf_hub_download\nyear = 2016 + int(os.environ[\"JOB_COMPLETION_INDEX\"])\n\
+          REPO = \"stanford-oval/ccnews\"\nKEEP = [\"requested_url\", \"plain_text\", \"published_date\", \"title\", \"sitename\", \"language\", \"language_score\"]\nout = \"/mnt/corpus/raw/ccnews_en_2016_2019\"\
+          ; tmpd = f\"/mnt/corpus/raw/_ccnews_tmp/{year}\"\nos.makedirs(out, exist_ok=True); os.makedirs(tmpd, exist_ok=True)\nfiles = sorted(f for f in HfApi().list_repo_files(REPO, repo_type=\"dataset\"\
+          ) if re.fullmatch(rf\"{year}_\\d+\\.parquet\", f))\ntot_in = tot_en = 0\nfor f in files:\n    dst = f\"{out}/{f}\"\n    if os.path.exists(dst):            # resumable: finished files are skipped\n\
+          \        continue\n    p = hf_hub_download(REPO, f, repo_type=\"dataset\", local_dir=tmpd)\n    pf = pq.ParquetFile(p)\n    w, n_in, n_en, tmp = None, 0, 0, dst + \".tmp\"\n    for b in pf.iter_batches(batch_size=4000,\
+          \ columns=KEEP):\n        n_in += b.num_rows\n        t = b.filter(pc.equal(b.column(\"language\"), \"en\"))\n        n_en += t.num_rows\n        if w is None:\n            w = pq.ParquetWriter(tmp,\
+          \ t.schema, compression=\"zstd\")\n        if t.num_rows:\n            w.write_batch(t)\n    w.close(); os.replace(tmp, dst); os.remove(p)\n    tot_in += n_in; tot_en += n_en\n    print(f\"{f}:\
+          \ {n_en}/{n_in} English\", flush=True)\njson.dump({\"year\": year, \"files\": len(files), \"rows_in_this_pass\": tot_in, \"en_rows_this_pass\": tot_en},\n          open(f\"{out}/MANIFEST_{year}.json\"\
+          , \"w\"), indent=2)\nprint(\"DONE\", year, flush=True)\n"
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-thomas
+              key: HF_TOKEN
+        - name: HF_HUB_DISABLE_PROGRESS_BARS
+          value: '1'
+        - name: HF_HOME
+          value: /tmp/hf
+        resources:
+          requests:
+            cpu: '1'
+            memory: 6Gi
+          limits:
+            cpu: '1'
+            memory: 6Gi
+        volumeMounts:
+        - name: corpus
+          mountPath: /mnt/corpus
+      volumes:
+      - name: corpus
+        persistentVolumeClaim:
+          claimName: thomas-rater-corpus
