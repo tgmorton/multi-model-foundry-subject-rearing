@@ -6,10 +6,14 @@
 # v2 (2026-10-15): the 24 GB Ampere pool was full (1 of 40 pods scheduled in 25 min), so the
 # pool now adds RTX A4000 + Turing + Pascal (spaCy trf needs no FA2; torch cu121 and cupy-cuda12x
 # support sm_60+). Volta is left free for the gpt2_large evals.
+# v3 (2026-10-15): right-sized to 2 CPU / 10Gi (observed ~1 CPU, ~1.9 GiB at 19% of a shard; the
+# DocBin is held in memory and serialized once at the end, so ~2x the projected ~5 GB peak).
+# 4 CPU / 12Gi had 52 GPU-free nodes rejecting the pod on CPU or memory. Finished shards
+# (ANNOTATION_MANIFEST.json, written last) are skipped, so the job is resumable.
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-annotate-raterb-v2
+  name: thomas-annotate-raterb-v3
   namespace: lemn-lab
   labels: &id001
     owner: thomas
@@ -19,7 +23,7 @@ metadata:
 spec:
   completionMode: Indexed
   completions: 200
-  parallelism: 40
+  parallelism: 60
   backoffLimit: 200
   ttlSecondsAfterFinished: 604800
   podFailurePolicy:
@@ -116,9 +120,11 @@ spec:
         - -c
         args:
         - "set -euo pipefail\nSHARD=$(printf \"shard_%03d\" \"$JOB_COMPLETION_INDEX\")\nINPUT_DIR=/mnt/data/rater_corpus/optionb_v1/base/${SHARD}\necho \"annotate ${SHARD} on ${NODE_NAME}\"\nif [ ! -f \"\
-          ${INPUT_DIR}/${SHARD}.train\" ]; then echo \"[skip] no ${INPUT_DIR}/${SHARD}.train\"; exit 0; fi\npip install --quiet \"cupy-cuda12x<14\" \"numpy<2\" || echo \"[warn] cupy install failed; CPU\
-          \ fallback\"\nexport PYTHONPATH=\"/opt/repo:${PYTHONPATH:-}\"\npython -c \"import spacy; print('spacy.prefer_gpu() =', spacy.prefer_gpu())\"\ncd /opt/repo\npython -m preprocessing.annotate --input\
-          \ \"${INPUT_DIR}/\" --spacy-model en_core_web_trf \\\n  --file \"${SHARD}\" --chunk-size 500 --spacy-batch-size 32\n"
+          ${INPUT_DIR}/${SHARD}.train\" ]; then echo \"[skip] no ${INPUT_DIR}/${SHARD}.train\"; exit 0; fi\nANNOT=$(cd /opt/repo && PYTHONPATH=/opt/repo python -c \"from pathlib import Path; from preprocessing.annotate\
+          \ import default_annotation_output_dir as d; print(d(Path('${INPUT_DIR}'), 'en_core_web_trf'))\")\nif [ -f \"${ANNOT}/ANNOTATION_MANIFEST.json\" ] && [ -f \"${ANNOT}/${SHARD}.linemap.jsonl\" ];\
+          \ then echo \"[done already] ${ANNOT}\"; exit 0; fi\npip install --quiet \"cupy-cuda12x<14\" \"numpy<2\" || echo \"[warn] cupy install failed; CPU fallback\"\nexport PYTHONPATH=\"/opt/repo:${PYTHONPATH:-}\"\
+          \npython -c \"import spacy; print('spacy.prefer_gpu() =', spacy.prefer_gpu())\"\ncd /opt/repo\npython -m preprocessing.annotate --input \"${INPUT_DIR}/\" --spacy-model en_core_web_trf \\\n  --file\
+          \ \"${SHARD}\" --chunk-size 500 --spacy-batch-size 32\n"
         env:
         - name: NODE_NAME
           valueFrom:
@@ -126,12 +132,12 @@ spec:
               fieldPath: spec.nodeName
         resources:
           requests:
-            memory: 12Gi
-            cpu: '4'
+            memory: 10Gi
+            cpu: '2'
             nvidia.com/gpu: 1
           limits:
-            memory: 12Gi
-            cpu: '4'
+            memory: 10Gi
+            cpu: '2'
             nvidia.com/gpu: 1
         volumeMounts:
         - name: repo
