@@ -1,13 +1,17 @@
 """End-state overt-preference by decile and intervention, for any set of
-selection arms against the random control. Pilot cohort (gpt2_small,
-condition-matched stimuli).
+selection arms against the random control. Condition-matched stimuli;
+architecture chosen with --arch (default gpt2_small, the pilot cohort).
 
 End state = mean of the last N checkpoints (default 3) of each run, which
 damps the checkpoint-to-checkpoint jitter measured at ~0.06 without
 smoothing across the training trajectory.
 
 Usage: python analysis/eval_v2/wave2_endstate.py [--hp 0] [--last 3]
-         [--arms rand,bert,bertanti,robbi,robbianti]
+         [--arms rand,bert,bertanti,robbi,robbianti] [--arch gpt2_small]
+
+Only pairs files whose cell_id starts with "<arch>-" are used. Outputs for
+any arch other than gpt2_small get a "_<arch>" filename tag, so the
+gpt2_small figures are never overwritten.
 """
 from __future__ import annotations
 import argparse, io, re
@@ -30,10 +34,24 @@ ARM_STYLE = {
     "comp": (SIENNA, ":", "P", "most recoverable first — composite"),
 }
 
+# Flat cache shared across architectures. Safe because local filenames are the
+# S3 basenames ("cell_id=<arch>-..."), so architectures never collide, and every
+# read below goes through an arch-filtered list (never a bare cache glob).
 CACHE = Path.home() / ".cache" / "subject-drop" / "pairs_cache"
+DEFAULT_ARCH = "gpt2_small"
 
 
-def load(bucket, prefix, profile, endpoint, last):
+def is_arch(name, arch):
+    """True if an S3 key / local filename belongs to `arch`. cell_ids look like
+    '<arch>-<lang>-<condition>-h<hp>-s<seed>'; the trailing '-' keeps
+    'gpt2_small' from matching a longer arch name."""
+    base = name.rsplit("/", 1)[-1]
+    if base.startswith("cell_id="):
+        base = base[len("cell_id="):]
+    return base.startswith(f"{arch}-")
+
+
+def load(bucket, prefix, profile, endpoint, last, arch):
     """Parallel, retrying download with a local cache (valid while the S3
     object size is unchanged) — the external endpoint times out on long
     serial pulls of ~500 parquets (2026-09-29)."""
@@ -48,8 +66,11 @@ def load(bucket, prefix, profile, endpoint, last):
     objs = []
     for page in s.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
         for o in page.get("Contents", []):
-            if "pdrop2" in o["Key"] and CELL.search(o["Key"]):
+            if ("pdrop2" in o["Key"] and is_arch(o["Key"], arch)
+                    and CELL.search(o["Key"])):
                 objs.append(o)
+    if not objs:
+        raise SystemExit(f"no pdrop2 pairs for arch {arch!r} under s3://{bucket}/{prefix}")
 
     def fetch(o):
         p = CACHE / o["Key"].rsplit("/", 1)[-1]
@@ -76,6 +97,8 @@ def main():
     ap.add_argument("--prefix", default="eval_results/null_subj_v2_condition_matched_v1/pairs/")
     ap.add_argument("--profile", default="nrp")
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
+    ap.add_argument("--arch", default=DEFAULT_ARCH,
+                    help="architecture to plot (cell_id prefix), e.g. gpt2_small, gpt2_large")
     ap.add_argument("--hp", type=int, default=0)
     ap.add_argument("--last", type=int, default=3)
     ap.add_argument("--arms", default="rand,bert",
@@ -83,10 +106,13 @@ def main():
     ap.add_argument("--out", type=Path, default=Path("analysis/eval_v2/figures/wave2_v5"))
     a = ap.parse_args(); a.out.mkdir(parents=True, exist_ok=True)
     arms = [x for x in a.arms.split(",") if x]
+    archtag = "" if a.arch == DEFAULT_ARCH else f"_{a.arch}"
 
-    df = load(a.bucket, a.prefix, a.profile, a.endpoint, a.last)
-    df.to_csv(a.out / "endstate_all.csv", index=False)
-    print(f"{len(df)} runs | arms {sorted(df.arm.unique())} | hp {sorted(df.hp.unique())}")
+    df = load(a.bucket, a.prefix, a.profile, a.endpoint, a.last, a.arch)
+    if df.empty:
+        raise SystemExit(f"no {a.arch} runs with >=20 checkpoints yet")
+    df.to_csv(a.out / f"endstate_all{archtag}.csv", index=False)
+    print(f"{a.arch}: {len(df)} runs | arms {sorted(df.arm.unique())} | hp {sorted(df.hp.unique())}")
     d = df[df.hp == a.hp]
     print(f"hp={a.hp}: {len(d)} runs")
 
@@ -114,9 +140,9 @@ def main():
     fig.legend(h, l, loc="lower center", ncol=min(len(l), 3), fontsize=9,
                frameon=False, bbox_to_anchor=(0.5, -0.10 if len(l) > 3 else -0.04))
     fig.suptitle("End-state preference by removal depth, by selection arm "
-                 f"(gpt2_small, h{a.hp}, mean of last {a.last} checkpoints)", y=1.02)
+                 f"({a.arch}, h{a.hp}, mean of last {a.last} checkpoints)", y=1.02)
     fig.tight_layout()
-    tag = "" if arms == ["rand", "bert"] else "_" + "-".join(arms)
+    tag = ("" if arms == ["rand", "bert"] else "_" + "-".join(arms)) + archtag
     fig.savefig(a.out / f"endstate_decile_arm{tag}.png", dpi=150, bbox_inches="tight")
     print(f"wrote {a.out}/endstate_decile_arm{tag}.png")
 

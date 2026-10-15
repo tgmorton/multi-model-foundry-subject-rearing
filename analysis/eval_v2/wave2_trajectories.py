@@ -6,11 +6,16 @@ Set B: per (decile k x arm) panel, interventions compared on the same
 axes (plus a delta-vs-base variant), log-x tokens.
 
 Input: null_subj_v2 pairs parquets for pdrop2_* runs — pulled from S3
-(--s3) or a local directory (--pairs-dir). gpt2_small tokens/step =
-256,000 (verified against training logs).
+(default) or a local directory (--pairs-dir). Only runs whose cell_id starts
+with "<arch>-" are used (--arch, default gpt2_small). Tokens per
+checkpoint_step by architecture: gpt2_small 256,000 (verified against
+training logs), gpt2_large 512,000 (the pairs parquets carry no tokens_seen
+column; the sibling checkpoints/ parquets do and confirm 512,000).
 
 Output: analysis/eval_v2/figures/wave2_v5/{setA_trajectories,
-setB_decile_interventions,setB_delta_vs_base}.png + tidy CSV.
+setB_decile_interventions,setB_delta_vs_base}.png + tidy CSV. For any arch
+other than gpt2_small the filenames get a "_<arch>" tag, so the gpt2_small
+figures are never overwritten.
 """
 
 from __future__ import annotations
@@ -24,13 +29,26 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-TOKENS_PER_STEP = 256_000
+# tokens per checkpoint_step by architecture (keep in sync with
+# wave2_category_trajectories.py)
+TOKENS_PER_STEP = {"gpt2_small": 256_000, "gpt2_large": 512_000}
+DEFAULT_ARCH = "gpt2_small"
 ARMS = ["rand", "gpt2m", "bert", "comp", "bertanti", "robbi", "robbianti"]
 IVS = ["base", "rmexpl", "impcase", "lemverb", "enrichvm"]
 IV_LABEL = {"base": "baseline", "rmexpl": "remove expletives",
             "impcase": "impoverish case", "lemverb": "lemmatize verbs",
             "enrichvm": "enrich verbal morph"}
 CELL_RE = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)")
+
+
+def is_arch(name: str, arch: str) -> bool:
+    """True if an S3 key / local filename belongs to `arch`. cell_ids look like
+    '<arch>-<lang>-<condition>-h<hp>-s<seed>'; the trailing '-' keeps
+    'gpt2_small' from matching a longer arch name."""
+    base = name.rsplit("/", 1)[-1]
+    if base.startswith("cell_id="):
+        base = base[len("cell_id="):]
+    return base.startswith(f"{arch}-")
 
 
 def parse_cell(run_id: str):
@@ -61,20 +79,27 @@ def load_pairs(args) -> pd.DataFrame:
             for o in page.get("Contents", []):
                 if "pdrop2" not in o["Key"] or not o["Key"].endswith(".parquet"):
                     continue
+                if not is_arch(o["Key"], args.arch):
+                    continue
                 body = s.get_object(Bucket=args.bucket, Key=o["Key"])["Body"].read()
                 frames.append(pd.read_parquet(
                     io.BytesIO(body),
                     columns=["cell_id", "checkpoint_step",
                              "prefers_overt_meanlp"]))
     if not frames:
-        raise SystemExit("no pdrop2 pairs found")
+        raise SystemExit(f"no pdrop2 pairs found for arch {args.arch!r}")
     df = pd.concat(frames, ignore_index=True)
+    # authoritative arch filter on the cell_id column (also covers --pairs-dir,
+    # whose filenames need not follow the S3 naming)
+    df = df[df.cell_id.map(lambda c: is_arch(c, args.arch))].copy()
+    if df.empty:
+        raise SystemExit(f"no pdrop2 rows with cell_id starting {args.arch + '-'!r}")
     meta = df.cell_id.map(parse_cell)
     df["arm"] = meta.map(lambda t: t and t[0])
     df["k"] = meta.map(lambda t: t and t[1])
     df["iv"] = meta.map(lambda t: t and t[2])
     df = df[df.arm.notna()]
-    df["tokens"] = df.checkpoint_step * TOKENS_PER_STEP
+    df["tokens"] = df.checkpoint_step * TOKENS_PER_STEP[args.arch]
     return df
 
 
@@ -86,13 +111,16 @@ def main() -> None:
     ap.add_argument("--s3-prefix", default="eval_results/null_subj_v2_condition_matched_v1/pairs/")
     ap.add_argument("--profile", default="nrp")
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
+    ap.add_argument("--arch", default=DEFAULT_ARCH, choices=sorted(TOKENS_PER_STEP),
+                    help="architecture to plot (cell_id prefix)")
     ap.add_argument("--out", type=Path,
                     default=Path("analysis/eval_v2/figures/wave2_v5"))
     ap.add_argument("--arms", default=None,
                     help="comma list of arms to plot (default: all present); "
                          "adds a filename suffix")
     args = ap.parse_args()
-    tag = "_" + args.arms.replace(",", "-") if args.arms else ""
+    archtag = "" if args.arch == DEFAULT_ARCH else f"_{args.arch}"
+    tag = ("_" + args.arms.replace(",", "-") if args.arms else "") + archtag
     args.out.mkdir(parents=True, exist_ok=True)
 
     df = load_pairs(args)
@@ -104,8 +132,9 @@ def main() -> None:
             .groupby(["arm", "iv", "k", "tokens"], as_index=False)
             .prefers_overt_meanlp.mean()
             .rename(columns={"prefers_overt_meanlp": "overt_pref"}))
-    traj.to_csv(args.out / "wave2_v5_trajectories.csv", index=False)
-    print(f"{traj.cell_count if hasattr(traj,'cell_count') else len(traj):,} "
+    traj.to_csv(args.out / f"wave2_v5_trajectories{archtag}.csv", index=False)
+    print(f"{args.arch}: "
+          f"{traj.cell_count if hasattr(traj,'cell_count') else len(traj):,} "
           f"trajectory points; arms {sorted(traj.arm.unique())}; "
           f"ivs {sorted(traj.iv.unique())}")
 
@@ -153,8 +182,8 @@ def main() -> None:
         labels.append("all removed")
     fig.legend(handles, labels, loc="lower center", ncol=len(labels),
                fontsize=8, frameon=False, bbox_to_anchor=(0.5, -0.015))
-    fig.suptitle("Overt-subject preference trajectories — arm × intervention, "
-                 "lines = removal decile", y=1.005)
+    fig.suptitle(f"Overt-subject preference trajectories ({args.arch}) — "
+                 "arm × intervention, lines = removal decile", y=1.005)
     fig.tight_layout()
     fig.savefig(args.out / f"setA_trajectories{tag}.png", dpi=150,
                 bbox_inches="tight")
@@ -206,7 +235,7 @@ def main() -> None:
                         handles.append(hi); labels.append(li)
         fig.legend(handles, labels, loc="lower center", ncol=5, fontsize=8,
                    frameon=False, bbox_to_anchor=(0.5, -0.008))
-        fig.suptitle("Interventions compared within decile × arm"
+        fig.suptitle(f"Interventions compared within decile × arm ({args.arch})"
                      + (" (difference from baseline)" if delta else ""),
                      y=1.003)
         fig.tight_layout()

@@ -11,7 +11,12 @@ Pairs parquets are synced from S3 into the same local cache the end-state
 script uses (~/.cache/subject-drop/pairs_cache), in parallel with retries.
 
 Usage: python analysis/eval_v2/wave2_category_trajectories.py \
-           [--arms rand,robbi,robbianti] [--ivs base,impcase,...]
+           [--arms rand,robbi,robbianti] [--ivs base,impcase,...] \
+           [--arch gpt2_small]
+
+Only pairs files whose cell_id starts with "<arch>-" are used. Outputs for
+any arch other than gpt2_small get a "_<arch>" filename tag, so the
+gpt2_small figures are never overwritten.
 """
 from __future__ import annotations
 
@@ -21,7 +26,13 @@ from pathlib import Path
 
 import pandas as pd
 
-TOKENS_PER_STEP = 256_000  # gpt2_small (see wave2_trajectories.py)
+# tokens per checkpoint_step by architecture (keep in sync with
+# wave2_trajectories.py). The pairs parquets carry no tokens_seen column.
+TOKENS_PER_STEP = {"gpt2_small": 256_000, "gpt2_large": 512_000}
+DEFAULT_ARCH = "gpt2_small"
+# Flat cache shared across architectures. Local filenames are the S3 basenames
+# ("cell_id=<arch>-..."), so architectures never collide, and every read goes
+# through is_arch() (never a bare cache glob, incl. --no-sync).
 CACHE = Path.home() / ".cache" / "subject-drop" / "pairs_cache"
 CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)"
                   r"(\d*)_(\w+)-h(\d)-")
@@ -42,7 +53,17 @@ ARM_LABEL = {"rand": "random", "robbi": "RoBERTa ±250\nmost recoverable first",
              "gpt2m": "gpt2-medium", "comp": "composite"}
 
 
-def sync(bucket, prefix, profile, endpoint):
+def is_arch(name, arch):
+    """True if an S3 key / local filename belongs to `arch`. cell_ids look like
+    '<arch>-<lang>-<condition>-h<hp>-s<seed>'; the trailing '-' keeps
+    'gpt2_small' from matching a longer arch name."""
+    base = name.rsplit("/", 1)[-1]
+    if base.startswith("cell_id="):
+        base = base[len("cell_id="):]
+    return base.startswith(f"{arch}-")
+
+
+def sync(bucket, prefix, profile, endpoint, arch):
     import boto3
     from botocore.config import Config
     from concurrent.futures import ThreadPoolExecutor
@@ -53,7 +74,10 @@ def sync(bucket, prefix, profile, endpoint):
     CACHE.mkdir(parents=True, exist_ok=True)
     objs = [o for page in s.get_paginator("list_objects_v2").paginate(
                 Bucket=bucket, Prefix=prefix)
-            for o in page.get("Contents", []) if CELL.search(o["Key"])]
+            for o in page.get("Contents", [])
+            if CELL.search(o["Key"]) and is_arch(o["Key"], arch)]
+    if not objs:
+        raise SystemExit(f"no pdrop2 pairs for arch {arch!r} under s3://{bucket}/{prefix}")
 
     def fetch(o):
         p = CACHE / o["Key"].rsplit("/", 1)[-1]
@@ -65,10 +89,11 @@ def sync(bucket, prefix, profile, endpoint):
         return list(ex.map(fetch, objs))
 
 
-def load(paths, arms, ivs, hp):
+def load(paths, arms, ivs, hp, arch):
     want = set(arms) | {"all100"}
     rows = []
     for p in paths:
+        assert is_arch(p.name, arch), f"{p.name} is not a {arch} file"
         arm, k, iv, h = CELL.search(p.name).groups()
         if arm not in want or iv not in ivs or int(h) != hp:
             continue
@@ -80,8 +105,10 @@ def load(paths, arms, ivs, hp):
         g["arm"], g["iv"] = arm, iv
         g["k"] = 100 if arm == "all100" else int(k)
         rows.append(g)
+    if not rows:
+        raise SystemExit(f"no {arch} runs for arms {sorted(arms)}, ivs {sorted(ivs)}, hp {hp}")
     df = pd.concat(rows, ignore_index=True)
-    df["tokens"] = df.checkpoint_step * TOKENS_PER_STEP
+    df["tokens"] = df.checkpoint_step * TOKENS_PER_STEP[arch]
     # average over replicates of the same cell
     return (df.groupby(["arm", "iv", "k", "category", "tokens"], as_index=False)
             .prefers_overt_meanlp.mean())
@@ -93,6 +120,8 @@ def main():
     ap.add_argument("--prefix", default="eval_results/null_subj_v2_condition_matched_v1/pairs/")
     ap.add_argument("--profile", default="nrp")
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
+    ap.add_argument("--arch", default=DEFAULT_ARCH, choices=sorted(TOKENS_PER_STEP),
+                    help="architecture to plot (cell_id prefix)")
     ap.add_argument("--arms", default="rand,robbi,robbianti")
     ap.add_argument("--ivs", default="base,impcase,lemverb,enrichvm,rmexpl")
     ap.add_argument("--hp", type=int, default=0)
@@ -103,10 +132,12 @@ def main():
     a.out.mkdir(parents=True, exist_ok=True)
     arms, ivs = a.arms.split(","), a.ivs.split(",")
 
-    paths = (sorted(CACHE.glob("*.parquet")) if a.no_sync
-             else sync(a.bucket, a.prefix, a.profile, a.endpoint))
-    df = load(paths, arms, ivs, a.hp)
-    tag = "-".join(arms)
+    paths = (sorted(p for p in CACHE.glob("*.parquet")
+                    if is_arch(p.name, a.arch) and CELL.search(p.name))
+             if a.no_sync
+             else sync(a.bucket, a.prefix, a.profile, a.endpoint, a.arch))
+    df = load(paths, arms, ivs, a.hp, a.arch)
+    tag = "-".join(arms) + ("" if a.arch == DEFAULT_ARCH else f"_{a.arch}")
     df.to_csv(a.out / f"category_trajectories_{tag}.csv", index=False)
 
     import matplotlib
@@ -153,7 +184,7 @@ def main():
         fig.legend(handles, labels, loc="lower center", ncol=len(labels),
                    fontsize=8, frameon=False, bbox_to_anchor=(0.5, -0.04))
         fig.suptitle(f"Overt-subject preference by item category — "
-                     f"{IV_LABEL.get(iv, iv)} (gpt2_small, h{a.hp}; "
+                     f"{IV_LABEL.get(iv, iv)} ({a.arch}, h{a.hp}; "
                      "lines = removal decile)", y=1.01)
         fig.tight_layout()
         out = a.out / f"category_trajectories_{tag}_{iv}.png"
