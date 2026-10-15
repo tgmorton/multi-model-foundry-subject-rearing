@@ -23,10 +23,13 @@
 #
 # The bad-node list is rendered from configs/bad_nodes.txt via scripts/bad_nodes.py
 # (2026-10-14); re-render it if that file changes.
+# v2 (2026-10-15): the shard stage's scattered pread()s of _work/ on CephFS hung on two
+# nodes (all workers in folio_wait); sequential reads of the same files were fine. So the
+# pod copies _work/ (~37 GB) to local disk first and builds from the copy.
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-build-optionb-v1
+  name: thomas-build-optionb-v2
   namespace: lemn-lab
   labels: &id001
     owner: thomas
@@ -74,49 +77,62 @@ spec:
       initContainers:
       - name: clone-repo
         image: alpine/git
-        command: ["/bin/sh", "-c"]
+        command:
+        - /bin/sh
+        - -c
         args:
-        - |
-          set -eu
-          git clone --single-branch --depth=1 --branch=main \
-            https://github.com/tgmorton/multi-model-foundry-subject-rearing.git /opt/repo
-          git -C /opt/repo rev-parse HEAD > /opt/repo/.git_sha
+        - "set -eu\ngit clone --single-branch --depth=1 --branch=main \\\n  https://github.com/tgmorton/multi-model-foundry-subject-rearing.git /opt/repo\ngit -C /opt/repo rev-parse HEAD > /opt/repo/.git_sha\n"
         resources:
-          requests: {memory: 1Gi, cpu: "200m"}
-          limits:   {memory: 1Gi, cpu: "200m"}
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
         volumeMounts:
-        - {name: repo, mountPath: /opt/repo}
+        - name: repo
+          mountPath: /opt/repo
       containers:
       - name: build
         image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
         imagePullPolicy: Always
-        command: ["/bin/bash", "-c"]
+        command:
+        - /bin/bash
+        - -c
         args:
-        - |
-          set -euo pipefail
-          export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
-          export GIT_SHA="$(cat /opt/repo/.git_sha)"
-          cd /opt/repo
-          python -u scripts/rater_corpus/build_option_b.py \
-            --raw-root /mnt/data/rater_corpus/raw \
-            --babylm-dirs /mnt/data/raw/en/train_90M /mnt/data/raw/en/pull_10M /mnt/data/raw/en/test_10M \
-            --out /mnt/data/rater_corpus/optionb_v1/base \
-            --work-dir /mnt/data/rater_corpus/optionb_v1/_work \
-            --scale 1 --shards 200 --workers 8 --seed 42 \
-            --target fineweb=0.35e9 --target bookcorpusopen=0.74e9
+        - "set -euo pipefail\nexport PYTHONPATH=\"/opt/repo:${PYTHONPATH:-}\"\nexport GIT_SHA=\"$(cat /opt/repo/.git_sha)\"\ncd /opt/repo\necho \"copying _work to local disk\"; t0=$(date +%s)\nmkdir -p\
+          \ /scratch\n(cd /mnt/data/rater_corpus/optionb_v1 && find _work -type f -print0 | xargs -0 -P 8 -n 8 cp --parents -t /scratch)\necho \"copied $(du -sh /scratch/_work | cut -f1) in $(( $(date +%s)\
+          \ - t0 ))s\"\npython -u scripts/rater_corpus/build_option_b.py \\\n  --raw-root /mnt/data/rater_corpus/raw \\\n  --babylm-dirs /mnt/data/raw/en/train_90M /mnt/data/raw/en/pull_10M /mnt/data/raw/en/test_10M\
+          \ \\\n  --out /mnt/data/rater_corpus/optionb_v1/base \\\n  --work-dir /scratch/_work \\\n  --scale 1 --shards 200 --workers 8 --seed 42 \\\n  --target fineweb=0.35e9 --target bookcorpusopen=0.74e9\n"
         env:
-        - {name: PYTHONUNBUFFERED, value: "1"}
-        - {name: OMP_NUM_THREADS, value: "1"}
-        - {name: OPENBLAS_NUM_THREADS, value: "1"}
+        - name: PYTHONUNBUFFERED
+          value: '1'
+        - name: OMP_NUM_THREADS
+          value: '1'
+        - name: OPENBLAS_NUM_THREADS
+          value: '1'
         resources:
-          requests: {cpu: "8", memory: 24Gi}
-          limits:   {cpu: "8", memory: 24Gi}
+          requests:
+            cpu: '8'
+            memory: 24Gi
+            ephemeral-storage: 60Gi
+          limits:
+            cpu: '8'
+            memory: 24Gi
+            ephemeral-storage: 70Gi
         volumeMounts:
-        - {name: data, mountPath: /mnt/data}
-        - {name: repo, mountPath: /opt/repo}
+        - name: data
+          mountPath: /mnt/data
+        - name: repo
+          mountPath: /opt/repo
+        - name: scratch
+          mountPath: /scratch
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: subject-drop-archive
       - name: repo
         emptyDir: {}
+      - name: scratch
+        emptyDir:
+          sizeLimit: 65Gi
