@@ -70,6 +70,7 @@ spec:
                 - hcc-chase-shor-c4705.unl.edu
                 - cph-dgx-node7.humboldt.edu
                 - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
