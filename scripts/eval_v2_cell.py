@@ -265,13 +265,15 @@ def main():
         stimuli_dir = Path(args.stimuli_dir, lang)
     stimuli_paths = sorted(stimuli_dir.glob("*.csv"))
 
+    # Input errors exit 3, never 2: exit 2 is the pod's GPU-fault code, which
+    # podFailurePolicy Ignores, so a missing run dir retried forever (2026-10-15).
     if not stimuli_paths:
         log.error("No stimulus CSVs under %s", stimuli_dir)
-        sys.exit(2)
+        sys.exit(3)
     for p in (ckpt_root, tokenizer_dir):
         if not p.exists():
             log.error("Missing path: %s", p)
-            sys.exit(2)
+            sys.exit(3)
 
     ckpts = find_checkpoints_sorted(ckpt_root)
     if not ckpts:
@@ -304,7 +306,7 @@ def main():
         sep_id = train_tok.sep_token_id
         if mask_id is None or pad_id is None:
             log.error("BERT tokenizer lacks mask/pad ids — cannot PLL-score.")
-            sys.exit(2)
+            sys.exit(3)
     else:
         import sentencepiece as spm
         sp = spm.SentencePieceProcessor()
@@ -336,7 +338,7 @@ def main():
 
     if hash_file is None:
         log.error("No hashable tokenizer file in %s", tokenizer_dir)
-        sys.exit(2)
+        sys.exit(3)
 
     # ── Stimuli cache (D6) ──────────────────────────────────────────────
     cache_dir = output_root / "stimuli_cache"
@@ -398,7 +400,7 @@ def main():
 
     else:
         log.error("No eval factory for arch %r", arch)
-        sys.exit(2)
+        sys.exit(3)
 
     # ── Unigram baseline (SLOR) ─────────────────────────────────────────
     # Per-condition table (FIT-CLAMS): the run is normalized against the
