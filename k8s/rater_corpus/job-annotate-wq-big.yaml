@@ -3,23 +3,23 @@
 # stale are reclaimed), skips shards whose ANNOTATION_MANIFEST.json exists, and makes up to 3 passes.
 # Several jobs on different GPU pools can run at once without double work. PACK slots share a GPU:
 # each annotate process is ~1 CPU-bound core and ~5 GB of GPU memory.
-# This job: >=16 GB GPUs, 2 shards per GPU, 3 CPU / 20Gi, 20 workers.
+# This job (v2, 2026-10-15): >=16 GB Ampere/Ada GPUs, 2 shards per GPU, 3 CPU / 32Gi (a shard peaks
+# above 10 GB: the DocBin is held in memory and serialized once at the end; 20Gi for 2 OOM-killed).
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-annotate-raterb-wq-big
-  namespace: lemn-lab
   labels: &id001
-    owner: thomas
-    study: subject-drop
     lang: en
+    owner: thomas
     stage: rater-corpus-annotate
+    study: subject-drop
+  name: thomas-annotate-raterb-wq-big2
+  namespace: lemn-lab
 spec:
-  completionMode: Indexed
-  completions: 20
-  parallelism: 20
   backoffLimit: 100
-  ttlSecondsAfterFinished: 604800
+  completionMode: Indexed
+  completions: 12
+  parallelism: 12
   podFailurePolicy:
     rules:
     - action: Ignore
@@ -33,17 +33,6 @@ spec:
     metadata:
       labels: *id001
     spec:
-      priorityClassName: armada-default
-      restartPolicy: Never
-      imagePullSecrets:
-      - name: gitlab-registry-cred-thomas
-      tolerations:
-      - key: nvidia.com/gpu
-        operator: Exists
-        effect: PreferNoSchedule
-      - key: nvidia.com/gpu
-        operator: Exists
-        effect: NoSchedule
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -59,8 +48,6 @@ spec:
                 - NVIDIA-L40S
                 - NVIDIA-GeForce-RTX-4090
                 - NVIDIA-RTX-A4000
-                - Tesla-T4
-                - NVIDIA-TITAN-RTX
               - key: kubernetes.io/hostname
                 operator: NotIn
                 values:
@@ -83,34 +70,8 @@ spec:
                 - cph-dgx-node7.humboldt.edu
                 - nautilus-it-gpu06.fullerton.edu
                 - hcc-nrp-shor-c5805.unl.edu
-      initContainers:
-      - name: clone-repo
-        image: alpine/git
-        args:
-        - clone
-        - --single-branch
-        - --depth=1
-        - --branch=main
-        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
-        - /opt/repo
-        resources:
-          requests:
-            memory: 1Gi
-            cpu: 200m
-          limits:
-            memory: 1Gi
-            cpu: 200m
-        volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
       containers:
-      - name: annotator
-        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
-        imagePullPolicy: Always
-        command:
-        - /bin/bash
-        - -c
-        args:
+      - args:
         - "set -uo pipefail\ncd /opt/repo; export PYTHONPATH=/opt/repo\nBASE=/mnt/data/rater_corpus/optionb_v1/base\nLOCKS=/mnt/data/rater_corpus/optionb_v1/_annot_locks\nNSHARD=200; STALE=1200   # a lock\
           \ whose heartbeat is >20 min old belongs to a dead worker\nmkdir -p \"$LOCKS\"\npip install --quiet \"cupy-cuda12x<14\" \"numpy<2\" || echo \"[warn] cupy install failed\"\npython -c \"import spacy;\
           \ print('spacy.prefer_gpu() =', spacy.prefer_gpu())\"\npython - > /tmp/annot_dirs.txt <<'EOF'\nfrom pathlib import Path\nfrom preprocessing.annotate import default_annotation_output_dir as d\n\
@@ -125,6 +86,9 @@ spec:
           \  local start=$(( ( (JOB_COMPLETION_INDEX * PACK + $1) * 37 ) % NSHARD ))\n  for pass in 1 2 3; do\n    for k in $(seq 0 $((NSHARD-1))); do run_one $(( (start + k) % NSHARD )); done\n    left=0;\
           \ while read -r i d; do done_shard \"$d\" || left=$((left+1)); done < /tmp/annot_dirs.txt\n    echo \"[pass $pass] slot $1: $left shards not yet done\"; [ \"$left\" -eq 0 ] && break\n  done\n\
           }\nfor s in $(seq 0 $((PACK-1))); do worker \"$s\" & done\nwait\necho \"worker exit\"\n"
+        command:
+        - /bin/bash
+        - -c
         env:
         - name: NODE_NAME
           valueFrom:
@@ -132,23 +96,58 @@ spec:
               fieldPath: spec.nodeName
         - name: PACK
           value: '2'
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        name: annotator
         resources:
           requests:
-            memory: 20Gi
+            memory: 32Gi
             cpu: '3'
             nvidia.com/gpu: 1
           limits:
-            memory: 20Gi
+            memory: 32Gi
             cpu: '3'
             nvidia.com/gpu: 1
         volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
-        - name: data
-          mountPath: /mnt/data
+        - mountPath: /opt/repo
+          name: repo
+        - mountPath: /mnt/data
+          name: data
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        image: alpine/git
+        name: clone-repo
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /opt/repo
+          name: repo
+      priorityClassName: armada-default
+      restartPolicy: Never
+      tolerations:
+      - effect: PreferNoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
       volumes:
-      - name: repo
-        emptyDir: {}
+      - emptyDir: {}
+        name: repo
       - name: data
         persistentVolumeClaim:
           claimName: subject-drop-archive
+  ttlSecondsAfterFinished: 604800

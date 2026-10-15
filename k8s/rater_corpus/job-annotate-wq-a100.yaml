@@ -1,0 +1,148 @@
+# Option B annotation as a lock-based work queue (2026-10-15). Each worker slot claims the next
+# unclaimed shard with an atomic mkdir lock in _annot_locks/ (heartbeat every 2 min; locks >20 min
+# stale are reclaimed), skips shards whose ANNOTATION_MANIFEST.json exists, and makes up to 3 passes.
+# Several jobs on different GPU pools can run at once without double work. PACK slots share a GPU:
+# each annotate process is ~1 CPU-bound core and ~5 GB of GPU memory.
+# This job (2026-10-15): lab A100s (quota 18, idle until the BERT rater runs), 4 shards per GPU
+# (each ~1 CPU-bound core, ~5 GB GPU memory, peak >10 GB RAM), 5 CPU / 64Gi, up to 6 A100s.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels: &id001
+    lang: en
+    owner: thomas
+    stage: rater-corpus-annotate
+    study: subject-drop
+  name: thomas-annotate-raterb-wq-a100
+  namespace: lemn-lab
+spec:
+  backoffLimit: 100
+  completionMode: Indexed
+  completions: 6
+  parallelism: 6
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes:
+        containerName: annotator
+        operator: In
+        values:
+        - 2
+        - 128
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                - NVIDIA-A100-SXM4-80GB
+                - NVIDIA-A100-80GB-PCIe
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+      containers:
+      - args:
+        - "set -uo pipefail\ncd /opt/repo; export PYTHONPATH=/opt/repo\nBASE=/mnt/data/rater_corpus/optionb_v1/base\nLOCKS=/mnt/data/rater_corpus/optionb_v1/_annot_locks\nNSHARD=200; STALE=1200   # a lock\
+          \ whose heartbeat is >20 min old belongs to a dead worker\nmkdir -p \"$LOCKS\"\npip install --quiet \"cupy-cuda12x<14\" \"numpy<2\" || echo \"[warn] cupy install failed\"\npython -c \"import spacy;\
+          \ print('spacy.prefer_gpu() =', spacy.prefer_gpu())\"\npython - > /tmp/annot_dirs.txt <<'EOF'\nfrom pathlib import Path\nfrom preprocessing.annotate import default_annotation_output_dir as d\n\
+          for i in range(200):\n    print(i, d(Path(f\"/mnt/data/rater_corpus/optionb_v1/base/shard_{i:03d}\"), \"en_core_web_trf\"))\nEOF\ndone_shard() { [ -f \"$1/ANNOTATION_MANIFEST.json\" ]; }\nclaim()\
+          \ {   # $1 shard name; atomic mkdir lock, reclaim if heartbeat is stale\n  L=\"$LOCKS/$1\"\n  if mkdir \"$L\" 2>/dev/null; then return 0; fi\n  hb=$(stat -c %Y \"$L/hb\" 2>/dev/null || stat -c\
+          \ %Y \"$L\" 2>/dev/null || echo 0)\n  if [ $(( $(date +%s) - hb )) -gt $STALE ] && [ ! -f \"$L/done\" ]; then\n    mv \"$L\" \"$L.stale.$$.$RANDOM\" 2>/dev/null && mkdir \"$L\" 2>/dev/null &&\
+          \ { echo \"[reclaim] $1\"; return 0; }\n  fi\n  return 1\n}\nrun_one() {\n  local i=$1; local SH; SH=$(printf \"shard_%03d\" \"$i\"); local OUT; OUT=$(awk -v i=\"$i\" '$1==i{print $2}' /tmp/annot_dirs.txt)\n\
+          \  done_shard \"$OUT\" && return 0\n  claim \"$SH\" || return 0\n  local L=\"$LOCKS/$SH\"; echo \"$HOSTNAME $NODE_NAME $(date -u +%FT%TZ)\" > \"$L/owner\"; touch \"$L/hb\"\n  ( while true; do\
+          \ sleep 120; touch \"$L/hb\" 2>/dev/null; done ) & local HB=$!\n  echo \"[start] $SH on $NODE_NAME\"\n  if python -m preprocessing.annotate --input \"$BASE/$SH/\" --spacy-model en_core_web_trf\
+          \ --file \"$SH\" --chunk-size 500 --spacy-batch-size 32 > \"/tmp/$SH.log\" 2>&1 && done_shard \"$OUT\"; then\n    touch \"$L/done\"; echo \"[done] $SH\"\n  else\n    echo \"[fail] $SH\"; tail\
+          \ -5 \"/tmp/$SH.log\"; rm -rf \"$L\"\n  fi\n  kill $HB 2>/dev/null; wait $HB 2>/dev/null\n}\nworker() {   # walk all shards from a per-worker offset; up to 3 passes so stale locks get picked up\n\
+          \  local start=$(( ( (JOB_COMPLETION_INDEX * PACK + $1) * 37 ) % NSHARD ))\n  for pass in 1 2 3; do\n    for k in $(seq 0 $((NSHARD-1))); do run_one $(( (start + k) % NSHARD )); done\n    left=0;\
+          \ while read -r i d; do done_shard \"$d\" || left=$((left+1)); done < /tmp/annot_dirs.txt\n    echo \"[pass $pass] slot $1: $left shards not yet done\"; [ \"$left\" -eq 0 ] && break\n  done\n\
+          }\nfor s in $(seq 0 $((PACK-1))); do worker \"$s\" & done\nwait\necho \"worker exit\"\n"
+        command:
+        - /bin/bash
+        - -c
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: PACK
+          value: '4'
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        name: annotator
+        resources:
+          requests:
+            memory: 64Gi
+            cpu: '5'
+            nvidia.com/a100: 1
+          limits:
+            memory: 64Gi
+            cpu: '5'
+            nvidia.com/a100: 1
+        volumeMounts:
+        - mountPath: /opt/repo
+          name: repo
+        - mountPath: /mnt/data
+          name: data
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        image: alpine/git
+        name: clone-repo
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /opt/repo
+          name: repo
+      priorityClassName: armada-default
+      restartPolicy: Never
+      tolerations:
+      - effect: PreferNoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+      - effect: NoSchedule
+        key: nvidia.com/gpu
+        operator: Exists
+      volumes:
+      - emptyDir: {}
+        name: repo
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+  ttlSecondsAfterFinished: 604800
