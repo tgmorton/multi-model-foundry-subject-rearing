@@ -1,0 +1,91 @@
+# Option B rater corpus downloads (2026-10-14, Thomas's go): OpenWebText, Wikipedia
+# 20231101.en, BookCorpusOpen, FineWeb sample-10BT (~70 GB parquet). One index per
+# dataset; network-bound, so under NRP's 1 CPU / 2 GB exemption. Resumable.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-dl-raterb-ll-hf
+  namespace: lemn-lab
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: rater-corpus-download
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 4
+  backoffLimit: 12
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+      containers:
+      - name: main
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - python3
+        - -u
+        - -c
+        - "\nimport os, json, time\nfrom huggingface_hub import snapshot_download\ni = int(os.environ[\"JOB_COMPLETION_INDEX\"])\nJOBS = [\n    (\"Skylion007/openwebtext\",      \"openwebtext\",       \
+          \    [\"plain_text/*.parquet\"]),\n    (\"wikimedia/wikipedia\",         \"wikipedia_20231101_en\", [\"20231101.en/*.parquet\"]),\n    (\"lucadiliello/bookcorpusopen\", \"bookcorpusopen\",   \
+          \     [\"data/*.parquet\"]),\n    (\"HuggingFaceFW/fineweb\",       \"fineweb_sample10BT\",    [\"sample/10BT/*.parquet\"]),\n]\nrepo, name, pats = JOBS[i]\nout = f\"/mnt/data/rater_corpus/raw/{name}\"\n\
+          t0 = time.time()\nsnapshot_download(repo, repo_type=\"dataset\", allow_patterns=pats, local_dir=out, max_workers=4)\nfiles = [os.path.join(d, f) for d, _, fs in os.walk(out) if \"/.cache\" not\
+          \ in d for f in fs if f.endswith(\".parquet\")]\nman = {\"repo\": repo, \"patterns\": pats, \"files\": len(files),\n       \"bytes\": sum(os.path.getsize(f) for f in files), \"seconds\": round(time.time()\
+          \ - t0)}\njson.dump(man, open(f\"{out}/DOWNLOAD_MANIFEST.json\", \"w\"), indent=2)\nprint(\"DONE\", json.dumps(man), flush=True)\n"
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-thomas
+              key: HF_TOKEN
+        - name: HF_HUB_DISABLE_PROGRESS_BARS
+          value: '1'
+        - name: HF_HOME
+          value: /tmp/hf
+        resources:
+          requests:
+            cpu: '1'
+            memory: 2Gi
+          limits:
+            cpu: '1'
+            memory: 2Gi
+        volumeMounts:
+        - name: corpus
+          mountPath: /mnt/data
+      volumes:
+      - name: corpus
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
