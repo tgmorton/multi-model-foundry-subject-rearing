@@ -1,0 +1,102 @@
+# FineWeb sample-10BT alone (2026-10-15): at 2Gi with 4 parallel 2 GB files the pod was
+# OOM-killed (dirty CephFS pages count toward the cgroup). One file at a time, 6Gi.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-dl-raterb-ll-fineweb
+  namespace: lemn-lab
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: rater-corpus-download
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 12
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+      containers:
+      - name: main
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - python3
+        - -u
+        - -c
+        - '
+
+          import os, json, time
+
+          from huggingface_hub import snapshot_download
+
+          out = "/mnt/data/rater_corpus/raw/fineweb_sample10BT_b"
+
+          t0 = time.time()
+
+          snapshot_download("HuggingFaceFW/fineweb", repo_type="dataset", allow_patterns=["sample/10BT/*.parquet"], local_dir=out, max_workers=1)
+
+          files = [os.path.join(d, f) for d, _, fs in os.walk(out) if "/.cache" not in d for f in fs if f.endswith(".parquet")]
+
+          man = {"repo": "HuggingFaceFW/fineweb", "files": len(files), "bytes": sum(os.path.getsize(f) for f in files), "seconds": round(time.time() - t0)}
+
+          json.dump(man, open(f"{out}/DOWNLOAD_MANIFEST.json", "w"), indent=2); print("DONE", json.dumps(man), flush=True)
+
+          '
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-thomas
+              key: HF_TOKEN
+        - name: HF_HUB_DISABLE_PROGRESS_BARS
+          value: '1'
+        - name: HF_HOME
+          value: /tmp/hf
+        resources:
+          requests:
+            cpu: '1'
+            memory: 6Gi
+          limits:
+            cpu: '1'
+            memory: 6Gi
+        volumeMounts:
+        - name: corpus
+          mountPath: /mnt/data
+      volumes:
+      - name: corpus
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
