@@ -515,7 +515,16 @@ def main():
         epoch = None
         meta_file = Path(path) / "metadata.json"
         if meta_file.exists():
-            meta = json.loads(meta_file.read_text())
+            # An empty or truncated metadata.json (seen 2026-10-15 on wave2
+            # gpt2_large checkpoints) must not discard a finished eval: the
+            # scores are already computed, and tokens/epoch are recoverable
+            # from the step. Record None and warn.
+            try:
+                meta = json.loads(meta_file.read_text())
+            except (json.JSONDecodeError, OSError) as e:
+                log.warning("unreadable %s (%s); tokens_seen/epoch left empty",
+                            meta_file, e.__class__.__name__)
+                meta = {}
             tm = meta.get("token_metrics") or {}
             tokens_seen = (tm.get("estimated_tokens_at_step")
                            or tm.get("total_tokens_processed"))
