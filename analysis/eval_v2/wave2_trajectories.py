@@ -7,10 +7,16 @@ axes (plus a delta-vs-base variant), log-x tokens.
 
 Input: null_subj_v2 pairs parquets for pdrop2_* runs — pulled from S3
 (default) or a local directory (--pairs-dir). Only runs whose cell_id starts
-with "<arch>-" are used (--arch, default gpt2_small). Tokens per
-checkpoint_step by architecture: gpt2_small 256,000 (verified against
-training logs), gpt2_large 512,000 (the pairs parquets carry no tokens_seen
-column; the sibling checkpoints/ parquets do and confirm 512,000).
+with "<arch>-" are used (--arch, default gpt2_small).
+
+Token axis: the pairs parquets carry no tokens_seen, and tokens per
+checkpoint_step is NOT constant within an architecture (gpt2_small pdrop2 runs
+use 128K/256K/512K per step for h0/h1/h2-3; gpt2_large 512K). Each
+checkpoint's tokens come from the sibling checkpoints/ parquets (cached in
+~/.cache/subject-drop/ckpt_cache) via analysis/eval_v2/_tokens.py, which also
+documents and counts its fallbacks. Points are pooled across runs at equal
+true tokens (as before, HP ranks h0-h3 are pooled; --no-sync reuses the
+checkpoint cache as-is).
 
 Output: analysis/eval_v2/figures/wave2_v5/{setA_trajectories,
 setB_decile_interventions,setB_delta_vs_base}.png + tidy CSV. For any arch
@@ -29,9 +35,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# tokens per checkpoint_step by architecture (keep in sync with
-# wave2_category_trajectories.py)
-TOKENS_PER_STEP = {"gpt2_small": 256_000, "gpt2_large": 512_000}
+try:  # run as a script (analysis/eval_v2 on sys.path) ...
+    from _tokens import TOKENS_PER_STEP_FALLBACK, TokenAxis, is_arch, sync_checkpoints
+except ImportError:  # ... or imported as analysis.eval_v2.wave2_trajectories
+    from analysis.eval_v2._tokens import (TOKENS_PER_STEP_FALLBACK, TokenAxis,
+                                          is_arch, sync_checkpoints)
+
 DEFAULT_ARCH = "gpt2_small"
 ARMS = ["rand", "gpt2m", "bert", "comp", "bertanti", "robbi", "robbianti"]
 IVS = ["base", "rmexpl", "impcase", "lemverb", "enrichvm"]
@@ -39,16 +48,6 @@ IV_LABEL = {"base": "baseline", "rmexpl": "remove expletives",
             "impcase": "impoverish case", "lemverb": "lemmatize verbs",
             "enrichvm": "enrich verbal morph"}
 CELL_RE = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)")
-
-
-def is_arch(name: str, arch: str) -> bool:
-    """True if an S3 key / local filename belongs to `arch`. cell_ids look like
-    '<arch>-<lang>-<condition>-h<hp>-s<seed>'; the trailing '-' keeps
-    'gpt2_small' from matching a longer arch name."""
-    base = name.rsplit("/", 1)[-1]
-    if base.startswith("cell_id="):
-        base = base[len("cell_id="):]
-    return base.startswith(f"{arch}-")
 
 
 def parse_cell(run_id: str):
@@ -99,7 +98,12 @@ def load_pairs(args) -> pd.DataFrame:
     df["k"] = meta.map(lambda t: t and t[1])
     df["iv"] = meta.map(lambda t: t and t[2])
     df = df[df.arm.notna()]
-    df["tokens"] = df.checkpoint_step * TOKENS_PER_STEP[args.arch]
+    # true per-checkpoint tokens (not a per-arch constant): see _tokens.py
+    if not args.no_sync:
+        sync_checkpoints(args.bucket, args.profile, args.endpoint, args.arch)
+    axis = TokenAxis(args.arch)
+    df["tokens"] = axis.tokens(df.cell_id, df.checkpoint_step)
+    axis.report()
     return df
 
 
@@ -111,8 +115,11 @@ def main() -> None:
     ap.add_argument("--s3-prefix", default="eval_results/null_subj_v2_condition_matched_v1/pairs/")
     ap.add_argument("--profile", default="nrp")
     ap.add_argument("--endpoint", default="https://s3-west.nrp-nautilus.io")
-    ap.add_argument("--arch", default=DEFAULT_ARCH, choices=sorted(TOKENS_PER_STEP),
+    ap.add_argument("--arch", default=DEFAULT_ARCH, choices=sorted(TOKENS_PER_STEP_FALLBACK),
                     help="architecture to plot (cell_id prefix)")
+    ap.add_argument("--no-sync", action="store_true",
+                    help="use the local checkpoint-parquet cache "
+                         "(~/.cache/subject-drop/ckpt_cache) as-is")
     ap.add_argument("--out", type=Path,
                     default=Path("analysis/eval_v2/figures/wave2_v5"))
     ap.add_argument("--arms", default=None,
