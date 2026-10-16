@@ -101,6 +101,7 @@ def main() -> None:
         ax.set_xlabel("% of pronouns removed (decile)")
         ax.set_xticks([10, 30, 50, 70, 90, 100])
     np.atleast_1d(axes)[0].set_ylabel("overt-subject preference (latest checkpoints)")
+    np.atleast_1d(axes)[0].set_ylim(0, 1)
     h, l = np.atleast_1d(axes)[0].get_legend_handles_labels()
     h.append(plt.Line2D([], [], linestyle="none", marker="o", ms=5, markerfacecolor="white",
                         markeredgecolor="#555"))
