@@ -1,30 +1,24 @@
-# Rater-corpus interventions, batch 1 (2026-10-16): 4 ablations x the shards annotated so far.
-# Sized from the canary: ~0.5 core, 2.1 GB (multi-part) / 4.2 GB (single-file DocBin), ~2 min
-# per (ablation, shard). >100 pods, so limit = request (NRP).
+# Rater-corpus interventions, batch 1 (2026-10-16): 4 ablations x 64 single-file DocBin shards (whole DocBin loads at once; 6Gi OOM-killed).
+# ~0.5 core, ~2 min per (ablation, shard); limit = request (>100 pods, NRP).
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: thomas-ablate-raterb-b1
-  namespace: lemn-lab
   labels: &id001
-    owner: thomas
-    study: subject-drop
     lang: en
+    owner: thomas
     stage: rater-corpus-ablate
+    study: subject-drop
+  name: thomas-ablate-raterb-b1s
+  namespace: lemn-lab
 spec:
+  backoffLimit: 40
   completionMode: Indexed
-  completions: 320
-  parallelism: 20
-  backoffLimit: 60
-  ttlSecondsAfterFinished: 604800
+  completions: 256
+  parallelism: 16
   template:
     metadata:
       labels: *id001
     spec:
-      priorityClassName: armada-default
-      restartPolicy: Never
-      imagePullSecrets:
-      - name: gitlab-registry-cred-thomas
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -53,34 +47,8 @@ spec:
                 - ry-gpu-10.sdsc.optiputer.net
                 - suncave-3
                 - uicnrp-fiona2.evl.uic.edu
-      initContainers:
-      - name: clone-repo
-        image: alpine/git
-        args:
-        - clone
-        - --single-branch
-        - --depth=1
-        - --branch=main
-        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
-        - /opt/repo
-        resources:
-          requests:
-            memory: 1Gi
-            cpu: 200m
-          limits:
-            memory: 1Gi
-            cpu: 200m
-        volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
       containers:
-      - name: ablator
-        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
-        imagePullPolicy: Always
-        command:
-        - /bin/bash
-        - -c
-        args:
+      - args:
         - "set -euo pipefail\nABLATIONS=(remove_expletive_sentences_en impoverish_case_en lemmatize_verbs enrich_verbal_morphology)\nread -ra SH <<< \"$SHARDS\"; NS=${#SH[@]}\nABL=${ABLATIONS[$((JOB_COMPLETION_INDEX\
           \ / NS))]}\nSHARD=$(printf \"shard_%03d\" \"${SH[$((JOB_COMPLETION_INDEX % NS))]}\")\nIN=/mnt/data/rater_corpus/optionb_v1/base/${SHARD}\nOUT=/mnt/data/rater_corpus/optionb_v1/${ABL}/${SHARD}\n\
           echo \"ablate ${ABL} ${SHARD} on ${NODE_NAME}\"\ncd /opt/repo; export PYTHONPATH=/opt/repo\nif [ -f \"${OUT}/ABLATION_MANIFEST.json\" ]; then echo \"[done already] ${OUT}\"; exit 0; fi\nANNOT=$(python\
@@ -88,29 +56,60 @@ spec:
           \ ]; then echo \"ERROR: annotation not done: ${ANNOT}\"; exit 3; fi\nmkdir -p \"${OUT}\"\npython -c \"\nfrom pathlib import Path\nimport preprocessing.ablations\nfrom preprocessing.base import\
           \ AblationPipeline\nfrom preprocessing.config import AblationConfig\nAblationPipeline(AblationConfig(type='${ABL}', input_path=Path('${IN}'), output_path=Path('${OUT}'),\n    annotated_input_path=Path('${ANNOT}'),\
           \ skip_backfill=True, spacy_model='en_core_web_trf',\n    skip_validation=True, chunk_size=500, verbose=False)).process_corpus()\n\"\n"
+        command:
+        - /bin/bash
+        - -c
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
         - name: SHARDS
-          value: 0 1 2 3 4 5 6 22 23 24 25 26 27 28 29 30 37 38 39 44 58 59 60 61 62 63 64 65 66 74 75 76 77 78 79 81 88 89 90 91 95 96 97 98 111 118 125 126 127 128 129 133 140 141 142 143 148 149 150
-            151 152 153 154 155 162 163 177 178 179 180 185 186 187 188 189 190 191 192 193 199
+          value: 0 1 2 3 4 5 22 23 24 25 26 27 28 37 38 58 59 60 62 63 64 65 66 74 75 76 77 78 88 89 90 91 95 97 98 125 126 127 128 129 140 141 142 143 148 149 150 151 152 153 162 163 177 178 179 180 185
+            186 187 188 189 190 191 199
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        name: ablator
         resources:
           requests:
-            memory: 6Gi
+            memory: 10Gi
             cpu: '1'
           limits:
-            memory: 6Gi
+            memory: 10Gi
             cpu: '1'
         volumeMounts:
-        - name: repo
-          mountPath: /opt/repo
-        - name: data
-          mountPath: /mnt/data
+        - mountPath: /opt/repo
+          name: repo
+        - mountPath: /mnt/data
+          name: data
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        image: alpine/git
+        name: clone-repo
+        resources:
+          limits:
+            cpu: 200m
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 1Gi
+        volumeMounts:
+        - mountPath: /opt/repo
+          name: repo
+      priorityClassName: armada-default
+      restartPolicy: Never
       volumes:
-      - name: repo
-        emptyDir: {}
+      - emptyDir: {}
+        name: repo
       - name: data
         persistentVolumeClaim:
           claimName: subject-drop-archive
+  ttlSecondsAfterFinished: 604800
