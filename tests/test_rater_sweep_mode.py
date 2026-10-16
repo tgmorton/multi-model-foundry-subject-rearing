@@ -300,3 +300,34 @@ class TestRenderConfig:
                       "--corpus-dir", "/mnt/x/base", "--out", str(tmp_path / "c.yaml")])
         assert rc == 2
         assert not (tmp_path / "c.yaml").exists()
+
+
+# --------------------------------------------------------------------------- #
+# W&B sweep specs
+# --------------------------------------------------------------------------- #
+class TestSweepSpecs:
+    SPECS = sorted((REPO / "configs" / "sweeps").glob("rater_bert_large_*.yaml"))
+    # Constants + the HP fields scripts/sweep_agent_lm.py overlays.
+    ALLOWED = {"arch", "lang", "base_config", "condition", "learning_rate",
+               "warmup_ratio", "dropout", "attention_dropout",
+               "effective_batch_size", "adam_beta2"}
+
+    def test_one_spec_per_corpus(self):
+        assert sorted(p.stem.replace("rater_bert_large_", "") for p in self.SPECS) \
+            == sorted(rs.KNOWN_CORPORA)
+
+    @pytest.mark.parametrize("path", SPECS, ids=lambda p: p.stem)
+    def test_spec(self, path):
+        spec = yaml.safe_load(path.read_text())
+        corpus = path.stem.replace("rater_bert_large_", "")
+        assert "early_terminate" not in spec            # see commit 38621840
+        assert spec["method"] == "bayes"
+        assert spec["metric"] == {"name": "proxy/min_held_out_perplexity", "goal": "minimize"}
+        assert spec["program"] == "scripts/sweep_agent_lm.py"
+        assert spec["project"] == "subject-drop-rater-sweeps"
+        params = spec["parameters"]
+        assert set(params) <= self.ALLOWED
+        assert params["condition"] == {"value": corpus}
+        base = REPO / params["base_config"]["value"]
+        assert base == RATER_BASE
+        assert set(params["effective_batch_size"]["values"]) == {128, 256}

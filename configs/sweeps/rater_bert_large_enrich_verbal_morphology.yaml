@@ -1,0 +1,57 @@
+# W&B sweep spec: rater HP sweep, bert_large EN, corpus `enrich_verbal_morphology` (2026-10-16).
+# One spec per rater corpus; all five are identical except name/condition.
+# Launch steps: docs/RATER_SWEEPS.md. Create the sweep with
+#   wandb sweep configs/sweeps/rater_bert_large_enrich_verbal_morphology.yaml
+# and pass the printed <entity>/<project>/<id> to the sweep job as SWEEP_ID.
+#
+# NO early_terminate, on purpose. Hyperband (min_iter=1) killed winning
+# trials in the study sweeps and its SIGTERMed trials show up as "crashed",
+# which drops them from the Bayes posterior (commit 38621840). Each rater
+# trial stops itself on a held-out plateau (rater_sweep block in the
+# baseline) and finishes normally, so Bayes learns from every trial.
+name: rater_bert_large_enrich_verbal_morphology
+project: subject-drop-rater-sweeps
+program: scripts/sweep_agent_lm.py
+method: bayes
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch:
+    value: bert_large
+  lang:
+    value: en
+  base_config:
+    value: configs/sweeps/baselines/rater_bert_large_en.yaml
+  condition:
+    # The agent refuses a pod whose CONDITION env differs from this.
+    value: enrich_verbal_morphology
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  warmup_ratio:
+    # Fraction of the trial's step budget (scheduler horizon = budget).
+    distribution: uniform
+    min: 0.02
+    max: 0.15
+  dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  attention_dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.3
+  effective_batch_size:
+    # Physical batch 32 in the baseline -> grad accum 4 or 8.
+    values:
+    - 128
+    - 256
+  adam_beta2:
+    # 0.98 is the RoBERTa value; the rest match the study BERT sweep.
+    values:
+    - 0.95
+    - 0.98
+    - 0.99
+    - 0.999
