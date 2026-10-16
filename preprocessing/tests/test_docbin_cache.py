@@ -418,3 +418,18 @@ def test_retry_clears_stale_single(tmp_path, corpus_dir, standalone_docbin_dir):
     )
     assert not (retry / "mini.spacy").exists()
     assert len(list(retry.glob("mini.part*.spacy"))) == 3
+
+
+def test_parts_dir_counts_as_cache(tmp_path, corpus_dir, parts_docbin_dir):
+    """The pipeline must read a multi-part DocBin, not fall back to live
+    parsing (which gives the same text, so parity alone cannot catch it)."""
+    cfg = AblationConfig(
+        type="lemmatize_verbs",
+        input_path=corpus_dir,
+        output_path=tmp_path / "out",
+        annotated_input_path=parts_docbin_dir,
+        spacy_model="es_core_news_lg",
+        skip_validation=True,
+        chunk_size=100,
+    )
+    assert AblationPipeline(cfg)._has_annotated_cache(corpus_dir / "mini.train")

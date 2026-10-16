@@ -506,15 +506,20 @@ class AblationPipeline:
         annotated_dir = self.config.annotated_input_path
         if annotated_dir is None:
             return False
+        from .annotate import _docbin_paths
+
         stem = source_path.stem
-        docbin_path = annotated_dir / f"{stem}.spacy"
         linemap_path = annotated_dir / f"{stem}.linemap.jsonl"
-        if not (docbin_path.exists() and linemap_path.exists()):
+        try:  # single {stem}.spacy or multi-part {stem}.partNNNN.spacy
+            have_docbin = bool(_docbin_paths(annotated_dir, stem))
+        except FileNotFoundError:
+            have_docbin = False
+        if not (have_docbin and linemap_path.exists()):
             self.logger.warning(
                 "annotated_input_path set but cache missing for %s "
-                "(%s / %s). Falling back to live parsing.",
+                "(%s.spacy or parts / %s). Falling back to live parsing.",
                 source_path.name,
-                docbin_path.name,
+                stem,
                 linemap_path.name,
             )
             return False
