@@ -33,19 +33,20 @@ from pathlib import Path
 import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
-    from _tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK, TokenAxis,
-                         drop_degenerate, is_arch, run_id_from_name,
+    from _tokens import (DEGENERATE_COLS, PAIRS_CACHE, TOKENS_PER_STEP_FALLBACK,
+                         TokenAxis, drop_degenerate, is_arch, run_id_from_name,
                          sync_checkpoints)
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_category_trajectories
-    from analysis.eval_v2._tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK,
-                                          TokenAxis, drop_degenerate, is_arch,
+    from analysis.eval_v2._tokens import (DEGENERATE_COLS, PAIRS_CACHE,
+                                          TOKENS_PER_STEP_FALLBACK, TokenAxis,
+                                          drop_degenerate, is_arch,
                                           run_id_from_name, sync_checkpoints)
 
 DEFAULT_ARCH = "gpt2_small"
 # Flat cache shared across architectures. Local filenames are the S3 basenames
 # ("cell_id=<arch>-..."), so architectures never collide, and every read goes
 # through is_arch() (never a bare cache glob, incl. --no-sync).
-CACHE = Path.home() / ".cache" / "subject-drop" / "pairs_cache"
+CACHE = PAIRS_CACHE
 CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)"
                   r"(\d*)_(\w+)-h(\d)-")
 CATS = ["subject_drop", "subject_drop_no_agreement", "embedded_drop",

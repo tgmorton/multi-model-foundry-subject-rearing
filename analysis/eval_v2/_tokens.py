@@ -30,6 +30,7 @@ Usage:
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -37,7 +38,12 @@ import pandas as pd
 
 CKPT_PREFIX = "eval_results/null_subj_v2_condition_matched_v1/checkpoints/"
 # Separate from the pairs cache (~/.cache/subject-drop/pairs_cache).
-CKPT_CACHE = Path.home() / ".cache" / "subject-drop" / "ckpt_cache"
+# SUBJECT_DROP_CKPT_CACHE / SUBJECT_DROP_PAIRS_CACHE point the plots at another
+# cache (e.g. a merged view that adds --partial snapshots of live runs).
+CKPT_CACHE = Path(os.environ.get("SUBJECT_DROP_CKPT_CACHE",
+                                 Path.home() / ".cache" / "subject-drop" / "ckpt_cache"))
+PAIRS_CACHE = Path(os.environ.get("SUBJECT_DROP_PAIRS_CACHE",
+                                  Path.home() / ".cache" / "subject-drop" / "pairs_cache"))
 # Last-resort per-arch constant, used only for runs with no checkpoints parquet
 # (or one with no usable tokens_seen at all). NOT correct for every gpt2_small
 # HP rank -- that is the point of this module.
