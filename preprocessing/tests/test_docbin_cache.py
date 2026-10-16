@@ -342,3 +342,79 @@ def test_childes_ablation_from_docbin_is_clean(
     # Just confirm a known lemmatization landed; exact output depends on the
     # small model's lemmatizer but "is -> be" is reliable.
     assert " be " in out_text.lower()
+
+
+# ── Multi-part DocBin (docbin_part_docs) ────────────────────────────────
+
+
+@pytest.fixture(scope="module")
+def parts_docbin_dir(tmp_path_factory, corpus_dir) -> Path:
+    """Standalone annotator writing each DocBin in parts of 4 docs."""
+    annotated = tmp_path_factory.mktemp("parts")
+    annotate_corpus(
+        input_dir=corpus_dir,
+        spacy_model="es_core_news_lg",
+        output_dir=annotated,
+        docbin_part_docs=4,
+    )
+    return annotated
+
+
+def test_parts_written(parts_docbin_dir):
+    """9 content lines in parts of 4 -> 4 + 4 + 1 (remainder flushed), no single file."""
+    names = sorted(p.name for p in parts_docbin_dir.glob("mini.part*.spacy"))
+    assert names == [f"mini.part{i:04d}.spacy" for i in range(3)]
+    assert not (parts_docbin_dir / "mini.spacy").exists()
+
+
+@pytest.mark.parametrize("ablation", _ABLATIONS)
+def test_parts_cache_parity(
+    tmp_path, corpus_dir, standalone_docbin_dir, parts_docbin_dir, ablation,
+):
+    """Ablation from a multi-part DocBin matches the single-file DocBin."""
+    single = _run_ablation(
+        corpus_dir, tmp_path / "single" / ablation, ablation,
+        annotated_input_path=standalone_docbin_dir,
+    )
+    parts = _run_ablation(
+        corpus_dir, tmp_path / "parts" / ablation, ablation,
+        annotated_input_path=parts_docbin_dir,
+    )
+    assert parts == single
+
+
+def test_parts_load_matches_single(standalone_docbin_dir, parts_docbin_dir):
+    from preprocessing.annotate import load_annotated_file
+
+    a_docs, a_map = load_annotated_file(standalone_docbin_dir, "mini")
+    b_docs, b_map = load_annotated_file(parts_docbin_dir, "mini")
+    assert a_map == b_map
+    assert [d.to_json() for d in a_docs] == [d.to_json() for d in b_docs]
+
+
+def test_mixed_docbin_refused(tmp_path, parts_docbin_dir):
+    import shutil
+
+    from preprocessing.annotate import iter_annotated_file
+
+    mixed = tmp_path / "mixed"
+    shutil.copytree(parts_docbin_dir, mixed)
+    (mixed / "mini.spacy").write_bytes((mixed / "mini.part0000.spacy").read_bytes())
+    with pytest.raises(RuntimeError, match="ambiguous"):
+        next(iter_annotated_file(mixed, "mini"))
+
+
+def test_retry_clears_stale_single(tmp_path, corpus_dir, standalone_docbin_dir):
+    """Re-annotating into a dir with an old single-file DocBin leaves parts only."""
+    import shutil
+
+    retry = tmp_path / "retry"
+    shutil.copytree(standalone_docbin_dir, retry)
+    annotate_corpus(
+        input_dir=corpus_dir,
+        spacy_model="es_core_news_lg",
+        output_dir=retry,
+        docbin_part_docs=4,
+    )
+    assert not (retry / "mini.spacy").exists()
+    assert len(list(retry.glob("mini.part*.spacy"))) == 3

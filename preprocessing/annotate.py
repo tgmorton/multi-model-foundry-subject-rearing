@@ -42,6 +42,7 @@ parse.
 from __future__ import annotations
 
 import argparse
+import glob
 import hashlib
 import json
 import logging
@@ -146,7 +147,40 @@ class _FileAnnotationStats:
     n_lines_passthrough: int = 0
     input_checksum: str = ""
     docbin_bytes: int = 0
+    docbin_parts: int = 1
     processing_time_seconds: float = 0.0
+
+
+def _docbin_paths(annotated_dir: Path, file_stem: str) -> List[Path]:
+    """The DocBin file(s) for one annotated source file, in doc order.
+
+    Either the single ``{stem}.spacy`` or, when written with ``part_docs``,
+    ``{stem}.part0000.spacy``, ``{stem}.part0001.spacy``, ... Both at once
+    means a mixed or interrupted write and is refused.
+    """
+    annotated_dir = Path(annotated_dir)
+    single = annotated_dir / f"{file_stem}.spacy"
+    parts = sorted(annotated_dir.glob(f"{glob.escape(file_stem)}.part[0-9][0-9][0-9][0-9].spacy"))
+    if single.exists() and parts:
+        raise RuntimeError(
+            f"{annotated_dir} holds both {single.name} and {len(parts)} "
+            f"{file_stem}.partNNNN.spacy files — ambiguous DocBin; re-annotate")
+    if single.exists():
+        return [single]
+    if not parts:
+        raise FileNotFoundError(f"Missing DocBin for {file_stem}: {single}")
+    expected = [f"{file_stem}.part{i:04d}.spacy" for i in range(len(parts))]
+    if [q.name for q in parts] != expected:
+        raise RuntimeError(f"non-contiguous DocBin parts for {file_stem} in {annotated_dir}")
+    return parts
+
+
+def _iter_docbin_docs(paths: List[Path], vocab):
+    """Docs from one or more DocBin files, one file in memory at a time."""
+    for path in paths:
+        docbin = DocBin().from_bytes(path.read_bytes())
+        yield from docbin.get_docs(vocab)
+        del docbin
 
 
 class DocBinCollector:
@@ -161,6 +195,12 @@ class DocBinCollector:
     - ``{stem}.linemap.jsonl``    — one JSON per INPUT line with
                                      ``{line_idx, doc_idx|null, raw_text}``
 
+    With ``part_docs=N`` the DocBin is written as ``{stem}.part0000.spacy``,
+    ``{stem}.part0001.spacy``, ... every N docs instead of one file at the
+    end, so memory stays flat: a whole-shard DocBin plus its ``to_bytes()``
+    copy peaks at ~3x the DocBin (>10 GB on a 25M-word shard, 2026-10-16).
+    ``doc_idx`` stays global across parts; readers concatenate them.
+
     Typical use::
 
         collector = DocBinCollector(output_dir, stem="childes")
@@ -173,12 +213,23 @@ class DocBinCollector:
         stats = collector.flush()
     """
 
-    def __init__(self, output_dir: Path, file_stem: str) -> None:
+    def __init__(self, output_dir: Path, file_stem: str,
+                 part_docs: Optional[int] = None) -> None:
         self.output_dir = Path(output_dir)
         self.file_stem = file_stem
+        self._part_docs = part_docs
         self._docbin = DocBin(attrs=DOCBIN_ATTRS, store_user_data=False)
         self._linemap_entries: List[Dict[str, Any]] = []
         self._next_doc_idx = 0
+        self._parts_written = 0
+        self._bytes_written = 0
+        # A retry into the same dir must not leave a stale single file next
+        # to new parts (or the reverse): readers refuse the mix.
+        if self.output_dir.exists():
+            stale = [self.output_dir / f"{file_stem}.spacy",
+                     *self.output_dir.glob(f"{glob.escape(file_stem)}.part[0-9][0-9][0-9][0-9].spacy")]
+            for path in stale:
+                path.unlink(missing_ok=True)
 
     def add_doc(self, line_idx: int, raw_text: str, doc) -> int:
         """Record a parsed Doc. Return the doc_idx assigned to it."""
@@ -188,7 +239,18 @@ class DocBinCollector:
             {"line_idx": line_idx, "doc_idx": doc_idx, "raw_text": raw_text}
         )
         self._next_doc_idx += 1
+        if self._part_docs and len(self._docbin) >= self._part_docs:
+            self._write_part()
         return doc_idx
+
+    def _write_part(self) -> None:
+        ensure_directory_exists(self.output_dir)
+        path = self.output_dir / f"{self.file_stem}.part{self._parts_written:04d}.spacy"
+        data = self._docbin.to_bytes()
+        path.write_bytes(data)
+        self._bytes_written += len(data)
+        self._parts_written += 1
+        self._docbin = DocBin(attrs=DOCBIN_ATTRS, store_user_data=False)
 
     def add_passthrough(self, line_idx: int, raw_text: str) -> None:
         """Record an input line that produced no Doc (empty / boundary)."""
@@ -217,11 +279,16 @@ class DocBinCollector:
         the ``AblationPipeline`` consumer expects.
         """
         ensure_directory_exists(self.output_dir)
-        docbin_path = self.output_dir / f"{self.file_stem}.spacy"
         linemap_path = self.output_dir / f"{self.file_stem}.linemap.jsonl"
 
-        docbin_bytes = self._docbin.to_bytes()
-        docbin_path.write_bytes(docbin_bytes)
+        if self._part_docs:
+            if len(self._docbin) or not self._parts_written:
+                self._write_part()
+            docbin_bytes = self._bytes_written
+        else:
+            data = self._docbin.to_bytes()
+            (self.output_dir / f"{self.file_stem}.spacy").write_bytes(data)
+            docbin_bytes = len(data)
 
         sorted_entries = sorted(
             self._linemap_entries, key=lambda e: e["line_idx"]
@@ -231,7 +298,8 @@ class DocBinCollector:
                 f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
         return {
-            "docbin_bytes": len(docbin_bytes),
+            "docbin_bytes": docbin_bytes,
+            "docbin_parts": self._parts_written if self._part_docs else 1,
             "n_docs": self.n_docs,
             "n_lines": self.n_lines,
             "n_passthrough": self.n_passthrough,
@@ -343,6 +411,7 @@ def annotate_corpus(
     spacy_batch_size: int = 50,
     file_filter: Optional[str] = None,
     spacy_disable_components: Optional[List[str]] = None,
+    docbin_part_docs: Optional[int] = None,
     verbose: bool = False,
 ) -> _AnnotationManifest:
     """Parse every ``.train`` file in *input_dir* to DocBin + line map.
@@ -356,6 +425,8 @@ def annotate_corpus(
         spacy_batch_size: Passed to ``nlp.pipe(batch_size=...)``.
         file_filter: Optional filename stem filter (e.g. ``"childes"``).
         spacy_disable_components: Components to disable (e.g. ``["ner"]``).
+        docbin_part_docs: Write each file's DocBin in parts of this many docs
+            (see :class:`DocBinCollector`); None keeps the single file.
         verbose: Extra logging.
 
     Returns:
@@ -424,6 +495,7 @@ def annotate_corpus(
             chunk_size=chunk_size,
             spacy_batch_size=spacy_batch_size,
             logger=logger,
+            part_docs=docbin_part_docs,
         )
         stats.processing_time_seconds = time.time() - file_start
         manifest.files.append(stats.__dict__)
@@ -455,6 +527,7 @@ def _annotate_file(
     chunk_size: int,
     spacy_batch_size: int,
     logger: logging.Logger,
+    part_docs: Optional[int] = None,
 ) -> _FileAnnotationStats:
     """Parse one .train file, writing DocBin + line map.
 
@@ -472,7 +545,7 @@ def _annotate_file(
 
     stats.n_lines_total = len(raw_lines)
 
-    collector = DocBinCollector(output_dir, source_path.stem)
+    collector = DocBinCollector(output_dir, source_path.stem, part_docs=part_docs)
 
     # Separate parseable lines from passthrough so nlp.pipe sees a
     # contiguous batch; we replay the result into the collector in
@@ -511,6 +584,7 @@ def _annotate_file(
     stats.n_docs_stored = flushed["n_docs"]
     stats.n_lines_passthrough = flushed["n_passthrough"]
     stats.docbin_bytes = flushed["docbin_bytes"]
+    stats.docbin_parts = flushed["docbin_parts"]
     return stats
 
 
@@ -531,11 +605,9 @@ def load_annotated_file(
         for streaming access.
     """
     annotated_dir = Path(annotated_dir)
-    docbin_path = annotated_dir / f"{file_stem}.spacy"
+    docbin_paths = _docbin_paths(annotated_dir, file_stem)
     linemap_path = annotated_dir / f"{file_stem}.linemap.jsonl"
 
-    if not docbin_path.exists():
-        raise FileNotFoundError(f"Missing DocBin for {file_stem}: {docbin_path}")
     if not linemap_path.exists():
         raise FileNotFoundError(f"Missing line map for {file_stem}: {linemap_path}")
 
@@ -549,8 +621,7 @@ def load_annotated_file(
         vocab = spacy.blank("xx").vocab
         vocab.from_disk(vocab_path)
 
-    docbin = DocBin().from_bytes(docbin_path.read_bytes())
-    docs = list(docbin.get_docs(vocab))
+    docs = list(_iter_docbin_docs(docbin_paths, vocab))
 
     linemap: List[Dict[str, Any]] = []
     with open(linemap_path, "r", encoding="utf-8") as f:
@@ -584,11 +655,9 @@ def iter_annotated_file(
         the deserialized spaCy Doc for that source line.
     """
     annotated_dir = Path(annotated_dir)
-    docbin_path = annotated_dir / f"{file_stem}.spacy"
+    docbin_paths = _docbin_paths(annotated_dir, file_stem)
     linemap_path = annotated_dir / f"{file_stem}.linemap.jsonl"
 
-    if not docbin_path.exists():
-        raise FileNotFoundError(f"Missing DocBin for {file_stem}: {docbin_path}")
     if not linemap_path.exists():
         raise FileNotFoundError(f"Missing line map for {file_stem}: {linemap_path}")
 
@@ -602,8 +671,7 @@ def iter_annotated_file(
         vocab = spacy.blank("xx").vocab
         vocab.from_disk(vocab_path)
 
-    docbin = DocBin().from_bytes(docbin_path.read_bytes())
-    doc_iter = docbin.get_docs(vocab)
+    doc_iter = _iter_docbin_docs(docbin_paths, vocab)
     next_expected_doc_idx = 0
 
     with open(linemap_path, "r", encoding="utf-8") as f:
@@ -653,6 +721,10 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--spacy-batch-size", type=int, default=50)
     p.add_argument("--file", type=str, default=None, help="Process only this stem")
     p.add_argument(
+        "--docbin-part-docs", type=int, default=None,
+        help="Write each DocBin in parts of N docs (flat memory on big files)",
+    )
+    p.add_argument(
         "--disable",
         nargs="*",
         default=None,
@@ -684,6 +756,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         spacy_batch_size=args.spacy_batch_size,
         file_filter=args.file,
         spacy_disable_components=args.disable,
+        docbin_part_docs=args.docbin_part_docs,
         verbose=args.verbose,
     )
     print(
