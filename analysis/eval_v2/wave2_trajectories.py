@@ -36,10 +36,12 @@ import numpy as np
 import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
-    from _tokens import TOKENS_PER_STEP_FALLBACK, TokenAxis, is_arch, sync_checkpoints
+    from _tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK, TokenAxis,
+                         drop_degenerate, is_arch, sync_checkpoints)
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_trajectories
-    from analysis.eval_v2._tokens import (TOKENS_PER_STEP_FALLBACK, TokenAxis,
-                                          is_arch, sync_checkpoints)
+    from analysis.eval_v2._tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK,
+                                          TokenAxis, drop_degenerate, is_arch,
+                                          sync_checkpoints)
 
 DEFAULT_ARCH = "gpt2_small"
 ARMS = ["rand", "gpt2m", "bert", "comp", "bertanti", "robbi", "robbianti"]
@@ -68,7 +70,7 @@ def load_pairs(args) -> pd.DataFrame:
         for f in files:
             frames.append(pd.read_parquet(
                 f, columns=["cell_id", "checkpoint_step",
-                            "prefers_overt_meanlp"]))
+                            "prefers_overt_meanlp", *DEGENERATE_COLS]))
     else:
         import boto3
         s = boto3.Session(profile_name=args.profile).client(
@@ -84,10 +86,10 @@ def load_pairs(args) -> pd.DataFrame:
                 frames.append(pd.read_parquet(
                     io.BytesIO(body),
                     columns=["cell_id", "checkpoint_step",
-                             "prefers_overt_meanlp"]))
+                             "prefers_overt_meanlp", *DEGENERATE_COLS]))
     if not frames:
         raise SystemExit(f"no pdrop2 pairs found for arch {args.arch!r}")
-    df = pd.concat(frames, ignore_index=True)
+    df = drop_degenerate(pd.concat(frames, ignore_index=True))
     # authoritative arch filter on the cell_id column (also covers --pairs-dir,
     # whose filenames need not follow the S3 naming)
     df = df[df.cell_id.map(lambda c: is_arch(c, args.arch))].copy()

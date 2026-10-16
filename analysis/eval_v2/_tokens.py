@@ -62,6 +62,25 @@ def run_id_from_name(name: str) -> str:
     return base[:-len(".parquet")] if base.endswith(".parquet") else base
 
 
+# A checkpoint save cut off mid-write leaves a valid safetensors header over
+# zero-filled weights; the model then predicts uniformly (log p = -ln V for
+# every token), so overt and null tie on every item and prefers_overt reads 0.
+# Three wave2 gpt2_large checkpoints are like this on disk (2026-10-15).
+DEGENERATE_COLS = ["overt_mean_log_prob", "null_mean_log_prob"]
+
+
+def drop_degenerate(d: pd.DataFrame) -> pd.DataFrame:
+    """Drop checkpoints whose every item scored identically (zeroed weights).
+    Needs DEGENERATE_COLS in `d`; returns the frame without them."""
+    keys = [c for c in ("cell_id", "checkpoint_step") if c in d.columns]
+    spread = d.groupby(keys)[DEGENERATE_COLS].transform("std").max(axis=1)
+    bad = spread.fillna(1.0) < 1e-6
+    if bad.any():
+        steps = sorted(d.loc[bad, "checkpoint_step"].unique().tolist())
+        print(f"[degenerate] dropped {bad.sum()} rows at steps {steps}")
+    return d.loc[~bad].drop(columns=DEGENERATE_COLS)
+
+
 def sync_checkpoints(bucket, profile, endpoint, arch, prefix=CKPT_PREFIX,
                      cache=CKPT_CACHE):
     """Download the pdrop2 checkpoint parquets for `arch` into `cache`, in

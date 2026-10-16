@@ -33,12 +33,13 @@ from pathlib import Path
 import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
-    from _tokens import (TOKENS_PER_STEP_FALLBACK, TokenAxis, is_arch,
-                         run_id_from_name, sync_checkpoints)
+    from _tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK, TokenAxis,
+                         drop_degenerate, is_arch, run_id_from_name,
+                         sync_checkpoints)
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_category_trajectories
-    from analysis.eval_v2._tokens import (TOKENS_PER_STEP_FALLBACK, TokenAxis,
-                                          is_arch, run_id_from_name,
-                                          sync_checkpoints)
+    from analysis.eval_v2._tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK,
+                                          TokenAxis, drop_degenerate, is_arch,
+                                          run_id_from_name, sync_checkpoints)
 
 DEFAULT_ARCH = "gpt2_small"
 # Flat cache shared across architectures. Local filenames are the S3 basenames
@@ -98,8 +99,9 @@ def load(paths, arms, ivs, hp, arch):
         arm, k, iv, h = CELL.search(p.name).groups()
         if arm not in want or iv not in ivs or int(h) != hp:
             continue
-        d = pd.read_parquet(p, columns=["checkpoint_step", "category",
-                                        "prefers_overt_meanlp"])
+        d = drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "category", "prefers_overt_meanlp",
+                        *DEGENERATE_COLS]))
         d = d[d.checkpoint_step > 0]
         g = (d.groupby(["checkpoint_step", "category"], as_index=False)
              .prefers_overt_meanlp.mean())

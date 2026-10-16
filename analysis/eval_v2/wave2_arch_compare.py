@@ -26,12 +26,14 @@ from pathlib import Path
 import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
-    from _tokens import TokenAxis, is_arch, run_id_from_name, sync_checkpoints
+    from _tokens import (DEGENERATE_COLS, TokenAxis, drop_degenerate, is_arch,
+                         run_id_from_name, sync_checkpoints)
     from wave2_category_trajectories import ARM_LABEL, CACHE, CELL, IV_LABEL
     from wave2_category_trajectories import sync as sync_pairs
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_arch_compare
-    from analysis.eval_v2._tokens import (TokenAxis, is_arch, run_id_from_name,
-                                          sync_checkpoints)
+    from analysis.eval_v2._tokens import (DEGENERATE_COLS, TokenAxis,
+                                          drop_degenerate, is_arch,
+                                          run_id_from_name, sync_checkpoints)
     from analysis.eval_v2.wave2_category_trajectories import (ARM_LABEL, CACHE,
                                                               CELL, IV_LABEL)
     from analysis.eval_v2.wave2_category_trajectories import sync as sync_pairs
@@ -51,7 +53,8 @@ def load_arch(arch, arms, iv, hp):
         arm, k, iv_, h = CELL.search(p.name).groups()
         if arm not in arms or iv_ != iv or int(h) != hp:
             continue
-        d = pd.read_parquet(p, columns=["checkpoint_step", "prefers_overt_meanlp"])
+        d = drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
         d = d[d.checkpoint_step > 0]       # trajectories begin at the first training step
         g = d.groupby("checkpoint_step", as_index=False).prefers_overt_meanlp.mean()
         g["arm"], g["k"] = arm, int(k)

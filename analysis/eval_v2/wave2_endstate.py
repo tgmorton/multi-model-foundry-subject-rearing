@@ -18,6 +18,11 @@ import argparse, io, re
 from pathlib import Path
 import numpy as np, pandas as pd
 
+try:  # run as a script from analysis/eval_v2/ ...
+    from _tokens import DEGENERATE_COLS, drop_degenerate
+except ImportError:  # ... or imported as analysis.eval_v2.wave2_endstate
+    from analysis.eval_v2._tokens import DEGENERATE_COLS, drop_degenerate
+
 CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
 IVS = ["base", "impcase", "lemverb", "enrichvm"]
 IV_LABEL = {"base": "baseline", "impcase": "impoverish case",
@@ -83,7 +88,8 @@ def load(bucket, prefix, profile, endpoint, last, arch):
     rows = []
     for key, p in paths:
         arm, k, iv, hp = CELL.search(key).groups()
-        d = pd.read_parquet(p, columns=["checkpoint_step", "prefers_overt_meanlp"])
+        d = drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
         c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean()
         if len(c) < 20: continue
         rows.append({"arm": "all100" if arm == "all100" else arm,
