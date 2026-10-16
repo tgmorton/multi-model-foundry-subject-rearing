@@ -1,7 +1,8 @@
 # bert_wordpiece caches for the 90 robbi/robbianti wave2 cells (2026-10-16; preflight: the 50
 # rand/all100 cells already have them from the w3 job). Same pod as job-prepare-caches-w3-bert.yaml.
 # Sized from a 1-pod canary (robbianti10_base): anon peak 6.7 GB, mostly 1-5 GB, ~15 min/cell,
-# 1-2 cores. 10Gi/2 CPU keeps it in NRP's bands (48Gi was 2-8% used).
+# 1-2 cores. One cell per pod, so each pod starts ~1 GB for its first minutes: 6Gi/7Gi limit
+# (peak 6.7 GB) and parallelism 4 keep few pods under the 20% floor at once (10Gi: 12-16%).
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -15,7 +16,7 @@ spec:
   backoffLimit: 30
   completionMode: Indexed
   completions: 90
-  parallelism: 6
+  parallelism: 4
   ttlSecondsAfterFinished: 604800
   template:
     metadata:
@@ -89,10 +90,10 @@ spec:
           value: /opt/repo
         resources:
           requests:
-            memory: 10Gi
+            memory: 6Gi
             cpu: '2'
           limits:
-            memory: 12Gi
+            memory: 7Gi
             cpu: '2'
         volumeMounts:
         - name: repo
