@@ -46,6 +46,7 @@ import datetime
 import json
 import os
 import shutil
+import socket
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -71,6 +72,11 @@ DEFAULT_HELDOUT_LINES = 50_000
 
 class SubsetError(RuntimeError):
     pass
+
+
+def _tmp_tag() -> str:
+    # Unique across pods (container PIDs collide) for concurrent per-corpus runs.
+    return f"{socket.gethostname()}-{os.getpid()}"
 
 
 def shard_name(shard_id: int) -> str:
@@ -126,7 +132,7 @@ def check_or_write_spec(out: Path, spec: dict) -> None:
                 f"  requested: {spec}\nuse the pinned arguments or another --out")
         return
     out.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".json.tmp")
+    tmp = path.with_name(f"{path.name}.tmp-{_tmp_tag()}")
     tmp.write_text(json.dumps({**spec, "corpora": list(CORPORA)}, indent=2) + "\n")
     os.replace(tmp, path)
 
@@ -191,7 +197,7 @@ def build_corpus(src: Path, out: Path, corpus: str, spec: dict) -> Tuple[str, di
         verify_existing(dest, src, corpus, spec)
         return "kept", json.loads((dest / MANIFEST_NAME).read_text())
 
-    tmp = out / f".{corpus}.tmp-{os.getpid()}"
+    tmp = out / f".{corpus}.tmp-{_tmp_tag()}"
     if tmp.exists():
         shutil.rmtree(tmp)
     tmp.mkdir(parents=True)

@@ -59,6 +59,22 @@ class TestTemplatePolicy:
         assert "--branch=feat/rater-sweeps" in clone
 
 
+class TestPrecacheTemplate:
+    def test_builds_subset_then_caches(self):
+        job = _load("precache")
+        pod = job["spec"]["template"]["spec"]
+        assert "nvidia.com/a100" not in pod["containers"][0]["resources"]["requests"]
+        script = pod["containers"][0]["args"][0]
+        steps = ["build_sweep_subset.py", "render-config", "tokenize-dataset", "preprocess-data"]
+        assert [script.index(s) for s in steps] == sorted(script.index(s) for s in steps)
+        assert "exit 3" in script
+        rule = job["spec"]["podFailurePolicy"]["rules"][0]
+        assert rule["action"] == "FailJob" and rule["onExitCodes"]["values"] == [3]
+        env = _env(pod["containers"][0])
+        assert env["TRAIN_SHARDS"].split() == ["0", "1", "2", "3", "4", "5", "6", "22"]
+        assert env["HELDOUT_SHARD"] == "199"
+
+
 class TestSweepTemplate:
     def test_a100_and_secrets(self):
         job = _load("sweep")

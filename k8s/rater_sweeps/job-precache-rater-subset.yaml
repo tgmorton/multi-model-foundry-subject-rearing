@@ -1,13 +1,16 @@
 ---
-# Rater sweeps (2026-10-16): tokenize + chunk ONE rater-sweep subset corpus
-# into the content-addressed cache, before any sweep pod for that corpus
-# runs (sweep pods only READ caches — memory/feedback_prerun_caches.md).
+# Rater sweeps (2026-10-16): build + tokenize + chunk ONE rater-sweep subset
+# corpus into the content-addressed cache, before any sweep pod for that
+# corpus runs (sweep pods only READ caches — memory/feedback_prerun_caches.md).
 #
 # Corpus = env CORPUS (one of base, remove_expletive_sentences_en,
-# impoverish_case_en, lemmatize_verbs, enrich_verbal_morphology); the
-# subset dir $SUBSET_ROOT/$CORPUS must already exist
-# (scripts/rater_corpus/build_sweep_subset.py). Each corpus has its own
-# cache key, so the five precache jobs can run at once without racing.
+# impoverish_case_en, lemmatize_verbs, enrich_verbal_morphology).
+# Step 0 runs scripts/rater_corpus/build_sweep_subset.py for that corpus
+# (idempotent: an existing subset dir with the same shards is verified and
+# kept; $SUBSET_ROOT/SUBSET_SPEC.json pins the shard selection for all five
+# corpora). It fails, writing nothing, while any requested intervention
+# shard is unfinished. Each corpus has its own cache key, so the five
+# precache jobs can run at once without racing.
 #
 # Render one per corpus rather than editing this file:
 #   python scripts/render_rater_sweep_job.py precache --corpus lemmatize_verbs > /tmp/j.yaml
@@ -31,6 +34,15 @@ metadata:
 spec:
   backoffLimit: 4
   ttlSecondsAfterFinished: 604800
+  # Exit 3 = subset not buildable (shards missing / unfinished, or a
+  # conflicting selection): retrying cannot help, so fail the Job at once.
+  podFailurePolicy:
+    rules:
+    - action: FailJob
+      onExitCodes:
+        containerName: precache
+        operator: In
+        values: [3]
   template:
     metadata:
       labels:
@@ -84,8 +96,13 @@ spec:
             [ -L "$d" ] || { echo "FAIL $d is not a symlink"; exit 1; }
           done
 
-          test -f "${CORPUS_DIR}/SUBSET_MANIFEST.json" || {
-            echo "FAIL ${CORPUS_DIR}/SUBSET_MANIFEST.json missing — run build_sweep_subset.py first"; exit 1; }
+          echo "--- Step 0: subset dir ---"
+          # TRAIN_SHARDS is a space-separated list: leave it unquoted.
+          python scripts/rater_corpus/build_sweep_subset.py \
+            --src "${SRC_ROOT}" --out "${SUBSET_ROOT}" --corpora "${CORPUS}" \
+            --train-shards ${TRAIN_SHARDS} --heldout-shard "${HELDOUT_SHARD}" \
+            --heldout-lines "${HELDOUT_LINES}" \
+            || { echo "FAIL subset not buildable (see above); not retrying"; exit 3; }
 
           CFG=/tmp/rater_precache_${CORPUS}.yaml
           python scripts/rater_sweep.py render-config --corpus-dir "${CORPUS_DIR}" --out "${CFG}"
@@ -120,7 +137,16 @@ spec:
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - {name: CORPUS, value: "base"}
+        - {name: SRC_ROOT, value: "/mnt/data/rater_corpus/optionb_v1"}
         - {name: SUBSET_ROOT, value: "/mnt/data/rater_corpus/sweep_subset_v1"}
+        # OPEN DECISION (subset size): 8 train shards (~200M words) + 1
+        # held-out shard, all from ablation batch 1 (k8s/rater_corpus/
+        # job-ablate-optionb-b1{s,p}.yaml) so the interventions have them
+        # first. Pinned in SUBSET_SPEC.json on first use: a different
+        # selection needs a new SUBSET_ROOT.
+        - {name: TRAIN_SHARDS, value: "0 1 2 3 4 5 6 22"}
+        - {name: HELDOUT_SHARD, value: "199"}
+        - {name: HELDOUT_LINES, value: "50000"}
         resources:
           # NOT MEASURED. ~200M words (8 x ~25M-word shards) WordPiece
           # tokenize (num_proc = 4) + streaming chunker. The 90M-word BERT
