@@ -65,8 +65,9 @@ def _sha256_file(path: Path) -> str:
 
 
 def _upload_once(s3, bucket: str, path: Path, key: str,
-                 metadata: dict[str, str]) -> str:
-    """Atomically publish a content-addressed result; refuse key collisions."""
+                 metadata: dict[str, str], overwrite: bool = False) -> str:
+    """Atomically publish a content-addressed result; refuse key collisions
+    unless `overwrite` (partial snapshots are replaced on every refresh)."""
     from botocore.exceptions import ClientError
 
     digest = _sha256_file(path)
@@ -80,13 +81,46 @@ def _upload_once(s3, bucket: str, path: Path, key: str,
         prior = (head.get("Metadata") or {}).get("sha256")
         if prior == digest:
             return "cached"
-        raise RuntimeError(
-            f"S3 collision at s3://{bucket}/{key}: existing sha256={prior!r}, "
-            f"local sha256={digest}")
+        if not overwrite:
+            raise RuntimeError(
+                f"S3 collision at s3://{bucket}/{key}: existing sha256={prior!r}, "
+                f"local sha256={digest}")
     md = {k: str(v) for k, v in metadata.items() if v is not None}
     md["sha256"] = digest
     s3.upload_file(str(path), bucket, key, ExtraArgs={"Metadata": md})
     return "uploaded"
+
+
+def _settled_checkpoint_view(root: Path, view: Path, min_age_s: float) -> Path:
+    """Symlink view of `root` holding only checkpoints a live trainer has
+    finished writing: weights present, metadata.json parses, and no file
+    modified in the last `min_age_s` seconds. A checkpoint caught mid-save
+    reads as a valid header over zero-filled weights (three wave2 gpt2_large
+    checkpoints, 2026-10-15), so --partial never scores the newest ones."""
+    import shutil
+    if view.exists():
+        shutil.rmtree(view)
+    view.mkdir(parents=True)
+    now = time.time()
+    kept = skipped = 0
+    for child in sorted(root.iterdir()):
+        if not (child.is_dir() and child.name.startswith("checkpoint-")):
+            continue
+        try:
+            newest = max(f.stat().st_mtime for f in child.iterdir())
+            json.loads((child / "metadata.json").read_text())
+            ok = ((child / "model.safetensors").is_file()
+                  or (child / "pytorch_model.bin").is_file())
+        except (OSError, ValueError):
+            ok = False
+        if ok and now - newest >= min_age_s:
+            (view / child.name).symlink_to(child)
+            kept += 1
+        else:
+            skipped += 1
+    log.info("--partial: %d settled checkpoint(s), %d skipped as unsettled",
+             kept, skipped)
+    return view
 
 
 def _validate_matched_stimuli(root: Path, expected_sha256: str | None) -> tuple[dict, str]:
@@ -204,8 +238,19 @@ def main():
                     help="Skip S3 registry writes (local/smoke runs).")
     ap.add_argument("--rerun", action="store_true",
                     help="Drop existing D11 markers for this cell first.")
+    ap.add_argument("--partial", action="store_true",
+                    help="Snapshot a run that is still training: score only "
+                         "settled checkpoints, publish under eval_results/"
+                         "<benchmark>__partial/ (replaced on each refresh), "
+                         "and skip registry writes. Pair with its own "
+                         "--output_root so D11 markers stay separate.")
+    ap.add_argument("--settle_minutes", type=float, default=15.0,
+                    help="--partial: skip checkpoints modified this recently.")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
+    if args.partial:
+        args.benchmark = f"{args.benchmark}__partial"
+    use_registry = not (args.no_registry or args.partial)
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -275,6 +320,10 @@ def main():
             log.error("Missing path: %s", p)
             sys.exit(3)
 
+    if args.partial:
+        ckpt_root = _settled_checkpoint_view(
+            ckpt_root, Path("/tmp/ckpt_view") / args.run_id,
+            args.settle_minutes * 60)
     ckpts = find_checkpoints_sorted(ckpt_root)
     if not ckpts:
         log.error("No checkpoints under %s", ckpt_root)
@@ -446,7 +495,7 @@ def main():
     # ── Registry: benchmark start ───────────────────────────────────────
     reg_kwargs = dict(run_id=args.run_id, arch=arch, lang=lang,
                       condition=condition, benchmark=args.benchmark)
-    if not args.no_registry:
+    if use_registry:
         from model_foundry import registry
         registry.register_eval_start(**reg_kwargs)
 
@@ -495,7 +544,7 @@ def main():
                  summary["n_processed"], summary["n_cached"],
                  summary["n_forward_passes"])
     except Exception:
-        if not args.no_registry:
+        if use_registry:
             registry.register_eval_benchmark_done(
                 **reg_kwargs, status="FAILED")
         raise
@@ -506,7 +555,7 @@ def main():
     if results_root is None and not args.results_to_pvc:
         # Fully cached, S3-only: everything is already on S3.
         log.info("✅ cell eval complete (fully cached): %s", args.run_id)
-        if not args.no_registry:
+        if use_registry:
             registry.register_eval_benchmark_done(
                 **reg_kwargs, status="COMPLETE",
                 parquet_path=f"s3://{os.environ.get('REGISTRY_BUCKET')}/"
@@ -590,19 +639,20 @@ def main():
                         f"missing result before S3 publication: {f}")
                 status = _upload_once(
                     s3, bucket, f, f"{s3_prefix}/{table}/{f.name}",
-                    upload_metadata)
+                    upload_metadata, overwrite=args.partial)
                 log.info("%s s3://%s/%s/%s/%s", status, bucket,
                          s3_prefix, table, f.name)
             log.info("durable result parquets verified → s3://%s/%s/",
                      bucket, s3_prefix)
         except Exception as exc:
-            registry.register_eval_benchmark_done(
-                **reg_kwargs, status="FAILED")
+            if use_registry:
+                registry.register_eval_benchmark_done(
+                    **reg_kwargs, status="FAILED")
             raise RuntimeError(
                 f"durable S3 result publication failed: {exc}") from exc
 
     # ── Registry: benchmark done + metric summary ───────────────────────
-    if not args.no_registry:
+    if use_registry:
         metric_summary = None
         try:
             pairs_path = (results_root or output_root) / "pairs" \
