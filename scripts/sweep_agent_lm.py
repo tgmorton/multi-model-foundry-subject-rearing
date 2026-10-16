@@ -114,14 +114,19 @@ def main() -> None:
     # wandb.init populates wandb.config from the sweep controller's
     # sampled HPs plus any ``value``-fixed constants from the sweep YAML.
     init_kwargs: dict[str, Any] = {"job_type": "sweep"}
-    rater_group = _rater.group_from_env(os.environ)
-    if rater_group is not None:
-        # Groups can't be changed after init, so rater mode has to be
-        # signalled by env (RATER_SWEEP=1 + CONDITION) to get one.
-        init_kwargs["group"] = rater_group
     run = wandb.init(**init_kwargs)
     if run is None:
         raise RuntimeError("wandb.init returned None — no sweep context")
+    # Rater mode labels the run with a tag, not a group: passing group= to
+    # wandb.init inside a sweep run failed with CommError ("'NoneType' object
+    # has no attribute 'get'", wandb 0.17, 2026-10-16). Each rater corpus has
+    # its own sweep, so the sweep already groups its trials.
+    rater_group = _rater.group_from_env(os.environ)
+    if rater_group is not None:
+        try:
+            run.tags = tuple(run.tags or ()) + (rater_group,)
+        except Exception as e:  # noqa: BLE001 — a label must never kill a trial
+            print(f"[sweep] could not tag run with {rater_group}: {e}", flush=True)
 
     # Rename the run from wandb's random "polished-sweep-1" into something
     # like "gpt2_medium_en_lr3.9e-5_eb256_d0.18" so runs are directly
