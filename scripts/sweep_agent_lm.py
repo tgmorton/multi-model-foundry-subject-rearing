@@ -64,7 +64,10 @@ from model_foundry.cache_keys import compute_cache_key, resolve_cached_path
 from model_foundry.config import ExperimentConfig
 from model_foundry.trainer import Trainer
 from model_foundry.utils import find_project_root, get_git_commit_hash
-from scripts import rater_sweep as _rater
+try:
+    from scripts import rater_sweep as _rater
+except ImportError:  # a site-packages `scripts` package shadowing ours
+    import rater_sweep as _rater  # sibling of this file (sys.path[0] when run directly)
 
 logger = logging.getLogger("sweep_agent_lm")
 logging.basicConfig(
