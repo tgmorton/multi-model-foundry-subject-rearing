@@ -1,0 +1,141 @@
+---
+# Rater sweeps (2026-10-16): tokenize + chunk ONE rater-sweep subset corpus
+# into the content-addressed cache, before any sweep pod for that corpus
+# runs (sweep pods only READ caches — memory/feedback_prerun_caches.md).
+#
+# Corpus = env CORPUS (one of base, remove_expletive_sentences_en,
+# impoverish_case_en, lemmatize_verbs, enrich_verbal_morphology); the
+# subset dir $SUBSET_ROOT/$CORPUS must already exist
+# (scripts/rater_corpus/build_sweep_subset.py). Each corpus has its own
+# cache key, so the five precache jobs can run at once without racing.
+#
+# Render one per corpus rather than editing this file:
+#   python scripts/render_rater_sweep_job.py precache --corpus lemmatize_verbs > /tmp/j.yaml
+# (as written, this template is the `base` instance).
+#
+# The config is configs/sweeps/baselines/rater_bert_large_en.yaml with the
+# corpus swapped in (scripts/rater_sweep.py render-config) — the same
+# (corpus, tokenizer, seq_len, manipulation) inputs the sweep trial hashes,
+# so the cache keys agree. Both CLI steps are idempotent.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-precache-base
+  namespace: lemn-lab
+  labels:
+    owner: thomas
+    study: subject-drop
+    stage: rater-sweep-precache
+    lang: en
+    corpus: base
+spec:
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        owner: thomas
+        study: subject-drop
+        stage: rater-sweep-precache
+        lang: en
+        corpus: base
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=feat/rater-sweeps
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits:   {memory: 1Gi, cpu: "200m"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      containers:
+      - name: precache
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          : "${CORPUS:?CORPUS env var is required}"
+          CORPUS_DIR="${SUBSET_ROOT}/${CORPUS}"
+          echo "=== RATER SWEEP PRECACHE — ${CORPUS} (${CORPUS_DIR}) ==="
+          cd /opt/repo
+          cat /opt/repo/.git/HEAD 2>/dev/null || echo "(no HEAD)"
+
+          # Repo data/ tree -> PVC (same layout the sweep pods see). git ships
+          # non-empty dirs under data/, so remove them before linking.
+          rm -rf /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers
+          mkdir -p /opt/repo/data /mnt/data/tokenized /mnt/data/chunked
+          ln -sfn /mnt/data/raw        /opt/repo/data/raw
+          ln -sfn /mnt/data/tokenized  /opt/repo/data/tokenized
+          ln -sfn /mnt/data/chunked    /opt/repo/data/chunked
+          ln -sfn /mnt/data/tokenizers /opt/repo/tokenizers
+          for d in /opt/repo/data/raw /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers; do
+            [ -L "$d" ] || { echo "FAIL $d is not a symlink"; exit 1; }
+          done
+
+          test -f "${CORPUS_DIR}/SUBSET_MANIFEST.json" || {
+            echo "FAIL ${CORPUS_DIR}/SUBSET_MANIFEST.json missing — run build_sweep_subset.py first"; exit 1; }
+
+          CFG=/tmp/rater_precache_${CORPUS}.yaml
+          python scripts/rater_sweep.py render-config --corpus-dir "${CORPUS_DIR}" --out "${CFG}"
+          python -m model_foundry.cli validate-config "${CFG}"
+
+          echo "--- Step 1/2: tokenize-dataset (train shards + heldout.test) ---"
+          python -m model_foundry.cli tokenize-dataset "${CFG}"
+          echo "--- Step 2/2: preprocess-data (chunking) ---"
+          python -m model_foundry.cli preprocess-data "${CFG}"
+
+          CACHE_KEY=$(python -c "
+          import sys, yaml
+          sys.path.insert(0, '/opt/repo')
+          from model_foundry.cache_keys import compute_cache_key
+          cfg = yaml.safe_load(open('${CFG}'))
+          tok = cfg['tokenizer']['output_dir']
+          if not tok.startswith('/'): tok = '/opt/repo/' + tok
+          print(compute_cache_key(cfg['data']['training_corpus'], tok,
+                                  cfg['data']['max_sequence_length'],
+                                  cfg.get('dataset_manipulation') or []))
+          ")
+          for f in /mnt/data/tokenized/${CACHE_KEY}/train/dataset_info.json \
+                   /mnt/data/tokenized/${CACHE_KEY}/test/dataset_info.json \
+                   /mnt/data/chunked/${CACHE_KEY}/dataset_info.json; do
+            [ -f "$f" ] || { echo "FAIL expected cache file missing: $f"; exit 1; }
+          done
+          du -sh /mnt/data/tokenized/${CACHE_KEY} /mnt/data/chunked/${CACHE_KEY} || true
+          # Sizing aid: cgroup peak memory INCLUDES page cache, so it is an
+          # upper bound on RSS. Use it (and Grafana RSS) to right-size below.
+          echo "cgroup memory peak: $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || cat /sys/fs/cgroup/memory/memory.max_usage_in_bytes 2>/dev/null || echo n/a) bytes"
+          echo "RATER PRECACHE OK: corpus=${CORPUS} cache_key=${CACHE_KEY}"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: CORPUS, value: "base"}
+        - {name: SUBSET_ROOT, value: "/mnt/data/rater_corpus/sweep_subset_v1"}
+        resources:
+          # NOT MEASURED. ~200M words (8 x ~25M-word shards) WordPiece
+          # tokenize (num_proc = 4) + streaming chunker. The 90M-word BERT
+          # prepare job ran in 16Gi; HF map streams to Arrow, so memory should
+          # not scale with corpus size. Measure on the `base` run (Grafana
+          # RSS, not "Memory Usage") and right-size before the other four:
+          # NRP flags RAM outside 20-150% of request.
+          requests: {memory: 12Gi, cpu: "4"}
+          limits:   {memory: 12Gi, cpu: "4"}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
+      restartPolicy: Never
