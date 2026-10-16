@@ -32,6 +32,7 @@ except ImportError:  # ... or imported as analysis.eval_v2.wave2_matched_horizon
 
 CELL = re.compile(r"pdrop2_(robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
 IVS = ["base", "impcase", "lemverb", "enrichvm", "rmexpl"]
+IV_LABEL = {**IV_LABEL, "rmexpl": "remove expletives"}
 
 
 def load(arch: str, hp: int, horizon: float, last: int) -> tuple[pd.DataFrame, int]:
