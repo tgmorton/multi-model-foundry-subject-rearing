@@ -1,0 +1,116 @@
+# Rater-corpus interventions, batch 1 (2026-10-16): 4 ablations x the shards annotated so far.
+# Sized from the canary: ~0.5 core, 2.1 GB (multi-part) / 4.2 GB (single-file DocBin), ~2 min
+# per (ablation, shard). >100 pods, so limit = request (NRP).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-ablate-raterb-b1
+  namespace: lemn-lab
+  labels: &id001
+    owner: thomas
+    study: subject-drop
+    lang: en
+    stage: rater-corpus-ablate
+spec:
+  completionMode: Indexed
+  completions: 320
+  parallelism: 20
+  backoffLimit: 60
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - cph-dgx-node7.humboldt.edu
+                - fiona-1.famu.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4705.unl.edu
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ren-gp-argo-01.madren.org
+                - ry-gpu-01.sdsc.optiputer.net
+                - ry-gpu-04.sdsc.optiputer.net
+                - ry-gpu-10.sdsc.optiputer.net
+                - suncave-3
+                - uicnrp-fiona2.evl.uic.edu
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args:
+        - clone
+        - --single-branch
+        - --depth=1
+        - --branch=main
+        - https://github.com/tgmorton/multi-model-foundry-subject-rearing.git
+        - /opt/repo
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 200m
+          limits:
+            memory: 1Gi
+            cpu: 200m
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+      containers:
+      - name: ablator
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - "set -euo pipefail\nABLATIONS=(remove_expletive_sentences_en impoverish_case_en lemmatize_verbs enrich_verbal_morphology)\nread -ra SH <<< \"$SHARDS\"; NS=${#SH[@]}\nABL=${ABLATIONS[$((JOB_COMPLETION_INDEX\
+          \ / NS))]}\nSHARD=$(printf \"shard_%03d\" \"${SH[$((JOB_COMPLETION_INDEX % NS))]}\")\nIN=/mnt/data/rater_corpus/optionb_v1/base/${SHARD}\nOUT=/mnt/data/rater_corpus/optionb_v1/${ABL}/${SHARD}\n\
+          echo \"ablate ${ABL} ${SHARD} on ${NODE_NAME}\"\ncd /opt/repo; export PYTHONPATH=/opt/repo\nif [ -f \"${OUT}/ABLATION_MANIFEST.json\" ]; then echo \"[done already] ${OUT}\"; exit 0; fi\nANNOT=$(python\
+          \ -c \"from pathlib import Path; from preprocessing.annotate import default_annotation_output_dir as d; print(d(Path('${IN}'), 'en_core_web_trf'))\")\nif [ ! -f \"${ANNOT}/ANNOTATION_MANIFEST.json\"\
+          \ ]; then echo \"ERROR: annotation not done: ${ANNOT}\"; exit 3; fi\nmkdir -p \"${OUT}\"\npython -c \"\nfrom pathlib import Path\nimport preprocessing.ablations\nfrom preprocessing.base import\
+          \ AblationPipeline\nfrom preprocessing.config import AblationConfig\nAblationPipeline(AblationConfig(type='${ABL}', input_path=Path('${IN}'), output_path=Path('${OUT}'),\n    annotated_input_path=Path('${ANNOT}'),\
+          \ skip_backfill=True, spacy_model='en_core_web_trf',\n    skip_validation=True, chunk_size=500, verbose=False)).process_corpus()\n\"\n"
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: SHARDS
+          value: 0 1 2 3 4 5 6 22 23 24 25 26 27 28 29 30 37 38 39 44 58 59 60 61 62 63 64 65 66 74 75 76 77 78 79 81 88 89 90 91 95 96 97 98 111 118 125 126 127 128 129 133 140 141 142 143 148 149 150
+            151 152 153 154 155 162 163 177 178 179 180 185 186 187 188 189 190 191 192 193 199
+        resources:
+          requests:
+            memory: 6Gi
+            cpu: '1'
+          limits:
+            memory: 6Gi
+            cpu: '1'
+        volumeMounts:
+        - name: repo
+          mountPath: /opt/repo
+        - name: data
+          mountPath: /mnt/data
+      volumes:
+      - name: repo
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: subject-drop-archive
