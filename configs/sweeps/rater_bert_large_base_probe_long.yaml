@@ -1,0 +1,20 @@
+# One fixed-HP long run on the base subset (see baselines/rater_bert_large_en_long.yaml).
+# RoBERTa-style settings: peak lr 1e-4, 6% warmup, beta2 0.98, dropout 0.1, batch 256.
+name: rater_bert_large_base_probe_long
+project: subject-drop-rater-sweeps
+program: scripts/sweep_agent_lm.py
+method: grid
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch: {value: bert_large}
+  lang: {value: en}
+  base_config: {value: configs/sweeps/baselines/rater_bert_large_en_long.yaml}
+  condition: {value: base}
+  learning_rate: {value: 1.0e-4}
+  warmup_ratio: {value: 0.06}
+  dropout: {value: 0.1}
+  attention_dropout: {value: 0.1}
+  effective_batch_size: {value: 256}
+  adam_beta2: {value: 0.98}

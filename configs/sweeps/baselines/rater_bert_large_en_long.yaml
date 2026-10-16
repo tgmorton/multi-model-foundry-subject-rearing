@@ -1,0 +1,127 @@
+# LONG-HORIZON PROBE (2026-10-16): same as rater_bert_large_en.yaml but 20k steps, eval every
+# 1000, no stop before 10k. The 3000-step trials sat on the BERT MLM plateau (held-out ppl
+# ~1200-1700, loss ~7.4); this one run measures when bert_large leaves it on the rater subset,
+# to size the sweep horizon. Not for Bayes search.
+# Rater-sweep baseline (bert_large, en) — 2026-10-16.
+#
+# HP sweeps for the masked-LM "rater" models (memory/project_custom_rater_plan.md,
+# docs/RATER_SWEEPS.md). A copy of bert_large_en.yaml with RATER MODE on:
+# scripts/sweep_agent_lm.py sees the `rater_sweep` block below and trains a
+# fixed step budget with step-cadence held-out eval + plateau stop, instead of
+# the epoch horizon. All logic: scripts/rater_sweep.py.
+#
+# Corpus: the pod overrides training/source/test corpus with env CORPUS_DIR
+# (one subset dir per corpus, built by scripts/rater_corpus/build_sweep_subset.py:
+# shard_NNN.train symlinks + heldout.test). The paths below are the `base`
+# default when CORPUS_DIR is unset.
+
+experiment_name: "sweep_baseline_rater_bert_large_en"
+
+data:
+  source_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"
+  training_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"
+  test_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"   # heldout.test (top-level *.test)
+  # Physical batch on one A100-80GB at seq 512, AMP fp16, SDPA attention.
+  # ESTIMATE (~1 GB activations/sequence for 24L/1024 at 512 + ~6 GB
+  # weights/grads/Adam): ~35-40 GB. Measure on the first trial and raise to
+  # 64 if VRAM allows (fewer accumulation steps, same effective batch).
+  batch_size: 32
+  # 512 (not the study's 1000): RoBERTa/BERT pretraining length, and the
+  # rater only scores local pronoun context. OPEN DECISION, see the doc.
+  max_sequence_length: 512
+
+dataset_manipulation: []
+
+tokenizer:
+  # OPEN DECISION for the PI: this is the PROJECT WordPiece tokenizer
+  # (BERT-style, lowercased, vocab 50004) + a BERT architecture, i.e. a
+  # BERT-large trained from scratch. The alternative is the roberta-large
+  # recipe (byte-level BPE, cased, vocab 50265, RoBERTa architecture), which
+  # matches the pretrained roberta-large behind robbi (D14). model_foundry
+  # has no `roberta` architecture (config.py allows gpt2/bert/lstm/rnn/gru/
+  # mamba) and no byte-level-BPE rater tokenizer has been trained, so that
+  # route needs code first. Changing the tokenizer changes every cache key
+  # -> re-precache all five subsets.
+  output_dir: "tokenizers/en_bert_wordpiece/"
+  vocab_size: 50004
+  tokenizer_type: "wordpiece"
+  special_tokens:
+    cls_token: "[CLS]"
+    sep_token: "[SEP]"
+    mask_token: "[MASK]"
+    unk_token: "[UNK]"
+    pad_token: "[PAD]"
+
+model:
+  architecture: "bert"
+  transformer:
+    layers: 24
+    embedding_size: 1024
+    hidden_size: 1024
+    intermediate_hidden_size: 4096
+    attention_heads: 16
+    activation_function: "gelu"
+    dropout: 0.1                   # overridden per trial
+    attention_dropout: 0.1         # overridden per trial
+
+training:
+  output_dir: "models/rater_sweeps/placeholder/"   # -> models/rater_sweeps/<condition>/<wandb run id>
+  learning_rate: 0.0001            # overridden per trial
+  adam_beta1: 0.9
+  adam_beta2: 0.98                 # overridden per trial
+  adam_epsilon: 1.0e-6
+  warmup_ratio: 0.06               # overridden per trial
+  train_steps: null                # = rater_sweep.sweep_train_steps
+  warmup_steps: null               # = warmup_ratio * scheduler_train_steps
+  epochs: 1                        # recomputed from the chunk count so train_steps fits
+
+  objective: "masked_lm"
+  mlm_probability: 0.15
+
+  use_amp: true
+  gradient_accumulation_steps: 8   # overridden via effective_batch_size (eff / batch_size)
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: false
+
+  # Rater mode forces these anyway (exactly one checkpoint per trial).
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null               # as bert_large_en: compile declined for BERT
+
+# Rater-mode knobs (scripts/rater_sweep.py::RaterSweepSettings). Defaults and why:
+rater_sweep:
+  enabled: true
+  # 3000 optimizer steps per trial; LR schedule (warmup + decay) completes
+  # inside it (scheduler_train_steps = train_steps). At effective batch 256 x
+  # 512 tokens that is ~390M tokens (~1.5 passes over an 8-shard subset at
+  # ~1.3 WordPiece tokens/word; ~0.75 at batch 128). Rough A100 cost: ~1-3 h
+  # per trial. The rater itself trains on ~5-10B words, so this is a short
+  # proxy horizon — see "Open decisions" in docs/RATER_SWEEPS.md.
+  sweep_train_steps: 20000
+  # 12 evals per full trial; each is a forward pass over <=2000 x 512 tokens
+  # (~1M tokens, well under a minute on an A100).
+  eval_every_steps: 1000
+  # Capped prefix of the tokenized heldout.test (fixed mask seed, so every
+  # eval and every trial scores the same masked positions). ~150K masked
+  # tokens: noise far below the HP differences being ranked.
+  eval_max_sequences: 2000
+  # Stop after 4 consecutive evals (1000 steps) without a >=0.2% relative
+  # improvement over the reference perplexity...
+  patience_evals: 4
+  min_rel_improvement: 0.002
+  # ...but never before step 1000, so warmup (up to 15% = 450 steps) and the
+  # post-warmup bump can't trigger a stop.
+  min_steps_before_stop: 10000
+  # One weights-only checkpoint at the endpoint (~1.4 GB). false = none.
+  save_final: true
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-rater-sweeps"
+  wandb_project_sweeps: "subject-drop-rater-sweeps"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42
