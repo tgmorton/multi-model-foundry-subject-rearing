@@ -170,7 +170,11 @@ class PerModelRunner:
         if self._model is None:
             logger.info("Building model architecture for cell %s",
                         self.cell.cell_id)
-            m = self.cell.model_factory()
+            # Build on the eval device: a CPU build of gpt2_large is a ~1.4 GB
+            # host-RAM spike that would set the pod's memory request, though
+            # steady use is ~0.7 GB (NRP utilization bands, 2026-10-16).
+            with torch.device(self.cell.device):
+                m = self.cell.model_factory()
             m = m.to(self.cell.device)
             m.eval()
             self._model = m
