@@ -405,8 +405,7 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
     final_train_loss = _extract_final_training_loss(trainer)
     es = trial_state["es"]
     summary = {
-        "proxy/final_training_loss": float(final_train_loss)
-            if math.isfinite(final_train_loss) else float("inf"),
+        "proxy/final_training_loss": float(final_train_loss),
         "proxy/best_step": int(es.best_step),
         "proxy/steps_completed": final_step,
         "proxy/n_evals": int(es.n_evals),
