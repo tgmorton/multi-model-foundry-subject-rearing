@@ -188,6 +188,11 @@ spec:
           # code (it returns 0 even when the trial subprocess crashed).
           export TRIAL_SENTINEL=/tmp/trial_succeeded
           rm -f "$TRIAL_SENTINEL"
+          # The image's wandb 0.17.0 fails wandb.init inside sweep runs
+          # (CommError "'NoneType' object has no attribute 'get'", 2026-10-16;
+          # plain training runs still log). 0.26.0 works; fold into the image
+          # on the next rebuild.
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           wandb agent --count 1 "$SWEEP_ID" || true
           if [ ! -f "$TRIAL_SENTINEL" ]; then
             echo "FAIL trial sentinel absent — trial did not finish cleanly; Job will retry"
@@ -223,14 +228,11 @@ spec:
         - {name: REGISTRY_RUN_KIND,  value: "hp_sweep"}
         - {name: DOCKER_IMAGE,       value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}
         resources:
-          # NOT MEASURED. Host RAM: the study BERT sweep OOMed at 4Gi and ran
-          # at 8Gi with 1 dataloader worker, its spike being the uncapped eval
-          # that packed the whole 10M-word test split into Python lists; the
-          # rater eval is capped at 2000 sequences, and 4 CPUs give 2 workers.
-          # Check RSS on the first trials and right-size (NRP: RAM 20-150%,
-          # CPU 20-200% of request, GPU > 40%).
-          requests: {memory: 12Gi, cpu: "4", nvidia.com/a100: 1}
-          limits:   {memory: 12Gi, cpu: "4", nvidia.com/a100: 1}
+          # Measured on the first base trial (A100-80GB, 2026-10-16): GPU 100%,
+          # 33 GB VRAM, host anon RAM ~1.6 GB, 1.17 s/step. 6Gi keeps RAM inside
+          # NRP's 20-150% band (8Gi read ~20%); 2 CPUs.
+          requests: {memory: 6Gi, cpu: "2", nvidia.com/a100: 1}
+          limits:   {memory: 6Gi, cpu: "2", nvidia.com/a100: 1}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
