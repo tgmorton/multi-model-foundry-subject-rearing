@@ -471,13 +471,19 @@ class Trainer:
         except Exception as e:
             print(f"  - Warning: Failed to save environment snapshot: {e}")
 
-    def train(self, on_epoch_end=None):
+    def train(self, on_epoch_end=None, on_step_end=None, endpoint_checkpoint="full"):
         """Main training entry point.
 
         Args:
             on_epoch_end: Optional callable (epoch: int, tokens_seen: int) -> bool
                 fired at the end of each epoch. Return True to stop training
                 early (used by the sweep agent for patience-based early stop).
+            on_step_end: Optional callable (global_step: int) -> bool fired
+                after every optimizer step. Return True to stop training
+                (used by the sweep agent's rater mode).
+            endpoint_checkpoint: "full" (default), "weights" or "none" — what
+                the training loop's endpoint guard saves. See
+                ``model_foundry.training.loop.ENDPOINT_CHECKPOINT_MODES``.
         """
         logger = setup_logging(
             "trainer",
@@ -488,7 +494,9 @@ class Trainer:
         logger.info(f"--- Starting Training Run for: {self.config.experiment_name} ---")
 
         try:
-            return self._train_loop(on_epoch_end=on_epoch_end)
+            return self._train_loop(on_epoch_end=on_epoch_end,
+                                    on_step_end=on_step_end,
+                                    endpoint_checkpoint=endpoint_checkpoint)
         except Exception as e:
             logger.error(f"Training failed: {str(e)}")
             logger.error(f"Error type: {type(e).__name__}")
@@ -512,7 +520,7 @@ class Trainer:
             logger.debug("Full traceback:", exc_info=True)
             raise SystemExit(1)
 
-    def _train_loop(self, on_epoch_end=None):
+    def _train_loop(self, on_epoch_end=None, on_step_end=None, endpoint_checkpoint="full"):
         """Internal training loop implementation."""
         print("Starting training setup...")
 
@@ -648,6 +656,8 @@ class Trainer:
             start_tokens=getattr(
                 self.checkpoint_manager, "resume_total_tokens", 0),
             on_epoch_end=on_epoch_end,
+            on_step_end=on_step_end,
+            endpoint_checkpoint=endpoint_checkpoint,
         )
 
         return final_step

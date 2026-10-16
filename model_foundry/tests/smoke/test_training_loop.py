@@ -599,3 +599,86 @@ class TestRollingResume:
         saves, prunes = self._run(rolling_every=None)
         assert {s for s, full in saves.items() if full} == {2, 11, 12}
         assert prunes == []
+
+
+class TestStepEndHook:
+    """on_step_end (rater sweeps, 2026-10-16): fired once per optimizer
+    step with the number of completed steps; returning True stops."""
+
+    def _loop(self, train_steps=6, grad_accum=2, schedule=(), n_batches=None):
+        with patch('torch.cuda.is_available', return_value=False):
+            return _make_run_loop(
+                train_steps=train_steps, grad_accum=grad_accum,
+                checkpoint_schedule=set(schedule),
+                n_batches=n_batches if n_batches is not None else train_steps * grad_accum,
+            )
+
+    def _run(self, loop, **kwargs):
+        with patch('torch.cuda.is_available', return_value=False):
+            return loop.run(tokenizer=MagicMock(), start_step=0, start_epoch=0,
+                            start_tokens=0, **kwargs)
+
+    def test_called_once_per_optimizer_step_with_completed_count(self):
+        seen = []
+        loop = self._loop(train_steps=6, grad_accum=2)
+        final = self._run(loop, on_step_end=lambda s: seen.append(s) or False)
+        # Micro-batches that don't close an accumulation window don't fire.
+        assert seen == [1, 2, 3, 4, 5, 6]
+        assert final == 6
+
+    def test_true_stops_training_and_skips_epoch_hook(self):
+        epoch_calls = []
+        loop = self._loop(train_steps=10, grad_accum=1)
+        final = self._run(
+            loop,
+            on_step_end=lambda s: s >= 4,
+            on_epoch_end=lambda e, t: epoch_calls.append(e) or False,
+        )
+        assert final == 4
+        assert epoch_calls == []
+        # The endpoint guard still saves exactly one (full) checkpoint at 4.
+        calls = loop.checkpoint_manager.save_checkpoint.call_args_list
+        assert [c.args[4] for c in calls] == [4]
+        assert calls[0].kwargs['save_resume_state'] is True
+
+    def test_raising_hook_does_not_stop(self):
+        def boom(step):
+            raise RuntimeError("eval exploded")
+        loop = self._loop(train_steps=5, grad_accum=1)
+        assert self._run(loop, on_step_end=boom) == 5
+
+    def test_unused_hook_matches_default_run(self):
+        """No hook + default endpoint mode == the historical save pattern."""
+        a = self._loop(train_steps=6, grad_accum=2, schedule={3})
+        b = self._loop(train_steps=6, grad_accum=2, schedule={3})
+        self._run(a)
+        self._run(b, on_step_end=None, endpoint_checkpoint="full")
+        sig = lambda l: [(c.args[4], c.args[7], c.kwargs['save_resume_state'])
+                         for c in l.checkpoint_manager.save_checkpoint.call_args_list]
+        assert sig(a) == sig(b) == [(3, 72, True), (6, 144, True)]
+
+
+class TestEndpointCheckpointMode:
+    """endpoint_checkpoint controls only the post-loop endpoint guard."""
+
+    def _saves(self, mode, schedule=()):
+        with patch('torch.cuda.is_available', return_value=False):
+            loop = _make_run_loop(train_steps=4, grad_accum=1,
+                                  checkpoint_schedule=set(schedule), n_batches=4)
+            loop.run(tokenizer=MagicMock(), start_step=0, start_epoch=0,
+                     start_tokens=0, endpoint_checkpoint=mode)
+        return [(c.args[4], c.kwargs['save_resume_state'])
+                for c in loop.checkpoint_manager.save_checkpoint.call_args_list]
+
+    def test_weights_only_endpoint(self):
+        assert self._saves("weights") == [(4, False)]
+
+    def test_no_endpoint(self):
+        assert self._saves("none") == []
+
+    def test_scheduled_saves_unaffected(self):
+        assert self._saves("none", schedule={2}) == [(2, True)]
+
+    def test_rejects_unknown_mode(self):
+        with pytest.raises(ValueError):
+            self._saves("bogus")

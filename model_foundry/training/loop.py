@@ -24,6 +24,21 @@ from ..rng import derive_seed
 # Returning True terminates training after the current epoch.
 EpochEndCallback = Callable[[int, int], bool]
 
+# Type alias for the per-optimizer-step hook (rater sweeps, 2026-10-16:
+# held-out eval every N steps + plateau early stop inside a single
+# epoch). Signature:
+#   (global_step: int) -> bool
+# global_step is the number of COMPLETED optimizer steps (it has already
+# been incremented). Returning True stops training after this step; the
+# endpoint guard still runs.
+StepEndCallback = Callable[[int], bool]
+
+# What the post-loop endpoint guard writes:
+#   "full"    — model + tokenizer + training_state.pt (default; resumable)
+#   "weights" — analysis-only (model + tokenizer + metadata)
+#   "none"    — nothing
+ENDPOINT_CHECKPOINT_MODES = ("full", "weights", "none")
+
 
 # How often to emit a registry heartbeat. A reaper marks runs PREEMPTED
 # after ~2h of no heartbeat, so 5 min gives plenty of margin and is
@@ -101,7 +116,9 @@ class TrainingLoop:
 
     def run(self, tokenizer, start_step: int = 0, start_epoch: int = 0,
             start_tokens: int = 0,
-            on_epoch_end: Optional[EpochEndCallback] = None):
+            on_epoch_end: Optional[EpochEndCallback] = None,
+            on_step_end: Optional[StepEndCallback] = None,
+            endpoint_checkpoint: str = "full"):
         """
         Execute the main training loop.
 
@@ -113,10 +130,23 @@ class TrainingLoop:
                 with (epoch, total_tokens_processed). Returning True stops
                 training after the current epoch. Used by the sweep agent
                 for per-epoch held-out perplexity + early stopping.
+            on_step_end: Optional hook fired after every optimizer step
+                with the number of completed steps. Returning True stops
+                training after this step (on_epoch_end is not called for
+                the partial epoch). Used by the rater-sweep mode of the
+                sweep agent for step-cadence eval + early stopping.
+            endpoint_checkpoint: One of ENDPOINT_CHECKPOINT_MODES; what the
+                endpoint guard saves after the loop. "full" (default) is
+                the historical behavior.
 
         Returns:
             Final global step reached
         """
+        if endpoint_checkpoint not in ENDPOINT_CHECKPOINT_MODES:
+            raise ValueError(
+                f"endpoint_checkpoint must be one of {ENDPOINT_CHECKPOINT_MODES}, "
+                f"got {endpoint_checkpoint!r}"
+            )
         self.global_step = start_step
         self.epoch = start_epoch
 
@@ -185,6 +215,9 @@ class TrainingLoop:
         # on which record to touch. Non-fatal everywhere.
         registry_identity = self._registry_identity()
         last_heartbeat_wall = time.time()
+
+        # Set by on_step_end; ends the epoch loop too.
+        stop_requested = False
 
         self.model.train()
 
@@ -294,6 +327,7 @@ class TrainingLoop:
                 consumed_from_iter += 1
                 data_ms_acc += (time.perf_counter() - t_data_start) * 1000
 
+                step_before = self.global_step
                 try:
                     t_compute_start = time.perf_counter()
 
@@ -450,6 +484,21 @@ class TrainingLoop:
                     else:
                         raise
 
+                # Step-level hook. Runs after global_step has advanced and
+                # OUTSIDE the OOM handler above, so an OOM inside the hook
+                # (e.g. an eval pass) is not mistaken for a training-step
+                # OOM that rewinds the accumulation window.
+                if on_step_end is not None and self.global_step != step_before:
+                    try:
+                        stop_requested = bool(on_step_end(self.global_step))
+                    except Exception as cb_err:  # noqa: BLE001
+                        self.logger.warning("on_step_end callback raised %s; continuing", cb_err)
+                        stop_requested = False
+                    if stop_requested:
+                        self.logger.info("Early stop requested by step callback at step %d",
+                                         self.global_step)
+                        break
+
             # Epoch completion
             epoch_wall_end = time.time()
             self._log_epoch_completion(
@@ -460,6 +509,9 @@ class TrainingLoop:
             # Epoch cleanup
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
+
+            if stop_requested:
+                break
 
             # End-of-epoch hook for the sweep agent: evaluate held-out
             # perplexity, update BO's running-min metric, check early-stop
@@ -483,8 +535,9 @@ class TrainingLoop:
         # endpoint for BOTH fresh and resumed runs — with full resume state
         # — unless we already saved at exactly this step this run.
         # _save_checkpoint/save_checkpoint use exist_ok, so a redundant call
-        # is harmless and idempotent.
-        if last_saved_step != self.global_step:
+        # is harmless and idempotent. endpoint_checkpoint="weights" drops
+        # the resume state and "none" skips the save (rater sweeps).
+        if endpoint_checkpoint != "none" and last_saved_step != self.global_step:
             epoch_completed = (
                 steps_per_epoch > 0
                 and self.global_step > 0
@@ -498,7 +551,7 @@ class TrainingLoop:
             self._save_checkpoint(
                 tokenizer,
                 total_tokens_processed,
-                save_resume_state=True,
+                save_resume_state=(endpoint_checkpoint == "full"),
                 epoch_completed=epoch_completed,
             )
             if rolling_every:
