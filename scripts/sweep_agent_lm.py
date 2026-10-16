@@ -28,6 +28,14 @@ Constants the sweep YAML must inject via `parameters.*.value`:
 No checkpoints are written during sweep trials; the proxy metrics are
 the only output. Registry record + env snapshot still land on S3 for
 reproducibility.
+
+Rater mode (2026-10-16, ``scripts/rater_sweep.py``): when the baseline
+YAML carries ``rater_sweep: {enabled: true, ...}`` or env
+``RATER_SWEEP=1`` is set, the trial instead trains a fixed step budget,
+evaluates held-out perplexity every N steps on a capped slice of the test
+split, plateau-stops on that, and writes one weights-only checkpoint.
+Condition / corpus come from env ``CONDITION`` / ``CORPUS_DIR``. Without
+either switch nothing below changes.
 """
 
 from __future__ import annotations
@@ -56,6 +64,7 @@ from model_foundry.cache_keys import compute_cache_key, resolve_cached_path
 from model_foundry.config import ExperimentConfig
 from model_foundry.trainer import Trainer
 from model_foundry.utils import find_project_root, get_git_commit_hash
+from scripts import rater_sweep as _rater
 
 logger = logging.getLogger("sweep_agent_lm")
 logging.basicConfig(
@@ -101,7 +110,13 @@ def _format_run_name(arch: str, lang: str, wc: dict) -> str:
 def main() -> None:
     # wandb.init populates wandb.config from the sweep controller's
     # sampled HPs plus any ``value``-fixed constants from the sweep YAML.
-    run = wandb.init(job_type="sweep")
+    init_kwargs: dict[str, Any] = {"job_type": "sweep"}
+    rater_group = _rater.group_from_env(os.environ)
+    if rater_group is not None:
+        # Groups can't be changed after init, so rater mode has to be
+        # signalled by env (RATER_SWEEP=1 + CONDITION) to get one.
+        init_kwargs["group"] = rater_group
+    run = wandb.init(**init_kwargs)
     if run is None:
         raise RuntimeError("wandb.init returned None — no sweep context")
 
@@ -116,10 +131,14 @@ def main() -> None:
     except Exception as e:  # noqa: BLE001
         logger.warning("could not set deterministic run name: %s", e)
 
-    cfg_dict, identity = _prepare_config(run)
+    cfg_dict, identity, rater_settings = _prepare_config(run)
     config = ExperimentConfig(**cfg_dict)
 
     base_dir = find_project_root(__file__)
+
+    if rater_settings is not None:
+        _run_rater_trial(run, config, identity, rater_settings, base_dir)
+        return
 
     _register_start(config, identity, run, base_dir)
 
@@ -292,10 +311,158 @@ def _save_final_checkpoint(trainer: Trainer, config: ExperimentConfig, base_dir:
     return final_dir
 
 
+# ---------- rater mode ----------
+
+def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
+                     settings: _rater.RaterSweepSettings, base_dir: str) -> None:
+    """One rater-sweep trial: step budget, eval every ``eval_every_steps``
+    on a capped test slice, plateau stop, one weights-only checkpoint.
+
+    Same failure contract as the epoch path in ``main``: an exception or a
+    non-finite min perplexity marks the trial FAILED and raises; a plateau
+    stop is a normal finish (W&B state "finished", sentinel written)."""
+    _register_start(config, identity, run, base_dir)
+
+    tokens_per_step = (config.data.batch_size
+                       * config.training.gradient_accumulation_steps
+                       * config.data.max_sequence_length)
+    trial_state: dict[str, Any] = {
+        "es": _rater.EarlyStopState(),
+        "last_ppl": float("nan"),
+        "last_eval_step": -1,
+        "chunks": None,
+        "stopped_early": False,
+    }
+    trainer: Optional[Trainer] = None
+
+    def evaluate(step: int) -> _rater.EarlyStopState:
+        if trial_state["chunks"] is None:
+            trial_state["chunks"] = _load_held_out_chunks(
+                trainer, config, max_sequences=settings.eval_max_sequences)
+            if trial_state["chunks"] is not None:
+                logger.info("held-out eval set: %d sequences x %d tokens",
+                            *trial_state["chunks"].shape)
+        ppl = (_compute_held_out_perplexity(trainer, config, chunks=trial_state["chunks"])
+               if trial_state["chunks"] is not None else float("nan"))
+        es = _rater.early_stop_update(trial_state["es"], step, ppl, settings)
+        trial_state.update(es=es, last_ppl=ppl, last_eval_step=step)
+        wandb.log({
+            f"proxy/{PROXY_METRIC_NAME}": float(ppl),
+            f"proxy/{PROXY_MIN_METRIC_NAME}": float(es.min_ppl),
+            "proxy/eval_step": step,
+            "proxy/tokens_seen": step * tokens_per_step,
+            "proxy/evals_without_improvement": es.bad_evals,
+        }, step=step)
+        logger.info(
+            "step %d: held_out_ppl=%.4f min=%.4f (step %d) no-improve=%d/%d",
+            step, ppl, es.min_ppl, es.best_step, es.bad_evals, settings.patience_evals,
+        )
+        return es
+
+    def on_step_end(step: int) -> bool:
+        if not _rater.is_eval_step(step, settings):
+            return False
+        try:
+            es = evaluate(step)
+        except Exception as e:  # noqa: BLE001
+            logger.exception("step %d perplexity eval failed: %s", step, e)
+            return False
+        if es.should_stop:
+            trial_state["stopped_early"] = True
+            logger.info("early-stop: %d evals without a %.2g relative improvement; "
+                        "halting trial at step %d",
+                        es.bad_evals, settings.min_rel_improvement, step)
+            return True
+        return False
+
+    try:
+        trainer = Trainer(config, base_dir)
+        trainer.train(on_step_end=on_step_end,
+                      endpoint_checkpoint=_rater.endpoint_checkpoint_mode(settings))
+    except Exception as e:  # noqa: BLE001
+        logger.exception("trial failed during training")
+        wandb.log({
+            "proxy/final_training_loss": float("nan"),
+            f"proxy/{PROXY_METRIC_NAME}": float("nan"),
+            f"proxy/{PROXY_MIN_METRIC_NAME}": float("nan"),
+        })
+        _registry.register_run_end(
+            run_id=identity["run_id"], arch=identity["arch"],
+            lang=identity["lang"], condition=identity["condition"],
+            status="FAILED", failure_reason=str(e)[:500],
+        )
+        raise
+
+    # Always score the model training ended on (the fully annealed one when
+    # the budget ran out) if the last step-cadence eval didn't land on it.
+    final_step = int(trainer.training_loop.global_step)
+    if trial_state["last_eval_step"] != final_step:
+        try:
+            evaluate(final_step)
+        except Exception as e:  # noqa: BLE001
+            logger.exception("final perplexity eval failed: %s", e)
+
+    final_train_loss = _extract_final_training_loss(trainer)
+    es = trial_state["es"]
+    summary = {
+        "proxy/final_training_loss": float(final_train_loss)
+            if math.isfinite(final_train_loss) else float("inf"),
+        "proxy/best_step": int(es.best_step),
+        "proxy/steps_completed": final_step,
+        "proxy/n_evals": int(es.n_evals),
+        "proxy/stopped_early": bool(trial_state["stopped_early"]),
+    }
+
+    # NaN/Inf guard — same contract as the epoch path.
+    if not math.isfinite(es.min_ppl):
+        wandb.log({**summary,
+                   f"proxy/{PROXY_METRIC_NAME}": float("inf"),
+                   f"proxy/{PROXY_MIN_METRIC_NAME}": float("inf"),
+                   "proxy/non_finite_metric": True})
+        _registry.register_run_end(
+            run_id=identity["run_id"], arch=identity["arch"],
+            lang=identity["lang"], condition=identity["condition"],
+            status="FAILED", failure_reason=f"non-finite min_ppl: {es.min_ppl}",
+        )
+        raise RuntimeError(
+            f"trial produced non-finite min_held_out_perplexity ({es.min_ppl}); "
+            f"marking as failed so BO doesn't sample around this point"
+        )
+
+    wandb.log({**summary,
+               f"proxy/{PROXY_METRIC_NAME}": float(trial_state["last_ppl"]),
+               f"proxy/{PROXY_MIN_METRIC_NAME}": float(es.min_ppl)})
+    logger.info(
+        "rater trial DONE: train_loss=%.4f final_ppl=%.4f min_ppl=%.4f best_step=%d "
+        "steps=%d stopped_early=%s",
+        final_train_loss, trial_state["last_ppl"], es.min_ppl, es.best_step,
+        final_step, trial_state["stopped_early"],
+    )
+
+    _register_end(identity, run, trainer, final_train_loss, es.min_ppl)
+
+    # Sentinel for the K8s wrapper (see the epoch path in main).
+    sentinel_path = Path(os.environ.get("TRIAL_SENTINEL", "/tmp/trial_succeeded"))
+    try:
+        sentinel_path.write_text(
+            f"run_id={identity['run_id']}\n"
+            f"condition={identity['condition']}\n"
+            f"min_ppl={es.min_ppl}\n"
+            f"final_ppl={trial_state['last_ppl']}\n"
+            f"best_step={es.best_step}\n"
+            f"steps_completed={final_step}\n"
+            f"stopped_early={trial_state['stopped_early']}\n"
+        )
+    except OSError as e:
+        logger.warning("could not write trial sentinel %s: %s", sentinel_path, e)
+
+
 # ---------- config preparation ----------
 
-def _prepare_config(run) -> tuple[dict, dict]:
-    """Load the baseline YAML, overlay sampled HPs, return (config_dict, identity)."""
+def _prepare_config(run) -> tuple[dict, dict, Optional[_rater.RaterSweepSettings]]:
+    """Load the baseline YAML, overlay sampled HPs, return
+    (config_dict, identity, rater_settings). ``rater_settings`` is None
+    unless rater mode is on."""
     wc = dict(run.config)
     arch = wc.get("arch")
     lang = wc.get("lang")
@@ -311,9 +478,12 @@ def _prepare_config(run) -> tuple[dict, dict]:
         cfg_dict = yaml.safe_load(f)
 
     _apply_hp_overrides(cfg_dict, wc)
-    _apply_sweep_overrides(cfg_dict, run.id, base_dir)
-
-    condition = wc.get("condition", "baseline")  # sweeps always run on baseline corpus
+    rater_settings: Optional[_rater.RaterSweepSettings] = None
+    if _rater.rater_mode_enabled(cfg_dict, os.environ):
+        rater_settings, condition = _apply_rater_sweep_overrides(cfg_dict, wc, run, base_dir)
+    else:
+        _apply_sweep_overrides(cfg_dict, run.id, base_dir)
+        condition = wc.get("condition", "baseline")  # sweeps always run on baseline corpus
     seed = int(cfg_dict.get("random_seed", 0))
     run_id = f"sweep-{run.sweep_id}-{run.id}"
 
@@ -328,7 +498,7 @@ def _prepare_config(run) -> tuple[dict, dict]:
         "run_id": run_id, "arch": arch, "lang": lang,
         "condition": condition, "seed": seed, "run_kind": "hp_sweep",
     }
-    return cfg_dict, identity
+    return cfg_dict, identity, rater_settings
 
 
 def _apply_hp_overrides(cfg: dict, wc: dict) -> None:
@@ -409,6 +579,36 @@ def _apply_sweep_overrides(cfg: dict, wandb_run_id: str, base_dir: str) -> None:
     cfg["training"]["resume_state_steps"] = resume_state_steps
 
 
+def _apply_rater_sweep_overrides(
+    cfg: dict, wc: dict, run, base_dir: str,
+) -> tuple[_rater.RaterSweepSettings, str]:
+    """Rater-mode replacement for ``_apply_sweep_overrides``. Returns
+    (settings, registry condition); also renames the W&B run."""
+    settings = _rater.load_settings(cfg)
+    condition = _rater.resolve_condition(os.environ, wc)
+    corpus_dir = os.environ.get("CORPUS_DIR") or None
+    _rater.check_corpus_matches_condition(corpus_dir, condition)
+    _rater.apply_rater_overrides(
+        cfg, settings,
+        wandb_run_id=run.id, condition=condition, corpus_dir=corpus_dir,
+        num_chunks=lambda c: _read_cache_num_chunks(c, base_dir),
+    )
+    try:
+        run.name = _format_run_name("rater", condition, wc)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("could not set rater run name: %s", e)
+    logger.info(
+        "rater mode: condition=%s corpus=%s train_steps=%d epochs=%d eval_every=%d "
+        "eval_max_sequences=%d patience=%d min_steps=%d min_rel=%.4g save_final=%s",
+        condition, cfg["data"]["training_corpus"],
+        cfg["training"]["train_steps"], cfg["training"]["epochs"],
+        settings.eval_every_steps, settings.eval_max_sequences,
+        settings.patience_evals, settings.min_steps_before_stop,
+        settings.min_rel_improvement, settings.save_final,
+    )
+    return settings, _rater.registry_condition(condition)
+
+
 def _compute_anchor_schedule(
     cfg: dict, base_dir: str, epochs: int
 ) -> tuple[list[int], list[int]]:
@@ -419,15 +619,28 @@ def _compute_anchor_schedule(
     make). The cache is prepared up-front by the prepare-caches Job, so it
     is present when the sweep agent runs.
     """
-    from model_foundry.checkpoint_schedule import (
-        compute_checkpoint_schedule,
-        read_num_chunks,
-    )
+    from model_foundry.checkpoint_schedule import compute_checkpoint_schedule
 
     phys_batch = int(cfg["data"]["batch_size"])
     grad_accum = int(cfg["training"].get("gradient_accumulation_steps", 1))
     seq_len = int(cfg["data"]["max_sequence_length"])
 
+    num_chunks = _read_cache_num_chunks(cfg, base_dir)
+
+    return compute_checkpoint_schedule(
+        num_chunks=num_chunks,
+        phys_batch=phys_batch,
+        grad_accum=grad_accum,
+        epochs=epochs,
+        seq_len=seq_len,
+    )
+
+
+def _read_cache_num_chunks(cfg: dict, base_dir: str) -> int:
+    """Row count of the content-addressed chunked cache for ``cfg``."""
+    from model_foundry.checkpoint_schedule import read_num_chunks
+
+    seq_len = int(cfg["data"]["max_sequence_length"])
     corpus = cfg["data"]["training_corpus"]
     if not os.path.isabs(corpus):
         corpus = os.path.join(base_dir, corpus)
@@ -440,15 +653,7 @@ def _compute_anchor_schedule(
     chunked_path, _kind, _is_fallback = resolve_cached_path(
         base_dir, "chunked", cache_key, experiment_name=cfg["experiment_name"]
     )
-    num_chunks = read_num_chunks(chunked_path)
-
-    return compute_checkpoint_schedule(
-        num_chunks=num_chunks,
-        phys_batch=phys_batch,
-        grad_accum=grad_accum,
-        epochs=epochs,
-        seq_len=seq_len,
-    )
+    return read_num_chunks(chunked_path)
 
 
 # ---------- registry plumbing ----------
@@ -524,27 +729,24 @@ def _extract_final_training_loss(trainer: Trainer) -> float:
     return float("nan")
 
 
-def _compute_held_out_perplexity(trainer: Trainer, config: ExperimentConfig) -> float:
-    """One pass over the test corpus → exp(mean NLL).
+def _load_held_out_chunks(
+    trainer: Trainer, config: ExperimentConfig, max_sequences: Optional[int] = None,
+) -> Optional[torch.Tensor]:
+    """Pack the tokenized test split into ``max_sequence_length`` rows.
 
-    Dispatches by architecture:
-    - Causal LMs (gpt2, lstm, rnn, gru, mamba): standard teacher-forcing
-      where labels=input_ids and every position contributes to the loss.
-    - Masked LMs (bert): deterministic 15% mask pattern (fixed seed so
-      every trial sees the same mask positions, making scores comparable
-      across the sweep), loss over masked positions only.
-
-    Note: these perplexities live on different scales across arch
-    families and are not directly comparable between-arch. The sweep
-    ranks trials within a single arch so that's fine."""
+    ``max_sequences`` stops reading once that many rows exist (rater mode:
+    the Arrow dataset is memory-mapped, so only the prefix is touched).
+    None packs the whole split. Returns None when there is nothing to
+    evaluate (the reason is logged).
+    """
     if not config.data.test_corpus:
         logger.warning("no test_corpus in config; skipping held_out_perplexity")
-        return float("nan")
+        return None
 
     test_dir = os.path.join(trainer.data_processor.tokenized_data_dir, "test")
     if not os.path.isdir(test_dir):
         logger.warning("test dir missing at %s; skipping held_out_perplexity", test_dir)
-        return float("nan")
+        return None
 
     from datasets import load_from_disk
     ds = load_from_disk(test_dir)
@@ -557,11 +759,40 @@ def _compute_held_out_perplexity(trainer: Trainer, config: ExperimentConfig) -> 
         while len(buf) >= chunk_size:
             chunks.append(buf[:chunk_size])
             buf = buf[chunk_size:]
+            if max_sequences is not None and len(chunks) >= max_sequences:
+                break
+        if max_sequences is not None and len(chunks) >= max_sequences:
+            break
     if not chunks:
+        return None
+    return torch.tensor(chunks, dtype=torch.long)
+
+
+def _compute_held_out_perplexity(
+    trainer: Trainer, config: ExperimentConfig, chunks: Optional[torch.Tensor] = None,
+) -> float:
+    """One pass over the test corpus → exp(mean NLL).
+
+    Dispatches by architecture:
+    - Causal LMs (gpt2, lstm, rnn, gru, mamba): standard teacher-forcing
+      where labels=input_ids and every position contributes to the loss.
+    - Masked LMs (bert): deterministic 15% mask pattern (fixed seed so
+      every trial sees the same mask positions, making scores comparable
+      across the sweep), loss over masked positions only.
+
+    Note: these perplexities live on different scales across arch
+    families and are not directly comparable between-arch. The sweep
+    ranks trials within a single arch so that's fine.
+
+    ``chunks`` (rater mode) is a pre-packed, capped tensor from
+    ``_load_held_out_chunks`` reused across evals; None packs the whole
+    test split here, as before."""
+    if chunks is None:
+        chunks = _load_held_out_chunks(trainer, config)
+    if chunks is None:
         return float("nan")
 
-    tensor = torch.tensor(chunks, dtype=torch.long)
-    loader = DataLoader(tensor, batch_size=config.data.batch_size, shuffle=False)
+    loader = DataLoader(chunks, batch_size=config.data.batch_size, shuffle=False)
     device = next(trainer.model.parameters()).device
     amp_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
