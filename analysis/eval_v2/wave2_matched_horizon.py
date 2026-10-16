@@ -22,12 +22,12 @@ import numpy as np
 import pandas as pd
 
 try:  # run as a script from analysis/eval_v2/ ...
-    from _tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis, drop_degenerate,
+    from _tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis, drop_degenerate, overall_items,
                          is_arch, run_id_from_name)
     from wave2_endstate import ARM_STYLE, IV_LABEL, SIENNA
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_matched_horizon
     from analysis.eval_v2._tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis,
-                                          drop_degenerate, is_arch, run_id_from_name)
+                                          drop_degenerate, overall_items, is_arch, run_id_from_name)
     from analysis.eval_v2.wave2_endstate import ARM_STYLE, IV_LABEL, SIENNA
 
 CELL = re.compile(r"pdrop2_(robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
@@ -43,8 +43,8 @@ def load(arch: str, hp: int, horizon: float, last: int) -> tuple[pd.DataFrame, i
         if not (m and is_arch(p.name, arch)) or int(m.group(4)) != hp:
             continue
         arm, k, iv, _ = m.groups()
-        d = drop_degenerate(pd.read_parquet(
-            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
+        d = overall_items(drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "category", "prefers_overt_meanlp", *DEGENERATE_COLS])))
         c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean()
         run = run_id_from_name(p.name)
         tok = pd.Series(axis.tokens(pd.Series([run] * len(c)), pd.Series(c.index)), index=c.index)
@@ -93,6 +93,7 @@ def main() -> None:
         ax.set_xlabel("% of pronouns removed (decile)")
         ax.set_xticks([10, 30, 50, 70, 90, 100])
     np.atleast_1d(axes)[0].set_ylabel(f"overt-subject preference at {a.horizon / 1e9:.2g}B tokens")
+    np.atleast_1d(axes)[0].set_ylim(0, 1)
     h, l = np.atleast_1d(axes)[0].get_legend_handles_labels()
     fig.legend(h, l, loc="lower center", ncol=min(len(l), 4), fontsize=9, frameon=False,
                bbox_to_anchor=(0.5, -0.06))

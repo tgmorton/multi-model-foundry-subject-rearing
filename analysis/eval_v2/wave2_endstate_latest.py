@@ -21,12 +21,12 @@ import numpy as np
 import pandas as pd
 
 try:  # run as a script from analysis/eval_v2/ ...
-    from _tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis, drop_degenerate,
+    from _tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis, drop_degenerate, overall_items,
                          is_arch, run_id_from_name)
     from wave2_endstate import ARM_STYLE, IV_LABEL, SIENNA
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_endstate_latest
     from analysis.eval_v2._tokens import (DEGENERATE_COLS, PAIRS_CACHE, TokenAxis,
-                                          drop_degenerate, is_arch, run_id_from_name)
+                                          drop_degenerate, overall_items, is_arch, run_id_from_name)
     from analysis.eval_v2.wave2_endstate import ARM_STYLE, IV_LABEL, SIENNA
 
 CELL = re.compile(r"pdrop2_(robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
@@ -43,8 +43,8 @@ def load(arch: str, hp: int, last: int) -> pd.DataFrame:
         if not (m and is_arch(p.name, arch)) or int(m.group(4)) != hp:
             continue
         arm, k, iv, _ = m.groups()
-        d = drop_degenerate(pd.read_parquet(
-            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
+        d = overall_items(drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "category", "prefers_overt_meanlp", *DEGENERATE_COLS])))
         c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean().sort_index()
         if len(c) < 20:
             continue

@@ -37,10 +37,10 @@ import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
     from _tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK, TokenAxis,
-                         drop_degenerate, is_arch, sync_checkpoints)
+                         drop_degenerate, overall_items, is_arch, sync_checkpoints)
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_trajectories
     from analysis.eval_v2._tokens import (DEGENERATE_COLS, TOKENS_PER_STEP_FALLBACK,
-                                          TokenAxis, drop_degenerate, is_arch,
+                                          TokenAxis, drop_degenerate, overall_items, is_arch,
                                           sync_checkpoints)
 
 DEFAULT_ARCH = "gpt2_small"
@@ -70,7 +70,7 @@ def load_pairs(args) -> pd.DataFrame:
         for f in files:
             frames.append(pd.read_parquet(
                 f, columns=["cell_id", "checkpoint_step",
-                            "prefers_overt_meanlp", *DEGENERATE_COLS]))
+                            "category", "prefers_overt_meanlp", *DEGENERATE_COLS]))
     else:
         import boto3
         s = boto3.Session(profile_name=args.profile).client(
@@ -86,10 +86,10 @@ def load_pairs(args) -> pd.DataFrame:
                 frames.append(pd.read_parquet(
                     io.BytesIO(body),
                     columns=["cell_id", "checkpoint_step",
-                             "prefers_overt_meanlp", *DEGENERATE_COLS]))
+                             "category", "prefers_overt_meanlp", *DEGENERATE_COLS]))
     if not frames:
         raise SystemExit(f"no pdrop2 pairs found for arch {args.arch!r}")
-    df = drop_degenerate(pd.concat(frames, ignore_index=True))
+    df = overall_items(drop_degenerate(pd.concat(frames, ignore_index=True)))
     # authoritative arch filter on the cell_id column (also covers --pairs-dir,
     # whose filenames need not follow the S3 naming)
     df = df[df.cell_id.map(lambda c: is_arch(c, args.arch))].copy()
@@ -180,6 +180,7 @@ def main() -> None:
                 ax.set_title(IV_LABEL.get(iv, iv), fontsize=10)
             if c == 0:
                 ax.set_ylabel(f"{arm}\novert pref.", fontsize=9)
+                ax.set_ylim(0, 1)
             if r == len(arms) - 1:
                 ax.set_xlabel("tokens seen (log)")
     from matplotlib.lines import Line2D
@@ -227,6 +228,8 @@ def main() -> None:
                             label=IV_LABEL.get(iv, iv))
                 ax.set_xscale("log")
                 ax.axhline(0.0 if delta else 0.5, color="#bbb", lw=0.6)
+                if not delta:
+                    ax.set_ylim(0, 1)
                 if r == 0:
                     ax.set_title(arm, fontsize=10)
                 if c == 0:
