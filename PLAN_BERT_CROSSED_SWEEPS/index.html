@@ -2672,6 +2672,12 @@ trained on them yet).</p>
 <td><strong>Bidirectional (Ro)BERT(a) raters only; <code>robbi</code> (roberta-large ±250) is the selection arm.</strong> BERT 250:1 retired: its R1 window is one wordpiece, so a contracted pronoun ("they've") sees only the apostrophe — surprisal inflated 2.7× and deciles confounded with contraction (deciles 0–2 ≤1.2% contracted, 5–9 26–37%; robbi flat 15–22% vs 19% base; memory <code>project_r1_contraction_confound</code>). Now: gpt2_small <code>robbi</code> (45 cells, w3 h0) + <code>robbianti</code> (reversed relabel of robbi, 45 cells). Banked as comparison: gpt2_small bert/bertanti arms and the 45 w3 LSTM bert-arm runs. Later: re-run the w3 full-arch wave (lstm, gpt2_large, bert_large) on robbi + the shared rand/all100 cells.</td>
 </tr>
 <tr>
+<td>D15</td>
+<td>From-scratch BERT recipe v2</td>
+<td><strong>ADOPTED 2026-10-19 (Thomas)</strong></td>
+<td>Every from-scratch BERT so far stalled on the MLM plateau (production bert_large: train loss 5.62 after 30 epochs, 13.8% masked accuracy). Cause: LR 3.75e-5 chosen by sweep <code>2pimhcbm</code>, whose ~3k-step trials all sat on the plateau (winner = edge of the stable range). Not a code bug (tokenizer/collator verified). New recipe: pre-LN (MegatronBert), 128-token packing with [CLS]/[SEP], AdamW 0.9/0.98 without WD on LayerNorm/bias, real pad id, peak LR from a gated race (escape gate on held-out masked loss) instead of Bayes. Old BERT results retired as evidence; old-intervention BERT re-runs deferred; sweeps move to the <code>null-subjects</code> namespace, cross-namespace data only via S3. Full record: <a href="../BERT_RECIPE_V2/">BERT_RECIPE_V2.md</a>.</td>
+</tr>
+<tr>
 <td>—</td>
 <td>Contraction residue kept; population = personal pronouns</td>
 <td>LOCKED (2026-08-15)</td>
