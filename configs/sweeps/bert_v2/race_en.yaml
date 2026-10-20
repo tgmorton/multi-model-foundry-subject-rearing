@@ -15,4 +15,5 @@ parameters:
   lang: {value: en}
   base_config: {value: configs/sweeps/baselines/bert_large_preln_en_race.yaml}
   condition: {value: baseline}
-  learning_rate: {values: [3.0e-4, 6.0e-4, 1.0e-3]}
+  # 6e-4 is the pilot (sweep 430xqpaf): same baseline, seed and schedule.
+  learning_rate: {values: [3.0e-4, 1.0e-3]}

@@ -87,7 +87,10 @@ rater_sweep:
   patience_evals: 6
   min_steps_before_stop: 1500
   min_rel_improvement: 0.002
-  gates: [[1000, 6.0]]         # PROVISIONAL; reset from the study pilot's curve
+  # From the study pilot's escape (~100M tokens, once LR passed ~2e-4): at
+  # step 1000 a rater trial has seen 524M tokens with LR >= 7e-4, so held-out
+  # loss >= 5.0 there means stuck.
+  gates: [[1000, 5.0]]
   save_final: true
 
 logging:

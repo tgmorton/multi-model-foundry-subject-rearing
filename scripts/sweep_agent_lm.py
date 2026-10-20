@@ -627,7 +627,7 @@ def _apply_rater_sweep_overrides(
         num_chunks=lambda c: _read_cache_num_chunks(c, base_dir),
     )
     try:
-        run.name = _format_run_name("rater", condition, wc)
+        run.name = _format_run_name(settings.kind, condition, wc)
     except Exception as e:  # noqa: BLE001
         logger.warning("could not set rater run name: %s", e)
     logger.info(

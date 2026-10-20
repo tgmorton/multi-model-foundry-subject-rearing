@@ -86,9 +86,12 @@ rater_sweep:
   patience_evals: 8
   min_steps_before_stop: 2000
   min_rel_improvement: 0.002
-  # PROVISIONAL until the pilot curve is in: by ~1 epoch, held-out masked
-  # loss must be clearly below the 5.8-6.5 band of the stalled runs.
-  gates: [[1000, 5.5]]
+  # Set from the pilot (sweep 430xqpaf, LR 6e-4, 2026-10-20): it sat at
+  # 6.1-6.3 to step 500, escaped between steps 500 and 750 (66-98M tokens, LR
+  # crossing ~2e-4 in warmup) and read 4.08 at step 1000, 3.69 at 1500. A 3e-4
+  # trial only reaches 2.4e-4 at step ~1500, so the gate sits at step 2000:
+  # still >= 5.0 there means stuck (the stalled runs sat at 5.8-6.5).
+  gates: [[2000, 5.0]]
   save_final: true
 
 logging:
