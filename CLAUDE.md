@@ -268,6 +268,19 @@ affinity:
               values: ["NVIDIA-A100-SXM4-80GB"]   # pin to fastest tier
 ```
 
+**(B2) A100 / H100 / H200 without a reservation: opportunistic tier** (NRP
+Priority Classes + GPU Pods docs, confirmed 2026-10-20).
+- Set `priorityClassName: opportunistic2` (or `opportunistic`) and request
+  `nvidia.com/a100`, `nvidia.com/h100` or `nvidia.com/h200`.
+- The namespace GPU quota doesn't apply, but owners can preempt the pod at
+  any time.
+- Use it only for work that checkpoints often or is cheap to redo, run as a
+  Job, and add a `podFailurePolicy` rule that ignores the `DisruptionTarget`
+  condition so preemptions don't burn retries.
+- The A100 quota itself is user-requestable via NRP's A100 access form.
+  H100, H200 and GH200 have no form.
+- GH200 is arm64, so it isn't usable with our image.
+
 **(C) Other special-resource GPUs.** Request key differs from
 `nvidia.com/gpu`:
 
