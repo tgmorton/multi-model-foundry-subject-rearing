@@ -127,8 +127,25 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
   Tests pass locally and on the image's torch 2.5.1 / transformers 4.41.2. A CPU end-to-end smoke with the real tokenizer and CLI passed.
 - [x] **Inputs staged to S3** `data_transfer/`: tokenizer, EN train_90M, test_10M, five rater sweep subsets. 74 objects, 5.9 GiB, `rclone check` clean (job `thomas-upload-xfer-v1`, lemn-lab).
 - [ ] **null-subjects registration: blocked.** As of 2026-10-19 both Jobs and Pods are denied. Thomas or the namespace admin fills https://nrp.ai/namespaces.
-- [ ] Download, precache, pilot, set gate thresholds from the pilot curve.
-- [ ] Study race (EN baseline): freeze HPs.
+- [x] **null-subjects registered 2026-10-20.** Download, then precache:
+  - study cache `a1bdcf042521`: 1,075,685 chunks, ~1,050 steps per epoch;
+  - rater cache `94e60395ef05`: 2,058,058 chunks.
+- [x] **Pilot** (sweep `430xqpaf`, LR 6e-4, one A10, 9.2 s/step, 14K tokens/s) **left the plateau**:
+
+  | step | tokens | held-out loss | accuracy | top-token share |
+  |---|---|---|---|---|
+  | 250 | 33M | 6.31 | 6.3% | 58% |
+  | 500 | 66M | 6.12 | 7.4% | 29% |
+  | 750 | 98M | 4.59 | 26.7% | 15% |
+  | 1000 | 131M | 4.08 | 31.9% | 13% |
+  | 1500 | 197M | 3.69 | 36.1% | 13% |
+
+  For comparison, the old production BERT after 3.8B tokens: 6.51, 13.8%, 56%. Escape came as warmup carried LR past ~2e-4.
+- [x] **Gates set from the pilot** (83bfd019): study `[[2000, 5.0]]`; rater `[[1000, 5.0]]`.
+- [x] **Races launched 2026-10-20 ~22:37 UTC:**
+  - study sweep `gesqanxo` (LR 3e-4, 1e-3; 6e-4 = the pilot), 24 GB pool;
+  - rater sweep `ovkdk8zn` (LR 1e-3, 2e-3), L40/L40S.
+- [ ] Study race (EN baseline): pick LR and freeze HPs.
 - [ ] Rater race (base): full raters.
 - [ ] Later: BERT wave2; ES race.
 
