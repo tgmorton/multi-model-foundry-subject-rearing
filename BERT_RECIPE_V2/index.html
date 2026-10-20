@@ -2472,6 +2472,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#launch-sequence-null-subjects-once-registered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Launch sequence (null-subjects, once registered)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#open-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2763,15 +2774,38 @@ Literature audit behind it: <a href="../reports/BERT%20pretraining%20recipe%20au
 </table>
 <h2 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[x] Diagnose; literature audit; this doc</li>
-<li>[ ] Code: pre-LN option; <code>[CLS]</code>/<code>[SEP]</code> packing at 128 (part of the cache key); WD exclusions + configurable WD; real <code>pad_token_id</code>; escape gate + masked accuracy / top-token share metrics</li>
-<li>[ ] Stage EN 90M corpus, test corpus, tokenizer and rater sweep subsets to S3</li>
-<li>[ ] null-subjects registration (Thomas / namespace admin) → PVC, download, precache at 128</li>
-<li>[ ] Pilot → set gate thresholds</li>
-<li>[ ] Study race (EN baseline) → freeze HPs</li>
-<li>[ ] Rater race (base) → full raters</li>
-<li>[ ] Later: BERT wave2; ES race</li>
+<li>[x] Diagnose; literature audit; this doc (2026-10-19)</li>
+<li>[x] <strong>Code, branch <code>feat/bert-recipe-v2</code></strong> (7890a686, 65a02e1b):</li>
+<li>pre-LN option (<code>model.bert.norm_position: pre</code>), real <code>pad_token_id</code>;</li>
+<li><code>data.packing: cls_sep</code> (in the cache key only when not contiguous; every old key unchanged);</li>
+<li><code>training.weight_decay</code> / <code>no_decay_norm_bias</code>;</li>
+<li>trial settings <code>kind</code>, <code>scheduler_epochs</code>, <code>gates</code>; held-out masked accuracy and top-token share;</li>
+<li><code>rater_sweep.py cache-key</code>, used by every manifest.</li>
 </ul>
+<p>Tests pass locally and on the image's torch 2.5.1 / transformers 4.41.2. A CPU end-to-end smoke with the real tokenizer and CLI passed.
+- [x] <strong>Inputs staged to S3</strong> <code>data_transfer/</code>: tokenizer, EN train_90M, test_10M, five rater sweep subsets. 74 objects, 5.9 GiB, <code>rclone check</code> clean (job <code>thomas-upload-xfer-v1</code>, lemn-lab).
+- [ ] <strong>null-subjects registration: blocked.</strong> As of 2026-10-19 both Jobs and Pods are denied. Thomas or the namespace admin fills https://nrp.ai/namespaces.
+- [ ] Download, precache, pilot, set gate thresholds from the pilot curve.
+- [ ] Study race (EN baseline): freeze HPs.
+- [ ] Rater race (base): full raters.
+- [ ] Later: BERT wave2; ES race.</p>
+<h2 id="launch-sequence-null-subjects-once-registered">Launch sequence (null-subjects, once registered)<a class="headerlink" href="#launch-sequence-null-subjects-once-registered" title="Permanent link">&para;</a></h2>
+<p>Run from a <code>feat/bert-recipe-v2</code> checkout. The pods clone that branch.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/bert_v2/job-download-ns.yaml<span class="w">        </span><span class="c1"># S3 -&gt; PVC thomas-rater-corpus</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/bert_v2/job-precache-bert-v2.yaml<span class="w">   </span><span class="c1"># 2 caches at 128 tokens, cls_sep</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>wandb<span class="w"> </span>sweep<span class="w"> </span>configs/sweeps/bert_v2/pilot_en.yaml<span class="w">         </span><span class="c1"># -&gt; &lt;entity&gt;/subject-drop-bert-v2/&lt;id&gt;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>python<span class="w"> </span>scripts/render_bert_v2_job.py<span class="w"> </span>--name<span class="w"> </span>pilot-en<span class="w"> </span>--sweep-id<span class="w"> </span>&lt;id&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--base-config<span class="w"> </span>configs/sweeps/baselines/bert_large_preln_en_race.yaml<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--condition<span class="w"> </span>baseline<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-
+</code></pre></div>
+<p>After the pilot:
+1. Re-set <code>gates</code> in both race baselines from its held-out curve.
+2. <code>wandb sweep configs/sweeps/bert_v2/race_en.yaml</code>, then render with <code>--name race-en --parallelism 3 --completions 3</code>.
+3. Rater race: <code>wandb sweep configs/sweeps/bert_v2/rater_race_base.yaml</code>, then render with:
+   - <code>--name rater-race-base --condition base</code>
+   - <code>--corpus-dir /mnt/data/rater_corpus/sweep_subset_v1/base</code>
+   - <code>--base-config configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml</code>
+   - <code>--gpus 48g --parallelism 2 --completions 2</code></p>
 <h2 id="open-decisions">Open decisions<a class="headerlink" href="#open-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Rater tokenizer: project WordPiece (current) vs roberta-style byte-level BPE.</li>
