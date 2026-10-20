@@ -9,6 +9,12 @@ class DataConfig(BaseModel):
     test_corpus: Optional[str] = None  # Path to test dataset
     batch_size: int = Field(..., gt=0)
     max_sequence_length: int = Field(..., gt=0)
+    # How tokenized lines are packed into fixed-length chunks (D15,
+    # docs/BERT_RECIPE_V2.md). "contiguous" (default, every existing cache):
+    # lines concatenated with no boundary tokens. "cls_sep": a [SEP] after
+    # every corpus line and a [CLS] opening every chunk, as in BERT-style
+    # packing. Part of the cache key only when not "contiguous".
+    packing: Literal["contiguous", "cls_sep"] = "contiguous"
 
     # DataLoader tuning (typed; replaces prior getattr/hasattr fallbacks).
     # num_workers=None means "use cgroup-aware auto default" (see data.py).
@@ -58,6 +64,13 @@ class BERTSpecificConfig(BaseModel):
     """Additional BERT-specific parameters."""
     type_vocab_size: int = Field(2, description="Number of token type IDs (for segment embeddings)")
     pooler_type: str = Field("first", description="How to pool sequence for classification")
+    # D15 (docs/BERT_RECIPE_V2.md). "post" = HF BertForMaskedLM (original
+    # post-LayerNorm BERT); "pre" = HF MegatronBertForMaskedLM (pre-LN with a
+    # final LayerNorm), which tolerates the high LRs short budgets need.
+    norm_position: Literal["post", "pre"] = "post"
+    # Embedding padding_idx. None keeps the bert-base-uncased value (0), which
+    # is [CLS] in our WordPiece vocab; set it to the tokenizer's real [PAD].
+    pad_token_id: Optional[int] = Field(None, ge=0)
 
 class RNNModelConfig(BaseModel):
     """Configuration for RNN/LSTM/GRU models."""
@@ -307,6 +320,11 @@ class TrainingConfig(BaseModel):
     adam_beta1: float = Field(..., ge=0.0, lt=1.0)
     adam_beta2: float = Field(..., ge=0.0, lt=1.0)
     adam_epsilon: float = Field(..., gt=0)
+    # None keeps torch AdamW's default (0.01 on every parameter) so existing
+    # runs are unchanged. no_decay_norm_bias exempts LayerNorm weights and all
+    # biases, as BERT and the HF Trainer do (D15).
+    weight_decay: Optional[float] = Field(None, ge=0.0)
+    no_decay_norm_bias: bool = False
 
     # Training duration - can be specified explicitly or calculated automatically
     warmup_steps: Optional[int] = Field(None, ge=0)  # If None, will be calculated as percentage of train_steps

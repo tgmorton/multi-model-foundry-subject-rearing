@@ -76,6 +76,14 @@ class RaterSweepSettings:
     min_steps_before_stop: int = 1000
     min_rel_improvement: float = 0.002
     save_final: bool = True
+    # D15 (docs/BERT_RECIPE_V2.md). LR-schedule horizon; None = the trial's
+    # own budget (schedule completes inside the trial). Set it to the real
+    # run's step count to race the production warmup + peak LR, truncated.
+    scheduler_train_steps: Optional[int] = None
+    # Escape gates: ((step, max_heldout_loss_nats), ...). Every eval at or
+    # after `step` must have held-out masked loss ln(ppl) below the max, or
+    # the trial stops as "gated out" (still stuck on the MLM plateau).
+    gates: tuple = ()
 
     def __post_init__(self) -> None:
         for name in ("sweep_train_steps", "eval_every_steps",
@@ -95,6 +103,17 @@ class RaterSweepSettings:
                 f"got {self.min_rel_improvement!r}")
         if not isinstance(self.save_final, bool):
             raise ValueError(f"rater_sweep.save_final must be a bool, got {self.save_final!r}")
+        if self.scheduler_train_steps is not None and (
+                not isinstance(self.scheduler_train_steps, int)
+                or isinstance(self.scheduler_train_steps, bool)
+                or self.scheduler_train_steps < self.sweep_train_steps):
+            raise ValueError(
+                "rater_sweep.scheduler_train_steps must be an int >= sweep_train_steps, "
+                f"got {self.scheduler_train_steps!r}")
+        for g in self.gates:
+            if (len(g) != 2 or not isinstance(g[0], int) or isinstance(g[0], bool)
+                    or g[0] < 1 or not float(g[1]) > 0):
+                raise ValueError(f"rater_sweep.gates entries must be [step >= 1, max_loss > 0], got {g!r}")
 
 
 def _truthy(value) -> bool:
@@ -119,6 +138,8 @@ def load_settings(cfg: Mapping) -> RaterSweepSettings:
     unknown = sorted(set(block) - known)
     if unknown:
         raise ValueError(f"unknown rater_sweep keys {unknown}; known: {sorted(known)}")
+    if "gates" in block:
+        block["gates"] = tuple((int(st), float(mx)) for st, mx in (block["gates"] or ()))
     return RaterSweepSettings(**block)
 
 
@@ -214,7 +235,9 @@ def apply_rater_overrides(
 
     n = settings.sweep_train_steps
     t["train_steps"] = n
-    t["scheduler_train_steps"] = n     # LR schedule completes inside the trial
+    # LR schedule completes inside the trial, unless a longer horizon is set
+    # (then the trial is a truncated copy of the real run's schedule).
+    t["scheduler_train_steps"] = settings.scheduler_train_steps or n
     t["warmup_steps"] = None           # -> warmup_ratio * scheduler_train_steps
 
     steps_per_epoch = compute_opt_steps_per_epoch(
@@ -279,6 +302,19 @@ def early_stop_update(
         min_ppl=min_ppl, best_step=best_step, ref_ppl=ref_ppl,
         bad_evals=bad, n_evals=state.n_evals + 1, should_stop=should_stop,
     )
+
+
+def gate_failure(step: int, ppl: float, settings: RaterSweepSettings):
+    """The first escape gate this eval fails, as (gate_step, max_loss), or None.
+
+    A gate applies to every eval at or after its step; held-out masked loss
+    is ln(ppl) in nats, and a non-finite ppl fails any gate that applies."""
+    finite = ppl is not None and math.isfinite(ppl) and ppl > 0
+    loss = math.log(ppl) if finite else math.inf
+    for g_step, max_loss in settings.gates:
+        if step >= g_step and loss >= max_loss:
+            return (g_step, max_loss)
+    return None
 
 
 def is_eval_step(step: int, settings: RaterSweepSettings) -> bool:

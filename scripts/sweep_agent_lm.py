@@ -86,6 +86,7 @@ _SWEEP_HP_FIELDS = (
     "attention_dropout",
     "effective_batch_size",
     "adam_beta2",
+    "weight_decay",
 )
 
 PROXY_METRIC_NAME = "held_out_perplexity"
@@ -340,6 +341,7 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
         "last_eval_step": -1,
         "chunks": None,
         "stopped_early": False,
+        "gated_out": None,
     }
     trainer: Optional[Trainer] = None
 
@@ -350,20 +352,33 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
             if trial_state["chunks"] is not None:
                 logger.info("held-out eval set: %d sequences x %d tokens",
                             *trial_state["chunks"].shape)
-        ppl = (_compute_held_out_perplexity(trainer, config, chunks=trial_state["chunks"])
-               if trial_state["chunks"] is not None else float("nan"))
+        metrics = (_compute_held_out_metrics(trainer, config, chunks=trial_state["chunks"])
+                   if trial_state["chunks"] is not None
+                   else {"ppl": float("nan"), "accuracy": float("nan"),
+                         "top_token_share": float("nan"), "top_token_id": -1})
+        ppl = metrics["ppl"]
         es = _rater.early_stop_update(trial_state["es"], step, ppl, settings)
+        gate = _rater.gate_failure(step, ppl, settings)
+        if gate is not None and trial_state["gated_out"] is None:
+            trial_state["gated_out"] = gate
         trial_state.update(es=es, last_ppl=ppl, last_eval_step=step)
+        loss = math.log(ppl) if math.isfinite(ppl) and ppl > 0 else float("nan")
         wandb.log({
             f"proxy/{PROXY_METRIC_NAME}": float(ppl),
             f"proxy/{PROXY_MIN_METRIC_NAME}": float(es.min_ppl),
+            "proxy/held_out_loss": loss,
+            "proxy/held_out_accuracy": float(metrics["accuracy"]),
+            "proxy/top_token_share": float(metrics["top_token_share"]),
+            "proxy/top_token_id": int(metrics["top_token_id"]),
             "proxy/eval_step": step,
             "proxy/tokens_seen": step * tokens_per_step,
             "proxy/evals_without_improvement": es.bad_evals,
         }, step=step)
         logger.info(
-            "step %d: held_out_ppl=%.4f min=%.4f (step %d) no-improve=%d/%d",
-            step, ppl, es.min_ppl, es.best_step, es.bad_evals, settings.patience_evals,
+            "step %d: held_out_ppl=%.4f (loss %.3f, acc %.3f, top-token share %.3f) "
+            "min=%.4f (step %d) no-improve=%d/%d",
+            step, ppl, loss, metrics["accuracy"], metrics["top_token_share"],
+            es.min_ppl, es.best_step, es.bad_evals, settings.patience_evals,
         )
         return es
 
@@ -375,6 +390,12 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
         except Exception as e:  # noqa: BLE001
             logger.exception("step %d perplexity eval failed: %s", step, e)
             return False
+        if trial_state["gated_out"] is not None:
+            trial_state["stopped_early"] = True
+            g_step, max_loss = trial_state["gated_out"]
+            logger.info("escape gate failed: held-out loss >= %.2f at step %d (gate at step %d); "
+                        "halting trial (still on the MLM plateau)", max_loss, step, g_step)
+            return True
         if es.should_stop:
             trial_state["stopped_early"] = True
             logger.info("early-stop: %d evals without a %.2g relative improvement; "
@@ -418,6 +439,8 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
         "proxy/steps_completed": final_step,
         "proxy/n_evals": int(es.n_evals),
         "proxy/stopped_early": bool(trial_state["stopped_early"]),
+        "proxy/gated_out": trial_state["gated_out"] is not None,
+        "proxy/gate_step": (trial_state["gated_out"] or (-1, 0.0))[0],
     }
 
     # NaN/Inf guard — same contract as the epoch path.
@@ -459,6 +482,7 @@ def _run_rater_trial(run, config: ExperimentConfig, identity: dict,
             f"best_step={es.best_step}\n"
             f"steps_completed={final_step}\n"
             f"stopped_early={trial_state['stopped_early']}\n"
+            f"gated_out={trial_state['gated_out']}\n"
         )
     except OSError as e:
         logger.warning("could not write trial sentinel %s: %s", sentinel_path, e)
@@ -516,6 +540,8 @@ def _apply_hp_overrides(cfg: dict, wc: dict) -> None:
         cfg["training"]["warmup_ratio"] = float(wc["warmup_ratio"])
     if "adam_beta2" in wc:
         cfg["training"]["adam_beta2"] = float(wc["adam_beta2"])
+    if "weight_decay" in wc:
+        cfg["training"]["weight_decay"] = float(wc["weight_decay"])
     if "effective_batch_size" in wc:
         # Hold physical batch_size fixed (GPU-memory bound); compute
         # gradient_accumulation_steps to match the requested effective
@@ -655,7 +681,8 @@ def _read_cache_num_chunks(cfg: dict, base_dir: str) -> int:
     if not os.path.isabs(tok):
         tok = os.path.join(base_dir, tok)
     cache_key = compute_cache_key(
-        corpus, tok, seq_len, cfg.get("dataset_manipulation") or []
+        corpus, tok, seq_len, cfg.get("dataset_manipulation") or [],
+        packing=cfg["data"].get("packing", "contiguous"),
     )
     chunked_path, _kind, _is_fallback = resolve_cached_path(
         base_dir, "chunked", cache_key, experiment_name=cfg["experiment_name"]
@@ -756,20 +783,17 @@ def _load_held_out_chunks(
         return None
 
     from datasets import load_from_disk
+    from model_foundry.data import pack_token_stream, packing_token_ids
     ds = load_from_disk(test_dir)
     chunk_size = config.data.max_sequence_length
-
-    buf: list[int] = []
-    chunks: list[list[int]] = []
-    for ex in ds:
-        buf.extend(ex["input_ids"])
-        while len(buf) >= chunk_size:
-            chunks.append(buf[:chunk_size])
-            buf = buf[chunk_size:]
-            if max_sequences is not None and len(chunks) >= max_sequences:
-                break
-        if max_sequences is not None and len(chunks) >= max_sequences:
-            break
+    # Same packing as the training chunks (contiguous, or [CLS]/[SEP]).
+    if getattr(config.data, "packing", "contiguous") == "contiguous":
+        cls_id = sep_id = None
+    else:
+        cls_id, sep_id = packing_token_ids(config, trainer.data_processor.base_dir)
+    chunks = list(pack_token_stream((ex["input_ids"] for ex in ds), chunk_size,
+                                    cls_id=cls_id, sep_id=sep_id,
+                                    max_chunks=max_sequences))
     if not chunks:
         return None
     return torch.tensor(chunks, dtype=torch.long)
@@ -778,6 +802,13 @@ def _load_held_out_chunks(
 def _compute_held_out_perplexity(
     trainer: Trainer, config: ExperimentConfig, chunks: Optional[torch.Tensor] = None,
 ) -> float:
+    """Held-out perplexity only (the epoch path and the Bayes ranker)."""
+    return _compute_held_out_metrics(trainer, config, chunks=chunks)["ppl"]
+
+
+def _compute_held_out_metrics(
+    trainer: Trainer, config: ExperimentConfig, chunks: Optional[torch.Tensor] = None,
+) -> dict:
     """One pass over the test corpus → exp(mean NLL).
 
     Dispatches by architecture:
@@ -793,11 +824,19 @@ def _compute_held_out_perplexity(
 
     ``chunks`` (rater mode) is a pre-packed, capped tensor from
     ``_load_held_out_chunks`` reused across evals; None packs the whole
-    test split here, as before."""
+    test split here, as before.
+
+    Returns ``{"ppl", "accuracy", "top_token_share", "top_token_id"}``. The
+    last three are MLM-only (NaN / -1 otherwise): masked-token accuracy and
+    the share of masked positions whose top-1 prediction is the single most
+    common prediction. A model on the MLM plateau shows low accuracy and a
+    high top-token share (it predicts "the"; D15)."""
+    nan = float("nan")
+    empty = {"ppl": nan, "accuracy": nan, "top_token_share": nan, "top_token_id": -1}
     if chunks is None:
         chunks = _load_held_out_chunks(trainer, config)
     if chunks is None:
-        return float("nan")
+        return empty
 
     loader = DataLoader(chunks, batch_size=config.data.batch_size, shuffle=False)
     device = next(trainer.model.parameters()).device
@@ -810,7 +849,14 @@ def _compute_held_out_perplexity(
         mask_token_id = getattr(trainer.tokenizer, "mask_token_id", None)
         if mask_token_id is None:
             logger.warning("BERT tokenizer has no mask_token_id; skipping held_out_perplexity")
-            return float("nan")
+            return empty
+        # Never mask boundary/padding tokens (present under cls_sep packing):
+        # predicting them is trivial and would inflate accuracy.
+        special_ids = [i for i in (getattr(trainer.tokenizer, a, None) for a in
+                                   ("cls_token_id", "sep_token_id", "pad_token_id"))
+                       if i is not None]
+        pred_counts = None
+        n_correct = 0
         # Deterministic mask: same seed → same masked positions for every
         # trial in this sweep → rankings are noise-free on the mask axis.
         g = torch.Generator()
@@ -826,6 +872,8 @@ def _compute_held_out_perplexity(
             if is_mlm:
                 mask = torch.zeros_like(input_ids, dtype=torch.bool)
                 mask.bernoulli_(mlm_prob, generator=g)
+                for sid in special_ids:
+                    mask &= input_ids != sid
                 labels = input_ids.clone()
                 labels[~mask] = -100  # HF ignores -100 in the CE loss
                 masked_inputs = input_ids.clone()
@@ -851,11 +899,24 @@ def _compute_held_out_perplexity(
             nll = out.loss.float().item()
             total_nll += nll * n_contrib
             total_counts += n_contrib
+            logits = getattr(out, "logits", None)
+            if is_mlm and logits is not None:
+                m = labels != -100
+                pred = logits[m].argmax(-1)
+                n_correct += int((pred == labels[m]).sum().item())
+                bc = torch.bincount(pred.flatten().cpu(), minlength=logits.shape[-1])
+                pred_counts = bc if pred_counts is None else pred_counts + bc
     trainer.model.train()
 
     if total_counts == 0:
-        return float("nan")
-    return math.exp(total_nll / total_counts)
+        return empty
+    metrics = dict(empty, ppl=math.exp(total_nll / total_counts))
+    if is_mlm and pred_counts is not None:
+        top = int(pred_counts.argmax().item())
+        metrics.update(accuracy=n_correct / total_counts,
+                       top_token_share=float(pred_counts[top].item()) / total_counts,
+                       top_token_id=top)
+    return metrics
 
 
 # ---------- helpers ----------
@@ -877,6 +938,7 @@ def _safe_cache_key(config: ExperimentConfig, base_dir: str) -> Optional[str]:
         return compute_cache_key(
             corpus, tok, config.data.max_sequence_length,
             config.dataset_manipulation or [],
+            packing=config.data.packing,
         )
     except FileNotFoundError:
         return None

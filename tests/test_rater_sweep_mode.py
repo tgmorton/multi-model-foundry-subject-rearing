@@ -306,11 +306,13 @@ class TestRenderConfig:
 # W&B sweep specs
 # --------------------------------------------------------------------------- #
 class TestSweepSpecs:
-    SPECS = sorted((REPO / "configs" / "sweeps").glob("rater_bert_large_*.yaml"))
+    # One Bayes spec per corpus; one-off probes (``*_probe_*``) are excluded.
+    SPECS = sorted(p for p in (REPO / "configs" / "sweeps").glob("rater_bert_large_*.yaml")
+                   if "_probe" not in p.stem)
     # Constants + the HP fields scripts/sweep_agent_lm.py overlays.
     ALLOWED = {"arch", "lang", "base_config", "condition", "learning_rate",
                "warmup_ratio", "dropout", "attention_dropout",
-               "effective_batch_size", "adam_beta2"}
+               "effective_batch_size", "adam_beta2", "weight_decay"}
 
     def test_one_spec_per_corpus(self):
         assert sorted(p.stem.replace("rater_bert_large_", "") for p in self.SPECS) \

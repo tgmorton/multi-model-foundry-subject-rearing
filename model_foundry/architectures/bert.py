@@ -164,6 +164,10 @@ class BERTModel(BaseLanguageModel):
 
         # Extract transformer configuration
         transformer_config = config.model.transformer
+        bert_cfg = config.model.bert
+
+        if bert_cfg is not None and bert_cfg.norm_position == "pre":
+            return cls._from_config_pre_ln(config, **kwargs)
 
         # Create HuggingFace BERT config
         hf_config = AutoConfig.from_pretrained("bert-base-uncased")
@@ -180,6 +184,8 @@ class BERTModel(BaseLanguageModel):
         # BERT-specific configurations
         if config.model.bert is not None:
             hf_config.type_vocab_size = config.model.bert.type_vocab_size
+            if config.model.bert.pad_token_id is not None:
+                hf_config.pad_token_id = config.model.bert.pad_token_id
 
         # Set vocabulary size from tokenizer config if available
         if hasattr(config, 'tokenizer') and hasattr(config.tokenizer, 'vocab_size'):
@@ -192,4 +198,40 @@ class BERTModel(BaseLanguageModel):
         # Create model from config
         hf_model = AutoModelForMaskedLM.from_config(hf_config, **kwargs)
 
+        return cls(hf_model=hf_model, hf_config=hf_config)
+
+    @classmethod
+    def _from_config_pre_ln(cls, config, **kwargs):
+        """Pre-LN BERT via HF MegatronBertForMaskedLM (D15, docs/BERT_RECIPE_V2.md).
+
+        Megatron-BERT is BERT with the LayerNorm moved in front of each
+        sub-layer plus a final LayerNorm: the pre-LN encoder used by the
+        budget BERT-large recipes (Izsak et al. 2021, Wettig et al. 2023).
+        Built from an explicit config (no hub download). Checkpoints save
+        with model_type "megatron-bert", so AutoModelForMaskedLM reloads them.
+        """
+        from transformers import MegatronBertConfig, MegatronBertForMaskedLM
+
+        t = config.model.transformer
+        b = config.model.bert
+        hf_config = MegatronBertConfig(
+            vocab_size=config.tokenizer.vocab_size,
+            hidden_size=t.hidden_size,
+            num_hidden_layers=t.layers,
+            num_attention_heads=t.attention_heads,
+            intermediate_size=t.intermediate_hidden_size,
+            hidden_act=t.activation_function,
+            hidden_dropout_prob=t.dropout,
+            attention_probs_dropout_prob=t.attention_dropout,
+            max_position_embeddings=config.data.max_sequence_length,
+            type_vocab_size=b.type_vocab_size,
+            pad_token_id=b.pad_token_id if b.pad_token_id is not None else 0,
+        )
+        # MegatronBert has no SDPA/FA2 path in transformers 4.41. Refusing
+        # them (ValueError) sends the trainer's fallback chain to eager
+        # attention with honest logs; eager is cheap at 128 tokens.
+        impl = kwargs.pop("attn_implementation", None)
+        if impl not in (None, "eager"):
+            raise ValueError(f"MegatronBertForMaskedLM supports eager attention only, not {impl!r}")
+        hf_model = MegatronBertForMaskedLM(hf_config)
         return cls(hf_model=hf_model, hf_config=hf_config)

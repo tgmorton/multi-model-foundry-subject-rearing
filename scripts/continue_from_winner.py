@@ -105,7 +105,8 @@ def _num_chunks_for_cfg(cfg: dict, base_dir: str) -> int:
     if not os.path.isabs(tok):
         tok = os.path.join(base_dir, tok)
     cache_key = compute_cache_key(
-        corpus, tok, seq_len, cfg.get("dataset_manipulation") or []
+        corpus, tok, seq_len, cfg.get("dataset_manipulation") or [],
+        packing=cfg["data"].get("packing", "contiguous"),
     )
     chunked_path, _kind, _is_fallback = resolve_cached_path(
         base_dir, "chunked", cache_key, experiment_name=cfg.get("experiment_name")

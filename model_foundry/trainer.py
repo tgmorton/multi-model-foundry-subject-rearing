@@ -359,6 +359,34 @@ class Trainer:
                 print(f"  - WARNING: gradient checkpointing requested but "
                       f"{type(self.model).__name__} does not expose it")
 
+    def _optimizer_params(self):
+        """Parameters (or param groups) for AdamW.
+
+        Default — ``weight_decay`` None and ``no_decay_norm_bias`` False —
+        is exactly the old behaviour: every parameter at torch AdamW's
+        default decay (0.01). D15 (docs/BERT_RECIPE_V2.md) sets an explicit
+        decay and exempts LayerNorm weights and all biases, as BERT and the
+        HF Trainer do.
+        """
+        t = self.config.training
+        if t.weight_decay is None and not t.no_decay_norm_bias:
+            return self.model.parameters()
+        wd = 0.01 if t.weight_decay is None else float(t.weight_decay)
+        if not t.no_decay_norm_bias:
+            return [{"params": list(self.model.parameters()), "weight_decay": wd}]
+        from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
+        from transformers.trainer_pt_utils import get_parameter_names
+        decay = {n for n in get_parameter_names(self.model, ALL_LAYERNORM_LAYERS)
+                 if not n.endswith("bias")}
+        named = list(self.model.named_parameters())
+        groups = [
+            {"params": [p for n, p in named if n in decay], "weight_decay": wd},
+            {"params": [p for n, p in named if n not in decay], "weight_decay": 0.0},
+        ]
+        print(f"  - Weight decay {wd} on {len(groups[0]['params'])} tensors; "
+              f"0 on {len(groups[1]['params'])} LayerNorm/bias tensors")
+        return groups
+
     def _initialize_optimizer_and_scheduler(self):
         """Initialize optimizer and learning rate scheduler."""
         # 0.5 — use fused AdamW on CUDA. ~10–20% faster on the optimizer
@@ -371,9 +399,10 @@ class Trainer:
             betas=(self.config.training.adam_beta1, self.config.training.adam_beta2),
             eps=self.config.training.adam_epsilon,
         )
+        params = self._optimizer_params()
         try:
             self.optimizer = AdamW(
-                self.model.parameters(),
+                params,
                 fused=use_fused,
                 **optimizer_kwargs,
             )
@@ -383,7 +412,7 @@ class Trainer:
             # Older torch versions reject `fused=` entirely; also a small
             # number of param configurations can raise at construction.
             print(f"  - Fused AdamW unavailable ({e}); using standard AdamW")
-            self.optimizer = AdamW(self.model.parameters(), **optimizer_kwargs)
+            self.optimizer = AdamW(params, **optimizer_kwargs)
 
         self.lr_scheduler = get_scheduler(
             "linear",

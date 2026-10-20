@@ -253,6 +253,7 @@ def main() -> None:
     cache_key = compute_cache_key(
         corpus_abs, tok_abs, cfg["data"]["max_sequence_length"],
         cfg.get("dataset_manipulation") or [],
+        packing=cfg["data"].get("packing", "contiguous"),
     )
     tokenized = Path(f"/mnt/data/tokenized/{cache_key}/train/dataset_info.json")
     chunked_dir = Path(f"/mnt/data/chunked/{cache_key}")

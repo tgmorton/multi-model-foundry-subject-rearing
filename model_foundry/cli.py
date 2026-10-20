@@ -472,6 +472,7 @@ def _safe_compute_cache_key(config, base_dir) -> Optional[str]:
         return _compute_cache_key(
             corpus_path, tok_dir, config.data.max_sequence_length,
             config.dataset_manipulation or [],
+            packing=config.data.packing,
         )
     except FileNotFoundError:
         return None

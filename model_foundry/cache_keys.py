@@ -138,6 +138,7 @@ def compute_cache_key(
     max_sequence_length: int,
     manipulation: Optional[List[Dict[str, Any]]] = None,
     *,
+    packing: Optional[str] = "contiguous",
     length: int = 12,
 ) -> str:
     """
@@ -154,6 +155,8 @@ def compute_cache_key(
         manipulation: The ``dataset_manipulation`` pipeline from the
             experiment config (a list of dicts) or ``None``/empty for the
             baseline.
+        packing: ``data.packing`` ("contiguous" or "cls_sep"). Hashed only
+            when it is not the default, so every pre-D15 key is unchanged.
         length: Hex characters to keep (default 12 — ~48 bits, collision
             probability is negligible at this scale).
 
@@ -176,6 +179,8 @@ def compute_cache_key(
         "max_sequence_length": int(max_sequence_length),
         "manipulation": manipulation if manipulation is not None else [],
     }
+    if packing not in (None, "contiguous"):
+        payload["packing"] = packing
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()[:length]
 

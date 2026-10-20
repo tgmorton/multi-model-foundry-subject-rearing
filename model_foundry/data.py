@@ -9,7 +9,7 @@ import logging
 import os
 import math
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Generator
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Generator
 import numpy as np
 from datasets import Dataset, load_from_disk, disable_progress_bar
 from torch.utils.data import DataLoader
@@ -22,6 +22,65 @@ logger = logging.getLogger(__name__)
 
 # Disable progress bars for cleaner output
 disable_progress_bar()
+
+
+def pack_token_stream(
+    sequences: Iterable[List[int]],
+    chunk_size: int,
+    *,
+    cls_id: Optional[int] = None,
+    sep_id: Optional[int] = None,
+    max_chunks: Optional[int] = None,
+) -> Iterator[List[int]]:
+    """Pack tokenized corpus lines into fixed-length chunks.
+
+    Contiguous (``cls_id`` and ``sep_id`` None, every pre-D15 cache): lines
+    are concatenated and cut every ``chunk_size`` tokens. ``cls_sep``
+    packing (D15, docs/BERT_RECIPE_V2.md): ``sep_id`` follows every line and
+    each chunk opens with ``cls_id``, so a chunk is ``[CLS]`` plus
+    ``chunk_size - 1`` stream tokens. A trailing remainder shorter than a
+    chunk is dropped in both modes.
+    """
+    body = chunk_size - (1 if cls_id is not None else 0)
+    if body < 1:
+        raise ValueError(f"chunk_size {chunk_size} leaves no room after [CLS]")
+    buf: List[int] = []
+    n = 0
+    for seq in sequences:
+        buf.extend(seq)
+        if sep_id is not None:
+            buf.append(sep_id)
+        while len(buf) >= body:
+            chunk, buf = buf[:body], buf[body:]
+            yield [cls_id] + chunk if cls_id is not None else chunk
+            n += 1
+            if max_chunks is not None and n >= max_chunks:
+                return
+
+
+def packing_token_ids(config, base_dir: str) -> Tuple[Optional[int], Optional[int]]:
+    """(cls_id, sep_id) for ``config.data.packing``; (None, None) when contiguous.
+
+    Read from the tokenizer artefact so the ids match what the model and the
+    collator see. Refuses a tokenizer without real [CLS]/[SEP] entries.
+    """
+    if config.data.packing == "contiguous":
+        return None, None
+    from transformers import PreTrainedTokenizerFast
+
+    tok_dir = config.tokenizer.output_dir
+    if not os.path.isabs(tok_dir):
+        tok_dir = os.path.join(base_dir, tok_dir)
+    tok = PreTrainedTokenizerFast(tokenizer_file=os.path.join(tok_dir, "tokenizer.json"))
+    names = config.tokenizer.special_tokens or {}
+    ids = []
+    for role, default in (("cls_token", "[CLS]"), ("sep_token", "[SEP]")):
+        name = names.get(role, default)
+        tid = tok.convert_tokens_to_ids(name)
+        if tid is None or tid == tok.convert_tokens_to_ids("[UNK]") and name != "[UNK]":
+            raise ValueError(f"packing={config.data.packing!r}: tokenizer in {tok_dir} has no {name!r}")
+        ids.append(int(tid))
+    return ids[0], ids[1]
 
 
 def _worker_init_fn(worker_id: int) -> None:
@@ -73,6 +132,7 @@ class DataProcessor:
                 tokenizer_dir,
                 config.data.max_sequence_length,
                 manipulation,
+                packing=config.data.packing,
             )
         except FileNotFoundError:
             # Tokenizer hasn't been trained yet (e.g. first-run ordering in
@@ -174,37 +234,33 @@ class DataProcessor:
     def _chunk_sequences_streaming(self, dataset: Dataset, chunk_size: int) -> Generator[List[List[int]], None, None]:
         """
         Stream sequences and chunk them into fixed-length blocks without loading all into memory.
-        Uses concatenation to minimize token waste.
-        
+        Packing (contiguous, or [CLS]/[SEP] per ``data.packing``) is done by
+        ``pack_token_stream``; leftover tokens shorter than a chunk are dropped.
+
         Args:
             dataset: Tokenized dataset
             chunk_size: Target chunk size in tokens
-            
+
         Yields:
             Batches of fixed-length chunks
         """
-        batch_size = 1000  # Process sequences in batches to balance memory and speed
-        concatenated_buffer = []  # Buffer to accumulate tokens across batches
-        
-        for i in range(0, len(dataset), batch_size):
-            batch_sequences = dataset[i:i + batch_size]['input_ids']
-            
-            # Concatenate all sequences in this batch to the buffer
-            for sequence in batch_sequences:
-                concatenated_buffer.extend(sequence)
-            
-            # Extract as many complete chunks as possible from the buffer
-            chunks = []
-            while len(concatenated_buffer) >= chunk_size:
-                chunk = concatenated_buffer[:chunk_size]
-                chunks.append(chunk)
-                concatenated_buffer = concatenated_buffer[chunk_size:]
-            
-            if chunks:
-                yield chunks
-        
-        # Note: Any remaining tokens in concatenated_buffer (< chunk_size) are dropped
-    
+        cls_id, sep_id = packing_token_ids(self.config, self.base_dir)
+        if cls_id is not None:
+            print(f"  - Packing: {self.config.data.packing} ([CLS]={cls_id}, [SEP]={sep_id})")
+
+        def lines():
+            for i in range(0, len(dataset), 1000):
+                yield from dataset[i:i + 1000]['input_ids']
+
+        batch: List[List[int]] = []
+        for chunk in pack_token_stream(lines(), chunk_size, cls_id=cls_id, sep_id=sep_id):
+            batch.append(chunk)
+            if len(batch) >= 1000:
+                yield batch
+                batch = []
+        if batch:
+            yield batch
+
     def _create_chunked_dataset_streaming(self, tokenized_dataset: Dataset, chunk_size: int) -> Dataset:
         """
         Create a new dataset with fixed-length chunks using streaming to avoid memory issues.

@@ -116,6 +116,7 @@ def main() -> None:
         str(REPO_ROOT / cfg["tokenizer"]["output_dir"]),
         cfg["data"]["max_sequence_length"],
         cfg.get("dataset_manipulation") or [],
+        packing=cfg["data"].get("packing", "contiguous"),
     )
     for probe in (
         Path(f"/mnt/data/tokenized/{cache_key}/train/dataset_info.json"),

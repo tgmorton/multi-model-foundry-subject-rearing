@@ -228,8 +228,10 @@ def trial(monkeypatch, tmp_path):
                         rec["register_end"].append((loss, ppl)))
     monkeypatch.setattr(agent, "_load_held_out_chunks",
                         lambda trainer, config, max_sequences=None: torch.zeros(2, 4))
-    monkeypatch.setattr(agent, "_compute_held_out_perplexity",
-                        lambda trainer, config, chunks=None: ppl_series.pop(0))
+    monkeypatch.setattr(agent, "_compute_held_out_metrics",
+                        lambda trainer, config, chunks=None: {
+                            "ppl": ppl_series.pop(0), "accuracy": float("nan"),
+                            "top_token_share": float("nan"), "top_token_id": -1})
     sentinel = tmp_path / "sentinel"
     monkeypatch.setenv("TRIAL_SENTINEL", str(sentinel))
 

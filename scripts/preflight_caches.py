@@ -44,7 +44,8 @@ def main() -> int:
             continue
         key = compute_cache_key(str(REPO / corpus), str(REPO / cfg["tokenizer"]["output_dir"]),
                                 cfg["data"]["max_sequence_length"],
-                                cfg.get("dataset_manipulation") or [])
+                                cfg.get("dataset_manipulation") or [],
+                                packing=cfg["data"].get("packing", "contiguous"))
         for probe in (Path(f"/mnt/data/tokenized/{key}/train/dataset_info.json"),
                       Path(f"/mnt/data/chunked/{key}/dataset_info.json")):
             if not probe.exists():

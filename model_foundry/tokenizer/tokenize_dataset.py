@@ -228,7 +228,8 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     max_sequence_length = int(config['data']['max_sequence_length'])
     manipulation = config.get('dataset_manipulation') or []
     cache_key = compute_cache_key(
-        training_corpus_path, tokenizer_dir, max_sequence_length, manipulation
+        training_corpus_path, tokenizer_dir, max_sequence_length, manipulation,
+        packing=config['data'].get('packing', 'contiguous'),
     )
     tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", cache_key)
     legacy_tokenized_data_dir = os.path.join(base_dir, "data", "tokenized", experiment_name)
