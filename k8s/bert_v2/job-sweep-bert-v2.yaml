@@ -1,0 +1,141 @@
+# D15 (docs/BERT_RECIPE_V2.md): W&B sweep agents for the BERT-v2 pilot and LR
+# races in null-subjects. One trial per pod (wandb agent --count 1); success
+# is the trial's sentinel file, not wandb agent's exit code.
+#
+# Don't edit per run; render:
+#   python scripts/render_bert_v2_job.py --name pilot-en --sweep-id <e>/<p>/<id> \
+#       --base-config configs/sweeps/baselines/bert_large_preln_en_race.yaml \
+#       --condition baseline --gpus 24g --completions 1 > /tmp/j.yaml
+# The renderer also refreshes the bad-node list from configs/bad_nodes.txt.
+#
+# Prerequisites: thomas-download-bert-v2 and thomas-precache-bert-v2 done.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-bert-v2-REPLACE
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: bert-v2-sweep, arch: bert-large, lang: en}
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 10
+  activeDeadlineSeconds: 604800
+  ttlSecondsAfterFinished: 604800
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: sweep-agent, operator: In, values: [2, 128]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: bert-v2-sweep, arch: bert-large, lang: en}
+    spec:
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.product
+                operator: In
+                values: [REPLACE]
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values: [REPLACE]
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=feat/bert-recipe-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: sweep-agent
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=== BERT-v2 SWEEP AGENT — ${CONDITION} on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              if not torch.cuda.is_available():
+                  print('FATAL: no CUDA available', file=sys.stderr); sys.exit(2)
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print(f'  - GPU healthy: {torch.cuda.get_device_name(0)}')
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
+          case "${SWEEP_ID:-}" in ""|*REPLACE*) echo "FAIL SWEEP_ID not set"; exit 1 ;; esac
+          if [ -n "${CORPUS_DIR:-}" ]; then
+            test -f "${CORPUS_DIR}/SUBSET_MANIFEST.json" || { echo "FAIL ${CORPUS_DIR} has no SUBSET_MANIFEST.json"; exit 1; }
+          fi
+          cd /opt/repo
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          # Cache-missing fail-fast: the same render + key the precache job used.
+          CFG=/tmp/bert_v2_${CONDITION}.yaml
+          python scripts/rater_sweep.py render-config --base "${BASE_CONFIG}" --corpus-dir "${CORPUS_DIR:-}" --out "${CFG}"
+          python -m model_foundry.cli validate-config "${CFG}"
+          KEY=$(python scripts/rater_sweep.py cache-key --config "${CFG}" --repo /opt/repo)
+          for f in /mnt/data/tokenized/$KEY/train/dataset_info.json \
+                   /mnt/data/tokenized/$KEY/test/dataset_info.json \
+                   /mnt/data/chunked/$KEY/dataset_info.json; do
+            [ -f "$f" ] || { echo "FAIL missing cache $f — run thomas-precache-bert-v2"; exit 1; }
+          done
+          echo "cache warm: $KEY"
+          export TRIAL_SENTINEL=/tmp/trial_succeeded
+          rm -f "$TRIAL_SENTINEL"
+          # The image's wandb 0.17 fails wandb.init in sweep runs and on resume.
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          wandb agent --count 1 "$SWEEP_ID" || true
+          [ -f "$TRIAL_SENTINEL" ] || { echo "FAIL trial sentinel absent; Job will retry"; exit 1; }
+          nvidia-smi -q >/dev/null 2>&1 || { echo "FAIL nvidia-smi unhealthy at exit"; exit 1; }
+          echo "trial succeeded:"; cat "$TRIAL_SENTINEL"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - {name: RATER_SWEEP, value: "1"}
+        - {name: CONDITION, value: REPLACE}
+        - {name: CORPUS_DIR, value: ""}
+        - {name: BASE_CONFIG, value: REPLACE}
+        - {name: SWEEP_ID, value: REPLACE}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        - {name: REGISTRY_RUN_KIND, value: "hp_sweep"}
+        - {name: DOCKER_IMAGE, value: "gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest"}
+        resources:
+          # Rater trials on A100 measured host anon RAM ~1.6 GB (2026-10-16);
+          # 6Gi keeps RAM inside NRP's 20-150% band. Re-measure on the pilot.
+          requests: {memory: 6Gi, cpu: "2", nvidia.com/gpu: 1}
+          limits: {memory: 6Gi, cpu: "2", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
+      restartPolicy: Never

@@ -1,0 +1,16 @@
+# D15 rater LR race (docs/BERT_RECIPE_V2.md) on the `base` sweep subset.
+# Two published peaks for pre-LN BERT-large at 4096 x 128 (Izsak 2021: 2e-3;
+# Wettig 2023 / 24hBERT range down to 1e-3).
+name: bert_v2_rater_race_base
+project: subject-drop-bert-v2
+program: scripts/sweep_agent_lm.py
+method: grid
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch: {value: bert_large}
+  lang: {value: en}
+  base_config: {value: configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml}
+  condition: {value: base}
+  learning_rate: {values: [1.0e-3, 2.0e-3]}

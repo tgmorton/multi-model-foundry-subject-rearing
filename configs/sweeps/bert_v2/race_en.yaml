@@ -1,0 +1,18 @@
+# D15 study LR race (docs/BERT_RECIPE_V2.md): pre-LN BERT-large on the EN 90M
+# baseline, ~3 epochs of the real 30-epoch schedule per trial, escape-gated.
+# Launch only after the pilot has left the plateau and the gate thresholds in
+# the baseline have been re-set from its curve. Ranking: held-out masked loss
+# and proxy/held_out_accuracy among survivors; take the lower LR of a near-tie.
+name: bert_v2_race_en
+project: subject-drop-bert-v2
+program: scripts/sweep_agent_lm.py
+method: grid
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch: {value: bert_large}
+  lang: {value: en}
+  base_config: {value: configs/sweeps/baselines/bert_large_preln_en_race.yaml}
+  condition: {value: baseline}
+  learning_rate: {values: [3.0e-4, 6.0e-4, 1.0e-3]}

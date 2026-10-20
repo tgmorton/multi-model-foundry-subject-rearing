@@ -1,0 +1,16 @@
+# D15 pilot (docs/BERT_RECIPE_V2.md): one pre-LN BERT-large trial at LR 6e-4
+# on the EN 90M baseline. Must leave the MLM plateau before the race starts,
+# and its held-out curve sets the race's escape-gate thresholds.
+name: bert_v2_pilot_en
+project: subject-drop-bert-v2
+program: scripts/sweep_agent_lm.py
+method: grid
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch: {value: bert_large}
+  lang: {value: en}
+  base_config: {value: configs/sweeps/baselines/bert_large_preln_en_race.yaml}
+  condition: {value: baseline}
+  learning_rate: {value: 6.0e-4}

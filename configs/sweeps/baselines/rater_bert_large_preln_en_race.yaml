@@ -1,0 +1,99 @@
+# BERT recipe v2 (D15, docs/BERT_RECIPE_V2.md): rater LR race.
+#
+# The pre-LN BERT-large budget recipe of Izsak et al. 2021 / Wettig et al.
+# 2023 (peak LR 1e-3..2e-3 at 4096 x 128, 6% warmup, ~23K steps / ~12B
+# tokens), raced on the `base` rater sweep subset. Each trial runs ~1B tokens
+# of the 23K-step schedule (warmup plus some peak), escape-gated. The pod sets
+# CORPUS_DIR to the subset dir (shard_NNN.train + heldout.test).
+#
+# A100 quota in null-subjects is 0: 48 GB L40/L40S on nvidia.com/gpu.
+# The 512-token finishing phase of the full rater run is not part of the race.
+#
+# Spec: configs/sweeps/bert_v2/rater_race_base.yaml.
+
+experiment_name: "rater_race_bert_large_preln_en"
+
+data:
+  source_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"
+  training_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"
+  test_corpus: "/mnt/data/rater_corpus/sweep_subset_v1/base/"
+  # 128 x 128 tokens per micro-batch on a 48 GB card; 32 accumulation steps
+  # -> 4096 sequences (524K tokens) per optimizer step.
+  batch_size: 128
+  max_sequence_length: 128
+  packing: "cls_sep"
+
+dataset_manipulation: []
+
+tokenizer:
+  # OPEN DECISION (docs/BERT_RECIPE_V2.md): project WordPiece vs byte-level BPE.
+  output_dir: "tokenizers/en_bert_wordpiece/"
+  vocab_size: 50004
+  tokenizer_type: "wordpiece"
+  special_tokens:
+    cls_token: "[CLS]"
+    sep_token: "[SEP]"
+    mask_token: "[MASK]"
+    unk_token: "[UNK]"
+    pad_token: "[PAD]"
+
+model:
+  architecture: "bert"
+  transformer:
+    layers: 24
+    embedding_size: 1024
+    hidden_size: 1024
+    intermediate_hidden_size: 4096
+    attention_heads: 16
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+  bert:
+    norm_position: "pre"
+    pad_token_id: 4
+
+training:
+  output_dir: "models/rater_sweeps/placeholder/"
+  learning_rate: 0.001         # overridden per trial
+  adam_beta1: 0.9
+  adam_beta2: 0.98
+  adam_epsilon: 1.0e-6
+  weight_decay: 0.01
+  no_decay_norm_bias: true
+  warmup_ratio: 0.06           # of the 23K-step horizon
+  train_steps: null
+  warmup_steps: null
+  epochs: 1
+
+  objective: "masked_lm"
+  mlm_probability: 0.15
+  use_amp: true
+  gradient_accumulation_steps: 32
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: false
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+
+rater_sweep:
+  enabled: true
+  kind: rater
+  sweep_train_steps: 2000      # ~1.05B tokens: warmup (1380 steps) + 620 at peak
+  scheduler_train_steps: 23000
+  eval_every_steps: 250
+  eval_max_sequences: 4000
+  patience_evals: 6
+  min_steps_before_stop: 1500
+  min_rel_improvement: 0.002
+  gates: [[1000, 6.0]]         # PROVISIONAL; reset from the study pilot's curve
+  save_final: true
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-bert-v2"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42

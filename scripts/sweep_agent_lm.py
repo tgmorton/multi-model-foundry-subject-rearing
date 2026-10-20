@@ -639,7 +639,7 @@ def _apply_rater_sweep_overrides(
         settings.patience_evals, settings.min_steps_before_stop,
         settings.min_rel_improvement, settings.save_final,
     )
-    return settings, _rater.registry_condition(condition)
+    return settings, _rater.registry_condition(condition, settings.kind)
 
 
 def _compute_anchor_schedule(

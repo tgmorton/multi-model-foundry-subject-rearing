@@ -1,0 +1,56 @@
+# D15 (docs/BERT_RECIPE_V2.md): pull the BERT-v2 inputs from S3 into the
+# null-subjects PVC. Cross-namespace data moves ONLY through S3 (Thomas
+# 2026-10-19); the lemn-lab side uploaded them with thomas-upload-xfer-v1 to
+# s3://thomas-subject-drop-artifacts/data_transfer/ (74 objects, 5.9 GiB,
+# rclone-checked).
+#
+# The namespace's one PVC, thomas-rater-corpus (2Ti RWX rook-cephfs), is
+# mounted at /mnt/data with the canonical layout (raw/, tokenizers/,
+# rater_corpus/, tokenized/, chunked/, models/). The first lines log what is
+# already on it. IO-bound helper -> under NRP's 1 CPU / 2 GB exemption.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-download-bert-v2
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: download}
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: download}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: rclone
+        image: rclone/rclone:1.68
+        command: ["sh", "-c"]
+        args:
+        - |
+          set -eu
+          echo "== existing PVC contents"; ls -la /mnt/data; du -sh /mnt/data/* 2>/dev/null || true
+          SRC=s3:thomas-subject-drop-artifacts/data_transfer
+          for p in tokenizers/en_bert_wordpiece raw/en/train_90M raw/en/test_10M rater_corpus/sweep_subset_v1; do
+            echo "== copy $p"
+            rclone copy --transfers 4 --checkers 8 --stats-one-line --stats 60s $SRC/$p /mnt/data/$p
+            rclone check --one-way $SRC/$p /mnt/data/$p
+          done
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked /mnt/data/models
+          du -sh /mnt/data/* 2>/dev/null
+          echo DOWNLOAD DONE
+        env:
+        - {name: RCLONE_CONFIG_S3_TYPE, value: s3}
+        - {name: RCLONE_CONFIG_S3_PROVIDER, value: Ceph}
+        - {name: RCLONE_CONFIG_S3_ENDPOINT, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - name: RCLONE_CONFIG_S3_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        resources:
+          requests: {cpu: "1", memory: 1500Mi}
+          limits: {cpu: "1", memory: 1500Mi}
+        volumeMounts: [{name: data, mountPath: /mnt/data}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}

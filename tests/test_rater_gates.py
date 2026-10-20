@@ -60,3 +60,30 @@ def test_apply_rater_overrides_default_schedule_completes_in_trial():
                              wandb_run_id="r1", condition="base", corpus_dir=None,
                              num_chunks=lambda c: 100_000)
     assert cfg["training"]["scheduler_train_steps"] == 3000
+
+
+def test_scheduler_epochs_resolves_from_chunk_count():
+    cfg = {"experiment_name": "x", "data": {"batch_size": 32}, "training": {"gradient_accumulation_steps": 32}}
+    s = rs.RaterSweepSettings(sweep_train_steps=3000, scheduler_epochs=30, kind="race")
+    rs.apply_rater_overrides(cfg, s, wandb_run_id="r1", condition="baseline", corpus_dir=None,
+                             num_chunks=lambda c: 1_024_000)   # 1000 optimizer steps / epoch
+    assert cfg["training"]["scheduler_train_steps"] == 30_000
+    assert cfg["training"]["output_dir"] == "models/race_sweeps/baseline/r1"
+    assert rs.registry_condition("baseline", s.kind) == "race_baseline"
+
+
+def test_scheduler_epochs_and_steps_are_exclusive():
+    with pytest.raises(ValueError):
+        rs.RaterSweepSettings(scheduler_epochs=30, scheduler_train_steps=30000)
+
+
+def test_cache_key_for_includes_packing(tmp_path):
+    from model_foundry.cache_keys import compute_cache_key
+    corpus = tmp_path / "c"; corpus.mkdir(); (corpus / "a.train").write_text("x\n")
+    tok = tmp_path / "t"; tok.mkdir(); (tok / "tokenizer.json").write_text("{}")
+    cfg = {"tokenizer": {"output_dir": str(tok)}, "dataset_manipulation": [],
+           "data": {"training_corpus": str(corpus), "max_sequence_length": 128}}
+    assert rs.cache_key_for(cfg, str(tmp_path)) == compute_cache_key(str(corpus), str(tok), 128, [])
+    cfg["data"]["packing"] = "cls_sep"
+    assert rs.cache_key_for(cfg, str(tmp_path)) == compute_cache_key(str(corpus), str(tok), 128, [],
+                                                                     packing="cls_sep")

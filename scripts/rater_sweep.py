@@ -80,10 +80,16 @@ class RaterSweepSettings:
     # own budget (schedule completes inside the trial). Set it to the real
     # run's step count to race the production warmup + peak LR, truncated.
     scheduler_train_steps: Optional[int] = None
+    # Same, in epochs of the trial's own corpus (resolved from the chunk
+    # count when the trial starts). Mutually exclusive with the above.
+    scheduler_epochs: Optional[int] = None
     # Escape gates: ((step, max_heldout_loss_nats), ...). Every eval at or
     # after `step` must have held-out masked loss ln(ppl) below the max, or
     # the trial stops as "gated out" (still stuck on the MLM plateau).
     gates: tuple = ()
+    # "rater" (rater-corpus sweeps) or "race" (D15 study-corpus LR races):
+    # labels the registry condition and output dir so races never read as raters.
+    kind: str = "rater"
 
     def __post_init__(self) -> None:
         for name in ("sweep_train_steps", "eval_every_steps",
@@ -110,6 +116,14 @@ class RaterSweepSettings:
             raise ValueError(
                 "rater_sweep.scheduler_train_steps must be an int >= sweep_train_steps, "
                 f"got {self.scheduler_train_steps!r}")
+        if self.scheduler_epochs is not None and (
+                self.scheduler_train_steps is not None
+                or not isinstance(self.scheduler_epochs, int)
+                or isinstance(self.scheduler_epochs, bool) or self.scheduler_epochs < 1):
+            raise ValueError("rater_sweep.scheduler_epochs must be an int >= 1 and "
+                             "cannot be combined with scheduler_train_steps")
+        if self.kind not in ("rater", "race"):
+            raise ValueError(f"rater_sweep.kind must be 'rater' or 'race', got {self.kind!r}")
         for g in self.gates:
             if (len(g) != 2 or not isinstance(g[0], int) or isinstance(g[0], bool)
                     or g[0] < 1 or not float(g[1]) > 0):
@@ -185,10 +199,10 @@ def group_from_env(env: Mapping) -> Optional[str]:
     return None
 
 
-def registry_condition(condition: str) -> str:
+def registry_condition(condition: str, kind: str = "rater") -> str:
     """Registry / W&B-tag condition. Prefixed so rater runs never share a
     condition key with study cells (cf. rater_agent's ``rater_fold_a``)."""
-    return f"rater_{condition}"
+    return f"{kind}_{condition}"
 
 
 def endpoint_checkpoint_mode(settings: RaterSweepSettings) -> str:
@@ -231,20 +245,25 @@ def apply_rater_overrides(
     apply_corpus_override(cfg, corpus_dir)
 
     t = cfg["training"]
-    t["output_dir"] = f"models/rater_sweeps/{condition}/{wandb_run_id}"
+    t["output_dir"] = f"models/{settings.kind}_sweeps/{condition}/{wandb_run_id}"
 
     n = settings.sweep_train_steps
     t["train_steps"] = n
-    # LR schedule completes inside the trial, unless a longer horizon is set
-    # (then the trial is a truncated copy of the real run's schedule).
-    t["scheduler_train_steps"] = settings.scheduler_train_steps or n
-    t["warmup_steps"] = None           # -> warmup_ratio * scheduler_train_steps
-
     steps_per_epoch = compute_opt_steps_per_epoch(
         num_chunks=int(num_chunks(cfg)),
         phys_batch=int(cfg["data"]["batch_size"]),
         grad_accum=int(t.get("gradient_accumulation_steps", 1)),
     )
+    # LR schedule completes inside the trial, unless a longer horizon is set
+    # (then the trial is a truncated copy of the real run's schedule).
+    horizon = settings.scheduler_train_steps or n
+    if settings.scheduler_epochs is not None:
+        horizon = settings.scheduler_epochs * steps_per_epoch
+        if horizon < n:
+            raise ValueError(f"scheduler_epochs={settings.scheduler_epochs} gives {horizon} "
+                             f"steps, fewer than the trial's {n}")
+    t["scheduler_train_steps"] = horizon
+    t["warmup_steps"] = None           # -> warmup_ratio * scheduler_train_steps
     t["epochs"] = max(1, math.ceil(n / steps_per_epoch))
 
     # Exactly one checkpoint: the endpoint guard's (weights-only, or none).
@@ -339,6 +358,33 @@ def _cmd_render_config(args: argparse.Namespace) -> int:
     return 0
 
 
+def cache_key_for(cfg: Mapping, repo: str) -> str:
+    """Content-addressed cache key for a rendered config (packing included).
+
+    The one place pods compute it, so a precache job and a sweep pod can
+    never disagree about where the cache is."""
+    import os
+
+    from model_foundry.cache_keys import compute_cache_key
+
+    tok = cfg["tokenizer"]["output_dir"]
+    if not os.path.isabs(tok):
+        tok = os.path.join(repo, tok)
+    corpus = cfg["data"]["training_corpus"]
+    if not os.path.isabs(corpus):
+        corpus = os.path.join(repo, corpus)
+    return compute_cache_key(corpus, tok, cfg["data"]["max_sequence_length"],
+                             cfg.get("dataset_manipulation") or [],
+                             packing=cfg["data"].get("packing", "contiguous"))
+
+
+def _cmd_cache_key(args: argparse.Namespace) -> int:
+    import yaml
+
+    print(cache_key_for(yaml.safe_load(Path(args.config).read_text()), args.repo))
+    return 0
+
+
 def main(argv: Optional[list] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -347,9 +393,14 @@ def main(argv: Optional[list] = None) -> int:
     rc.add_argument("--base", default="configs/sweeps/baselines/rater_bert_large_en.yaml")
     rc.add_argument("--corpus-dir", required=True)
     rc.add_argument("--out", required=True)
+    ck = sub.add_parser("cache-key", help="print the cache key of a rendered config")
+    ck.add_argument("--config", required=True)
+    ck.add_argument("--repo", default=str(Path(__file__).resolve().parent.parent))
     args = ap.parse_args(argv)
     if args.cmd == "render-config":
         return _cmd_render_config(args)
+    if args.cmd == "cache-key":
+        return _cmd_cache_key(args)
     return 2
 
 

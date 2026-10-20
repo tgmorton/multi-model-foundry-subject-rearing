@@ -1,0 +1,88 @@
+# D15 (docs/BERT_RECIPE_V2.md): build the 128-token [CLS]/[SEP] caches the
+# BERT-v2 pilot and races read, in null-subjects (fresh; nothing copied).
+# Tokenize + chunk are pre-run jobs, never inline in training pods.
+#   index 0: study race baseline (EN 90M + test_10M)
+#   index 1: rater race baseline on the `base` sweep subset
+# CPU only. Memory: the chunker holds every chunk as Python lists before
+# writing Arrow (~10-20 GB at peak for these corpora), so this is a bounded
+# 2-pod exception to NRP's RAM band, like the 2026-10-16 bert precache.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-precache-bert-v2
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+spec:
+  completionMode: Indexed
+  completions: 2
+  parallelism: 2
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=feat/bert-recipe-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: precache
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          echo "=== BERT-v2 PRECACHE idx=$JOB_COMPLETION_INDEX — $(cat .git/HEAD 2>/dev/null)"
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/tokenized /mnt/data/chunked /mnt/data/models
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          case "$JOB_COMPLETION_INDEX" in
+            0) BASE=configs/sweeps/baselines/bert_large_preln_en_race.yaml; CORPUS="" ;;
+            1) BASE=configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml
+               CORPUS=/mnt/data/rater_corpus/sweep_subset_v1/base ;;
+            *) echo "FAIL unknown index"; exit 1 ;;
+          esac
+          CFG=/tmp/precache_${JOB_COMPLETION_INDEX}.yaml
+          python scripts/rater_sweep.py render-config --base "$BASE" --corpus-dir "$CORPUS" --out "$CFG"
+          python -m model_foundry.cli validate-config "$CFG"
+          python -m model_foundry.cli tokenize-dataset "$CFG"
+          python -m model_foundry.cli preprocess-data "$CFG"
+          KEY=$(python scripts/rater_sweep.py cache-key --config "$CFG" --repo /opt/repo)
+          for f in /mnt/data/tokenized/$KEY/train/dataset_info.json \
+                   /mnt/data/tokenized/$KEY/test/dataset_info.json \
+                   /mnt/data/chunked/$KEY/dataset_info.json; do
+            [ -f "$f" ] || { echo "FAIL missing $f"; exit 1; }
+          done
+          python -c "
+          from datasets import load_from_disk
+          d = load_from_disk('/mnt/data/chunked/$KEY')
+          print('chunks', len(d), 'first ids', d[0]['input_ids'][:8])"
+          echo "PRECACHE OK $BASE -> $KEY"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        resources:
+          requests: {cpu: "4", memory: 24Gi}
+          limits: {cpu: "4", memory: 24Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}

@@ -165,17 +165,7 @@ spec:
           CFG=/tmp/rater_base_${CONDITION}.yaml
           python scripts/rater_sweep.py render-config --corpus-dir "${CORPUS_DIR}" --out "${CFG}"
           python -m model_foundry.cli validate-config "${CFG}"
-          CACHE_KEY=$(python -c "
-          import sys, yaml
-          sys.path.insert(0, '/opt/repo')
-          from model_foundry.cache_keys import compute_cache_key
-          cfg = yaml.safe_load(open('${CFG}'))
-          tok = cfg['tokenizer']['output_dir']
-          if not tok.startswith('/'): tok = '/opt/repo/' + tok
-          print(compute_cache_key(cfg['data']['training_corpus'], tok,
-                                  cfg['data']['max_sequence_length'],
-                                  cfg.get('dataset_manipulation') or []))
-          ")
+          CACHE_KEY=$(python scripts/rater_sweep.py cache-key --config "${CFG}" --repo /opt/repo)
           test -n "$CACHE_KEY" || { echo "FAIL couldn't resolve cache_key"; exit 1; }
           for f in /mnt/data/tokenized/${CACHE_KEY}/train/dataset_info.json \
                    /mnt/data/tokenized/${CACHE_KEY}/test/dataset_info.json \
