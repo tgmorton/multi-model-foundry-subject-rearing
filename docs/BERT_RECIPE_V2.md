@@ -116,14 +116,43 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
 
 ## Steps
 
-- [x] Diagnose; literature audit; this doc
-- [ ] Code: pre-LN option; `[CLS]`/`[SEP]` packing at 128 (part of the cache key); WD exclusions + configurable WD; real `pad_token_id`; escape gate + masked accuracy / top-token share metrics
-- [ ] Stage EN 90M corpus, test corpus, tokenizer and rater sweep subsets to S3
-- [ ] null-subjects registration (Thomas / namespace admin) → PVC, download, precache at 128
-- [ ] Pilot → set gate thresholds
-- [ ] Study race (EN baseline) → freeze HPs
-- [ ] Rater race (base) → full raters
-- [ ] Later: BERT wave2; ES race
+- [x] Diagnose; literature audit; this doc (2026-10-19)
+- [x] **Code, branch `feat/bert-recipe-v2`** (7890a686, 65a02e1b):
+  - pre-LN option (`model.bert.norm_position: pre`), real `pad_token_id`;
+  - `data.packing: cls_sep` (in the cache key only when not contiguous; every old key unchanged);
+  - `training.weight_decay` / `no_decay_norm_bias`;
+  - trial settings `kind`, `scheduler_epochs`, `gates`; held-out masked accuracy and top-token share;
+  - `rater_sweep.py cache-key`, used by every manifest.
+
+  Tests pass locally and on the image's torch 2.5.1 / transformers 4.41.2. A CPU end-to-end smoke with the real tokenizer and CLI passed.
+- [x] **Inputs staged to S3** `data_transfer/`: tokenizer, EN train_90M, test_10M, five rater sweep subsets. 74 objects, 5.9 GiB, `rclone check` clean (job `thomas-upload-xfer-v1`, lemn-lab).
+- [ ] **null-subjects registration: blocked.** As of 2026-10-19 both Jobs and Pods are denied. Thomas or the namespace admin fills https://nrp.ai/namespaces.
+- [ ] Download, precache, pilot, set gate thresholds from the pilot curve.
+- [ ] Study race (EN baseline): freeze HPs.
+- [ ] Rater race (base): full raters.
+- [ ] Later: BERT wave2; ES race.
+
+## Launch sequence (null-subjects, once registered)
+
+Run from a `feat/bert-recipe-v2` checkout. The pods clone that branch.
+
+```bash
+kubectl apply -f k8s/bert_v2/job-download-ns.yaml        # S3 -> PVC thomas-rater-corpus
+kubectl apply -f k8s/bert_v2/job-precache-bert-v2.yaml   # 2 caches at 128 tokens, cls_sep
+wandb sweep configs/sweeps/bert_v2/pilot_en.yaml         # -> <entity>/subject-drop-bert-v2/<id>
+python scripts/render_bert_v2_job.py --name pilot-en --sweep-id <id> \
+  --base-config configs/sweeps/baselines/bert_large_preln_en_race.yaml \
+  --condition baseline | kubectl apply -f -
+```
+
+After the pilot:
+1. Re-set `gates` in both race baselines from its held-out curve.
+2. `wandb sweep configs/sweeps/bert_v2/race_en.yaml`, then render with `--name race-en --parallelism 3 --completions 3`.
+3. Rater race: `wandb sweep configs/sweeps/bert_v2/rater_race_base.yaml`, then render with:
+   - `--name rater-race-base --condition base`
+   - `--corpus-dir /mnt/data/rater_corpus/sweep_subset_v1/base`
+   - `--base-config configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml`
+   - `--gpus 48g --parallelism 2 --completions 2`
 
 ## Open decisions
 
