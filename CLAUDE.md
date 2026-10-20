@@ -488,6 +488,11 @@ Training YAMLs need this env entry alongside the S3 block:
 
 ## Known bugs / WIP
 
+- **From-scratch BERT recipe v2 (D15, 2026-10-19)**: every bert_large run trained before
+  2026-10-19 stalled on the MLM plateau (LR too low for the step budget; sweep scored on the
+  plateau). Don't use old bert_large results or sweep winners. New recipe and gated LR race:
+  `docs/BERT_RECIPE_V2.md`.
+
 - **Tokenizer CLI-path idempotency bug**: `python -m model_foundry.cli
   train-tokenizer <config>` re-trains even when the cache is present.
   Calling the factory directly from a REPL hits the cache correctly.

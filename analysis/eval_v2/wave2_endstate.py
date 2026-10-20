@@ -19,9 +19,9 @@ from pathlib import Path
 import numpy as np, pandas as pd
 
 try:  # run as a script from analysis/eval_v2/ ...
-    from _tokens import DEGENERATE_COLS, drop_degenerate
+    from _tokens import DEGENERATE_COLS, drop_degenerate, overall_items
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_endstate
-    from analysis.eval_v2._tokens import DEGENERATE_COLS, drop_degenerate
+    from analysis.eval_v2._tokens import DEGENERATE_COLS, drop_degenerate, overall_items
 
 CELL = re.compile(r"pdrop2_(gpt2m|bertanti|bert|comp|robbianti|robbi|rand|all100)(\d*)_(\w+)-h(\d)-")
 IVS = ["base", "impcase", "lemverb", "enrichvm"]
@@ -88,8 +88,8 @@ def load(bucket, prefix, profile, endpoint, last, arch):
     rows = []
     for key, p in paths:
         arm, k, iv, hp = CELL.search(key).groups()
-        d = drop_degenerate(pd.read_parquet(
-            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
+        d = overall_items(drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "category", "prefers_overt_meanlp", *DEGENERATE_COLS])))
         c = d[d.checkpoint_step > 0].groupby("checkpoint_step").prefers_overt_meanlp.mean()
         if len(c) < 20: continue
         rows.append({"arm": "all100" if arm == "all100" else arm,
@@ -142,6 +142,7 @@ def main():
         ax.set_xlabel("% of pronouns removed (decile)")
         ax.set_xticks([10,30,50,70,90,100])
     np.atleast_1d(axes)[0].set_ylabel("end-state overt-subject preference")
+    np.atleast_1d(axes)[0].set_ylim(0, 1)
     h, l = np.atleast_1d(axes)[0].get_legend_handles_labels()
     fig.legend(h, l, loc="lower center", ncol=min(len(l), 3), fontsize=9,
                frameon=False, bbox_to_anchor=(0.5, -0.10 if len(l) > 3 else -0.04))

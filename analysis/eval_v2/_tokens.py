@@ -87,6 +87,18 @@ def drop_degenerate(d: pd.DataFrame) -> pd.DataFrame:
     return d.loc[~bad].drop(columns=DEGENERATE_COLS)
 
 
+# Categories left out of every overall (all-category) preference number
+# (Thomas 2026-10-16): extraction tests that-trace, not subject drop, and
+# object drop is a different construction. Per-category plots still show all 8.
+OVERALL_EXCLUDE = ("extraction", "object_drop")
+
+
+def overall_items(d: pd.DataFrame) -> pd.DataFrame:
+    """Rows that count toward the overall preference. Needs `category` in `d`;
+    returns the frame without it."""
+    return d.loc[~d.category.isin(OVERALL_EXCLUDE)].drop(columns="category")
+
+
 def sync_checkpoints(bucket, profile, endpoint, arch, prefix=CKPT_PREFIX,
                      cache=CKPT_CACHE):
     """Download the pdrop2 checkpoint parquets for `arch` into `cache`, in

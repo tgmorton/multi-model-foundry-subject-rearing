@@ -1,7 +1,7 @@
 """gpt2_small vs gpt2_large overt-preference trajectories on one true-token axis.
 
 Set-A-style panels (one per selection arm; lines = removal decile k, viridis;
-y = mean prefers_overt_meanlp over all items), baseline intervention only, with
+y = mean prefers_overt_meanlp over the overall items, i.e. without _tokens.OVERALL_EXCLUDE), baseline intervention only, with
 the two architectures overlaid: gpt2_small solid, gpt2_large dashed. Both use
 HP rank h0 only (gpt2_small has h0-h3; gpt2_large only h0), so the x axis is the
 same quantity for both: tokens seen, taken per checkpoint from the checkpoints/
@@ -26,13 +26,13 @@ from pathlib import Path
 import pandas as pd
 
 try:  # run as a script (analysis/eval_v2 on sys.path) ...
-    from _tokens import (DEGENERATE_COLS, TokenAxis, drop_degenerate, is_arch,
+    from _tokens import (DEGENERATE_COLS, TokenAxis, drop_degenerate, overall_items, is_arch,
                          run_id_from_name, sync_checkpoints)
     from wave2_category_trajectories import ARM_LABEL, CACHE, CELL, IV_LABEL
     from wave2_category_trajectories import sync as sync_pairs
 except ImportError:  # ... or imported as analysis.eval_v2.wave2_arch_compare
     from analysis.eval_v2._tokens import (DEGENERATE_COLS, TokenAxis,
-                                          drop_degenerate, is_arch,
+                                          drop_degenerate, overall_items, is_arch,
                                           run_id_from_name, sync_checkpoints)
     from analysis.eval_v2.wave2_category_trajectories import (ARM_LABEL, CACHE,
                                                               CELL, IV_LABEL)
@@ -53,8 +53,8 @@ def load_arch(arch, arms, iv, hp):
         arm, k, iv_, h = CELL.search(p.name).groups()
         if arm not in arms or iv_ != iv or int(h) != hp:
             continue
-        d = drop_degenerate(pd.read_parquet(
-            p, columns=["checkpoint_step", "prefers_overt_meanlp", *DEGENERATE_COLS]))
+        d = overall_items(drop_degenerate(pd.read_parquet(
+            p, columns=["checkpoint_step", "category", "prefers_overt_meanlp", *DEGENERATE_COLS])))
         d = d[d.checkpoint_step > 0]       # trajectories begin at the first training step
         g = d.groupby("checkpoint_step", as_index=False).prefers_overt_meanlp.mean()
         g["arm"], g["k"] = arm, int(k)
@@ -126,6 +126,7 @@ def main() -> None:
         ax.set_xlabel("tokens seen (log)")
         if c == 0:
             ax.set_ylabel("overt pref.")
+            ax.set_ylim(0, 1)
     handles = [Line2D([0], [0], color=cmap(k / 100), lw=2) for k in ks]
     labels = [f"k={k}" for k in ks]
     handles += [Line2D([0], [0], color="#444", lw=LINEWIDTH[x], ls=LINESTYLE[x]) for x in ARCHS]

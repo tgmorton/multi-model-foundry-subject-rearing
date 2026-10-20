@@ -60,6 +60,10 @@ except Exception as e:
     print(f'FATAL: GPU unhealthy: {e}', file=sys.stderr); sys.exit(2)
 "
 cd /opt/repo
+# The image's wandb 0.17 fails wandb.init(resume=...) with CommError
+# "'NoneType' object has no attribute 'get'" since ~2026-10-16, killing every
+# restart; 0.26 resumes cleanly (verified on two gpt2_large runs 2026-10-19).
+pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
 rm -rf /opt/repo/data/raw /opt/repo/data/manipulations /opt/repo/data/tokenized /opt/repo/data/chunked /opt/repo/tokenizers /opt/repo/models
 mkdir -p /mnt/data/models/wave2
 ln -sfn /mnt/data/raw           /opt/repo/data/raw
