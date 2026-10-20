@@ -165,8 +165,15 @@ re-admits when historical util clears.
 **Scale check** (measured 2026-04 via `kubectl get nodes`): ~1,500 GPUs
 across 34 products on NRP. ~970 openly schedulable to us; another ~340
 behind reservation/hardware tolerations. Cluster-wide pod listing is
-blocked for our user, so for *live* utilization use the NRP dashboard
-at `https://nrp.ai/viz/resources` (not `kubectl`).
+blocked for our user, but NRP's Prometheus (`https://prometheus.nrp-nautilus.io`,
+public, no auth) has per-node GPU requests and DCGM utilization.
+**`scripts/nrp_avail.py`** wraps it:
+- `gpus` — free GPUs per product, open vs tainted, plus pending demand;
+- `fit <job>` — why a pod is or isn't schedulable; `--widen` lists other products with room;
+- `ours` — our pods against NRP's utilization bands;
+- `quota`.
+
+Run it before sizing or widening any launch.
 
 **Re-derive the inventory at any time** (handy when planning a sweep):
 
