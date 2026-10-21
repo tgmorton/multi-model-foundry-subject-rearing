@@ -37,6 +37,13 @@ done, `data.py:430`). A9 (signal path) I did not re-check.
   corpus as Python lists (~36 B/token, ~5 GB per cell). Now int32 blocks
   and arrow list lengths (same commit). Output verified identical to the
   old build on datasets 2.19.2 and 4.5.
+- **Part of P0.7** (`7dc5c51c`): chunked caches are saved to a pod-unique
+  `.tmp` dir and renamed into place; a dir with only `data-*.arrow` shards
+  (an interrupted old-style save) is removed and rebuilt. Tokenized caches
+  are still saved in place.
+- Precache sizing: after the memory fix the pods peaked at 0.75 GB RSS and
+  <= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. The job now
+  runs at the exempt 1 CPU / 2Gi.
 
 **Order I'd take the rest in:**
 1. P0.3 (loader) and P0.4 (writer) before any run goes to a preemptible
