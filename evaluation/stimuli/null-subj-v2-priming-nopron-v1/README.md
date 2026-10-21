@@ -41,7 +41,11 @@ The sibling root `../null-subj-v2-priming-nopron-v1-neutral/` holds **neutral** 
 
 ## Analysis notes
 
-- The source set's first-person contexts don't mention the speaker (see `../null-subj-v2-nopron/README.md`). As TARGETS, `subj_1sg`/`subj_1pl` items carry that caveat. As PRIMES they're fine: the prime sentence's "i"/"we" (overt) or its absence (null) is the manipulation.
+- **Null primes from 1st- and 2nd-person items are imperative-ambiguous.** Analyse them separately using `prime_condition`. The clean "dropped subject" primes are the third-person `subject_drop*` conditions, `conjunction` and `embedded_drop`.
+  - First person: the pronoun-free context no longer mentions the speaker, so the null prime reads naturally as an imperative ("the new lease was signed . move in on friday .").
+  - Second person: the null prime is imperative-like even with the original contexts ("ana , the keys go missing often . take them before leaving .").
+  - Either way, such a prime may prime "subjectless imperative" rather than "dropped subject".
+- **First-person targets** (`subj_1sg`/`subj_1pl`) carry the source set's caveat that the context no longer mentions the speaker; see `../null-subj-v2-nopron/README.md`.
 - Extraction and control "overt vs null" alternations are not argument drop: they contrast "that" with ∅ and "him" with ∅. As primes they test whether an overt-vs-omitted element primes across very different constructions.
 
 ## Reproduce
