@@ -58,6 +58,19 @@ def pack_token_stream(
                 return
 
 
+def _is_interrupted_save(path: str) -> bool:
+    """True for a dir holding only ``data-*.arrow`` shards (or nothing).
+
+    ``Dataset.save_to_disk`` writes its shards first and ``state.json`` then
+    ``dataset_info.json`` after them (datasets 2.19.2); ``meta.json`` is ours,
+    written after that. A dir with none of those is a save that was killed.
+    """
+    if not os.path.isdir(path):
+        return False
+    names = os.listdir(path)
+    return all(n.startswith("data-") and n.endswith(".arrow") for n in names)
+
+
 def packing_token_ids(config, base_dir: str) -> Tuple[Optional[int], Optional[int]]:
     """(cls_id, sep_id) for ``config.data.packing``; (None, None) when contiguous.
 
@@ -298,15 +311,19 @@ class DataProcessor:
         # back to torch.long at batch time, so nothing downstream changes.
         # The column is built directly in arrow (list<int32>, the type
         # Sequence(Value('int32')) maps to) from the flat block plus offsets.
+        # One arrow chunk per block, zero-copy over the block, so peak memory
+        # is the corpus once at 4 B/token (no concatenated copy).
         import pyarrow as pa
         from datasets import Features, Sequence as HFSequence, Value
         from datasets.table import InMemoryTable
-        flat = np.concatenate(blocks).reshape(-1) if blocks else np.zeros(0, dtype=np.int32)
-        del blocks
-        if flat.size >= 2**31:
-            raise ValueError(f"{flat.size:,} tokens overflow list<int32> offsets")
-        offsets = np.arange(0, flat.size + 1, chunk_size, dtype=np.int32)
-        column = pa.ListArray.from_arrays(pa.array(offsets), pa.array(flat))
+        if not blocks:
+            blocks = [np.zeros((0, chunk_size), dtype=np.int32)]
+        column = pa.chunked_array([
+            pa.ListArray.from_arrays(
+                pa.array(np.arange(0, b.size + 1, chunk_size, dtype=np.int32)),
+                pa.array(b.reshape(-1)))
+            for b in blocks
+        ], type=pa.list_(pa.int32()))
         features = Features({'input_ids': HFSequence(Value('int32'))})
         chunked_dataset = Dataset(
             InMemoryTable(pa.Table.from_arrays([column], schema=features.arrow_schema)),
@@ -316,10 +333,20 @@ class DataProcessor:
         return chunked_dataset
     
     def _save_chunked_dataset(self, dataset: Dataset) -> None:
-        """Save the chunked dataset to disk."""
-        os.makedirs(self.chunked_data_dir, exist_ok=True)
-        dataset.save_to_disk(self.chunked_data_dir)
-        print(f"  ✓ Saved chunked dataset to: {self.chunked_data_dir}")
+        """Save the chunked dataset to disk.
+
+        Written to a pod-unique staging dir and renamed into place, so a pod
+        killed mid-save (OOM, eviction, preemption) never leaves a partial
+        dataset at the cache path. If another builder of the same key renamed
+        first, theirs is kept.
+        """
+        import shutil
+        import socket
+        final_dir = self.chunked_data_dir.rstrip('/')
+        stage_dir = f"{final_dir}.tmp-{socket.gethostname()}-{os.getpid()}"
+        os.makedirs(os.path.dirname(final_dir), exist_ok=True)
+        shutil.rmtree(stage_dir, ignore_errors=True)
+        dataset.save_to_disk(stage_dir)
 
         # 0.2 — sidecar metadata so the hashed dir is self-describing.
         # Only write when we actually resolved the hashed path (cache_key
@@ -344,12 +371,22 @@ class DataProcessor:
                         "stage": "chunked",
                     },
                 )
-                with open(os.path.join(self.chunked_data_dir, "meta.json"), "w", encoding="utf-8") as f:
+                with open(os.path.join(stage_dir, "meta.json"), "w", encoding="utf-8") as f:
                     _json.dump(meta, f, indent=2)
             except FileNotFoundError:
                 # Tokenizer disappeared between init and save — don't fail
                 # the chunking just for sidecar metadata.
                 pass
+
+        try:
+            os.rename(stage_dir, final_dir)   # replaces an empty leftover dir too
+        except OSError:
+            if not os.path.exists(os.path.join(final_dir, "dataset_info.json")):
+                raise
+            print(f"  - Another builder finished {final_dir} first; keeping theirs.")
+            shutil.rmtree(stage_dir, ignore_errors=True)
+            return
+        print(f"  ✓ Saved chunked dataset to: {final_dir}")
     
     def _load_chunked_dataset(self) -> Optional[Dataset]:
         """Load the chunked dataset from disk."""
@@ -427,6 +464,14 @@ class DataProcessor:
         # chunked outputs that didn't write the sentinel at a consistent
         # path.
         chunked_sentinel = os.path.join(self.chunked_data_dir, 'dataset_info.json')
+        if not force_reprocess and _is_interrupted_save(self.chunked_data_dir):
+            # Arrow shards but none of the files save_to_disk writes after
+            # them: a pre-staging save that was killed (2026-10-21 precache
+            # swap). Staged saves can't leave this behind, so no live writer
+            # owns it.
+            import shutil
+            print(f"  - Removing interrupted save at {self.chunked_data_dir}; rebuilding.")
+            shutil.rmtree(self.chunked_data_dir)
         if not force_reprocess and (os.path.exists(chunked_sentinel) or os.path.exists(self.chunked_data_dir)):
             print(f"  - Chunked dataset already exists at: {self.chunked_data_dir}")
             return True

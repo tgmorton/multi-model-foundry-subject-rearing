@@ -3,9 +3,12 @@
 # Corpora arrive from S3 (data_transfer/manipulations/en/, uploaded from
 # lemn-lab) via k8s/bert_v2/job-download-cells-ns.yaml.
 #
-# Sizing from the 2026-10-20 study-cache precache (same corpus size): RSS peak
-# 4.8 GB, mean 2.8 GB, ~1.2 cores over ~20 min. 2 CPU / 6Gi keeps both inside
-# NRP's bands (RAM ~47%, CPU ~60%), so 20 run at once with no exceptions.
+# Sizing: 1 CPU / 2Gi, NRP's exempt size (<= 1 CPU, <= 2 GB), so utilization
+# bands don't apply. History: 2 CPU / 6Gi was OOM-killed (2026-10-21) because
+# chunking held the corpus as Python lists (~5 GB); after the int32 fix
+# (8d0f0aa4) pods peaked at 0.75 GB RSS / 1.2 GB working set and <= 0.4
+# cores, which made all 20 band violators at 6Gi. Chunking now holds the
+# corpus once at 4 B/token (~0.55 GB) and saves via a staged rename.
 # CPU-only: kept off GPU nodes, as NRP asks of CPU jobs.
 apiVersion: batch/v1
 kind: Job
@@ -65,8 +68,8 @@ spec:
         env:
         - {name: PYTHONPATH, value: /opt/repo}
         resources:
-          requests: {cpu: "2", memory: 6Gi}
-          limits: {cpu: "2", memory: 6Gi}
+          requests: {cpu: "1", memory: 2Gi}
+          limits: {cpu: "1", memory: 2Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
