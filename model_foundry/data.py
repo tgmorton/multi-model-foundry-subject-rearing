@@ -11,7 +11,7 @@ import math
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Generator
 import numpy as np
-from datasets import Dataset, load_from_disk, disable_progress_bar
+from datasets import Dataset, DatasetInfo, load_from_disk, disable_progress_bar
 from torch.utils.data import DataLoader
 import torch
 
@@ -274,30 +274,43 @@ class DataProcessor:
         """
         print(f"  - Creating fixed-length chunks (size: {chunk_size}) using streaming...")
         
-        all_chunks = []
+        # Each 1000-chunk batch becomes an int32 block straight away. Holding
+        # every chunk as a Python list cost ~36 B/token (~5 GB for a 90M-word
+        # cell at 1.08M x 128) and OOM-killed the 6Gi precache pods
+        # (2026-10-21); the int32 column is 4 B/token.
+        blocks: List[np.ndarray] = []
+        n_chunks = 0
         total_original_sequences = len(tokenized_dataset)
-        processed_sequences = 0
-        
-        # Stream through sequences and chunk them
+
         for chunk_batch in self._chunk_sequences_streaming(tokenized_dataset, chunk_size):
-            all_chunks.extend(chunk_batch)
-            processed_sequences += len(chunk_batch)
-            
+            blocks.append(np.asarray(chunk_batch, dtype=np.int32))
+            n_chunks += len(chunk_batch)
+
             # Progress update every 10k chunks
-            if len(all_chunks) % 10000 == 0:
-                print(f"    - Processed {len(all_chunks):,} chunks from {processed_sequences:,} sequences")
-        
+            if n_chunks % 10000 == 0:
+                print(f"    - Processed {n_chunks:,} chunks")
+
         print(f"    - Original sequences: {total_original_sequences:,}")
-        print(f"    - Created chunks: {len(all_chunks):,}")
-        
-        # Create new dataset. Store token ids as int32 (vocab 50,004 ≪
-        # 2^31): halves on-disk bytes and CephFS read volume vs the
-        # arrow default of int64. Collators cast back to torch.long at
-        # batch time, so nothing downstream changes.
+        print(f"    - Created chunks: {n_chunks:,}")
+
+        # Token ids are int32 (vocab 50,004 << 2^31): half the on-disk bytes
+        # and CephFS read volume of arrow's int64 default. Collators cast
+        # back to torch.long at batch time, so nothing downstream changes.
+        # The column is built directly in arrow (list<int32>, the type
+        # Sequence(Value('int32')) maps to) from the flat block plus offsets.
+        import pyarrow as pa
         from datasets import Features, Sequence as HFSequence, Value
-        chunked_dataset = Dataset.from_dict(
-            {'input_ids': all_chunks},
-            features=Features({'input_ids': HFSequence(Value('int32'))}),
+        from datasets.table import InMemoryTable
+        flat = np.concatenate(blocks).reshape(-1) if blocks else np.zeros(0, dtype=np.int32)
+        del blocks
+        if flat.size >= 2**31:
+            raise ValueError(f"{flat.size:,} tokens overflow list<int32> offsets")
+        offsets = np.arange(0, flat.size + 1, chunk_size, dtype=np.int32)
+        column = pa.ListArray.from_arrays(pa.array(offsets), pa.array(flat))
+        features = Features({'input_ids': HFSequence(Value('int32'))})
+        chunked_dataset = Dataset(
+            InMemoryTable(pa.Table.from_arrays([column], schema=features.arrow_schema)),
+            info=DatasetInfo(features=features),
         )
 
         return chunked_dataset
@@ -364,20 +377,21 @@ class DataProcessor:
     
     def _calculate_dataset_stats(self, dataset: Dataset) -> Dict[str, float]:
         """Calculate statistics about the dataset."""
-        sequences = dataset['input_ids']
-        
-        # Calculate sequence lengths
-        lengths = [len(seq) for seq in sequences]
-        
+        # Lengths straight from the arrow list column: materializing
+        # dataset['input_ids'] as Python lists cost ~5 GB on a 90M-word cell.
+        import pyarrow.compute as pc
+        lengths = pc.list_value_length(dataset.with_format("arrow")["input_ids"])
+        lengths = np.asarray(lengths.to_numpy() if hasattr(lengths, "to_numpy") else lengths, dtype=np.int64)
+
         stats = {
-            'num_sequences': len(sequences),
+            'num_sequences': len(lengths),
             'avg_length': np.mean(lengths),
             'min_length': np.min(lengths),
             'max_length': np.max(lengths),
             'std_length': np.std(lengths),
-            'total_tokens': sum(lengths)
+            'total_tokens': int(lengths.sum())
         }
-        
+
         return stats
     
     def preprocess_data(self, force_reprocess: bool = False) -> bool:

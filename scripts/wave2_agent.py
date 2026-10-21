@@ -19,7 +19,8 @@ Required env: WAVE_ID, CELL (corpus slug, e.g. pdrop_info30_rmexpl —
 rand_100 cells pass CORPUS_CELL to alias the shared info_100 corpus),
 ARCH, PHYS_BATCH, JOB_COMPLETION_INDEX.
 Optional: CORPUS_CELL (defaults to CELL), WAVE_EPOCHS (default 30),
-WANDB_PROJECT_WAVE2 (default subject-drop-wave2).
+WANDB_PROJECT_WAVE2 (default subject-drop-wave2), RESUME (default 1;
+0 trains from scratch even if checkpoints exist).
 """
 
 from __future__ import annotations
@@ -188,8 +189,12 @@ def main() -> None:
     rolling = int(os.environ.get("ROLLING_RESUME_STEPS", steps_per_epoch))
     if rolling > 0:
         cfg["training"]["rolling_resume_every_steps"] = rolling
+    # Resume by default (2026-10-21): when the Job controller replaces a pod
+    # (OOM, eviction, opportunistic preemption) the run continues from its
+    # newest resume state instead of retraining from step 0. No checkpoints
+    # yet -> the checkpoint manager starts fresh. RESUME=0 forces fresh.
     cfg["training"]["resume_from_checkpoint"] = (
-        os.environ.get("RESUME", "").lower() in ("1", "true"))
+        os.environ.get("RESUME", "1").lower() not in ("0", "false", "no"))
     cfg["training"]["deterministic"] = False  # D8: fast kernels everywhere
 
     os.environ["REGISTRY_RUN_KIND"] = "wave2"
