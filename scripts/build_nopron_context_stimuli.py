@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build the pronoun-free-context variant of the null-subject-v2 staging stimuli.
 
-Every context that contains a personal, possessive or reflexive pronoun is
-replaced by its reviewed rewrite from ``context_rewrites.csv``; targets and all
+Every context that contains a personal, possessive or reflexive pronoun, or a
+word that can function as one (``AMBIGUOUS``), is replaced by its reviewed rewrite from ``context_rewrites.csv``; targets and all
 other columns are copied unchanged. The per-intervention matched set is then
 built from this staging root by the production generator:
 
@@ -42,8 +42,23 @@ PRONOUNS = frozenset(
     "their theirs themselves".split())
 
 
+# Words that can also function as pronouns (determiners, quantifiers, numerals,
+# wh-words, indefinites, expletive "there"). Banned too, even in a
+# non-pronoun use, so no context contains even an ambiguous pronoun
+# (Thomas, 2026-10-21).
+AMBIGUOUS = frozenset(
+    "one ones this that these those some any all each both either neither none "
+    "who whom whose which what whoever whatever everyone everybody everything "
+    "someone somebody something anyone anybody anything nobody nothing noone "
+    "another other others such few many several much more most less least half "
+    "enough plenty lot lots own else "
+    "there".split())
+BANNED = PRONOUNS | AMBIGUOUS
+
+
 def has_pronoun(text: str) -> bool:
-    return any(tok in PRONOUNS for tok in text.split())
+    """True if any token is a pronoun or can function as one."""
+    return any(tok in BANNED for tok in text.split())
 
 
 def read_rewrites(path: Path) -> dict[str, str]:
@@ -55,9 +70,9 @@ def read_rewrites(path: Path) -> dict[str, str]:
         if old in mapping:
             raise SystemExit(f"duplicate rewrite for context: {old!r}")
         if not has_pronoun(old):
-            raise SystemExit(f"rewrite source has no pronoun: {old!r}")
+            raise SystemExit(f"rewrite source has no pronoun or ambiguous form: {old!r}")
         if has_pronoun(new):
-            raise SystemExit(f"rewrite still contains a pronoun: {new!r}")
+            raise SystemExit(f"rewrite still contains a pronoun or ambiguous form: {new!r}")
         mapping[old] = new
     return mapping
 
@@ -91,7 +106,8 @@ def main() -> None:
                 row["context"] = new
                 n += 1
             if has_pronoun(row["context"]):
-                raise SystemExit(f"{path.name}: context has a pronoun and no rewrite: {row['context']!r}")
+                raise SystemExit(f"{path.name}: context has a pronoun or ambiguous form "
+                                 f"and no rewrite: {row['context']!r}")
         tables[path.name] = rows
         changed[path.name] = n
     unused = sorted(set(mapping) - set(used))

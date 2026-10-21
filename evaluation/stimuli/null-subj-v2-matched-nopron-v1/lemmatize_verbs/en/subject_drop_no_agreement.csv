@@ -27,8 +27,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 13,subject_drop_no_agreement,subj_1pl,0,the sunday farmers market have fresh fruit .,buy a pint of blueberries .,buy,0,en,,claude-opus-4.7
 14,subject_drop_no_agreement,subj_1pl,1,the broken wooden fence be repair .,we paint the new fence boards .,paint,1,en,,claude-opus-4.7
 14,subject_drop_no_agreement,subj_1pl,0,the broken wooden fence be repair .,paint the new fence boards .,paint,0,en,,claude-opus-4.7
-15,subject_drop_no_agreement,subj_1pl,1,the long weekend trip take a lot of planning .,we book a small quiet cabin .,book,1,en,,claude-opus-4.7
-15,subject_drop_no_agreement,subj_1pl,0,the long weekend trip take a lot of planning .,book a small quiet cabin .,book,0,en,,claude-opus-4.7
+15,subject_drop_no_agreement,subj_1pl,1,the long weekend trip take careful planning .,we book a small quiet cabin .,book,1,en,,claude-opus-4.7
+15,subject_drop_no_agreement,subj_1pl,0,the long weekend trip take careful planning .,book a small quiet cabin .,book,0,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_1pl,1,the new software build be test .,we find a handful of bugs .,find,1,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_1pl,0,the new software build be test .,find a handful of bugs .,find,0,en,,claude-opus-4.7
 17,subject_drop_no_agreement,subj_1pl,1,the meeting be at the main library .,we study until quite late .,study,1,en,,claude-opus-4.7
@@ -43,30 +43,30 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 21,subject_drop_no_agreement,subj_1pl,0,the sunset look beautiful from home .,take a dozen quick photos .,take,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1pl,1,the flight home from vacation land last night .,we sleep through most of the morning .,sleep,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1pl,0,the flight home from vacation land last night .,sleep through most of the morning .,sleep,0,en,,claude-opus-4.7
-23,subject_drop_no_agreement,subj_1pl,1,the small backyard garden do well this year .,"we grow tomatoes , basil , and mint .",grow,1,en,,claude-opus-4.7
-23,subject_drop_no_agreement,subj_1pl,0,the small backyard garden do well this year .,"grow tomatoes , basil , and mint .",grow,0,en,,claude-opus-4.7
+23,subject_drop_no_agreement,subj_1pl,1,the small backyard garden do well in the summer .,"we grow tomatoes , basil , and mint .",grow,1,en,,claude-opus-4.7
+23,subject_drop_no_agreement,subj_1pl,0,the small backyard garden do well in the summer .,"grow tomatoes , basil , and mint .",grow,0,en,,claude-opus-4.7
 24,subject_drop_no_agreement,subj_1pl,1,the big puzzle be finish at last .,we frame it above the live room couch .,frame,1,en,,claude-opus-4.7
 24,subject_drop_no_agreement,subj_1pl,0,the big puzzle be finish at last .,frame it above the live room couch .,frame,0,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_1sg,1,the project just wrap up .,i believe the result look good .,believe,1,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_1sg,0,the project just wrap up .,believe the result look good .,believe,0,en,,claude-opus-4.7
 2,subject_drop_no_agreement,subj_1sg,1,the new movie come out .,i think the plot seem clever .,think,1,en,,claude-opus-4.7
 2,subject_drop_no_agreement,subj_1sg,0,the new movie come out .,think the plot seem clever .,think,0,en,,claude-opus-4.7
-3,subject_drop_no_agreement,subj_1sg,1,the long message arrive this morning .,i understand your main concerns .,understand,1,en,,claude-opus-4.7
-3,subject_drop_no_agreement,subj_1sg,0,the long message arrive this morning .,understand your main concerns .,understand,0,en,,claude-opus-4.7
+3,subject_drop_no_agreement,subj_1sg,1,the long message arrive today .,i understand your main concerns .,understand,1,en,,claude-opus-4.7
+3,subject_drop_no_agreement,subj_1sg,0,the long message arrive today .,understand your main concerns .,understand,0,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_1sg,1,the new recipe turn out great .,i recommend it to everyone .,recommend,1,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_1sg,0,the new recipe turn out great .,recommend it to everyone .,recommend,0,en,,claude-opus-4.7
 5,subject_drop_no_agreement,subj_1sg,1,the art exhibition open last week .,i admire the artist ' s work .,admire,1,en,,claude-opus-4.7
 5,subject_drop_no_agreement,subj_1sg,0,the art exhibition open last week .,admire the artist ' s work .,admire,0,en,,claude-opus-4.7
 6,subject_drop_no_agreement,subj_1sg,1,the new contract be review .,i accept the main terms .,accept,1,en,,claude-opus-4.7
 6,subject_drop_no_agreement,subj_1sg,0,the new contract be review .,accept the main terms .,accept,0,en,,claude-opus-4.7
-7,subject_drop_no_agreement,subj_1sg,1,the surprise announcement come this morning .,i welcome the unexpected news .,welcome,1,en,,claude-opus-4.7
-7,subject_drop_no_agreement,subj_1sg,0,the surprise announcement come this morning .,welcome the unexpected news .,welcome,0,en,,claude-opus-4.7
+7,subject_drop_no_agreement,subj_1sg,1,the surprise announcement come today .,i welcome the unexpected news .,welcome,1,en,,claude-opus-4.7
+7,subject_drop_no_agreement,subj_1sg,0,the surprise announcement come today .,welcome the unexpected news .,welcome,0,en,,claude-opus-4.7
 8,subject_drop_no_agreement,subj_1sg,1,the evening rehearsal go well .,i enjoy the opening scene .,enjoy,1,en,,claude-opus-4.7
 8,subject_drop_no_agreement,subj_1sg,0,the evening rehearsal go well .,enjoy the opening scene .,enjoy,0,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_1sg,1,the new colleague start today .,i find him quite friendly .,find,1,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_1sg,0,the new colleague start today .,find him quite friendly .,find,0,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_1sg,1,the thick soup simmer all day .,i prefer a bit more salt .,prefer,1,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_1sg,0,the thick soup simmer all day .,prefer a bit more salt .,prefer,0,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_1sg,1,the thick soup simmer for hours .,i prefer a bit more salt .,prefer,1,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_1sg,0,the thick soup simmer for hours .,prefer a bit more salt .,prefer,0,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_1sg,1,the old museum reopen last year .,i remember every single painting .,remember,1,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_1sg,0,the old museum reopen last year .,remember every single painting .,remember,0,en,,claude-opus-4.7
 12,subject_drop_no_agreement,subj_1sg,1,the fold map show every road .,i know the shortest route .,know,1,en,,claude-opus-4.7
@@ -85,20 +85,20 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 18,subject_drop_no_agreement,subj_1sg,0,the evening weather look stormy .,expect hard rain tonight .,expect,0,en,,claude-opus-4.7
 19,subject_drop_no_agreement,subj_1sg,1,the local doctor answer the phone .,i schedule a quick checkup .,schedule,1,en,,claude-opus-4.7
 19,subject_drop_no_agreement,subj_1sg,0,the local doctor answer the phone .,schedule a quick checkup .,schedule,0,en,,claude-opus-4.7
-20,subject_drop_no_agreement,subj_1sg,1,the long report take all week .,i submit it last night .,submit,1,en,,claude-opus-4.7
-20,subject_drop_no_agreement,subj_1sg,0,the long report take all week .,submit it last night .,submit,0,en,,claude-opus-4.7
+20,subject_drop_no_agreement,subj_1sg,1,the long report take a whole week .,i submit it last night .,submit,1,en,,claude-opus-4.7
+20,subject_drop_no_agreement,subj_1sg,0,the long report take a whole week .,submit it last night .,submit,0,en,,claude-opus-4.7
 21,subject_drop_no_agreement,subj_1sg,1,the morning flight be book .,i pack my suitcase last night .,pack,1,en,,claude-opus-4.7
 21,subject_drop_no_agreement,subj_1sg,0,the morning flight be book .,pack my suitcase last night .,pack,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1sg,1,the small tomatoes be plant .,i water them every morning .,water,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1sg,0,the small tomatoes be plant .,water them every morning .,water,0,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_1sg,1,the new neighbor stop by today .,i like her quite a lot .,like,1,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_1sg,0,the new neighbor stop by today .,like her quite a lot .,like,0,en,,claude-opus-4.7
-24,subject_drop_no_agreement,subj_1sg,1,the training last all summer long .,i feel much stronger today .,feel,1,en,,claude-opus-4.7
-24,subject_drop_no_agreement,subj_1sg,0,the training last all summer long .,feel much stronger today .,feel,0,en,,claude-opus-4.7
+24,subject_drop_no_agreement,subj_1sg,1,the training last the whole summer .,i feel much stronger today .,feel,1,en,,claude-opus-4.7
+24,subject_drop_no_agreement,subj_1sg,0,the training last the whole summer .,feel much stronger today .,feel,0,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_2pl,1,"team , the window be leave open .",you let the cat inside .,let,1,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_2pl,0,"team , the window be leave open .",let the cat inside .,let,0,en,,claude-opus-4.7
-2,subject_drop_no_agreement,subj_2pl,1,"everyone , rehearsal start late again .",you delay the whole rehearsal .,delay,1,en,,claude-opus-4.7
-2,subject_drop_no_agreement,subj_2pl,0,"everyone , rehearsal start late again .",delay the whole rehearsal .,delay,0,en,,claude-opus-4.7
+2,subject_drop_no_agreement,subj_2pl,1,"folks , the rehearsal start late again .",you delay the whole rehearsal .,delay,1,en,,claude-opus-4.7
+2,subject_drop_no_agreement,subj_2pl,0,"folks , the rehearsal start late again .",delay the whole rehearsal .,delay,0,en,,claude-opus-4.7
 3,subject_drop_no_agreement,subj_2pl,1,"friends , the bags of food kept come .",you overflow our small fridge .,overflow,1,en,,claude-opus-4.7
 3,subject_drop_no_agreement,subj_2pl,0,"friends , the bags of food kept come .",overflow our small fridge .,overflow,0,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_2pl,1,"class , the whispering go on during the lecture .",you distract the front row .,distract,1,en,,claude-opus-4.7
@@ -113,8 +113,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,subject_drop_no_agreement,subj_2pl,0,"neighbors , boxes be stack outside .",clutter the share pathway .,clutter,0,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_2pl,1,"guys , the jackets stay home yesterday .",you catch colds last winter .,catch,1,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_2pl,0,"guys , the jackets stay home yesterday .",catch colds last winter .,catch,0,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_2pl,1,"everyone , all the voices rise at once .",you drown out the main speaker .,drown,1,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_2pl,0,"everyone , all the voices rise at once .",drown out the main speaker .,drown,0,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_2pl,1,"folks , the voices rise together .",you drown out the main speaker .,drown,1,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_2pl,0,"folks , the voices rise together .",drown out the main speaker .,drown,0,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_2pl,1,"friends , the text messages go unanswered .",you miss all the party details .,miss,1,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_2pl,0,"friends , the text messages go unanswered .",miss all the party details .,miss,0,en,,claude-opus-4.7
 12,subject_drop_no_agreement,subj_2pl,1,"class , the problems be do in a hurry .",you skip the hardest final step .,skip,1,en,,claude-opus-4.7
@@ -183,8 +183,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 19,subject_drop_no_agreement,subj_2sg,0,"teacher , the red pen catch every small error .",track each student ' s progress .,track,0,en,,claude-opus-4.7
 20,subject_drop_no_agreement,subj_2sg,1,"captain , the scouting notes cover every oppose team .",you plan each match carefully .,plan,1,en,,claude-opus-4.7
 20,subject_drop_no_agreement,subj_2sg,0,"captain , the scouting notes cover every oppose team .",plan each match carefully .,plan,0,en,,claude-opus-4.7
-21,subject_drop_no_agreement,subj_2sg,1,"friend , one small bag be enough .",you save money on luggage .,save,1,en,,claude-opus-4.7
-21,subject_drop_no_agreement,subj_2sg,0,"friend , one small bag be enough .",save money on luggage .,save,0,en,,claude-opus-4.7
+21,subject_drop_no_agreement,subj_2sg,1,"friend , a small bag do the job .",you save money on luggage .,save,1,en,,claude-opus-4.7
+21,subject_drop_no_agreement,subj_2sg,0,"friend , a small bag do the job .",save money on luggage .,save,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_2sg,1,"neighbor , the alarm ring at dawn .",you catch the earliest train .,catch,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_2sg,0,"neighbor , the alarm ring at dawn .",catch the earliest train .,catch,0,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_2sg,1,"stranger , the call get a polite answer .",you help many lose travelers .,help,1,en,,claude-opus-4.7
@@ -257,16 +257,16 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,subject_drop_no_agreement,subj_3sg,0,daniel open a small bakery .,hire three part time helpers .,hire,0,en,daniel,claude-opus-4.7
 9,subject_drop_no_agreement,subj_3sg,1,mario catch a bad cold .,he stay in bed today .,stay,1,en,mario,claude-opus-4.7
 9,subject_drop_no_agreement,subj_3sg,0,mario catch a bad cold .,stay in bed today .,stay,0,en,mario,claude-opus-4.7
-10,subject_drop_no_agreement,subj_3sg,1,pablo study all night long .,he pass the final exam .,pass,1,en,pablo,claude-opus-4.7
-10,subject_drop_no_agreement,subj_3sg,0,pablo study all night long .,pass the final exam .,pass,0,en,pablo,claude-opus-4.7
+10,subject_drop_no_agreement,subj_3sg,1,pablo study the whole night .,he pass the final exam .,pass,1,en,pablo,claude-opus-4.7
+10,subject_drop_no_agreement,subj_3sg,0,pablo study the whole night .,pass the final exam .,pass,0,en,pablo,claude-opus-4.7
 11,subject_drop_no_agreement,subj_3sg,1,lucas join the debate team .,he argue with real clarity .,argue,1,en,lucas,claude-opus-4.7
 11,subject_drop_no_agreement,subj_3sg,0,lucas join the debate team .,argue with real clarity .,argue,0,en,lucas,claude-opus-4.7
 12,subject_drop_no_agreement,subj_3sg,1,marco book a lakeside cabin .,he invite his two cousins .,invite,1,en,marco,claude-opus-4.7
 12,subject_drop_no_agreement,subj_3sg,0,marco book a lakeside cabin .,invite his two cousins .,invite,0,en,marco,claude-opus-4.7
 13,subject_drop_no_agreement,subj_3sg,1,david adopt a small puppy .,he name the dog milo .,name,1,en,david,claude-opus-4.7
 13,subject_drop_no_agreement,subj_3sg,0,david adopt a small puppy .,name the dog milo .,name,0,en,david,claude-opus-4.7
-14,subject_drop_no_agreement,subj_3sg,1,oscar learn to swim this summer .,he enjoy the public pool .,enjoy,1,en,oscar,claude-opus-4.7
-14,subject_drop_no_agreement,subj_3sg,0,oscar learn to swim this summer .,enjoy the public pool .,enjoy,0,en,oscar,claude-opus-4.7
+14,subject_drop_no_agreement,subj_3sg,1,oscar learn to swim over the summer .,he enjoy the public pool .,enjoy,1,en,oscar,claude-opus-4.7
+14,subject_drop_no_agreement,subj_3sg,0,oscar learn to swim over the summer .,enjoy the public pool .,enjoy,0,en,oscar,claude-opus-4.7
 15,subject_drop_no_agreement,subj_3sg,1,the old car break down .,it need four new tires .,need,1,en,,claude-opus-4.7
 15,subject_drop_no_agreement,subj_3sg,0,the old car break down .,need four new tires .,need,0,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_3sg,1,the kettle boil over again .,it ruin the new stove .,ruin,1,en,,claude-opus-4.7

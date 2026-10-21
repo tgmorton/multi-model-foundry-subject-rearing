@@ -15,16 +15,16 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 31,control,obj_control,0,the museum was mostly empty .,the guard allowed the visitor to enter quietly .,enter,6,en,,claude-opus-4.7
 32,control,obj_control,1,the courtroom fell silent .,the judge ordered the witness him to speak clearly .,speak,7,en,,claude-opus-4.7
 32,control,obj_control,0,the courtroom fell silent .,the judge ordered the witness to speak clearly .,speak,6,en,,claude-opus-4.7
-33,control,obj_control,1,the ward was hot that afternoon .,the nurse reminded the boy him to drink water .,drink,7,en,,claude-opus-4.7
-33,control,obj_control,0,the ward was hot that afternoon .,the nurse reminded the boy to drink water .,drink,6,en,,claude-opus-4.7
+33,control,obj_control,1,the ward was hot in the afternoon .,the nurse reminded the boy him to drink water .,drink,7,en,,claude-opus-4.7
+33,control,obj_control,0,the ward was hot in the afternoon .,the nurse reminded the boy to drink water .,drink,6,en,,claude-opus-4.7
 34,control,obj_control,1,the track was cold and hard .,the trainer advised the runner him to stretch first .,stretch,7,en,,claude-opus-4.7
 34,control,obj_control,0,the track was cold and hard .,the trainer advised the runner to stretch first .,stretch,6,en,,claude-opus-4.7
 35,control,obj_control,1,the test was very stressful .,the father encouraged the girl him to try again .,try,7,en,,claude-opus-4.7
 35,control,obj_control,0,the test was very stressful .,the father encouraged the girl to try again .,try,6,en,,claude-opus-4.7
 36,control,obj_control,1,the road was icy and dangerous .,the officer warned the driver him to slow down .,slow,7,en,,claude-opus-4.7
 36,control,obj_control,0,the road was icy and dangerous .,the officer warned the driver to slow down .,slow,6,en,,claude-opus-4.7
-37,control,obj_control,1,the shift ended early that day .,the manager permitted the worker him to leave early .,leave,7,en,,claude-opus-4.7
-37,control,obj_control,0,the shift ended early that day .,the manager permitted the worker to leave early .,leave,6,en,,claude-opus-4.7
+37,control,obj_control,1,the shift ended early today .,the manager permitted the worker him to leave early .,leave,7,en,,claude-opus-4.7
+37,control,obj_control,0,the shift ended early today .,the manager permitted the worker to leave early .,leave,6,en,,claude-opus-4.7
 38,control,obj_control,1,the living room was warm .,the host invited the guest him to sit down .,sit,7,en,,claude-opus-4.7
 38,control,obj_control,0,the living room was warm .,the host invited the guest to sit down .,sit,6,en,,claude-opus-4.7
 39,control,obj_control,1,the studio had fresh canvases .,the mentor taught the artist him to draw circles .,draw,7,en,,claude-opus-4.7
@@ -35,8 +35,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 41,control,obj_control,0,the keys were on the counter .,daniel told sara to fetch the keys .,fetch,4,en,daniel;sara,claude-opus-4.7
 42,control,obj_control,1,the wind was getting stronger .,elena asked pablo him to close the window .,close,5,en,elena;pablo,claude-opus-4.7
 42,control,obj_control,0,the wind was getting stronger .,elena asked pablo to close the window .,close,4,en,elena;pablo,claude-opus-4.7
-43,control,obj_control,1,the crowd wanted more music .,lucia persuaded david him to sing a song .,sing,5,en,lucia;david,claude-opus-4.7
-43,control,obj_control,0,the crowd wanted more music .,lucia persuaded david to sing a song .,sing,4,en,lucia;david,claude-opus-4.7
+43,control,obj_control,1,the crowd wanted music .,lucia persuaded david him to sing a song .,sing,5,en,lucia;david,claude-opus-4.7
+43,control,obj_control,0,the crowd wanted music .,lucia persuaded david to sing a song .,sing,4,en,lucia;david,claude-opus-4.7
 44,control,obj_control,1,the party was just starting .,marta convinced lucas him to stay longer .,stay,5,en,marta;lucas,claude-opus-4.7
 44,control,obj_control,0,the party was just starting .,marta convinced lucas to stay longer .,stay,4,en,marta;lucas,claude-opus-4.7
 45,control,obj_control,1,the argument had gone too far .,oscar forced clara him to apologize publicly .,apologize,5,en,oscar;clara,claude-opus-4.7
@@ -63,8 +63,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 7,control,subj_control,0,the program accepted international students .,lucia decided to study abroad .,study,3,en,lucia,claude-opus-4.7
 8,control,subj_control,1,dinner was running very late .,marta intended him to leave before dinner .,leave,4,en,marta,claude-opus-4.7
 8,control,subj_control,0,dinner was running very late .,marta intended to leave before dinner .,leave,3,en,marta,claude-opus-4.7
-9,control,subj_control,1,the team needed another player .,clara agreed him to join the team .,join,4,en,clara,claude-opus-4.7
-9,control,subj_control,0,the team needed another player .,clara agreed to join the team .,join,3,en,clara,claude-opus-4.7
+9,control,subj_control,1,the team needed a new player .,clara agreed him to join the team .,join,4,en,clara,claude-opus-4.7
+9,control,subj_control,0,the team needed a new player .,clara agreed to join the team .,join,3,en,clara,claude-opus-4.7
 10,control,subj_control,1,the couch looked very comfortable .,lucas pretended him to sleep on the couch .,sleep,4,en,lucas,claude-opus-4.7
 10,control,subj_control,0,the couch looked very comfortable .,lucas pretended to sleep on the couch .,sleep,3,en,lucas,claude-opus-4.7
 11,control,subj_control,1,the room was pitch dark .,sofia hesitated him to enter the dark room .,enter,4,en,sofia,claude-opus-4.7
@@ -85,8 +85,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 18,control,subj_control,0,the letter demanded a response .,elena refused to sign the letter .,sign,3,en,elena,claude-opus-4.7
 19,control,subj_control,1,the box was heavy and awkward .,daniel struggled him to lift the box .,lift,4,en,daniel,claude-opus-4.7
 19,control,subj_control,0,the box was heavy and awkward .,daniel struggled to lift the box .,lift,3,en,daniel,claude-opus-4.7
-20,control,subj_control,1,the sky was clear that evening .,pablo hoped him to see the sunset .,see,4,en,pablo,claude-opus-4.7
-20,control,subj_control,0,the sky was clear that evening .,pablo hoped to see the sunset .,see,3,en,pablo,claude-opus-4.7
+20,control,subj_control,1,the sky was clear in the evening .,pablo hoped him to see the sunset .,see,4,en,pablo,claude-opus-4.7
+20,control,subj_control,0,the sky was clear in the evening .,pablo hoped to see the sunset .,see,3,en,pablo,claude-opus-4.7
 21,control,subj_control,1,the fence was old and chipped .,lucia planned him to paint the fence .,paint,4,en,lucia,claude-opus-4.7
 21,control,subj_control,0,the fence was old and chipped .,lucia planned to paint the fence .,paint,3,en,lucia,claude-opus-4.7
 22,control,subj_control,1,the week had been long .,marta decided him to call her sister .,call,4,en,marta,claude-opus-4.7

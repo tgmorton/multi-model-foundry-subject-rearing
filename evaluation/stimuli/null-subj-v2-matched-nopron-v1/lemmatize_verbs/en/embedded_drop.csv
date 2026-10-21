@@ -17,8 +17,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,embedded_drop,emb_coref,0,daniel run the whole race .,daniel say that train very hard .,train,3,en,daniel,claude-opus-4.7
 9,embedded_drop,emb_coref,1,mario cook a huge dinner .,mario claim that he follow the recipe .,follow,4,en,mario,claude-opus-4.7
 9,embedded_drop,emb_coref,0,mario cook a huge dinner .,mario claim that follow the recipe .,follow,3,en,mario,claude-opus-4.7
-10,embedded_drop,emb_coref,1,pablo study all night long .,pablo think that he pass the test .,pass,4,en,pablo,claude-opus-4.7
-10,embedded_drop,emb_coref,0,pablo study all night long .,pablo think that pass the test .,pass,3,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo study the whole night .,pablo think that he pass the test .,pass,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo study the whole night .,pablo think that pass the test .,pass,3,en,pablo,claude-opus-4.7
 11,embedded_drop,emb_coref,1,lucas fix the broken chair .,lucas know that he do good work .,do,4,en,lucas,claude-opus-4.7
 11,embedded_drop,emb_coref,0,lucas fix the broken chair .,lucas know that do good work .,do,3,en,lucas,claude-opus-4.7
 12,embedded_drop,emb_coref,1,marco take the early flight .,marco believe that he save real money .,save,4,en,marco,claude-opus-4.7

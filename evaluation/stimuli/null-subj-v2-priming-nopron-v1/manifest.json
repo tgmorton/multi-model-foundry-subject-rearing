@@ -1,0 +1,139 @@
+{
+  "builder_sha256": "b4035eed84b20b42ff482614ecd5310ce841f93ebae531b514c660edfa4f56e6",
+  "conditions": {
+    "baseline": {
+      "output_sha256": {
+        "conjunction__null.csv": "9b7cb719613a78335d40af06a9f2506a866184a0e3e50a32f9cd3ab8e8cee9de",
+        "conjunction__overt.csv": "20f716fd1c4a3ff0817f9415083960d74805abe33a616675be479a11462e414e",
+        "control__null.csv": "e5dd336c90854e595a9e908a24d7ca5940470cdda5e6db53cc979a9c36c13d7a",
+        "control__overt.csv": "b860c156b2024040eadca03645822569eb97a069243daced47367d6a71641a43",
+        "embedded_drop__null.csv": "41abd70f386e37d71350a06d377d5b38ef8c99e89d4d6414405f22e770ff2bcf",
+        "embedded_drop__overt.csv": "fe23af7f578bc625c1ca5194577f1dc2c8c03bb83c9ec6f0c1243dc76d77cf0e",
+        "expletive__null.csv": "d90320fac7edb3fe26bbf38e971cc13f5e5a231f51dfe6c778487573af2e6cbc",
+        "expletive__overt.csv": "637fca0b5d7abe8a29fdff0ce72715b7b4a3a2236a652f98c98ff7d1cf3720fe",
+        "extraction__null.csv": "da55d0dce515aa965ee59d8fbd83c13b5ae3e55a7ca7daadee23af73fe6ea2a7",
+        "extraction__overt.csv": "518e7923cec74e9c53b15ccd806670fd0a28be9cf70ded39d8911b54df93b5a3",
+        "object_drop__null.csv": "4056b6decf07523e0e16440654fe7efc37e779f5cdd682793ef54416454d2308",
+        "object_drop__overt.csv": "76b5fba67354fd17bf9e8d793087b5726c39e67e226300c50474a75b295a9101",
+        "subject_drop__null.csv": "c6679e9e4f13fb3a0d8423723d1bd0a628cc668a3c1e7db7316a7360e1adbfa2",
+        "subject_drop__overt.csv": "0ed23de7c17e09ec7f181588f78dbe26ef3da72fa18b289a1ba2ad87db117490",
+        "subject_drop_no_agreement__null.csv": "ba5c82f09ee1ae8dc639c36d075f5469e724e5ab77d03aa7f1feba02c77e55ab",
+        "subject_drop_no_agreement__overt.csv": "266b89941b0cae57b8f21520b1979686aed46ae1d29df8ad57d2e839b8d19a17"
+      },
+      "pairs": 9216,
+      "rows": 18432
+    },
+    "enrich_verbal_morphology": {
+      "output_sha256": {
+        "conjunction__null.csv": "f2c6a6b28d7f8d2bdc65c01e1d43ae47e838aa463cc65eac3cd2371b17471404",
+        "conjunction__overt.csv": "6f58ac1f3609c708060f3299ed09a74de5ab42c8ee72185364245714f706b4e2",
+        "control__null.csv": "f1e7e8aacadc90f1053b4d76b8d06575661553dff9a49c3278ce1b9cf5d122a5",
+        "control__overt.csv": "9af4edd0923012102064ad3d89cee4ded9600fd90089d758d400337ef5011db9",
+        "embedded_drop__null.csv": "c8cff1cba8a4797b2bbf3b0f18478c58f13b146c611b400ccfa6f197cd82c6d3",
+        "embedded_drop__overt.csv": "2fa3621f97b7fc238feb3e13e6c6df4f3e1a350106edfee443a9ea4d525ed195",
+        "expletive__null.csv": "07c22ce24272958d86839b7e2fa9615d45613929a4d0fe1e71921c3546f5abcf",
+        "expletive__overt.csv": "dbb5183de8b9ba8b1774a70be13c6d962711056489becf83eb53bf11f26f725d",
+        "extraction__null.csv": "61976fd86671a2845ee8c9eeb34bfc2f370d1fe32c4428a0d1c652907e9f612a",
+        "extraction__overt.csv": "a61eb07eaf60ed83a23eea3b126b963e4a7c74bbf7d49430e976887d7ee0fffc",
+        "object_drop__null.csv": "3d1536d87c5d3ade623856b27ed9b9b8098055f0ee04a33d1cb8b68f5d164b55",
+        "object_drop__overt.csv": "aa641a99f212e0613312e410d89f1d0dfe126106ba7a2ae3591747d119a47ef1",
+        "subject_drop__null.csv": "6edffc89cf2912577614f0ef01618f63ba2df4768648335b6bf0e4ebc7be1672",
+        "subject_drop__overt.csv": "e8153f56559177a0b8fc2a77274fd7a311baba6f093a3de157f7742b89b2ed0b",
+        "subject_drop_no_agreement__null.csv": "b6793a17a5a7a2a7ef4afbabef80e7689a2b99ddb861202a087e3e8a45b849d0",
+        "subject_drop_no_agreement__overt.csv": "d716e4030a616196695367c0d889b22d38ffb35c91a69ff31048a718ab50fd06"
+      },
+      "pairs": 9216,
+      "rows": 18432
+    },
+    "impoverish_case": {
+      "output_sha256": {
+        "conjunction__null.csv": "660bfd450c1f75efed796aa3bee687b3ff2de8aa0348b47e7197a5b1e796ebea",
+        "conjunction__overt.csv": "57958eb3f9a96c7b1ed40c855eee9b0e39b778ad7f122eb1525483c33c7c01f7",
+        "control__null.csv": "f453b5e972a5d7088e90026c1faf052d1c47a6d1ad6edad1f1967b2aa0f00351",
+        "control__overt.csv": "bd6975b725bacc627fbb3b745394956600b956bdd784ba93138be9ff80ede527",
+        "embedded_drop__null.csv": "a2f821e2194cf12407f02f01268c2bc54e76f37d6184f695506db1a8b274e9c2",
+        "embedded_drop__overt.csv": "c1b3af198c5118c6a218fd649f63620687dcd16e057b4bdec6b4a75b80ed04f1",
+        "expletive__null.csv": "cc2596e17cfb41c417c4dd2608d265abce5caba69d9bd182d539c42e82720dad",
+        "expletive__overt.csv": "d3d3ea45a434ea478f136a2c1c8e5617fac6b579c0be92d751418f8ff38f5916",
+        "extraction__null.csv": "0cee34015d772a2b2b81a85e680da90f7304302ad5fb9cfce1f4ced88e08a494",
+        "extraction__overt.csv": "4990a3907ac4ae0eb97df4c6826cfdd3476e20bf368669e9558963048f49872e",
+        "object_drop__null.csv": "8f0be444f5917889e3737f0cdea91f63f1133abd1ef63eac5c2a728e2f3d5fcd",
+        "object_drop__overt.csv": "6436c7678788ad9634e378b95ddc6abc9daed9ad8b01639742320d0eeb5f3897",
+        "subject_drop__null.csv": "0a562a366604f930d672b68f6248b308bf82022d8cbdff99ad3b6e4f838c22d7",
+        "subject_drop__overt.csv": "ac1b37c5b8701884b5ecd0c70cc0650ad525de633a61407812a041a2e333abfc",
+        "subject_drop_no_agreement__null.csv": "d122eff8b40988c5ee1861e5324d64198a1113ac0e74abc1cff114a77b80dc9a",
+        "subject_drop_no_agreement__overt.csv": "468280095ccfea5b806d052b695314c25717b642beaea922134e55c2adce7b26"
+      },
+      "pairs": 9216,
+      "rows": 18432
+    },
+    "lemmatize_verbs": {
+      "output_sha256": {
+        "conjunction__null.csv": "3a5ea9da9c2ff6fe5c211b9983f61f140d1d5ab0a4695a65599b630e346af8ff",
+        "conjunction__overt.csv": "0e102b633801feacb3be0bc3f4303ba8f61ec7a3edb921eaa301cff7d2925f87",
+        "control__null.csv": "dde1a3e865766db1c0f2ac238f60872bd1c820d6a588115a5d77877ad5e83bf5",
+        "control__overt.csv": "1f136bb2a9b7a010d32b9f304d067fabda4fb45a755c9166e43970005cdf505d",
+        "embedded_drop__null.csv": "b03847833836e900e86cb608737dc0546bc543ab636915ff02d13686c0965844",
+        "embedded_drop__overt.csv": "ec63d21413589dfa024283b1f5cc763368400ca08658888e9e85a7428a485307",
+        "expletive__null.csv": "fd4d6df2b5817eceba67e0f7f44d942e6c3b9163a2a9cce2e6c99933d1219ec4",
+        "expletive__overt.csv": "6edca61c6f3b5fbaa461600d0656d011c8093d4825269d221814bd12e2414cc9",
+        "extraction__null.csv": "0b4630e7bd0990e5406437f940ddcece6def95389d22f4cca9e7a4671bb653f2",
+        "extraction__overt.csv": "9aea5ae5f2d469ddc64f6125ef20b364561043078ef0b4d31d41aae3495a52c2",
+        "object_drop__null.csv": "d1c6e23a065076ac30b24c8c75fbcd984d0c8059dc243ea0d69d4a6b21ed95eb",
+        "object_drop__overt.csv": "3d4be77f75148636e63671ae8e093d16b744b0bc506200516bef4a3431621d21",
+        "subject_drop__null.csv": "eae920590c0c74d7db3fb77804d9b5c17b924a1fc7591ddc6ba9cae394bed9d3",
+        "subject_drop__overt.csv": "4915273677809108ea587a8320357121285a48311e972275d5d9a395082ba7d5",
+        "subject_drop_no_agreement__null.csv": "3dc1f84454f58c20c563169f28797a4935e87d10ce97133e679da1e8283f0674",
+        "subject_drop_no_agreement__overt.csv": "df0791209a3015fb383249dd015013f366f381b66738a734ea43624c2ff400c8"
+      },
+      "pairs": 9216,
+      "rows": 18432
+    },
+    "remove_expletive_sentences": {
+      "output_sha256": {
+        "conjunction__null.csv": "9b7cb719613a78335d40af06a9f2506a866184a0e3e50a32f9cd3ab8e8cee9de",
+        "conjunction__overt.csv": "20f716fd1c4a3ff0817f9415083960d74805abe33a616675be479a11462e414e",
+        "control__null.csv": "e5dd336c90854e595a9e908a24d7ca5940470cdda5e6db53cc979a9c36c13d7a",
+        "control__overt.csv": "b860c156b2024040eadca03645822569eb97a069243daced47367d6a71641a43",
+        "embedded_drop__null.csv": "41abd70f386e37d71350a06d377d5b38ef8c99e89d4d6414405f22e770ff2bcf",
+        "embedded_drop__overt.csv": "fe23af7f578bc625c1ca5194577f1dc2c8c03bb83c9ec6f0c1243dc76d77cf0e",
+        "expletive__null.csv": "d90320fac7edb3fe26bbf38e971cc13f5e5a231f51dfe6c778487573af2e6cbc",
+        "expletive__overt.csv": "637fca0b5d7abe8a29fdff0ce72715b7b4a3a2236a652f98c98ff7d1cf3720fe",
+        "extraction__null.csv": "da55d0dce515aa965ee59d8fbd83c13b5ae3e55a7ca7daadee23af73fe6ea2a7",
+        "extraction__overt.csv": "518e7923cec74e9c53b15ccd806670fd0a28be9cf70ded39d8911b54df93b5a3",
+        "object_drop__null.csv": "4056b6decf07523e0e16440654fe7efc37e779f5cdd682793ef54416454d2308",
+        "object_drop__overt.csv": "76b5fba67354fd17bf9e8d793087b5726c39e67e226300c50474a75b295a9101",
+        "subject_drop__null.csv": "c6679e9e4f13fb3a0d8423723d1bd0a628cc668a3c1e7db7316a7360e1adbfa2",
+        "subject_drop__overt.csv": "0ed23de7c17e09ec7f181588f78dbe26ef3da72fa18b289a1ba2ad87db117490",
+        "subject_drop_no_agreement__null.csv": "ba5c82f09ee1ae8dc639c36d075f5469e724e5ab77d03aa7f1feba02c77e55ab",
+        "subject_drop_no_agreement__overt.csv": "266b89941b0cae57b8f21520b1979686aed46ae1d29df8ad57d2e839b8d19a17"
+      },
+      "pairs": 9216,
+      "rows": 18432
+    }
+  },
+  "created_utc": "2026-10-21T22:49:27.776392+00:00",
+  "format_version": "condition-matched-stimuli.v1",
+  "kind": "priming-v1",
+  "pairing_policy": "one prime item per (target item, prime category); prime != target item; no shared content lemma (['ADJ', 'ADV', 'NOUN', 'PROPN', 'VERB']) or name; least-used prime condition, then item",
+  "pairing_sha256": "29ec665309346d3df9388fc7f1e23f4cc2ce8ee91cc52960e3ed61289ce11dcd",
+  "prime_item_use": {
+    "distinct": 576,
+    "max": 13,
+    "min": 4
+  },
+  "prime_statuses": [
+    "overt",
+    "null"
+  ],
+  "skipped_target_x_prime_category": {},
+  "source_manifest_sha256": "4680891ead07d5fdf904a92178ab1881243fcdb533f1fbee1537e0e4346cc536",
+  "source_root": "evaluation/stimuli/null-subj-v2-matched-nopron-v1",
+  "spacy": {
+    "model": "en_core_web_trf",
+    "model_version": "3.7.3",
+    "package_version": "3.7.5"
+  },
+  "targets": 576,
+  "vetted": false
+}

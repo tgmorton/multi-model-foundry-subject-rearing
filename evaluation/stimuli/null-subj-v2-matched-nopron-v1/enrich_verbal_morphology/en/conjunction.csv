@@ -45,8 +45,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 22,conjunction,conj_no_shift,0,oscar wantikt to relax .,oscar drawikt a hot bath and lightikt a candle .,lightikt,6,en,oscar,claude-opus-4.7
 23,conjunction,conj_no_shift,1,sofia spotikt a stray dog .,sofia kneelikt in the grass and she offerikt a gentle hand .,offerikt,7,en,sofia,claude-opus-4.7
 23,conjunction,conj_no_shift,0,sofia spotikt a stray dog .,sofia kneelikt in the grass and offerikt a gentle hand .,offerikt,6,en,sofia,claude-opus-4.7
-24,conjunction,conj_no_shift,1,david needikt some exercise .,david laceikt his shoes and he jogikt around the block .,jogikt,6,en,david,claude-opus-4.7
-24,conjunction,conj_no_shift,0,david needikt some exercise .,david laceikt his shoes and jogikt around the block .,jogikt,5,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david needikt exercise .,david laceikt his shoes and he jogikt around the block .,jogikt,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david needikt exercise .,david laceikt his shoes and jogikt around the block .,jogikt,5,en,david,claude-opus-4.7
 1,conjunction,conj_shift,1,ana fuikt feeling unwell .,ana callikt the doctor and he prescribeikt a new medicine .,prescribeikt,6,en,ana,claude-opus-4.7
 1,conjunction,conj_shift,0,ana fuikt feeling unwell .,ana callikt the doctor and prescribeikt a new medicine .,prescribeikt,5,en,ana,claude-opus-4.7
 2,conjunction,conj_shift,1,sara seeikt a friendly waiter .,sara orderikt from the waiter and he bringikt the food quickly .,bringikt,7,en,sara,claude-opus-4.7

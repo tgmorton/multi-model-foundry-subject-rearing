@@ -45,8 +45,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 22,conjunction,conj_no_shift,0,oscar want to relax .,oscar draw a hot bath and light a candle .,light,6,en,oscar,claude-opus-4.7
 23,conjunction,conj_no_shift,1,sofia spot a stray dog .,sofia kneel in the grass and she offer a gentle hand .,offer,7,en,sofia,claude-opus-4.7
 23,conjunction,conj_no_shift,0,sofia spot a stray dog .,sofia kneel in the grass and offer a gentle hand .,offer,6,en,sofia,claude-opus-4.7
-24,conjunction,conj_no_shift,1,david need some exercise .,david lace his shoes and he jog around the block .,jog,6,en,david,claude-opus-4.7
-24,conjunction,conj_no_shift,0,david need some exercise .,david lace his shoes and jog around the block .,jog,5,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david need exercise .,david lace his shoes and he jog around the block .,jog,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david need exercise .,david lace his shoes and jog around the block .,jog,5,en,david,claude-opus-4.7
 1,conjunction,conj_shift,1,ana be feel unwell .,ana call the doctor and he prescribe a new medicine .,prescribe,6,en,ana,claude-opus-4.7
 1,conjunction,conj_shift,0,ana be feel unwell .,ana call the doctor and prescribe a new medicine .,prescribe,5,en,ana,claude-opus-4.7
 2,conjunction,conj_shift,1,sara see a friendly waiter .,sara order from the waiter and he bring the food quickly .,bring,7,en,sara,claude-opus-4.7

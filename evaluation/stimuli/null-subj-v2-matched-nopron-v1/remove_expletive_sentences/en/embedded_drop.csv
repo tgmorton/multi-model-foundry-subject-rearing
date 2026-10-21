@@ -17,8 +17,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,embedded_drop,emb_coref,0,daniel ran the whole race .,daniel says that trained very hard .,trained,3,en,daniel,claude-opus-4.7
 9,embedded_drop,emb_coref,1,mario cooked a huge dinner .,mario claims that he follows the recipe .,follows,4,en,mario,claude-opus-4.7
 9,embedded_drop,emb_coref,0,mario cooked a huge dinner .,mario claims that follows the recipe .,follows,3,en,mario,claude-opus-4.7
-10,embedded_drop,emb_coref,1,pablo studied all night long .,pablo thinks that he passed the test .,passed,4,en,pablo,claude-opus-4.7
-10,embedded_drop,emb_coref,0,pablo studied all night long .,pablo thinks that passed the test .,passed,3,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo studied the whole night .,pablo thinks that he passed the test .,passed,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo studied the whole night .,pablo thinks that passed the test .,passed,3,en,pablo,claude-opus-4.7
 11,embedded_drop,emb_coref,1,lucas fixed the broken chair .,lucas knows that he did good work .,did,4,en,lucas,claude-opus-4.7
 11,embedded_drop,emb_coref,0,lucas fixed the broken chair .,lucas knows that did good work .,did,3,en,lucas,claude-opus-4.7
 12,embedded_drop,emb_coref,1,marco took the early flight .,marco believes that he saved real money .,saved,4,en,marco,claude-opus-4.7

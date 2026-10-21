@@ -45,8 +45,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 22,conjunction,conj_no_shift,0,oscar wanted to relax .,oscar drew a hot bath and lit a candle .,lit,6,en,oscar,claude-opus-4.7
 23,conjunction,conj_no_shift,1,sofia spotted a stray dog .,sofia knelt in the grass and she offered a gentle hand .,offered,7,en,sofia,claude-opus-4.7
 23,conjunction,conj_no_shift,0,sofia spotted a stray dog .,sofia knelt in the grass and offered a gentle hand .,offered,6,en,sofia,claude-opus-4.7
-24,conjunction,conj_no_shift,1,david needed some exercise .,david laced he shoes and he jogged around the block .,jogged,6,en,david,claude-opus-4.7
-24,conjunction,conj_no_shift,0,david needed some exercise .,david laced he shoes and jogged around the block .,jogged,5,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david needed exercise .,david laced he shoes and he jogged around the block .,jogged,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david needed exercise .,david laced he shoes and jogged around the block .,jogged,5,en,david,claude-opus-4.7
 1,conjunction,conj_shift,1,ana was feeling unwell .,ana called the doctor and he prescribed a new medicine .,prescribed,6,en,ana,claude-opus-4.7
 1,conjunction,conj_shift,0,ana was feeling unwell .,ana called the doctor and prescribed a new medicine .,prescribed,5,en,ana,claude-opus-4.7
 2,conjunction,conj_shift,1,sara saw a friendly waiter .,sara ordered from the waiter and he brought the food quickly .,brought,7,en,sara,claude-opus-4.7

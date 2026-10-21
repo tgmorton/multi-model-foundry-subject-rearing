@@ -17,8 +17,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,embedded_drop,emb_coref,0,daniel runikt the whole race .,daniel sayakt that trainikt very hard .,trainikt,3,en,daniel,claude-opus-4.7
 9,embedded_drop,emb_coref,1,mario cookikt a huge dinner .,mario claimakt that he followakt the recipe .,followakt,4,en,mario,claude-opus-4.7
 9,embedded_drop,emb_coref,0,mario cookikt a huge dinner .,mario claimakt that followakt the recipe .,followakt,3,en,mario,claude-opus-4.7
-10,embedded_drop,emb_coref,1,pablo studyikt all night long .,pablo thinkakt that he passikt the test .,passikt,4,en,pablo,claude-opus-4.7
-10,embedded_drop,emb_coref,0,pablo studyikt all night long .,pablo thinkakt that passikt the test .,passikt,3,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,1,pablo studyikt the whole night .,pablo thinkakt that he passikt the test .,passikt,4,en,pablo,claude-opus-4.7
+10,embedded_drop,emb_coref,0,pablo studyikt the whole night .,pablo thinkakt that passikt the test .,passikt,3,en,pablo,claude-opus-4.7
 11,embedded_drop,emb_coref,1,lucas fixikt the broken chair .,lucas knowakt that he fecikt good work .,fecikt,4,en,lucas,claude-opus-4.7
 11,embedded_drop,emb_coref,0,lucas fixikt the broken chair .,lucas knowakt that fecikt good work .,fecikt,3,en,lucas,claude-opus-4.7
 12,embedded_drop,emb_coref,1,marco takeikt the early flight .,marco believeakt that he saveikt real money .,saveikt,4,en,marco,claude-opus-4.7

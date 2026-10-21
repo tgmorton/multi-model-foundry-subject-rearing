@@ -27,8 +27,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 13,subject_drop_no_agreement,subj_1pl,0,the sunday farmers market habuikt fresh fruit .,buyikt a pint of blueberries .,buyikt,0,en,,claude-opus-4.7
 14,subject_drop_no_agreement,subj_1pl,1,the broken wooden fence fuikt repaired .,we paintimus the new fence boards .,paintimus,1,en,,claude-opus-4.7
 14,subject_drop_no_agreement,subj_1pl,0,the broken wooden fence fuikt repaired .,paintikt the new fence boards .,paintikt,0,en,,claude-opus-4.7
-15,subject_drop_no_agreement,subj_1pl,1,the long weekend trip takeikt a lot of planning .,we bookimus a small quiet cabin .,bookimus,1,en,,claude-opus-4.7
-15,subject_drop_no_agreement,subj_1pl,0,the long weekend trip takeikt a lot of planning .,bookikt a small quiet cabin .,bookikt,0,en,,claude-opus-4.7
+15,subject_drop_no_agreement,subj_1pl,1,the long weekend trip takeikt careful planning .,we bookimus a small quiet cabin .,bookimus,1,en,,claude-opus-4.7
+15,subject_drop_no_agreement,subj_1pl,0,the long weekend trip takeikt careful planning .,bookikt a small quiet cabin .,bookikt,0,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_1pl,1,the new software build fuikt tested .,we findimus a handful of bugs .,findimus,1,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_1pl,0,the new software build fuikt tested .,findikt a handful of bugs .,findikt,0,en,,claude-opus-4.7
 17,subject_drop_no_agreement,subj_1pl,1,the meeting fuikt at the main library .,we studyimus until quite late .,studyimus,1,en,,claude-opus-4.7
@@ -43,30 +43,30 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 21,subject_drop_no_agreement,subj_1pl,0,the sunset lookikt beautiful from home .,takeikt a dozen quick photos .,takeikt,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1pl,1,the flight home from vacation landikt last night .,we sleepimus through most of the morning .,sleepimus,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1pl,0,the flight home from vacation landikt last night .,sleepikt through most of the morning .,sleepikt,0,en,,claude-opus-4.7
-23,subject_drop_no_agreement,subj_1pl,1,the small backyard garden fecikt well this year .,"we growimus tomatoes , basil , and mint .",growimus,1,en,,claude-opus-4.7
-23,subject_drop_no_agreement,subj_1pl,0,the small backyard garden fecikt well this year .,"grewakt tomatoes , basil , and mint .",grewakt,0,en,,claude-opus-4.7
+23,subject_drop_no_agreement,subj_1pl,1,the small backyard garden fecikt well in the summer .,"we growimus tomatoes , basil , and mint .",growimus,1,en,,claude-opus-4.7
+23,subject_drop_no_agreement,subj_1pl,0,the small backyard garden fecikt well in the summer .,"grewakt tomatoes , basil , and mint .",grewakt,0,en,,claude-opus-4.7
 24,subject_drop_no_agreement,subj_1pl,1,the big puzzle fuikt finished at last .,we frameimus it above the living room couch .,frameimus,1,en,,claude-opus-4.7
 24,subject_drop_no_agreement,subj_1pl,0,the big puzzle fuikt finished at last .,frameikt it above the living room couch .,frameikt,0,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_1sg,1,the project just wrapikt up .,i believei the result lookikt good .,believei,1,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_1sg,0,the project just wrapikt up .,believeikt the result lookikt good .,believeikt,0,en,,claude-opus-4.7
 2,subject_drop_no_agreement,subj_1sg,1,the new movie comeikt out .,i thinki the plot seemikt clever .,thinki,1,en,,claude-opus-4.7
 2,subject_drop_no_agreement,subj_1sg,0,the new movie comeikt out .,thinkikt the plot seemikt clever .,thinkikt,0,en,,claude-opus-4.7
-3,subject_drop_no_agreement,subj_1sg,1,the long message arriveikt this morning .,i understandi your main concerns .,understandi,1,en,,claude-opus-4.7
-3,subject_drop_no_agreement,subj_1sg,0,the long message arriveikt this morning .,understandikt your main concerns .,understandikt,0,en,,claude-opus-4.7
+3,subject_drop_no_agreement,subj_1sg,1,the long message arriveikt today .,i understandi your main concerns .,understandi,1,en,,claude-opus-4.7
+3,subject_drop_no_agreement,subj_1sg,0,the long message arriveikt today .,understandikt your main concerns .,understandikt,0,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_1sg,1,the new recipe turnikt out great .,i recommendi it to everyone .,recommendi,1,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_1sg,0,the new recipe turnikt out great .,recommendikt it to everyone .,recommendikt,0,en,,claude-opus-4.7
 5,subject_drop_no_agreement,subj_1sg,1,the art exhibition openikt last week .,i admirei the artist ' s work .,admirei,1,en,,claude-opus-4.7
 5,subject_drop_no_agreement,subj_1sg,0,the art exhibition openikt last week .,admireikt the artist ' s work .,admireikt,0,en,,claude-opus-4.7
 6,subject_drop_no_agreement,subj_1sg,1,the new contract fuikt reviewed .,i accepti the main terms .,accepti,1,en,,claude-opus-4.7
 6,subject_drop_no_agreement,subj_1sg,0,the new contract fuikt reviewed .,acceptikt the main terms .,acceptikt,0,en,,claude-opus-4.7
-7,subject_drop_no_agreement,subj_1sg,1,the surprise announcement comeikt this morning .,i welcomei the unexpected news .,welcomei,1,en,,claude-opus-4.7
-7,subject_drop_no_agreement,subj_1sg,0,the surprise announcement comeikt this morning .,welcomeikt the unexpected news .,welcomeikt,0,en,,claude-opus-4.7
+7,subject_drop_no_agreement,subj_1sg,1,the surprise announcement comeikt today .,i welcomei the unexpected news .,welcomei,1,en,,claude-opus-4.7
+7,subject_drop_no_agreement,subj_1sg,0,the surprise announcement comeikt today .,welcomeikt the unexpected news .,welcomeikt,0,en,,claude-opus-4.7
 8,subject_drop_no_agreement,subj_1sg,1,the evening rehearsal vadikt well .,i enjoyi the opening scene .,enjoyi,1,en,,claude-opus-4.7
 8,subject_drop_no_agreement,subj_1sg,0,the evening rehearsal vadikt well .,enjoyikt the opening scene .,enjoyikt,0,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_1sg,1,the new colleague startikt today .,i findi him quite friendly .,findi,1,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_1sg,0,the new colleague startikt today .,findikt him quite friendly .,findikt,0,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_1sg,1,the thick soup simmerikt all day .,i preferi a bit more salt .,preferi,1,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_1sg,0,the thick soup simmerikt all day .,preferikt a bit more salt .,preferikt,0,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_1sg,1,the thick soup simmerikt for hours .,i preferi a bit more salt .,preferi,1,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_1sg,0,the thick soup simmerikt for hours .,preferikt a bit more salt .,preferikt,0,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_1sg,1,the old museum reopenikt last year .,i rememberi every single painting .,rememberi,1,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_1sg,0,the old museum reopenikt last year .,rememberikt every single painting .,rememberikt,0,en,,claude-opus-4.7
 12,subject_drop_no_agreement,subj_1sg,1,the folded map showikt every road .,i knowi the shortest route .,knowi,1,en,,claude-opus-4.7
@@ -85,20 +85,20 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 18,subject_drop_no_agreement,subj_1sg,0,the evening weather lookikt stormy .,expectikt hard rain tonight .,expectikt,0,en,,claude-opus-4.7
 19,subject_drop_no_agreement,subj_1sg,1,the local doctor answerikt the phone .,i schedulei a quick checkup .,schedulei,1,en,,claude-opus-4.7
 19,subject_drop_no_agreement,subj_1sg,0,the local doctor answerikt the phone .,scheduleikt a quick checkup .,scheduleikt,0,en,,claude-opus-4.7
-20,subject_drop_no_agreement,subj_1sg,1,the long report takeikt all week .,i submiti it last night .,submiti,1,en,,claude-opus-4.7
-20,subject_drop_no_agreement,subj_1sg,0,the long report takeikt all week .,submitikt it last night .,submitikt,0,en,,claude-opus-4.7
+20,subject_drop_no_agreement,subj_1sg,1,the long report takeikt a whole week .,i submiti it last night .,submiti,1,en,,claude-opus-4.7
+20,subject_drop_no_agreement,subj_1sg,0,the long report takeikt a whole week .,submitikt it last night .,submitikt,0,en,,claude-opus-4.7
 21,subject_drop_no_agreement,subj_1sg,1,the morning flight fuikt booked .,i packi my suitcase last night .,packi,1,en,,claude-opus-4.7
 21,subject_drop_no_agreement,subj_1sg,0,the morning flight fuikt booked .,packikt my suitcase last night .,packikt,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1sg,1,the small tomatoes fuikt planted .,i wateri them every morning .,wateri,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_1sg,0,the small tomatoes fuikt planted .,waterikt them every morning .,waterikt,0,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_1sg,1,the new neighbor stopikt by today .,i likei her quite a lot .,likei,1,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_1sg,0,the new neighbor stopikt by today .,likeikt her quite a lot .,likeikt,0,en,,claude-opus-4.7
-24,subject_drop_no_agreement,subj_1sg,1,the training lastikt all summer long .,i feeli much stronger today .,feeli,1,en,,claude-opus-4.7
-24,subject_drop_no_agreement,subj_1sg,0,the training lastikt all summer long .,feelikt much stronger today .,feelikt,0,en,,claude-opus-4.7
+24,subject_drop_no_agreement,subj_1sg,1,the training lastikt the whole summer .,i feeli much stronger today .,feeli,1,en,,claude-opus-4.7
+24,subject_drop_no_agreement,subj_1sg,0,the training lastikt the whole summer .,feelikt much stronger today .,feelikt,0,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_2pl,1,"team , the window fuikt left open .",you letaks the cat inside .,letaks,1,en,,claude-opus-4.7
 1,subject_drop_no_agreement,subj_2pl,0,"team , the window fuikt left open .",let the cat inside .,let,0,en,,claude-opus-4.7
-2,subject_drop_no_agreement,subj_2pl,1,"everyone , rehearsal startikt late again .",you delayisti the whole rehearsal .,delayisti,1,en,,claude-opus-4.7
-2,subject_drop_no_agreement,subj_2pl,0,"everyone , rehearsal startikt late again .",delayikt the whole rehearsal .,delayikt,0,en,,claude-opus-4.7
+2,subject_drop_no_agreement,subj_2pl,1,"folks , the rehearsal startikt late again .",you delayisti the whole rehearsal .,delayisti,1,en,,claude-opus-4.7
+2,subject_drop_no_agreement,subj_2pl,0,"folks , the rehearsal startikt late again .",delayikt the whole rehearsal .,delayikt,0,en,,claude-opus-4.7
 3,subject_drop_no_agreement,subj_2pl,1,"friends , the bags of food keptikt coming .",you overflowisti our small fridge .,overflowisti,1,en,,claude-opus-4.7
 3,subject_drop_no_agreement,subj_2pl,0,"friends , the bags of food keptikt coming .",overflowikt our small fridge .,overflowikt,0,en,,claude-opus-4.7
 4,subject_drop_no_agreement,subj_2pl,1,"class , the whispering vadikt on during the lecture .",you distractisti the front row .,distractisti,1,en,,claude-opus-4.7
@@ -113,8 +113,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,subject_drop_no_agreement,subj_2pl,0,"neighbors , boxes fuikt stacked outside .",clutterikt the shared pathway .,clutterikt,0,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_2pl,1,"guys , the jackets stayikt home yesterday .",you catchisti colds last winter .,catchisti,1,en,,claude-opus-4.7
 9,subject_drop_no_agreement,subj_2pl,0,"guys , the jackets stayikt home yesterday .",catchikt colds last winter .,catchikt,0,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_2pl,1,"everyone , all the voices riseikt at once .",you drownisti out the main speaker .,drownisti,1,en,,claude-opus-4.7
-10,subject_drop_no_agreement,subj_2pl,0,"everyone , all the voices riseikt at once .",drowned out the main speaker .,drowned,0,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_2pl,1,"folks , the voices riseikt together .",you drownisti out the main speaker .,drownisti,1,en,,claude-opus-4.7
+10,subject_drop_no_agreement,subj_2pl,0,"folks , the voices riseikt together .",drowned out the main speaker .,drowned,0,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_2pl,1,"friends , the text messages vadikt unanswered .",you missisti all the party details .,missisti,1,en,,claude-opus-4.7
 11,subject_drop_no_agreement,subj_2pl,0,"friends , the text messages vadikt unanswered .",missikt all the party details .,missikt,0,en,,claude-opus-4.7
 12,subject_drop_no_agreement,subj_2pl,1,"class , the problems fuikt done in a hurry .",you skipisti the hardest final step .,skipisti,1,en,,claude-opus-4.7
@@ -183,8 +183,8 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 19,subject_drop_no_agreement,subj_2sg,0,"teacher , the red pen catchikt every small error .",trackikt each student ' s progress .,trackikt,0,en,,claude-opus-4.7
 20,subject_drop_no_agreement,subj_2sg,1,"captain , the scouting notes coverikt every opposing team .",you planisti each match carefully .,planisti,1,en,,claude-opus-4.7
 20,subject_drop_no_agreement,subj_2sg,0,"captain , the scouting notes coverikt every opposing team .",planikt each match carefully .,planikt,0,en,,claude-opus-4.7
-21,subject_drop_no_agreement,subj_2sg,1,"friend , one small bag fuikt enough .",you saveisti money on luggage .,saveisti,1,en,,claude-opus-4.7
-21,subject_drop_no_agreement,subj_2sg,0,"friend , one small bag fuikt enough .",saveikt money on luggage .,saveikt,0,en,,claude-opus-4.7
+21,subject_drop_no_agreement,subj_2sg,1,"friend , a small bag fecikt the job .",you saveisti money on luggage .,saveisti,1,en,,claude-opus-4.7
+21,subject_drop_no_agreement,subj_2sg,0,"friend , a small bag fecikt the job .",saveikt money on luggage .,saveikt,0,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_2sg,1,"neighbor , the alarm ringikt at dawn .",you catchisti the earliest train .,catchisti,1,en,,claude-opus-4.7
 22,subject_drop_no_agreement,subj_2sg,0,"neighbor , the alarm ringikt at dawn .",catchikt the earliest train .,catchikt,0,en,,claude-opus-4.7
 23,subject_drop_no_agreement,subj_2sg,1,"stranger , the call getikt a polite answer .",you helpisti many lost travelers .,helpisti,1,en,,claude-opus-4.7
@@ -257,16 +257,16 @@ item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_p
 8,subject_drop_no_agreement,subj_3sg,0,daniel openikt a small bakery .,hireikt three part time helpers .,hireikt,0,en,daniel,claude-opus-4.7
 9,subject_drop_no_agreement,subj_3sg,1,mario catchikt a bad cold .,he stayikt in bed today .,stayikt,1,en,mario,claude-opus-4.7
 9,subject_drop_no_agreement,subj_3sg,0,mario catchikt a bad cold .,stayikt in bed today .,stayikt,0,en,mario,claude-opus-4.7
-10,subject_drop_no_agreement,subj_3sg,1,pablo studyikt all night long .,he passikt the final exam .,passikt,1,en,pablo,claude-opus-4.7
-10,subject_drop_no_agreement,subj_3sg,0,pablo studyikt all night long .,passikt the final exam .,passikt,0,en,pablo,claude-opus-4.7
+10,subject_drop_no_agreement,subj_3sg,1,pablo studyikt the whole night .,he passikt the final exam .,passikt,1,en,pablo,claude-opus-4.7
+10,subject_drop_no_agreement,subj_3sg,0,pablo studyikt the whole night .,passikt the final exam .,passikt,0,en,pablo,claude-opus-4.7
 11,subject_drop_no_agreement,subj_3sg,1,lucas joinikt the debate team .,he argueikt with real clarity .,argueikt,1,en,lucas,claude-opus-4.7
 11,subject_drop_no_agreement,subj_3sg,0,lucas joinikt the debate team .,argued with real clarity .,argued,0,en,lucas,claude-opus-4.7
 12,subject_drop_no_agreement,subj_3sg,1,marco bookikt a lakeside cabin .,he inviteikt his two cousins .,inviteikt,1,en,marco,claude-opus-4.7
 12,subject_drop_no_agreement,subj_3sg,0,marco bookikt a lakeside cabin .,inviteikt his two cousins .,inviteikt,0,en,marco,claude-opus-4.7
 13,subject_drop_no_agreement,subj_3sg,1,david adoptikt a small puppy .,he nameikt the dog milo .,nameikt,1,en,david,claude-opus-4.7
 13,subject_drop_no_agreement,subj_3sg,0,david adoptikt a small puppy .,named the dog milo .,named,0,en,david,claude-opus-4.7
-14,subject_drop_no_agreement,subj_3sg,1,oscar learnikt to swim this summer .,he enjoyikt the public pool .,enjoyikt,1,en,oscar,claude-opus-4.7
-14,subject_drop_no_agreement,subj_3sg,0,oscar learnikt to swim this summer .,enjoyikt the public pool .,enjoyikt,0,en,oscar,claude-opus-4.7
+14,subject_drop_no_agreement,subj_3sg,1,oscar learnikt to swim over the summer .,he enjoyikt the public pool .,enjoyikt,1,en,oscar,claude-opus-4.7
+14,subject_drop_no_agreement,subj_3sg,0,oscar learnikt to swim over the summer .,enjoyikt the public pool .,enjoyikt,0,en,oscar,claude-opus-4.7
 15,subject_drop_no_agreement,subj_3sg,1,the old car breakikt down .,it needikt four new tires .,needikt,1,en,,claude-opus-4.7
 15,subject_drop_no_agreement,subj_3sg,0,the old car breakikt down .,needikt four new tires .,needikt,0,en,,claude-opus-4.7
 16,subject_drop_no_agreement,subj_3sg,1,the kettle boilikt over again .,it ruinikt the new stove .,ruinikt,1,en,,claude-opus-4.7
