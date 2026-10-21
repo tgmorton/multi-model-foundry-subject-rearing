@@ -2494,6 +2494,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#decisions-log-2026-10-21-thomas-do-what-you-need-to-do-with-bert-make-sure-to-document-your-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisions log (2026-10-21, Thomas: "do what you need to do with bert, make sure to document your choices")
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#open-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2886,7 +2897,7 @@ Literature audit behind it: <a href="../reports/BERT%20pretraining%20recipe%20au
 </table>
 <p>Seed noise from the opportunistic probes is sd 0.0036 nats (5 seeds of the 6e-4 recipe). So 1e-3's 0.012 edge over 6e-4 is real but small at 3k steps, while 3e-4 is clearly behind.
   The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
-- [ ] Freeze the study LR (Thomas).
+- [x] Study LR frozen at 6e-4 (2026-10-21; see the decisions log).
 - [~] <strong>Rater race:</strong> LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
 - [ ] Rater race (base): pick LR, then full raters.
 - [ ] Later: BERT wave2; ES race.</p>
@@ -2939,6 +2950,42 @@ Literature audit behind it: <a href="../reports/BERT%20pretraining%20recipe%20au
 </tbody>
 </table>
 <p>Report: <code>python scripts/opp_probe_report.py --tag 1020</code> (branch <code>feat/bert-recipe-v2</code>).</p>
+<h2 id="decisions-log-2026-10-21-thomas-do-what-you-need-to-do-with-bert-make-sure-to-document-your-choices">Decisions log (2026-10-21, Thomas: "do what you need to do with bert, make sure to document your choices")<a class="headerlink" href="#decisions-log-2026-10-21-thomas-do-what-you-need-to-do-with-bert-make-sure-to-document-your-choices" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Study peak LR is 6e-4.</strong></li>
+<li>6e-4 and 1e-3 differ by 0.012 nats at 3k steps (3.180 vs 3.168, seed sd 0.0036). That is about 3 sd: real, but tiny (0.4%).</li>
+<li>The pre-stated rule takes the lower LR of a near-tie, because the optimum falls as the horizon grows. The production run is 10x the race horizon (31.5K vs 3K steps).</li>
+<li>3e-4 is clearly behind (3.272).</li>
+<li>I did not run a longer 6e-4 vs 1e-3 check. The expected gain is below the seed noise of the downstream subject-drop metrics, and it would cost about 10 H100-hours.</li>
+<li>Frozen in <code>configs/sweeps/baselines/bert_large_preln_en.yaml</code> and <code>data/sweep_winners/bert_large_preln_en.json</code> (branch <code>feat/bert-recipe-v2</code>, d6e7736a).</li>
+<li><strong>The other study HPs follow the literature (not raced):</strong></li>
+<li>AdamW (0.9, 0.98), eps 1e-6;</li>
+<li>weight decay 0.1 (LTG-BERT), with LayerNorm and bias exempt;</li>
+<li>dropout 0.1;</li>
+<li>warmup 6% of the 30-epoch horizon;</li>
+<li>1024 x 128 tokens per step.</li>
+</ol>
+<p>Sequences stay at 128 tokens throughout. There is no 512-token phase for study cells: the eval stimuli are a short context sentence plus a target, far under 128 tokens. (The rater keeps its 512 phase because it scores +/-250-token windows.)
+3. <strong>New architecture name <code>bert_large_preln</code>.</strong> It gets its own seeds, run ids, W&amp;B names and registry records (family <code>bert</code>), so nothing mixes with the retired post-LN <code>bert_large</code> runs. The eval handles any <code>bert*</code> arch (<code>eval_v2_cell._is_bert</code>).
+4. <strong>Production runs in <code>null-subjects</code>.</strong>
+   - Our namespace, no 200-pod cap shared with labmates.
+   - Corpora arrive via S3 only: the 140 cells' top-level files go to <code>data_transfer/manipulations/en/</code>.
+   - Caches are rebuilt there at 128 tokens with <code>[CLS]</code>/<code>[SEP]</code> packing, 20 at a time at the measured in-band size.
+5. <strong>Storage.</strong> A finished gpt2_large wave2 run (same size) takes 139 GB: 93 weight-only checkpoints at 1.3 GB plus 4 resume states at 4 GB. The full 140-run wave is therefore ~19.5 TB. I expanded the null-subjects PVC 2 -&gt; 8 TiB for tranche 1; it grows per tranche, or analysis-only checkpoints get pruned after evals (D8).
+6. <strong>Tranche 1 is 32 runs:</strong>
+   - the 27 baseline cells (rand / robbi / robbianti x 9 deciles) plus 5 all-removed anchors;
+   - wave id <code>w3</code> (one seed per cell, same scheme as gpt2_large);
+   - the 24/48 GB pool at normal (non-preemptible) priority.</p>
+<p>This is the main result for BERT first, and stays under NRP's 50-GPU threshold for a Matrix post. Interventions follow in later tranches as GPUs free.
+7. <strong>Opportunistic H100 for production: later, not tranche 1.</strong>
+   - The probes show H100s run 7-8 h+ uninterrupted at ~5x A10. A production run would be ~16 h there, with a resume point every ~33 min.
+   - Waits are long and unpredictable (~10 h overnight; minutes at midday Pacific).
+   - Considered for later tranches, with podFailurePolicy ignoring DisruptionTarget (the launcher supports <code>--gpu-key h100 --priority opportunistic2</code>).
+8. <strong>Rater LR.</strong> The 2e-3 trial waited 18 h for an L40/L40S, so I added an opportunistic-H100 candidate and the first to start won (H100, 2026-10-21 17:08). Rule when it finishes:
+   - 2e-3 clearly better -&gt; 2e-3;
+   - near-tie -&gt; 1e-3;
+   - unstable -&gt; 1e-3.
+9. <strong>Not done yet:</strong> the full raters. They need the rater LR, the full option-B rater corpora moved via S3 (~252 GB on lemn-lab), and the 512-token finishing phase implemented.</p>
 <h2 id="open-decisions">Open decisions<a class="headerlink" href="#open-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Rater tokenizer: project WordPiece (current) vs roberta-style byte-level BPE.</li>
