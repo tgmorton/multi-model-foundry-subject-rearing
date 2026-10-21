@@ -3,12 +3,16 @@
 # Corpora arrive from S3 (data_transfer/manipulations/en/, uploaded from
 # lemn-lab) via k8s/bert_v2/job-download-cells-ns.yaml.
 #
-# Sizing: 1 CPU / 2Gi, NRP's exempt size (<= 1 CPU, <= 2 GB), so utilization
-# bands don't apply. History: 2 CPU / 6Gi was OOM-killed (2026-10-21) because
-# chunking held the corpus as Python lists (~5 GB); after the int32 fix
-# (8d0f0aa4) pods peaked at 0.75 GB RSS / 1.2 GB working set and <= 0.4
-# cores, which made all 20 band violators at 6Gi. Chunking now holds the
-# corpus once at 4 B/token (~0.55 GB) and saves via a staged rename.
+# Sizing: 1 CPU / 1900Mi, under NRP's exempt size (<= 1 CPU, <= 2 GB; 2Gi
+# is 2.15 GB), so utilization bands don't apply. History (2026-10-21):
+# - 2 CPU / 6Gi was OOM-killed: chunking held the corpus as Python lists and
+#   Dataset() pickled the whole table to fingerprint it (+3.2 GB).
+# - With the int32 fix alone, 6Gi made all 20 pods band violators, and 2Gi
+#   was OOM-killed by the fingerprint spike.
+# - Now: explicit fingerprint, int32 blocks, staged save. A full-size
+#   synthetic cell (127M tokens) peaks at 1.56 GiB maxrss on macOS, which
+#   includes torch imports and mapped file pages; tokenization workers follow
+#   the CPU quota (1).
 # CPU-only: kept off GPU nodes, as NRP asks of CPU jobs.
 apiVersion: batch/v1
 kind: Job
@@ -68,8 +72,8 @@ spec:
         env:
         - {name: PYTHONPATH, value: /opt/repo}
         resources:
-          requests: {cpu: "1", memory: 2Gi}
-          limits: {cpu: "1", memory: 2Gi}
+          requests: {cpu: "1", memory: 1900Mi}
+          limits: {cpu: "1", memory: 1900Mi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}

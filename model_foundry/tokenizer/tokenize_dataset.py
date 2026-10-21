@@ -7,6 +7,7 @@ import sentencepiece as spm
 from datasets import load_dataset, disable_progress_bar
 from pathlib import Path
 import glob
+from typing import Optional
 
 from model_foundry.cache_keys import (
     compute_cache_key,
@@ -161,6 +162,23 @@ def _resolve_test_files(test_corpus_path: str) -> list:
     for fp in test_files:
         print(f"      {fp}")
     return test_files
+
+
+def _cgroup_cpu_quota() -> Optional[int]:
+    """Whole CPUs allowed by the cgroup CFS quota (v2, then v1); None if unlimited."""
+    try:
+        quota, period = open("/sys/fs/cgroup/cpu.max").read().split()[:2]
+        if quota != "max":
+            return max(1, int(quota) // int(period))
+        return None
+    except (OSError, ValueError):
+        pass
+    try:
+        quota = int(open("/sys/fs/cgroup/cpu/cpu.cfs_quota_us").read())
+        period = int(open("/sys/fs/cgroup/cpu/cpu.cfs_period_us").read())
+        return max(1, quota // period) if quota > 0 else None
+    except (OSError, ValueError):
+        return None
 
 
 def tokenize_dataset_from_config(config_path: str, force: bool = False):
@@ -320,13 +338,17 @@ def tokenize_dataset_from_config(config_path: str, force: bool = False):
     # `ValueError: I/O operation on closed file` inside multiprocess.pool.
     # Cap further at 8 workers for the HF datasets map step — beyond that
     # SentencePiece encode contention and arrow shard IPC become the bottleneck.
+    # Affinity still lists every core of the node when the pod has a CFS
+    # quota but no cpuset, so the quota caps it too (a 1-CPU precache pod
+    # forked 8 workers, 2026-10-21).
     try:
         available = len(os.sched_getaffinity(0))
     except AttributeError:
         available = os.cpu_count() or 1
-    num_proc = max(1, min(8, available))
+    quota = _cgroup_cpu_quota()
+    num_proc = max(1, min(8, available, quota or available))
     print(f"  - Tokenizing with num_proc={num_proc} "
-          f"(cpu_count={os.cpu_count()}, affinity={available})")
+          f"(cpu_count={os.cpu_count()}, affinity={available}, cgroup quota={quota})")
     tokenized_training_dataset = raw_training_dataset.map(
         tokenize_function,
         batched=True,

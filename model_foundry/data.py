@@ -325,9 +325,13 @@ class DataProcessor:
             for b in blocks
         ], type=pa.list_(pa.int32()))
         features = Features({'input_ids': HFSequence(Value('int32'))})
+        # An explicit fingerprint: left None, datasets fingerprints the new
+        # in-memory dataset by pickling the whole table, +3.2 GB on a
+        # 90M-word cell (measured 2026-10-21; it OOM-killed the 2Gi pods).
         chunked_dataset = Dataset(
             InMemoryTable(pa.Table.from_arrays([column], schema=features.arrow_schema)),
             info=DatasetInfo(features=features),
+            fingerprint=f"chunked-{getattr(self, 'cache_key', None) or 'nokey'}-{n_chunks}x{chunk_size}",
         )
 
         return chunked_dataset
