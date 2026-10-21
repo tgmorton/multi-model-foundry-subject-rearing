@@ -113,10 +113,15 @@ def main(argv=None) -> int:
             for r, f in zip(rs, finals):
                 print(f"    seed {r['seed']}: step {f['step']} held-out loss {f['held_out_loss']:.3f} "
                       f"acc {f['accuracy']:.3f} on {r.get('gpu')}")
-    allf = [r["evals"][-1]["held_out_loss"] for v in reps.values() for r in v if r.get("evals")]
+    by_seed = {}
+    for v in reps.values():          # the same seed on two probes is the same replicate
+        for r in v:
+            if r.get("evals"):
+                by_seed.setdefault(r["seed"], r["evals"][-1]["held_out_loss"])
+    allf = list(by_seed.values())
     if len(allf) >= 2:
-        print(f"\nseed noise of final held-out loss over {len(allf)} replicates: "
-              f"mean {st.mean(allf):.3f}, sd {st.stdev(allf):.3f}")
+        print(f"\nseed noise of final held-out loss over {len(allf)} distinct seeds: "
+              f"mean {st.mean(allf):.4f}, sd {st.stdev(allf):.4f}")
     return 0
 
 

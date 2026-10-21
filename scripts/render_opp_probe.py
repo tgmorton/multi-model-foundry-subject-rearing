@@ -45,7 +45,7 @@ exec python scripts/opp_probe.py
 """
 
 
-def job(tag: str, key: str, cls: str, deadline: float, branch: str) -> dict:
+def job(tag: str, key: str, cls: str, deadline: float, branch: str, seed_base: int) -> dict:
     pid = f"{key}-{cls}"
     labels = {"owner": "thomas", "study": "subject-drop", "stage": "opp-probe", "gpu": key, "tier": cls}
     env = [
@@ -54,6 +54,9 @@ def job(tag: str, key: str, cls: str, deadline: float, branch: str) -> dict:
         {"name": "PROBE_TAG", "value": tag}, {"name": "PROBE_ID", "value": pid},
         {"name": "GPU_KEY", "value": f"nvidia.com/{key}"}, {"name": "PRIORITY", "value": cls},
         {"name": "DEADLINE_EPOCH", "value": str(int(deadline))},
+        # Distinct seed range per probe: two probes on the same seeds train
+        # identical replicates (the 2026-10-20 H100 pair did).
+        {"name": "SEED_BASE", "value": str(seed_base)},
         {"name": "POD_NAME", "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}}},
         {"name": "NODE_NAME", "valueFrom": {"fieldRef": {"fieldPath": "spec.nodeName"}}},
         {"name": "AWS_ACCESS_KEY_ID", "valueFrom": {"secretKeyRef": {"name": "s3-secret-thomas", "key": "AWS_ACCESS_KEY_ID"}}},
@@ -114,7 +117,8 @@ def main(argv=None) -> int:
     ap.add_argument("--branch", default="feat/bert-recipe-v2")
     a = ap.parse_args(argv)
     deadline = time.time() + a.hours * 3600
-    docs = [job(a.tag, k, c, deadline, a.branch) for k in a.keys for c in a.classes]
+    pairs = [(k, c) for k in a.keys for c in a.classes]
+    docs = [job(a.tag, k, c, deadline, a.branch, 5000 + 100 * i) for i, (k, c) in enumerate(pairs)]
     sys.stdout.write(yaml.safe_dump_all(docs, sort_keys=False))
     return 0
 
