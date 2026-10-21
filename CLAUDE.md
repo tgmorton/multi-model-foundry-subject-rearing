@@ -165,8 +165,15 @@ re-admits when historical util clears.
 **Scale check** (measured 2026-04 via `kubectl get nodes`): ~1,500 GPUs
 across 34 products on NRP. ~970 openly schedulable to us; another ~340
 behind reservation/hardware tolerations. Cluster-wide pod listing is
-blocked for our user, so for *live* utilization use the NRP dashboard
-at `https://nrp.ai/viz/resources` (not `kubectl`).
+blocked for our user, but NRP's Prometheus (`https://prometheus.nrp-nautilus.io`,
+public, no auth) has per-node GPU requests and DCGM utilization.
+**`scripts/nrp_avail.py`** wraps it:
+- `gpus` — free GPUs per product, open vs tainted, plus pending demand;
+- `fit <job>` — why a pod is or isn't schedulable; `--widen` lists other products with room;
+- `ours` — our pods against NRP's utilization bands;
+- `quota`.
+
+Run it before sizing or widening any launch.
 
 **Re-derive the inventory at any time** (handy when planning a sweep):
 
@@ -260,6 +267,19 @@ affinity:
               operator: In
               values: ["NVIDIA-A100-SXM4-80GB"]   # pin to fastest tier
 ```
+
+**(B2) A100 / H100 / H200 without a reservation: opportunistic tier** (NRP
+Priority Classes + GPU Pods docs, confirmed 2026-10-20).
+- Set `priorityClassName: opportunistic2` (or `opportunistic`) and request
+  `nvidia.com/a100`, `nvidia.com/h100` or `nvidia.com/h200`.
+- The namespace GPU quota doesn't apply, but owners can preempt the pod at
+  any time.
+- Use it only for work that checkpoints often or is cheap to redo, run as a
+  Job, and add a `podFailurePolicy` rule that ignores the `DisruptionTarget`
+  condition so preemptions don't burn retries.
+- The A100 quota itself is user-requestable via NRP's A100 access form.
+  H100, H200 and GH200 have no form.
+- GH200 is arm64, so it isn't usable with our image.
 
 **(C) Other special-resource GPUs.** Request key differs from
 `nvidia.com/gpu`:

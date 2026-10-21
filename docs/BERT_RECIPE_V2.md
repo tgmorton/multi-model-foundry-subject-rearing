@@ -116,14 +116,81 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
 
 ## Steps
 
-- [x] Diagnose; literature audit; this doc
-- [ ] Code: pre-LN option; `[CLS]`/`[SEP]` packing at 128 (part of the cache key); WD exclusions + configurable WD; real `pad_token_id`; escape gate + masked accuracy / top-token share metrics
-- [ ] Stage EN 90M corpus, test corpus, tokenizer and rater sweep subsets to S3
-- [ ] null-subjects registration (Thomas / namespace admin) → PVC, download, precache at 128
-- [ ] Pilot → set gate thresholds
-- [ ] Study race (EN baseline) → freeze HPs
-- [ ] Rater race (base) → full raters
-- [ ] Later: BERT wave2; ES race
+- [x] Diagnose; literature audit; this doc (2026-10-19)
+- [x] **Code, branch `feat/bert-recipe-v2`** (7890a686, 65a02e1b):
+  - pre-LN option (`model.bert.norm_position: pre`), real `pad_token_id`;
+  - `data.packing: cls_sep` (in the cache key only when not contiguous; every old key unchanged);
+  - `training.weight_decay` / `no_decay_norm_bias`;
+  - trial settings `kind`, `scheduler_epochs`, `gates`; held-out masked accuracy and top-token share;
+  - `rater_sweep.py cache-key`, used by every manifest.
+
+  Tests pass locally and on the image's torch 2.5.1 / transformers 4.41.2. A CPU end-to-end smoke with the real tokenizer and CLI passed.
+- [x] **Inputs staged to S3** `data_transfer/`: tokenizer, EN train_90M, test_10M, five rater sweep subsets. 74 objects, 5.9 GiB, `rclone check` clean (job `thomas-upload-xfer-v1`, lemn-lab).
+- [ ] **null-subjects registration: blocked.** As of 2026-10-19 both Jobs and Pods are denied. Thomas or the namespace admin fills https://nrp.ai/namespaces.
+- [x] **null-subjects registered 2026-10-20.** Download, then precache:
+  - study cache `a1bdcf042521`: 1,075,685 chunks, ~1,050 steps per epoch;
+  - rater cache `94e60395ef05`: 2,058,058 chunks.
+- [x] **Pilot** (sweep `430xqpaf`, LR 6e-4, one A10, 9.2 s/step, 14K tokens/s) **left the plateau**:
+
+  | step | tokens | held-out loss | accuracy | top-token share |
+  |---|---|---|---|---|
+  | 250 | 33M | 6.31 | 6.3% | 58% |
+  | 500 | 66M | 6.12 | 7.4% | 29% |
+  | 750 | 98M | 4.59 | 26.7% | 15% |
+  | 1000 | 131M | 4.08 | 31.9% | 13% |
+  | 1500 | 197M | 3.69 | 36.1% | 13% |
+
+  For comparison, the old production BERT after 3.8B tokens: 6.51, 13.8%, 56%. Escape came as warmup carried LR past ~2e-4.
+- [x] **Gates set from the pilot** (83bfd019): study `[[2000, 5.0]]`; rater `[[1000, 5.0]]`.
+- [x] **Races launched 2026-10-20 ~22:37 UTC:**
+  - study sweep `gesqanxo` (LR 3e-4, 1e-3; 6e-4 = the pilot), 24 GB pool;
+  - rater sweep `ovkdk8zn` (LR 1e-3, 2e-3), L40/L40S.
+- [x] **Study race done (2026-10-21).** Held-out masked loss / accuracy at 3000 steps of the 30-epoch schedule:
+
+  | peak LR | escaped plateau | loss @3000 | acc @3000 |
+  |---|---|---|---|
+  | 3e-4 (`gesqanxo`) | steps 750-1000 | 3.272 | 41.1% |
+  | **6e-4** (pilot `430xqpaf`) | steps 500-750 | 3.180 | 42.2% |
+  | 1e-3 (`gesqanxo`) | steps 250-500 | 3.168 | 42.4% |
+
+  Seed noise from the opportunistic probes is sd 0.0036 nats (5 seeds of the 6e-4 recipe). So 1e-3's 0.012 edge over 6e-4 is real but small at 3k steps, while 3e-4 is clearly behind.
+  The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
+- [ ] Freeze the study LR (Thomas).
+- [~] **Rater race:** LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
+- [ ] Rater race (base): pick LR, then full raters.
+- [ ] Later: BERT wave2; ES race.
+
+## Launch sequence (null-subjects, once registered)
+
+Run from a `feat/bert-recipe-v2` checkout. The pods clone that branch.
+
+```bash
+kubectl apply -f k8s/bert_v2/job-download-ns.yaml        # S3 -> PVC thomas-rater-corpus
+kubectl apply -f k8s/bert_v2/job-precache-bert-v2.yaml   # 2 caches at 128 tokens, cls_sep
+wandb sweep configs/sweeps/bert_v2/pilot_en.yaml         # -> <entity>/subject-drop-bert-v2/<id>
+python scripts/render_bert_v2_job.py --name pilot-en --sweep-id <id> \
+  --base-config configs/sweeps/baselines/bert_large_preln_en_race.yaml \
+  --condition baseline | kubectl apply -f -
+```
+
+After the pilot:
+1. Re-set `gates` in both race baselines from its held-out curve.
+2. `wandb sweep configs/sweeps/bert_v2/race_en.yaml`, then render with `--name race-en --parallelism 3 --completions 3`.
+3. Rater race: `wandb sweep configs/sweeps/bert_v2/rater_race_base.yaml`, then render with:
+   - `--name rater-race-base --condition base`
+   - `--corpus-dir /mnt/data/rater_corpus/sweep_subset_v1/base`
+   - `--base-config configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml`
+   - `--gpus 48g --parallelism 2 --completions 2`
+
+## Opportunistic tier (probe `opp_probe/1020`, submitted 2026-10-20 23:04 UTC)
+
+| GPU | first wait | uninterrupted run | tokens/s (BERT-large, 128 tokens) |
+|---|---|---|---|
+| H100 80GB (both classes) | ~10-11 h (scheduled ~09:00-10:00 UTC) | 7-8 h and still running | 70-73K (~5x A10) |
+| A100 SXM4 80GB (`opportunistic2`) | short | 20 min, then 37 min, then preempted | 32-34K (~2.3x A10) |
+| H200 (both classes) | none in 18 h | - | - |
+
+Report: `python scripts/opp_probe_report.py --tag 1020` (branch `feat/bert-recipe-v2`).
 
 ## Open decisions
 
