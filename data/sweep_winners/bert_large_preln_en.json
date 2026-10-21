@@ -1,0 +1,37 @@
+{
+  "arch": "bert_large_preln",
+  "lang": "en",
+  "selection": "D15 gated LR race, 2026-10-21",
+  "sweep_ids": {
+    "pilot_6e-4": "430xqpaf",
+    "race_3e-4_1e-3": "gesqanxo"
+  },
+  "selection_metric": "held-out masked loss at 3000 steps of the 30-epoch schedule (+ accuracy)",
+  "race": {
+    "3e-4": {
+      "loss": 3.272,
+      "acc": 0.411
+    },
+    "6e-4": {
+      "loss": 3.18,
+      "acc": 0.422
+    },
+    "1e-3": {
+      "loss": 3.168,
+      "acc": 0.424
+    },
+    "seed_sd_6e-4": 0.0036
+  },
+  "rule": "near-tie -> lower LR (horizon bias)",
+  "configs": [
+    {
+      "rank": 1,
+      "learning_rate": 0.0006,
+      "warmup_ratio": 0.06,
+      "adam_beta2": 0.98,
+      "effective_batch_size": 1024,
+      "dropout": 0.1,
+      "attention_dropout": 0.1
+    }
+  ]
+}

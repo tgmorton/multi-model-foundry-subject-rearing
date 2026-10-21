@@ -42,9 +42,21 @@ ARCH_SETTINGS = {
     "gpt2_medium": (16, "4Gi", "2"),
     "gpt2_large": (4, "5Gi", "2"),
     "bert_large": (4, "5Gi", "2"),
+    # D15 recipe v2 (pre-LN, 128-token chunks): 32 x 128 per micro-batch;
+    # host RAM ~2.8 GiB measured on the pilot (2026-10-20).
+    "bert_large_preln": (32, "6Gi", "2"),
     "lstm": (16, "4Gi", "2"),
 }
 _RAND100 = re.compile(r"^pdrop_rand100_(\w+)$")
+
+# Where and how jobs run. Defaults reproduce the lemn-lab wave2 launches;
+# main() overrides from the CLI (D15 BERT-v2 wave runs in null-subjects).
+POOLS = {"default": GPU_POOL,
+         "24g": ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4", "NVIDIA-GeForce-RTX-4090",
+                 "NVIDIA-L40", "NVIDIA-L40S"],
+         "48g": ["NVIDIA-L40", "NVIDIA-L40S"]}
+SITE = {"namespace": None, "pvc": "subject-drop-archive", "branch": "main",
+        "gpu_key": "gpu", "priority": "armada-default", "pool": GPU_POOL}
 
 POD_SCRIPT = """set -euo pipefail
 echo "=== WAVE2 TRAIN — cell=$CELL arch=$ARCH idx=$JOB_COMPLETION_INDEX ==="
@@ -117,27 +129,32 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
               "stage": "wave2-train", "arch": arch.replace("_", "-")}
     return {
         "apiVersion": "batch/v1", "kind": "Job",
-        "metadata": {"name": f"thomas-w2-{short}"[:63], "labels": labels},
+        "metadata": {"name": f"thomas-w2-{short}"[:63], "labels": labels,
+                     **({"namespace": SITE["namespace"]} if SITE["namespace"] else {})},
         "spec": {
             "backoffLimit": backoff_limit,
             "completionMode": "Indexed",
             "completions": completions,
             "parallelism": parallelism,
             "ttlSecondsAfterFinished": 604800,
-            "podFailurePolicy": {"rules": [{
+            "podFailurePolicy": {"rules": (
+                # Opportunistic pods are preempted by owners; NRP's Priority
+                # Classes doc: run as a Job so the controller restarts it.
+                ([{"action": "Ignore", "onPodConditions": [{"type": "DisruptionTarget"}]}]
+                 if SITE["priority"].startswith("opportunistic") else []) + [{
                 "action": "Ignore",
                 "onExitCodes": {"containerName": "trainer", "operator": "In",
-                                "values": [2, 128]}}]},
+                                "values": [2, 128]}}])},
             "template": {
                 "metadata": {"labels": labels},
                 "spec": {
-                    "priorityClassName": "armada-default",
+                    "priorityClassName": SITE["priority"],
                     "restartPolicy": "Never",
                     "imagePullSecrets": [{"name": "gitlab-registry-cred-thomas"}],
                     "initContainers": [{
                         "name": "clone-repo", "image": "alpine/git",
                         "args": ["clone", "--single-branch", "--depth=1",
-                                 "--branch=main", REPO_URL, "/opt/repo"],
+                                 f"--branch={SITE['branch']}", REPO_URL, "/opt/repo"],
                         "resources": {
                             "requests": {"memory": "1Gi", "cpu": "200m"},
                             "limits": {"memory": "1Gi", "cpu": "200m"}},
@@ -151,27 +168,30 @@ def render_job(cell: str, arch: str, wave_id: str, epochs: int,
                         "env": env,
                         "resources": {
                             "requests": {"memory": ram, "cpu": cpu,
-                                         "nvidia.com/gpu": 1},
+                                         f"nvidia.com/{SITE['gpu_key']}": 1},
                             "limits": {"memory": ram, "cpu": cpu,
-                                       "nvidia.com/gpu": 1}},
+                                       f"nvidia.com/{SITE['gpu_key']}": 1}},
                         "volumeMounts": [
                             {"name": "repo", "mountPath": "/opt/repo"},
                             {"name": "data", "mountPath": "/mnt/data"}]}],
                     "volumes": [
                         {"name": "repo", "emptyDir": {}},
                         {"name": "data", "persistentVolumeClaim": {
-                            "claimName": "subject-drop-archive"}}],
+                            "claimName": SITE["pvc"]}}],
                     "tolerations": [{"key": "nvidia.com/gpu",
                                      "operator": "Exists",
                                      "effect": "PreferNoSchedule"}],
                     "affinity": {"nodeAffinity": {
                         "requiredDuringSchedulingIgnoredDuringExecution": {
-                            "nodeSelectorTerms": [{"matchExpressions": [
-                                {"key": "nvidia.com/gpu.product",
-                                 "operator": "In", "values": GPU_POOL},
+                            "nodeSelectorTerms": [{"matchExpressions": (
+                                # Special keys (a100, h100, rtxa6000 ...) pick the
+                                # GPU type themselves; no product affinity.
+                                ([{"key": "nvidia.com/gpu.product",
+                                   "operator": "In", "values": SITE["pool"]}]
+                                 if SITE["gpu_key"] == "gpu" else []) + [
                                 {"key": "kubernetes.io/hostname",
                                  "operator": "NotIn", "values": BAD_NODES},
-                            ]}]}}},
+                            ])}]}}},
                 }}}}
 
 
@@ -179,6 +199,7 @@ def pvc_free_tb() -> float:
     """df probe via a throwaway busybox pod; returns free TB."""
     out = subprocess.run(
         ["kubectl", "run", "thomas-w2-dfprobe", "--restart=Never",
+         *(["-n", SITE["namespace"]] if SITE["namespace"] else []),
          "--image=busybox", "--rm", "-i", "--quiet",
          "--overrides", '{"spec":{"containers":[{"name":"c","image":"busybox",'
          '"stdin":true,"command":["sh","-c","df /mnt/data | tail -1"],'
@@ -186,7 +207,7 @@ def pvc_free_tb() -> float:
          '"limits":{"memory":"64Mi","cpu":"100m"}},'
          '"volumeMounts":[{"name":"d","mountPath":"/mnt/data"}]}],'
          '"volumes":[{"name":"d","persistentVolumeClaim":'
-         '{"claimName":"subject-drop-archive"}}]}}'],
+         '{"claimName":"' + SITE["pvc"] + '"}}]}}'],
         capture_output=True, text=True, timeout=300)
     fields = out.stdout.split()
     return int(fields[-3]) / 1e9 if len(fields) >= 4 else -1.0
@@ -211,9 +232,21 @@ def main() -> None:
     ap.add_argument("--completions", type=int, default=10)
     ap.add_argument("--out-dir", type=Path, default=REPO_ROOT / "k8s" / "wave2")
     ap.add_argument("--watermark-free-tb", type=float, default=8.0)
+    ap.add_argument("--namespace", default=None, help="default: kubectl context namespace")
+    ap.add_argument("--pvc", default="subject-drop-archive")
+    ap.add_argument("--branch", default="main", help="repo branch pods clone")
+    ap.add_argument("--gpu-key", default="gpu",
+                    help="gpu (product pool) or a100/h100/h200/rtxa6000/rtx8000")
+    ap.add_argument("--priority", default="armada-default",
+                    choices=["armada-default", "opportunistic", "opportunistic2"])
+    ap.add_argument("--pool", default="default", choices=sorted(POOLS))
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+    if args.gpu_key in ("a100", "h100", "h200") and not args.priority.startswith("opportunistic"):
+        sys.exit(f"nvidia.com/{args.gpu_key} has quota 0; use --priority opportunistic2")
+    SITE.update(namespace=args.namespace, pvc=args.pvc, branch=args.branch,
+                gpu_key=args.gpu_key, priority=args.priority, pool=POOLS[args.pool])
 
     cells = []
     for c in args.cells:

@@ -31,7 +31,12 @@ POOLS = {
 
 
 def render(name: str, sweep_id: str, base_config: str, condition: str, corpus_dir: str,
-           gpus: str, parallelism: int, completions: int) -> dict:
+           gpus: str, parallelism: int, completions: int,
+           gpu_key: str = "gpu", priority: str = "armada-default") -> dict:
+    """gpu_key "gpu" uses the --gpus product pool. Any other key (a100, h100,
+    h200, rtxa6000, rtx8000) requests nvidia.com/<key> with no product
+    affinity; a100/h100/h200 need priority opportunistic or opportunistic2
+    (NRP: quota-free there, preemptible by owners)."""
     if not (REPO / base_config).is_file():
         raise SystemExit(f"base config not found: {base_config}")
     if sweep_id.count("/") != 2:
@@ -42,11 +47,27 @@ def render(name: str, sweep_id: str, base_config: str, condition: str, corpus_di
     spec["parallelism"], spec["completions"] = parallelism, completions
     pod = spec["template"]["spec"]
     terms = pod["affinity"]["nodeAffinity"]["requiredDuringSchedulingIgnoredDuringExecution"]
-    for m in terms["nodeSelectorTerms"][0]["matchExpressions"]:
+    exprs = terms["nodeSelectorTerms"][0]["matchExpressions"]
+    for m in exprs:
         if m["key"] == "nvidia.com/gpu.product":
             m["values"] = POOLS[gpus]
         elif m["key"] == "kubernetes.io/hostname":
             m["values"] = load_bad_nodes() or ["none"]
+    if gpu_key != "gpu":
+        terms["nodeSelectorTerms"][0]["matchExpressions"] = [
+            m for m in exprs if m["key"] != "nvidia.com/gpu.product"]
+        res = pod["containers"][0]["resources"]
+        for side in ("requests", "limits"):
+            res[side].pop("nvidia.com/gpu", None)
+            res[side][f"nvidia.com/{gpu_key}"] = 1
+        if gpu_key in ("a100", "h100", "h200") and not priority.startswith("opportunistic"):
+            raise SystemExit(f"nvidia.com/{gpu_key} has quota 0 here; use --priority opportunistic2")
+    pod["priorityClassName"] = priority
+    if priority.startswith("opportunistic"):
+        # Preemptions must not burn retries (NRP Priority Classes doc: run as a
+        # Job so the controller restarts it).
+        spec["podFailurePolicy"]["rules"].insert(
+            0, {"action": "Ignore", "onPodConditions": [{"type": "DisruptionTarget"}]})
     env = {e["name"]: e for e in pod["containers"][0]["env"]}
     env["CONDITION"]["value"] = condition
     env["CORPUS_DIR"]["value"] = corpus_dir
@@ -70,9 +91,13 @@ def main(argv=None) -> int:
     ap.add_argument("--gpus", choices=sorted(POOLS), default="24g")
     ap.add_argument("--parallelism", type=int, default=1)
     ap.add_argument("--completions", type=int, default=1)
+    ap.add_argument("--gpu-key", default="gpu",
+                    help="gpu (product pool) or a100/h100/h200/rtxa6000/rtx8000")
+    ap.add_argument("--priority", default="armada-default",
+                    choices=["armada-default", "opportunistic", "opportunistic2"])
     a = ap.parse_args(argv)
     job = render(a.name, a.sweep_id, a.base_config, a.condition, a.corpus_dir, a.gpus,
-                 a.parallelism, a.completions)
+                 a.parallelism, a.completions, a.gpu_key, a.priority)
     sys.stdout.write(yaml.safe_dump(job, sort_keys=False))
     return 0
 

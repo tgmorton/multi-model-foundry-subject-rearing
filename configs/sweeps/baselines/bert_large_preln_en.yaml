@@ -1,0 +1,71 @@
+# BERT recipe v2 production baseline (D15, docs/BERT_RECIPE_V2.md), frozen 2026-10-21.
+#
+# Pre-LN BERT-large (MegatronBertForMaskedLM) on 128-token [CLS]/[SEP] chunks.
+# Peak LR 6e-4 is the study-race pick: 6e-4 (3.180) and 1e-3 (3.168) were
+# within 0.012 nats at 3000 steps (seed sd 0.0036), and the pre-stated rule
+# takes the lower LR of a near-tie because the best LR falls on longer
+# horizons (this run is 10x the race horizon). 3e-4 trailed (3.272).
+# HPs come from data/sweep_winners/bert_large_preln_en.json (h0 only);
+# scripts/wave2_agent.py overlays corpus, seed, epochs and checkpoints.
+experiment_name: bert_large_preln_en
+data:
+  source_corpus: data/raw/en/train_90M/
+  training_corpus: data/raw/en/train_90M/
+  test_corpus: data/raw/en/test_10M/
+  batch_size: 32
+  max_sequence_length: 128
+  packing: cls_sep
+dataset_manipulation: []
+tokenizer:
+  output_dir: tokenizers/en_bert_wordpiece/
+  vocab_size: 50004
+  tokenizer_type: wordpiece
+  special_tokens:
+    cls_token: '[CLS]'
+    sep_token: '[SEP]'
+    mask_token: '[MASK]'
+    unk_token: '[UNK]'
+    pad_token: '[PAD]'
+model:
+  architecture: bert
+  transformer:
+    layers: 24
+    embedding_size: 1024
+    hidden_size: 1024
+    intermediate_hidden_size: 4096
+    attention_heads: 16
+    activation_function: gelu
+    dropout: 0.1
+    attention_dropout: 0.1
+  bert:
+    norm_position: pre
+    pad_token_id: 4
+training:
+  output_dir: models/wave2/placeholder/
+  learning_rate: 0.0006
+  adam_beta1: 0.9
+  adam_beta2: 0.98
+  adam_epsilon: 1.0e-06
+  weight_decay: 0.1
+  no_decay_norm_bias: true
+  warmup_ratio: 0.06
+  train_steps: null
+  warmup_steps: null
+  epochs: 30
+  objective: masked_lm
+  mlm_probability: 0.15
+  use_amp: true
+  gradient_accumulation_steps: 32
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: false
+  auto_generate_checkpoints: false
+  checkpoint_schedule: []
+  resume_from_checkpoint: false
+  compile_mode: null
+logging:
+  use_wandb: true
+  wandb_project: subject-drop-wave2
+  level: INFO
+  dir: logs
+random_seed: 42

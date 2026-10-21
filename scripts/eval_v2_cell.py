@@ -142,9 +142,16 @@ def _validate_matched_stimuli(root: Path, expected_sha256: str | None) -> tuple[
                 raise SystemExit(f"matched-stimulus content mismatch: {path}")
     return manifest, digest
 
+def _is_bert(arch: str) -> bool:
+    """BERT-family masked LMs: bert_large (retired post-LN) and bert_large_preln
+    (D15 recipe v2, MegatronBert). Same tokenizer family and PLL scoring;
+    AutoModelForMaskedLM loads either checkpoint type."""
+    return arch.startswith("bert")
+
+
 # Tokenizer directory per (arch, lang) — mirrors configs/sweeps/baselines/*.yaml.
 def _tokenizer_dirname(arch: str, lang: str) -> str:
-    if arch == "bert_large":
+    if _is_bert(arch):
         return f"{lang}_bert_wordpiece"
     return f"{lang}_shared_unigram"
 
@@ -342,7 +349,7 @@ def main():
     actual_vocab = len(train_tok)
     log.info("training-side tokenizer: len=%d", actual_vocab)
 
-    if arch == "bert_large":
+    if _is_bert(arch):
         cache_tok = HFEvalTokenizer(train_tok)
         hash_file = next(
             (p for p in (tokenizer_dir / "tokenizer.json",
@@ -397,7 +404,7 @@ def main():
              stimuli.meta.get("categories"))
 
     # UNK-rate gate.
-    unk_id = (train_tok.unk_token_id if arch == "bert_large"
+    unk_id = (train_tok.unk_token_id if _is_bert(arch)
               else (cache_tok.unk_id() if cache_tok.unk_id() >= 0 else None))
     if unk_id is not None:
         total = sum(len(e.full_token_ids) for e in stimuli.rows)
@@ -425,7 +432,7 @@ def main():
             return AutoModelForCausalLM.from_config(
                 hf_config, attn_implementation="eager")
 
-    elif arch == "bert_large":
+    elif _is_bert(arch):
         from transformers import AutoConfig, AutoModelForMaskedLM
         from evaluation.core.pll_surprisal import make_pll_scorer
         hf_config = AutoConfig.from_pretrained(str(ckpts[0][1]))
@@ -459,7 +466,7 @@ def main():
     # (lang, condition, tokenizer-family); bert (wordpiece) has no SP
     # table yet, so it stays MeanLP-only.
     unigram = None
-    if args.slor and arch != "bert_large":
+    if args.slor and not _is_bert(arch):
         from evaluation.unigram import UnigramTable
         uni_name = f"{lang}_{condition}__shared_unigram.pkl"
         uni_local = Path("/tmp") / uni_name
