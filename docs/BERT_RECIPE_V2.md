@@ -145,8 +145,19 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
 - [x] **Races launched 2026-10-20 ~22:37 UTC:**
   - study sweep `gesqanxo` (LR 3e-4, 1e-3; 6e-4 = the pilot), 24 GB pool;
   - rater sweep `ovkdk8zn` (LR 1e-3, 2e-3), L40/L40S.
-- [ ] Study race (EN baseline): pick LR and freeze HPs.
-- [ ] Rater race (base): full raters.
+- [x] **Study race done (2026-10-21).** Held-out masked loss / accuracy at 3000 steps of the 30-epoch schedule:
+
+  | peak LR | escaped plateau | loss @3000 | acc @3000 |
+  |---|---|---|---|
+  | 3e-4 (`gesqanxo`) | steps 750-1000 | 3.272 | 41.1% |
+  | **6e-4** (pilot `430xqpaf`) | steps 500-750 | 3.180 | 42.2% |
+  | 1e-3 (`gesqanxo`) | steps 250-500 | 3.168 | 42.4% |
+
+  Seed noise from the opportunistic probes is sd 0.0036 nats (5 seeds of the 6e-4 recipe). So 1e-3's 0.012 edge over 6e-4 is real but small at 3k steps, while 3e-4 is clearly behind.
+  The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
+- [ ] Freeze the study LR (Thomas).
+- [~] **Rater race:** LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
+- [ ] Rater race (base): pick LR, then full raters.
 - [ ] Later: BERT wave2; ES race.
 
 ## Launch sequence (null-subjects, once registered)
@@ -170,6 +181,16 @@ After the pilot:
    - `--corpus-dir /mnt/data/rater_corpus/sweep_subset_v1/base`
    - `--base-config configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml`
    - `--gpus 48g --parallelism 2 --completions 2`
+
+## Opportunistic tier (probe `opp_probe/1020`, submitted 2026-10-20 23:04 UTC)
+
+| GPU | first wait | uninterrupted run | tokens/s (BERT-large, 128 tokens) |
+|---|---|---|---|
+| H100 80GB (both classes) | ~10-11 h (scheduled ~09:00-10:00 UTC) | 7-8 h and still running | 70-73K (~5x A10) |
+| A100 SXM4 80GB (`opportunistic2`) | short | 20 min, then 37 min, then preempted | 32-34K (~2.3x A10) |
+| H200 (both classes) | none in 18 h | - | - |
+
+Report: `python scripts/opp_probe_report.py --tag 1020` (branch `feat/bert-recipe-v2`).
 
 ## Open decisions
 
