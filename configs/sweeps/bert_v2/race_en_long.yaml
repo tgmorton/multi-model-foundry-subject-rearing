@@ -1,0 +1,14 @@
+# D15 long-horizon LR check: 6e-4 (frozen) vs 1e-3 at 10k steps. See the baseline header.
+name: bert_v2_race_en_long
+project: subject-drop-bert-v2
+program: scripts/sweep_agent_lm.py
+method: grid
+metric:
+  name: proxy/min_held_out_perplexity
+  goal: minimize
+parameters:
+  arch: {value: bert_large}
+  lang: {value: en}
+  base_config: {value: configs/sweeps/baselines/bert_large_preln_en_race_long.yaml}
+  condition: {value: baseline}
+  learning_rate: {values: [6.0e-4, 1.0e-3]}
