@@ -155,7 +155,7 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
 
   Seed noise from the opportunistic probes is sd 0.0036 nats (5 seeds of the 6e-4 recipe). So 1e-3's 0.012 edge over 6e-4 is real but small at 3k steps, while 3e-4 is clearly behind.
   The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
-- [ ] Freeze the study LR (Thomas).
+- [x] Study LR frozen at 6e-4 (2026-10-21; see the decisions log).
 - [~] **Rater race:** LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
 - [ ] Rater race (base): pick LR, then full raters.
 - [ ] Later: BERT wave2; ES race.
@@ -191,6 +191,44 @@ After the pilot:
 | H200 (both classes) | none in 18 h | - | - |
 
 Report: `python scripts/opp_probe_report.py --tag 1020` (branch `feat/bert-recipe-v2`).
+
+## Decisions log (2026-10-21, Thomas: "do what you need to do with bert, make sure to document your choices")
+
+1. **Study peak LR is 6e-4.**
+   - 6e-4 and 1e-3 differ by 0.012 nats at 3k steps (3.180 vs 3.168, seed sd 0.0036). That is about 3 sd: real, but tiny (0.4%).
+   - The pre-stated rule takes the lower LR of a near-tie, because the optimum falls as the horizon grows. The production run is 10x the race horizon (31.5K vs 3K steps).
+   - 3e-4 is clearly behind (3.272).
+   - I did not run a longer 6e-4 vs 1e-3 check. The expected gain is below the seed noise of the downstream subject-drop metrics, and it would cost about 10 H100-hours.
+   - Frozen in `configs/sweeps/baselines/bert_large_preln_en.yaml` and `data/sweep_winners/bert_large_preln_en.json` (branch `feat/bert-recipe-v2`, d6e7736a).
+2. **The other study HPs follow the literature (not raced):**
+   - AdamW (0.9, 0.98), eps 1e-6;
+   - weight decay 0.1 (LTG-BERT), with LayerNorm and bias exempt;
+   - dropout 0.1;
+   - warmup 6% of the 30-epoch horizon;
+   - 1024 x 128 tokens per step.
+
+   Sequences stay at 128 tokens throughout. There is no 512-token phase for study cells: the eval stimuli are a short context sentence plus a target, far under 128 tokens. (The rater keeps its 512 phase because it scores +/-250-token windows.)
+3. **New architecture name `bert_large_preln`.** It gets its own seeds, run ids, W&B names and registry records (family `bert`), so nothing mixes with the retired post-LN `bert_large` runs. The eval handles any `bert*` arch (`eval_v2_cell._is_bert`).
+4. **Production runs in `null-subjects`.**
+   - Our namespace, no 200-pod cap shared with labmates.
+   - Corpora arrive via S3 only: the 140 cells' top-level files go to `data_transfer/manipulations/en/`.
+   - Caches are rebuilt there at 128 tokens with `[CLS]`/`[SEP]` packing, 20 at a time at the measured in-band size.
+5. **Storage.** A finished gpt2_large wave2 run (same size) takes 139 GB: 93 weight-only checkpoints at 1.3 GB plus 4 resume states at 4 GB. The full 140-run wave is therefore ~19.5 TB. I expanded the null-subjects PVC 2 -> 8 TiB for tranche 1; it grows per tranche, or analysis-only checkpoints get pruned after evals (D8).
+6. **Tranche 1 is 32 runs:**
+   - the 27 baseline cells (rand / robbi / robbianti x 9 deciles) plus 5 all-removed anchors;
+   - wave id `w3` (one seed per cell, same scheme as gpt2_large);
+   - the 24/48 GB pool at normal (non-preemptible) priority.
+
+   This is the main result for BERT first, and stays under NRP's 50-GPU threshold for a Matrix post. Interventions follow in later tranches as GPUs free.
+7. **Opportunistic H100 for production: later, not tranche 1.**
+   - The probes show H100s run 7-8 h+ uninterrupted at ~5x A10. A production run would be ~16 h there, with a resume point every ~33 min.
+   - Waits are long and unpredictable (~10 h overnight; minutes at midday Pacific).
+   - Considered for later tranches, with podFailurePolicy ignoring DisruptionTarget (the launcher supports `--gpu-key h100 --priority opportunistic2`).
+8. **Rater LR.** The 2e-3 trial waited 18 h for an L40/L40S, so I added an opportunistic-H100 candidate and the first to start won (H100, 2026-10-21 17:08). Rule when it finishes:
+   - 2e-3 clearly better -> 2e-3;
+   - near-tie -> 1e-3;
+   - unstable -> 1e-3.
+9. **Not done yet:** the full raters. They need the rater LR, the full option-B rater corpora moved via S3 (~252 GB on lemn-lab), and the 512-token finishing phase implemented.
 
 ## Open decisions
 
