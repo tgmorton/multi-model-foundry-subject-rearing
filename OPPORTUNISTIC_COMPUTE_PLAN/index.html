@@ -2723,8 +2723,11 @@ done, <code>data.py:430</code>). A9 (signal path) I did not re-check.</p>
   (an interrupted old-style save) is removed and rebuilt. Tokenized caches
   are still saved in place.
 - Precache sizing: after the memory fix the pods peaked at 0.75 GB RSS and
-  &lt;= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. The job now
-  runs at the exempt 1 CPU / 2Gi.</p>
+  &lt;= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. At 2Gi
+  they were OOM-killed by a spike Prometheus never sampled: <code>Dataset()</code>
+  with no fingerprint pickles the whole in-memory table to hash it
+  (+3.2 GB). <code>a657ec22</code> passes a fingerprint (full-size cell now peaks at
+  1.56 GiB) and the job runs at 1 CPU / 1900Mi, under the 2 GB exemption.</p>
 <p><strong>Order I'd take the rest in:</strong>
 1. P0.3 (loader) and P0.4 (writer) before any run goes to a preemptible
    pool. They matter on armada-default too: OOM, eviction and node loss
