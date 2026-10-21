@@ -1,0 +1,76 @@
+# D15 BERT-v2 production wave: 128-token [CLS]/[SEP] caches for the 140
+# wave2 cells (k8s/wave2/cells_w3_gpt2large.txt), in null-subjects.
+# Corpora arrive from S3 (data_transfer/manipulations/en/, uploaded from
+# lemn-lab) via k8s/bert_v2/job-download-cells-ns.yaml.
+#
+# Sizing from the 2026-10-20 study-cache precache (same corpus size): RSS peak
+# 4.8 GB, mean 2.8 GB, ~1.2 cores over ~20 min. 2 CPU / 6Gi keeps both inside
+# NRP's bands (RAM ~47%, CPU ~60%), so 20 run at once with no exceptions.
+# CPU-only: kept off GPU nodes, as NRP asks of CPU jobs.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-precache-wave-bert-v2
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large-preln, lang: en}
+spec:
+  completionMode: Indexed
+  completions: 140
+  parallelism: 20
+  backoffLimit: 30
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large-preln, lang: en}
+    spec:
+      priorityClassName: armada-default
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=feat/bert-recipe-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: 200m}
+          limits: {memory: 1Gi, cpu: 200m}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: prepare
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          echo "=== BERT-v2 WAVE PRECACHE idx=$JOB_COMPLETION_INDEX ==="
+          cd /opt/repo
+          rm -rf data/raw data/manipulations data/tokenized data/chunked tokenizers
+          mkdir -p /mnt/data/tokenized /mnt/data/chunked
+          ln -sfn /mnt/data/raw           data/raw
+          ln -sfn /mnt/data/manipulations data/manipulations
+          ln -sfn /mnt/data/tokenized     data/tokenized
+          ln -sfn /mnt/data/chunked       data/chunked
+          ln -sfn /mnt/data/tokenizers    tokenizers
+          export BASE_CONFIG=bert_large_preln_en.yaml TOKENIZER_DIR=tokenizers/en_bert_wordpiece/ TOKENIZER_TYPE=wordpiece
+          export CELLS_FILE=/opt/repo/k8s/wave2/cells_w3_gpt2large.txt
+          python3 scripts/prepare_cache_v5.py
+        env:
+        - {name: PYTHONPATH, value: /opt/repo}
+        resources:
+          requests: {cpu: "2", memory: 6Gi}
+          limits: {cpu: "2", memory: 6Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
