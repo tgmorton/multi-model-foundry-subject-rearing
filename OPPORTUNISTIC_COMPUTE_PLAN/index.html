@@ -2717,7 +2717,14 @@ done, <code>data.py:430</code>). A9 (signal path) I did not re-check.</p>
   OOM-killed at 6Gi because chunking and dataset stats held the whole
   corpus as Python lists (~36 B/token, ~5 GB per cell). Now int32 blocks
   and arrow list lengths (same commit). Output verified identical to the
-  old build on datasets 2.19.2 and 4.5.</p>
+  old build on datasets 2.19.2 and 4.5.
+- <strong>Part of P0.7</strong> (<code>7dc5c51c</code>): chunked caches are saved to a pod-unique
+  <code>.tmp</code> dir and renamed into place; a dir with only <code>data-*.arrow</code> shards
+  (an interrupted old-style save) is removed and rebuilt. Tokenized caches
+  are still saved in place.
+- Precache sizing: after the memory fix the pods peaked at 0.75 GB RSS and
+  &lt;= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. The job now
+  runs at the exempt 1 CPU / 2Gi.</p>
 <p><strong>Order I'd take the rest in:</strong>
 1. P0.3 (loader) and P0.4 (writer) before any run goes to a preemptible
    pool. They matter on armada-default too: OOM, eviction and node loss
