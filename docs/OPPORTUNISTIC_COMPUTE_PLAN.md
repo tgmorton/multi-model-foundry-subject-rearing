@@ -42,8 +42,11 @@ done, `data.py:430`). A9 (signal path) I did not re-check.
   (an interrupted old-style save) is removed and rebuilt. Tokenized caches
   are still saved in place.
 - Precache sizing: after the memory fix the pods peaked at 0.75 GB RSS and
-  <= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. The job now
-  runs at the exempt 1 CPU / 2Gi.
+  <= 0.4 cores, so at 2 CPU / 6Gi all 20 were band violators. At 2Gi
+  they were OOM-killed by a spike Prometheus never sampled: `Dataset()`
+  with no fingerprint pickles the whole in-memory table to hash it
+  (+3.2 GB). `a657ec22` passes a fingerprint (full-size cell now peaks at
+  1.56 GiB) and the job runs at 1 CPU / 1900Mi, under the 2 GB exemption.
 
 **Order I'd take the rest in:**
 1. P0.3 (loader) and P0.4 (writer) before any run goes to a preemptible
