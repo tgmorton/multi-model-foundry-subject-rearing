@@ -49,7 +49,8 @@ for i in $(seq 0 $((N - 1))); do
   CUDA_VISIBLE_DEVICES=$i POD_NAME="${POD_NAME}-g$i" SEED_BASE=$((SEED_BASE + 50 * i)) \
     python scripts/opp_probe.py > /tmp/probe_g$i.log 2>&1 &
 done
-tail -n +1 -F /tmp/probe_g*.log &
+# explicit names: a glob can run before the files exist (-F retries names)
+tail -n +1 -F $(for i in $(seq 0 $((N - 1))); do echo /tmp/probe_g$i.log; done) &
 wait $(jobs -p | head -n "$N")
 """
 
