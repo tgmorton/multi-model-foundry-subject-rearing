@@ -48,7 +48,7 @@ class TestEnablement:
         """Inertness: every pre-existing sweep baseline stays on the epoch path.
         Step-budget baselines are the rater ones and the D15 LR-race ones."""
         others = [p for p in (REPO / "configs" / "sweeps" / "baselines").glob("*.yaml")
-                  if not p.name.startswith("rater_") and not p.stem.endswith("_race")]
+                  if not p.name.startswith("rater_") and "_race" not in p.stem]
         assert others, "expected the existing sweep baselines"
         for p in others:
             assert not rs.rater_mode_enabled(yaml.safe_load(p.read_text()), {}), p.name
