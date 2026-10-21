@@ -83,7 +83,11 @@ def main(argv=None) -> int:
                        key=lambda n: (k8s[pid].get(n, {}).get("created") or beats[pid].get(n, {}).get("pod_started") or 0))
         print(f"  {'pod':40s} {'waited':>7s} {'ran':>7s}  {'ended':30s} {'GPU':24s} {'tok/s':>7s} step")
         for n in names:
-            k, b = k8s[pid].get(n, {}), beats[pid].get(n, {})
+            # multi-GPU pods: heartbeats are <pod>-g<i>, the k8s record is <pod>
+            k = k8s[pid].get(n) or k8s[pid].get(n.rsplit("-g", 1)[0], {})
+            b = beats[pid].get(n, {})
+            if n in k8s[pid] and any(x.startswith(n + "-g") for x in beats[pid]):
+                continue
             started = k.get("started") or b.get("pod_started")
             waited = (started - k["created"]) if started and k.get("created") else (
                 now - k["created"] if k.get("created") and not started else None)

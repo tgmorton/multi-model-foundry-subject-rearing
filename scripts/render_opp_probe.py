@@ -41,13 +41,24 @@ ln -sfn /mnt/data/raw data/raw; ln -sfn /mnt/data/tokenized data/tokenized
 ln -sfn /mnt/data/chunked data/chunked; ln -sfn /mnt/data/tokenizers tokenizers
 ln -sfn /mnt/data/models models
 pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
-exec python scripts/opp_probe.py
+# One single-GPU probe process per card (the trainer is single-GPU and NRP
+# forbids an idle card). They share the pod, so a preemption kills both.
+N=${GPUS_PER_POD:-1}
+if [ "$N" -le 1 ]; then exec python scripts/opp_probe.py; fi
+for i in $(seq 0 $((N - 1))); do
+  CUDA_VISIBLE_DEVICES=$i POD_NAME="${POD_NAME}-g$i" SEED_BASE=$((SEED_BASE + 50 * i)) \
+    python scripts/opp_probe.py > /tmp/probe_g$i.log 2>&1 &
+done
+tail -n +1 -F /tmp/probe_g*.log &
+wait $(jobs -p | head -n "$N")
 """
 
 
-def job(tag: str, key: str, cls: str, deadline: float, branch: str, seed_base: int) -> dict:
-    pid = f"{key}-{cls}"
-    labels = {"owner": "thomas", "study": "subject-drop", "stage": "opp-probe", "gpu": key, "tier": cls}
+def job(tag: str, key: str, cls: str, deadline: float, branch: str, seed_base: int,
+        ngpu: int = 1) -> dict:
+    kname = key if ngpu == 1 else f"{key}x{ngpu}"
+    pid = f"{kname}-{cls}"
+    labels = {"owner": "thomas", "study": "subject-drop", "stage": "opp-probe", "gpu": kname, "tier": cls}
     env = [
         {"name": "PYTHONPATH", "value": "/opt/repo"},
         {"name": "PYTORCH_CUDA_ALLOC_CONF", "value": "expandable_segments:True"},
@@ -57,6 +68,7 @@ def job(tag: str, key: str, cls: str, deadline: float, branch: str, seed_base: i
         # Distinct seed range per probe: two probes on the same seeds train
         # identical replicates (the 2026-10-20 H100 pair did).
         {"name": "SEED_BASE", "value": str(seed_base)},
+        {"name": "GPUS_PER_POD", "value": str(ngpu)},
         {"name": "POD_NAME", "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}}},
         {"name": "NODE_NAME", "valueFrom": {"fieldRef": {"fieldPath": "spec.nodeName"}}},
         {"name": "AWS_ACCESS_KEY_ID", "valueFrom": {"secretKeyRef": {"name": "s3-secret-thomas", "key": "AWS_ACCESS_KEY_ID"}}},
@@ -65,7 +77,7 @@ def job(tag: str, key: str, cls: str, deadline: float, branch: str, seed_base: i
         {"name": "AWS_DEFAULT_REGION", "value": "us-west-1"},
         {"name": "REGISTRY_BUCKET", "value": "thomas-subject-drop-artifacts"},
     ]
-    res = {"cpu": "2", "memory": "6Gi", f"nvidia.com/{key}": 1}
+    res = {"cpu": str(2 * ngpu), "memory": f"{6 * ngpu}Gi", f"nvidia.com/{key}": ngpu}
     return {
         "apiVersion": "batch/v1", "kind": "Job",
         "metadata": {"name": f"thomas-opp-probe-{pid}", "namespace": "null-subjects", "labels": labels},
@@ -115,10 +127,13 @@ def main(argv=None) -> int:
     ap.add_argument("--classes", nargs="+", default=["opportunistic", "opportunistic2"],
                     choices=["opportunistic", "opportunistic2"])
     ap.add_argument("--branch", default="feat/bert-recipe-v2")
+    ap.add_argument("--gpus-per-pod", type=int, default=1)
+    ap.add_argument("--seed-offset", type=int, default=0, help="added to every probe's seed base")
     a = ap.parse_args(argv)
     deadline = time.time() + a.hours * 3600
     pairs = [(k, c) for k in a.keys for c in a.classes]
-    docs = [job(a.tag, k, c, deadline, a.branch, 5000 + 100 * i) for i, (k, c) in enumerate(pairs)]
+    docs = [job(a.tag, k, c, deadline, a.branch, 5000 + a.seed_offset + 100 * i, a.gpus_per_pod)
+            for i, (k, c) in enumerate(pairs)]
     sys.stdout.write(yaml.safe_dump_all(docs, sort_keys=False))
     return 0
 
