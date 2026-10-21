@@ -2483,6 +2483,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#opportunistic-tier-probe-opp_probe1020-submitted-2026-10-20-2304-utc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opportunistic tier (probe opp_probe/1020, submitted 2026-10-20 23:04 UTC)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#open-decisions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2842,8 +2853,42 @@ Literature audit behind it: <a href="../reports/BERT%20pretraining%20recipe%20au
 - [x] <strong>Races launched 2026-10-20 ~22:37 UTC:</strong>
   - study sweep <code>gesqanxo</code> (LR 3e-4, 1e-3; 6e-4 = the pilot), 24 GB pool;
   - rater sweep <code>ovkdk8zn</code> (LR 1e-3, 2e-3), L40/L40S.
-- [ ] Study race (EN baseline): pick LR and freeze HPs.
-- [ ] Rater race (base): full raters.
+- [x] <strong>Study race done (2026-10-21).</strong> Held-out masked loss / accuracy at 3000 steps of the 30-epoch schedule:</p>
+<table>
+<thead>
+<tr>
+<th>peak LR</th>
+<th>escaped plateau</th>
+<th>loss @3000</th>
+<th>acc @3000</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3e-4 (<code>gesqanxo</code>)</td>
+<td>steps 750-1000</td>
+<td>3.272</td>
+<td>41.1%</td>
+</tr>
+<tr>
+<td><strong>6e-4</strong> (pilot <code>430xqpaf</code>)</td>
+<td>steps 500-750</td>
+<td>3.180</td>
+<td>42.2%</td>
+</tr>
+<tr>
+<td>1e-3 (<code>gesqanxo</code>)</td>
+<td>steps 250-500</td>
+<td>3.168</td>
+<td>42.4%</td>
+</tr>
+</tbody>
+</table>
+<p>Seed noise from the opportunistic probes is sd 0.0036 nats (5 seeds of the 6e-4 recipe). So 1e-3's 0.012 edge over 6e-4 is real but small at 3k steps, while 3e-4 is clearly behind.
+  The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
+- [ ] Freeze the study LR (Thomas).
+- [~] <strong>Rater race:</strong> LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
+- [ ] Rater race (base): pick LR, then full raters.
 - [ ] Later: BERT wave2; ES race.</p>
 <h2 id="launch-sequence-null-subjects-once-registered">Launch sequence (null-subjects, once registered)<a class="headerlink" href="#launch-sequence-null-subjects-once-registered" title="Permanent link">&para;</a></h2>
 <p>Run from a <code>feat/bert-recipe-v2</code> checkout. The pods clone that branch.</p>
@@ -2862,6 +2907,38 @@ Literature audit behind it: <a href="../reports/BERT%20pretraining%20recipe%20au
    - <code>--corpus-dir /mnt/data/rater_corpus/sweep_subset_v1/base</code>
    - <code>--base-config configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml</code>
    - <code>--gpus 48g --parallelism 2 --completions 2</code></p>
+<h2 id="opportunistic-tier-probe-opp_probe1020-submitted-2026-10-20-2304-utc">Opportunistic tier (probe <code>opp_probe/1020</code>, submitted 2026-10-20 23:04 UTC)<a class="headerlink" href="#opportunistic-tier-probe-opp_probe1020-submitted-2026-10-20-2304-utc" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>GPU</th>
+<th>first wait</th>
+<th>uninterrupted run</th>
+<th>tokens/s (BERT-large, 128 tokens)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H100 80GB (both classes)</td>
+<td>~10-11 h (scheduled ~09:00-10:00 UTC)</td>
+<td>7-8 h and still running</td>
+<td>70-73K (~5x A10)</td>
+</tr>
+<tr>
+<td>A100 SXM4 80GB (<code>opportunistic2</code>)</td>
+<td>short</td>
+<td>20 min, then 37 min, then preempted</td>
+<td>32-34K (~2.3x A10)</td>
+</tr>
+<tr>
+<td>H200 (both classes)</td>
+<td>none in 18 h</td>
+<td>-</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>Report: <code>python scripts/opp_probe_report.py --tag 1020</code> (branch <code>feat/bert-recipe-v2</code>).</p>
 <h2 id="open-decisions">Open decisions<a class="headerlink" href="#open-decisions" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Rater tokenizer: project WordPiece (current) vs roberta-style byte-level BPE.</li>
