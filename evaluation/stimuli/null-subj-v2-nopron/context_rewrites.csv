@@ -1,0 +1,160 @@
+id,original_context,new_context,categories,conditions,person,source
+c001,elena finished her homework .,elena finished the homework .,conjunction,conj_no_shift,other,pass1_minimal
+c002,mario saw his old teacher .,mario saw the old teacher .,conjunction,conj_shift,other,pass1_minimal
+c003,lucia spilled her drink .,lucia spilled the drink .,conjunction,conj_shift,other,pass1_minimal
+c004,marco lost his wallet .,marco lost the wallet .,conjunction,conj_shift,other,pass1_minimal
+c005,his boss ignored his complaints .,the boss ignored the complaints .,control,subj_control,other,pass1_minimal
+c006,it had been a long week .,the week had been long .,control,subj_control,other,pass1_minimal
+c007,his neighbor was very busy .,the neighbor was very busy .,control,subj_control,other,pass1_minimal
+c008,the test made her nervous .,the test was very stressful .,control,obj_control,other,main_loop_fix
+c009,pablo finished his final project .,pablo finished the final project .,embedded_drop,emb_noncoref,other,pass1_minimal
+c010,were you looking for someone ?,was someone knocking at the door ?,expletive,expl_be,other,adjudicated_natural
+c011,did you find the book ?,did the book turn up ?,expletive,expl_be,other,adjudicated_natural
+c012,a loud noise woke me up .,a loud noise came from upstairs .,expletive,expl_be,other,main_loop_fix
+c013,where is your phone ?,where is the phone ?,object_drop,obj_3sg,other,pass1_minimal
+c014,lucia lost her wallet again .,lucia lost the wallet again .,subject_drop;subject_drop_no_agreement,subj_3sg,other,pass1_minimal
+c015,the musicians tuned their instruments .,the musicians tuned the instruments .,subject_drop;subject_drop_no_agreement,subj_3pl,other,pass1_minimal
+c016,"ana , you forget the keys often .","ana , the keys go missing often .",subject_drop,subj_2sg,second,adjudicated_natural
+c017,"sara , you skip breakfast every day .","sara , breakfast goes uneaten every day .",subject_drop,subj_2sg,second,adjudicated_natural
+c018,"elena , you arrive late to practice .","elena , practice always starts late .",subject_drop,subj_2sg,second,adjudicated_natural
+c019,"marta , you leave the lights on .","marta , the lights are always on .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c020,"clara , you forget to reply .","clara , the reply never comes .",subject_drop,subj_2sg,second,adjudicated_natural
+c021,"lucia , you lose your umbrella often .","lucia , the umbrella goes missing often .",subject_drop,subj_2sg,second,adjudicated_natural
+c022,"sofia , you rush through your meals .","sofia , the meals are always rushed .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c023,"daniel , you park in the wrong spot .","daniel , the car ends up in the wrong spot .",subject_drop,subj_2sg,second,adjudicated_natural
+c024,"mario , you drink too much coffee .","mario , the coffee keeps flowing all day .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c025,"pablo , you skip the warm up .","pablo , the warm up never happens .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c026,"lucas , you leave your books behind .","lucas , the books never come home .",subject_drop,subj_2sg,second,adjudicated_natural
+c027,"marco , you talk during the movie .","marco , the talking goes on during the movie .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c028,"david , you interrupt the teacher often .","david , the teacher never gets to finish .",subject_drop,subj_2sg,second,adjudicated_natural
+c029,"oscar , you eat before dinner .","oscar , the cookies disappear before dinner .",subject_drop,subj_2sg,second,adjudicated_natural
+c030,"coach , you push the players hard .","coach , the drills are hard on the players .",subject_drop,subj_2sg,second,adjudicated_natural
+c031,"doctor , you listen to every concern .","doctor , no concern goes unheard .",subject_drop,subj_2sg,second,adjudicated_natural
+c032,"driver , you take the long route .","driver , the ride always takes the long route .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c033,"chef , you taste every single sauce .","chef , every single sauce gets a quick taste .",subject_drop,subj_2sg,second,adjudicated_natural
+c034,"teacher , you mark every small error .","teacher , every small error gets a red mark .",subject_drop,subj_2sg,second,adjudicated_natural
+c035,"captain , you study every opposing team .","captain , every opposing team gets a close look .",subject_drop,subj_2sg,second,adjudicated_hybrid
+c036,"friend , you always pack light .","friend , the suitcase is always light .",subject_drop,subj_2sg,second,adjudicated_natural
+c037,"neighbor , you wake up at dawn .","neighbor , the alarm rings at dawn .",subject_drop,subj_2sg,second,adjudicated_natural
+c038,"stranger , you answer every call politely .","stranger , every call gets a polite answer .",subject_drop,subj_2sg,second,adjudicated_natural
+c039,"partner , you stretch every single morning .","partner , the yoga mat comes out every single morning .",subject_drop,subj_2sg,second,adjudicated_natural
+c040,"team , you leave the window open .","team , the window is always open .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c041,"everyone , you arrive late again .","everyone , the rehearsal starts late again .",subject_drop,subj_2pl,second,adjudicated_natural
+c042,"friends , you bring too much food .","friends , too much food shows up every time .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c043,"class , you whisper during the lecture .","class , the whispering goes on during the lecture .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c044,"folks , you park on the lawn .","folks , the cars end up on the lawn .",subject_drop,subj_2pl,second,adjudicated_natural
+c045,"guests , you crowd the narrow hallway .","guests , the narrow hallway gets crowded .",subject_drop,subj_2pl,second,adjudicated_minimal
+c046,"children , you run in the kitchen .","children , the running goes on in the kitchen .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c047,"neighbors , you stack boxes outside .","neighbors , the boxes pile up outside .",subject_drop,subj_2pl,second,adjudicated_natural
+c048,"guys , you forget your jackets daily .","guys , the jackets never leave the hook .",subject_drop,subj_2pl,second,adjudicated_natural
+c049,"everyone , you speak at once .","everyone , the voices all come at once .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c050,"friends , you ignore my text messages .","friends , the text messages go unread .",subject_drop,subj_2pl,second,adjudicated_natural
+c051,"class , you rush through the problems .","class , the problems are always rushed .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c052,"folks , you bring your own chairs .","folks , the chairs always come from home .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c053,"guests , you stay past midnight again .","guests , the visit runs past midnight again .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c054,"children , you pick the ripe fruit .","children , the ripe fruit fills the baskets .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c055,"neighbors , you share your good tools .","neighbors , the good tools go from house to house .",subject_drop,subj_2pl,second,adjudicated_natural
+c056,"gentlemen , you cook for the group .","gentlemen , the group eats well every night .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c057,"ladies , you review the tape together .","ladies , the tape gets a careful review .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c058,"students , you whisper in the library .","students , the whispering goes on in the library .",subject_drop,subj_2pl,second,main_loop_fix
+c059,"travelers , you organize the trip well .","travelers , the trip is well organized .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c060,"ana and sara , you take careful notes .","ana and sara , the notes are always detailed .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c061,"mario and lucas , you bake a pie each fall .","mario and lucas , a pie comes out of the oven each fall .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c062,"elena and clara , you sign the book kindly .","elena and clara , the book fills with kind words .",subject_drop,subj_2pl,second,adjudicated_hybrid
+c063,"david and oscar , you split every dinner bill .","david and oscar , every dinner bill comes out even .",subject_drop,subj_2pl,second,adjudicated_natural
+c064,i just finished the project .,the project just wrapped up .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c065,i saw the new movie .,the new movie came out .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c066,i read your long message .,the long message arrived this morning .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c067,i tried the new recipe .,the new recipe turned out great .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c068,i visited the art exhibition .,the art exhibition opened last week .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c069,i reviewed the new contract .,the new contract was reviewed .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c070,i heard the surprise announcement .,the surprise announcement came this morning .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c071,i watched the evening rehearsal .,the evening rehearsal went well .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c072,i met the new colleague .,the new colleague started today .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c073,i tasted the thick soup .,the thick soup simmered all day .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c074,i visited the old museum .,the old museum reopened last year .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c075,i studied the folded map .,the folded map showed every road .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c076,i answered the ringing door .,the doorbell rang twice .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c077,i cleaned the small kitchen .,the small kitchen was cleaned .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c078,i walked the dog early .,the dog went out early .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c079,i signed the new lease .,the new lease was signed .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c080,i opened the heavy letter .,the heavy letter came in the mail .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c081,i checked the evening weather .,the evening weather looked stormy .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c082,i called the local doctor .,the local doctor answered the phone .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c083,i wrote a long report .,the long report took all week .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c084,i booked the morning flight .,the morning flight was booked .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c085,i planted the small tomatoes .,the small tomatoes were planted .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c086,i met the new neighbor .,the new neighbor stopped by today .,subject_drop;subject_drop_no_agreement,subj_1sg,first,adjudicated_natural
+c087,i trained all summer long .,the training lasted all summer long .,subject_drop;subject_drop_no_agreement,subj_1sg,first,pass1_minimal
+c088,we reviewed the new contract .,the new contract was reviewed .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c089,we watched the game together .,the game was on tv last night .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c090,we painted the living room .,the living room was painted .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c091,we walked through the quiet park .,the walk through the quiet park was lovely .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c092,we hosted the long dinner party .,the long dinner party went well .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c093,we baked fresh bread today .,fresh bread was baked today .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c094,we moved into a new house .,the moving van arrived at the new house .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c095,we tried the new cafe downtown .,the new cafe downtown was really good .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c096,we drove along the coast road .,the drive along the coast road was beautiful .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c097,we joined the local book club .,the local book club started up last year .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_hybrid
+c098,we adopted a friendly rescue cat .,a friendly rescue cat came home today .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c099,we cleaned the cluttered garage yesterday .,the cluttered garage was cleaned yesterday .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c100,we visited the sunday farmers market .,the sunday farmers market had fresh fruit .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c101,we repaired the broken wooden fence .,the broken wooden fence was repaired .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c102,we planned the long weekend trip .,the long weekend trip took a lot of planning .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c103,we tested the new software build .,the new software build was tested .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c104,we met at the main library .,the meeting was at the main library .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c105,we heard a loud strange noise .,a loud strange noise was heard .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c106,we made fresh pasta tonight .,dinner tonight was fresh pasta .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c107,we followed the walking tour guide .,the walking tour covered the old town .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c108,we watched the sunset from home .,the sunset looked beautiful from home .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c109,we returned from vacation last night .,the flight home from vacation landed last night .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c110,we started a small backyard garden .,the small backyard garden did well this year .,subject_drop;subject_drop_no_agreement,subj_1pl,first,adjudicated_natural
+c111,we finished the big puzzle at last .,the big puzzle was finished at last .,subject_drop;subject_drop_no_agreement,subj_1pl,first,pass1_minimal
+c112,"ana , you forgot the keys again .","ana , the keys went missing again .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c113,"sara , you skipped breakfast yesterday .","sara , breakfast went uneaten yesterday .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c114,"elena , you arrived late to practice .","elena , practice started late .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c115,"marta , you left the lights on .","marta , the lights were left on .",subject_drop_no_agreement,subj_2sg,second,adjudicated_minimal
+c116,"clara , you forgot to reply .","clara , the reply never came .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c117,"lucia , you lost your umbrella again .","lucia , the umbrella disappeared again .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c118,"sofia , you rushed through the meal .","sofia , the meal was gone in two minutes .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c119,"daniel , you parked in the wrong spot .","daniel , the car was in the wrong spot .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c120,"mario , you drank too much coffee .","mario , the whole pot of coffee was gone .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c121,"pablo , you skipped the warm up .","pablo , the warm up never happened .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c122,"lucas , you left your books behind .","lucas , the books were left behind .",subject_drop_no_agreement,subj_2sg,second,adjudicated_minimal
+c123,"marco , you talked during the movie .","marco , the talking went on during the movie .",subject_drop_no_agreement,subj_2sg,second,main_loop_fix
+c124,"david , you interrupted the teacher today .","david , the teacher kept getting interrupted today .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c125,"oscar , you ate before dinner .","oscar , the cookie jar was empty before dinner .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c126,"coach , you pushed the players hard .","coach , the practices pushed the players hard .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c127,"doctor , you listened to every concern .","doctor , no concern went unheard .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c128,"driver , you took the long route .","driver , the car took the long route .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c129,"chef , you tasted every single sauce .","chef , a spoon went into every single sauce .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c130,"teacher , you marked every small error .","teacher , the red pen caught every small error .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c131,"captain , you studied every opposing team .","captain , the scouting notes covered every opposing team .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c132,"friend , you packed very light .","friend , one small bag was enough .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c133,"neighbor , you woke up at dawn .","neighbor , the alarm rang at dawn .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c134,"stranger , you answered the call politely .","stranger , the call got a polite answer .",subject_drop_no_agreement,subj_2sg,second,adjudicated_natural
+c135,"partner , you stretched every single morning .","partner , every single morning started with stretches .",subject_drop_no_agreement,subj_2sg,second,adjudicated_hybrid
+c136,"team , you left the window open .","team , the window was left open .",subject_drop_no_agreement,subj_2pl,second,adjudicated_minimal
+c137,"everyone , you arrived late again .","everyone , rehearsal started late again .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c138,"friends , you brought too much food .","friends , the bags of food kept coming .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c139,"class , you whispered during the lecture .","class , the whispering went on during the lecture .",subject_drop_no_agreement,subj_2pl,second,main_loop_fix
+c140,"folks , you parked on the lawn .","folks , the cars were on the lawn .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c141,"guests , you crowded the narrow hallway .","guests , the narrow hallway was crowded .",subject_drop_no_agreement,subj_2pl,second,adjudicated_minimal
+c142,"children , you ran in the kitchen .","children , the running went on in the kitchen .",subject_drop_no_agreement,subj_2pl,second,main_loop_fix
+c143,"neighbors , you stacked boxes outside .","neighbors , boxes were stacked outside .",subject_drop_no_agreement,subj_2pl,second,adjudicated_minimal
+c144,"guys , you forgot your jackets yesterday .","guys , the jackets stayed home yesterday .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c145,"everyone , you spoke at once .","everyone , all the voices rose at once .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c146,"friends , you ignored my text messages .","friends , the text messages went unanswered .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c147,"class , you rushed through the problems .","class , the problems were done in a hurry .",subject_drop_no_agreement,subj_2pl,second,adjudicated_hybrid
+c148,"folks , you brought your own chairs .","folks , the chairs came from home .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c149,"guests , you stayed past midnight again .","guests , the party ran past midnight again .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c150,"children , you picked the ripe fruit .","children , the baskets filled up with ripe fruit .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c151,"neighbors , you shared your good tools .","neighbors , the good tools went from house to house .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c152,"gentlemen , you cooked for the group .","gentlemen , dinner was ready for the group .",subject_drop_no_agreement,subj_2pl,second,review_fix
+c153,"ladies , you reviewed the tape together .","ladies , the tape got a careful look .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c154,"students , you whispered in the library .","students , the whispering went on in the library .",subject_drop_no_agreement,subj_2pl,second,main_loop_fix
+c155,"travelers , you organized the trip well .","travelers , the trip was well organized .",subject_drop_no_agreement,subj_2pl,second,adjudicated_hybrid
+c156,"ana and sara , you took careful notes .","ana and sara , the notes were neat and careful .",subject_drop_no_agreement,subj_2pl,second,adjudicated_natural
+c157,"mario and lucas , you baked a pie last fall .","mario and lucas , a pie came out of the oven last fall .",subject_drop_no_agreement,subj_2pl,second,main_loop_fix
+c158,"elena and clara , you signed the book kindly .","elena and clara , the book came back signed .",subject_drop_no_agreement,subj_2pl,second,adjudicated_hybrid
+c159,"david and oscar , you split the dinner bill .","david and oscar , the dinner bill was split .",subject_drop_no_agreement,subj_2pl,second,adjudicated_minimal

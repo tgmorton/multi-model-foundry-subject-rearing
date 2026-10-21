@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,extraction,ext_obj,1,,what do you think that the scientist will discover ?,the,5,en,,claude-opus-4.7
+1,extraction,ext_obj,0,,what do you think the scientist will discover ?,the,4,en,,claude-opus-4.7
+2,extraction,ext_obj,1,,what do you believe that the author will publish ?,the,5,en,,claude-opus-4.7
+2,extraction,ext_obj,0,,what do you believe the author will publish ?,the,4,en,,claude-opus-4.7
+3,extraction,ext_obj,1,,what do you say that the committee will choose ?,the,5,en,,claude-opus-4.7
+3,extraction,ext_obj,0,,what do you say the committee will choose ?,the,4,en,,claude-opus-4.7
+4,extraction,ext_obj,1,,what do you suppose that the chef will prepare ?,the,5,en,,claude-opus-4.7
+4,extraction,ext_obj,0,,what do you suppose the chef will prepare ?,the,4,en,,claude-opus-4.7
+5,extraction,ext_obj,1,,what do you claim that the witness will reveal ?,the,5,en,,claude-opus-4.7
+5,extraction,ext_obj,0,,what do you claim the witness will reveal ?,the,4,en,,claude-opus-4.7
+6,extraction,ext_obj,1,,what do you suspect that the thief will steal ?,the,5,en,,claude-opus-4.7
+6,extraction,ext_obj,0,,what do you suspect the thief will steal ?,the,4,en,,claude-opus-4.7
+7,extraction,ext_obj,1,,what do you imagine that the writer will invent ?,the,5,en,,claude-opus-4.7
+7,extraction,ext_obj,0,,what do you imagine the writer will invent ?,the,4,en,,claude-opus-4.7
+8,extraction,ext_obj,1,,what do you hope that the judge will decide ?,the,5,en,,claude-opus-4.7
+8,extraction,ext_obj,0,,what do you hope the judge will decide ?,the,4,en,,claude-opus-4.7
+9,extraction,ext_obj,1,,what do you expect that the artist will create ?,the,5,en,,claude-opus-4.7
+9,extraction,ext_obj,0,,what do you expect the artist will create ?,the,4,en,,claude-opus-4.7
+10,extraction,ext_obj,1,,what do you figure that the mechanic will fix ?,the,5,en,,claude-opus-4.7
+10,extraction,ext_obj,0,,what do you figure the mechanic will fix ?,the,4,en,,claude-opus-4.7
+11,extraction,ext_obj,1,,what do you guess that the farmer will grow ?,the,5,en,,claude-opus-4.7
+11,extraction,ext_obj,0,,what do you guess the farmer will grow ?,the,4,en,,claude-opus-4.7
+12,extraction,ext_obj,1,,what do you argue that the senator will propose ?,the,5,en,,claude-opus-4.7
+12,extraction,ext_obj,0,,what do you argue the senator will propose ?,the,4,en,,claude-opus-4.7
+13,extraction,ext_obj,1,,which book do you think that the teacher will assign ?,the,6,en,,claude-opus-4.7
+13,extraction,ext_obj,0,,which book do you think the teacher will assign ?,the,5,en,,claude-opus-4.7
+14,extraction,ext_obj,1,,which song do you believe that the band will perform ?,the,6,en,,claude-opus-4.7
+14,extraction,ext_obj,0,,which song do you believe the band will perform ?,the,5,en,,claude-opus-4.7
+15,extraction,ext_obj,1,,which painting do you expect that the museum will display ?,the,6,en,,claude-opus-4.7
+15,extraction,ext_obj,0,,which painting do you expect the museum will display ?,the,5,en,,claude-opus-4.7
+16,extraction,ext_obj,1,,which dish do you hope that the cook will make ?,the,6,en,,claude-opus-4.7
+16,extraction,ext_obj,0,,which dish do you hope the cook will make ?,the,5,en,,claude-opus-4.7
+17,extraction,ext_obj,1,,which car do you figure that the driver will pick ?,the,6,en,,claude-opus-4.7
+17,extraction,ext_obj,0,,which car do you figure the driver will pick ?,the,5,en,,claude-opus-4.7
+18,extraction,ext_obj,1,,which novel do you imagine that the club will read ?,the,6,en,,claude-opus-4.7
+18,extraction,ext_obj,0,,which novel do you imagine the club will read ?,the,5,en,,claude-opus-4.7
+19,extraction,ext_obj,1,,which house do you claim that the buyer will afford ?,the,6,en,,claude-opus-4.7
+19,extraction,ext_obj,0,,which house do you claim the buyer will afford ?,the,5,en,,claude-opus-4.7
+20,extraction,ext_obj,1,,which film do you suspect that the critic will hate ?,the,6,en,,claude-opus-4.7
+20,extraction,ext_obj,0,,which film do you suspect the critic will hate ?,the,5,en,,claude-opus-4.7
+21,extraction,ext_obj,1,,who do you say that the coach will hire ?,the,5,en,,claude-opus-4.7
+21,extraction,ext_obj,0,,who do you say the coach will hire ?,the,4,en,,claude-opus-4.7
+22,extraction,ext_obj,1,,who do you suppose that the director will cast ?,the,5,en,,claude-opus-4.7
+22,extraction,ext_obj,0,,who do you suppose the director will cast ?,the,4,en,,claude-opus-4.7
+23,extraction,ext_obj,1,,who do you think that the jury will believe ?,the,5,en,,claude-opus-4.7
+23,extraction,ext_obj,0,,who do you think the jury will believe ?,the,4,en,,claude-opus-4.7
+24,extraction,ext_obj,1,,who do you believe that the boss will promote ?,the,5,en,,claude-opus-4.7
+24,extraction,ext_obj,0,,who do you believe the boss will promote ?,the,4,en,,claude-opus-4.7
+1,extraction,ext_subj,1,,who do you think that will win the race ?,will,5,en,,claude-opus-4.7
+1,extraction,ext_subj,0,,who do you think will win the race ?,will,4,en,,claude-opus-4.7
+2,extraction,ext_subj,1,,who do you believe that will solve the puzzle ?,will,5,en,,claude-opus-4.7
+2,extraction,ext_subj,0,,who do you believe will solve the puzzle ?,will,4,en,,claude-opus-4.7
+3,extraction,ext_subj,1,,who do you say that will lead the committee ?,will,5,en,,claude-opus-4.7
+3,extraction,ext_subj,0,,who do you say will lead the committee ?,will,4,en,,claude-opus-4.7
+4,extraction,ext_subj,1,,who do you suppose that will write the report ?,will,5,en,,claude-opus-4.7
+4,extraction,ext_subj,0,,who do you suppose will write the report ?,will,4,en,,claude-opus-4.7
+5,extraction,ext_subj,1,,who do you claim that will find the answer ?,will,5,en,,claude-opus-4.7
+5,extraction,ext_subj,0,,who do you claim will find the answer ?,will,4,en,,claude-opus-4.7
+6,extraction,ext_subj,1,,who do you suspect that will break the silence ?,will,5,en,,claude-opus-4.7
+6,extraction,ext_subj,0,,who do you suspect will break the silence ?,will,4,en,,claude-opus-4.7
+7,extraction,ext_subj,1,,who do you imagine that will take the job ?,will,5,en,,claude-opus-4.7
+7,extraction,ext_subj,0,,who do you imagine will take the job ?,will,4,en,,claude-opus-4.7
+8,extraction,ext_subj,1,,who do you hope that will visit the class ?,will,5,en,,claude-opus-4.7
+8,extraction,ext_subj,0,,who do you hope will visit the class ?,will,4,en,,claude-opus-4.7
+9,extraction,ext_subj,1,,who do you expect that will open the meeting ?,will,5,en,,claude-opus-4.7
+9,extraction,ext_subj,0,,who do you expect will open the meeting ?,will,4,en,,claude-opus-4.7
+10,extraction,ext_subj,1,,who do you figure that will teach the lesson ?,will,5,en,,claude-opus-4.7
+10,extraction,ext_subj,0,,who do you figure will teach the lesson ?,will,4,en,,claude-opus-4.7
+11,extraction,ext_subj,1,,who do you guess that will buy the house ?,will,5,en,,claude-opus-4.7
+11,extraction,ext_subj,0,,who do you guess will buy the house ?,will,4,en,,claude-opus-4.7
+12,extraction,ext_subj,1,,who do you argue that will save the project ?,will,5,en,,claude-opus-4.7
+12,extraction,ext_subj,0,,who do you argue will save the project ?,will,4,en,,claude-opus-4.7
+13,extraction,ext_subj,1,,which scientist do you think that will make the discovery ?,will,6,en,,claude-opus-4.7
+13,extraction,ext_subj,0,,which scientist do you think will make the discovery ?,will,5,en,,claude-opus-4.7
+14,extraction,ext_subj,1,,which author do you believe that will write the sequel ?,will,6,en,,claude-opus-4.7
+14,extraction,ext_subj,0,,which author do you believe will write the sequel ?,will,5,en,,claude-opus-4.7
+15,extraction,ext_subj,1,,which student do you expect that will pass the exam ?,will,6,en,,claude-opus-4.7
+15,extraction,ext_subj,0,,which student do you expect will pass the exam ?,will,5,en,,claude-opus-4.7
+16,extraction,ext_subj,1,,which chef do you hope that will cook the meal ?,will,6,en,,claude-opus-4.7
+16,extraction,ext_subj,0,,which chef do you hope will cook the meal ?,will,5,en,,claude-opus-4.7
+17,extraction,ext_subj,1,,which runner do you figure that will finish the race ?,will,6,en,,claude-opus-4.7
+17,extraction,ext_subj,0,,which runner do you figure will finish the race ?,will,5,en,,claude-opus-4.7
+18,extraction,ext_subj,1,,which artist do you imagine that will paint the mural ?,will,6,en,,claude-opus-4.7
+18,extraction,ext_subj,0,,which artist do you imagine will paint the mural ?,will,5,en,,claude-opus-4.7
+19,extraction,ext_subj,1,,which teacher do you claim that will grade the essays ?,will,6,en,,claude-opus-4.7
+19,extraction,ext_subj,0,,which teacher do you claim will grade the essays ?,will,5,en,,claude-opus-4.7
+20,extraction,ext_subj,1,,which doctor do you suspect that will treat the patient ?,will,6,en,,claude-opus-4.7
+20,extraction,ext_subj,0,,which doctor do you suspect will treat the patient ?,will,5,en,,claude-opus-4.7
+21,extraction,ext_subj,1,,what do you say that will happen at the trial ?,will,5,en,,claude-opus-4.7
+21,extraction,ext_subj,0,,what do you say will happen at the trial ?,will,4,en,,claude-opus-4.7
+22,extraction,ext_subj,1,,what do you suppose that will go wrong tomorrow ?,will,5,en,,claude-opus-4.7
+22,extraction,ext_subj,0,,what do you suppose will go wrong tomorrow ?,will,4,en,,claude-opus-4.7
+23,extraction,ext_subj,1,,what do you think that will change by next week ?,will,5,en,,claude-opus-4.7
+23,extraction,ext_subj,0,,what do you think will change by next week ?,will,4,en,,claude-opus-4.7
+24,extraction,ext_subj,1,,what do you believe that will come of this plan ?,will,5,en,,claude-opus-4.7
+24,extraction,ext_subj,0,,what do you believe will come of this plan ?,will,4,en,,claude-opus-4.7
