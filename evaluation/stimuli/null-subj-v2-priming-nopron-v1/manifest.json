@@ -114,6 +114,12 @@
   },
   "created_utc": "2026-10-21T22:49:27.776392+00:00",
   "format_version": "condition-matched-stimuli.v1",
+  "gold_review": {
+    "analysis_rule": "null primes from subj_1*/subj_2* items are imperative-ambiguous; stratify by prime_condition (pairing.csv)",
+    "reviewed_utc": "2026-10-22T22:00:00+00:00",
+    "scope": "design approved by Thomas (pronoun-free sources, context+sentence primes, 1 prime per target x prime category, condition-matched); structural audit: every composite reassembles exactly from its condition's matched rows, both target members share an identical prime, ids unique, 0 content-lemma/name overlap, eval_v2_cell manifest validator passes",
+    "status": "pass"
+  },
   "kind": "priming-v1",
   "pairing_policy": "one prime item per (target item, prime category); prime != target item; no shared content lemma (['ADJ', 'ADV', 'NOUN', 'PROPN', 'VERB']) or name; least-used prime condition, then item",
   "pairing_sha256": "29ec665309346d3df9388fc7f1e23f4cc2ce8ee91cc52960e3ed61289ce11dcd",
@@ -135,5 +141,5 @@
     "package_version": "3.7.5"
   },
   "targets": 576,
-  "vetted": false
+  "vetted": true
 }

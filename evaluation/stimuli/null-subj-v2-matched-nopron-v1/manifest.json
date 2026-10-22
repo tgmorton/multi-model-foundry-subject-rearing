@@ -113,6 +113,12 @@
   "generator_sha256": "8eac0b100c898e03dafcf2007a60f089053f89169e797585975a42ca4a486b54",
   "git_commit": "2cf5c7e476e48d34eabec629e1f034b9d07d1260",
   "git_dirty": true,
+  "gold_review": {
+    "analysis_rule": "exclude subj_1sg/subj_1pl from the pronoun-effect contrast (context cannot keep the speaker without a pronoun)",
+    "reviewed_utc": "2026-10-22T22:00:00+00:00",
+    "scope": "content approved by Thomas (context_rewrites.csv, 197 contexts); deterministic checks (no pronoun or pronoun-capable token, format, vocative kept, +/-3 tokens); adversarial agent review of every rewrite; main-loop review; structural audit vs matched-v1 (all non-context columns identical in every condition, contexts differ only on rewritten rows, no banned form after interventions, pair contexts still shared)",
+    "status": "pass"
+  },
   "pair_policy": {
     "enrich_verbal_morphology": "literal_independent_application",
     "impoverish_case_and_lemmatize": "shared_source_token_edits_follow_pronoun_status_1_parse"
@@ -137,5 +143,5 @@
     "model_version": "3.7.3",
     "package_version": "3.7.5"
   },
-  "vetted": false
+  "vetted": true
 }
