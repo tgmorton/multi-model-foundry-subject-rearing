@@ -250,6 +250,11 @@ def main():
                          "background, while the GPU scores the previous one. "
                          "Empty string disables.")
     ap.add_argument("--prefetch_depth", type=int, default=3)
+    ap.add_argument("--prefetch_streams", type=int, default=2,
+                    help="concurrent CephFS copier threads. One stream reads one "
+                         "checkpoint file at ~66 MB/s; more streams raise aggregate "
+                         "throughput so large benchmarks stay GPU-bound (NRP's GPU "
+                         ">40%% rule applies to every GPU pod, exempt size or not).")
     ap.add_argument("--slor", action="store_true",
                     help="Load the per-condition unigram baseline (from S3) "
                          "so the runner emits SLOR alongside MeanLP. "
@@ -574,6 +579,7 @@ def main():
             prefetch_dir=(Path(args.prefetch_dir) / cell_name
                           if args.prefetch_dir else None),
             prefetch_depth=args.prefetch_depth,
+            prefetch_streams=args.prefetch_streams,
             copy_results=args.results_to_pvc,
             remote_results=None if args.no_registry else _remote_results,
         )

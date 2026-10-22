@@ -1,0 +1,289 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,subject_drop,subj_1pl,1,the new contract was reviewed .,we agree with the main terms .,agree,1,en,,claude-opus-4.7
+1,subject_drop,subj_1pl,0,the new contract was reviewed .,agree with the main terms .,agree,0,en,,claude-opus-4.7
+2,subject_drop,subj_1pl,1,the game was on tv last night .,we cheered for the home team .,cheered,1,en,,claude-opus-4.7
+2,subject_drop,subj_1pl,0,the game was on tv last night .,cheered for the home team .,cheered,0,en,,claude-opus-4.7
+3,subject_drop,subj_1pl,1,the living room was painted .,we chose a soft pale yellow .,chose,1,en,,claude-opus-4.7
+3,subject_drop,subj_1pl,0,the living room was painted .,chose a soft pale yellow .,chose,0,en,,claude-opus-4.7
+4,subject_drop,subj_1pl,1,the walk through the quiet park was lovely .,we enjoyed the cool evening breeze .,enjoyed,1,en,,claude-opus-4.7
+4,subject_drop,subj_1pl,0,the walk through the quiet park was lovely .,enjoyed the cool evening breeze .,enjoyed,0,en,,claude-opus-4.7
+5,subject_drop,subj_1pl,1,the long dinner party went well .,we served a nice local wine .,served,1,en,,claude-opus-4.7
+5,subject_drop,subj_1pl,0,the long dinner party went well .,served a nice local wine .,served,0,en,,claude-opus-4.7
+6,subject_drop,subj_1pl,1,fresh bread was baked today .,we shared loaves with the neighbors .,shared,1,en,,claude-opus-4.7
+6,subject_drop,subj_1pl,0,fresh bread was baked today .,shared loaves with the neighbors .,shared,0,en,,claude-opus-4.7
+7,subject_drop,subj_1pl,1,the moving van arrived at the new house .,we unpacked the boxes quite slowly .,unpacked,1,en,,claude-opus-4.7
+7,subject_drop,subj_1pl,0,the moving van arrived at the new house .,unpacked the boxes quite slowly .,unpacked,0,en,,claude-opus-4.7
+8,subject_drop,subj_1pl,1,the new cafe downtown was really good .,we recommend the almond pastry .,recommend,1,en,,claude-opus-4.7
+8,subject_drop,subj_1pl,0,the new cafe downtown was really good .,recommend the almond pastry .,recommend,0,en,,claude-opus-4.7
+9,subject_drop,subj_1pl,1,the drive along the coast road was beautiful .,we stopped at every small beach .,stopped,1,en,,claude-opus-4.7
+9,subject_drop,subj_1pl,0,the drive along the coast road was beautiful .,stopped at every small beach .,stopped,0,en,,claude-opus-4.7
+10,subject_drop,subj_1pl,1,the local book club started up last year .,we discuss a novel each month .,discuss,1,en,,claude-opus-4.7
+10,subject_drop,subj_1pl,0,the local book club started up last year .,discuss a novel each month .,discuss,0,en,,claude-opus-4.7
+11,subject_drop,subj_1pl,1,a friendly rescue cat came home today .,we named her little pepper .,named,1,en,,claude-opus-4.7
+11,subject_drop,subj_1pl,0,a friendly rescue cat came home today .,named her little pepper .,named,0,en,,claude-opus-4.7
+12,subject_drop,subj_1pl,1,the cluttered garage was cleaned yesterday .,we donated the two old bikes .,donated,1,en,,claude-opus-4.7
+12,subject_drop,subj_1pl,0,the cluttered garage was cleaned yesterday .,donated the two old bikes .,donated,0,en,,claude-opus-4.7
+13,subject_drop,subj_1pl,1,the sunday farmers market had fresh fruit .,we bought a pint of blueberries .,bought,1,en,,claude-opus-4.7
+13,subject_drop,subj_1pl,0,the sunday farmers market had fresh fruit .,bought a pint of blueberries .,bought,0,en,,claude-opus-4.7
+14,subject_drop,subj_1pl,1,the broken wooden fence was repaired .,we painted the new fence boards .,painted,1,en,,claude-opus-4.7
+14,subject_drop,subj_1pl,0,the broken wooden fence was repaired .,painted the new fence boards .,painted,0,en,,claude-opus-4.7
+15,subject_drop,subj_1pl,1,the long weekend trip took careful planning .,we booked a small quiet cabin .,booked,1,en,,claude-opus-4.7
+15,subject_drop,subj_1pl,0,the long weekend trip took careful planning .,booked a small quiet cabin .,booked,0,en,,claude-opus-4.7
+16,subject_drop,subj_1pl,1,the new software build was tested .,we found a handful of bugs .,found,1,en,,claude-opus-4.7
+16,subject_drop,subj_1pl,0,the new software build was tested .,found a handful of bugs .,found,0,en,,claude-opus-4.7
+17,subject_drop,subj_1pl,1,the meeting was at the main library .,we studied until quite late .,studied,1,en,,claude-opus-4.7
+17,subject_drop,subj_1pl,0,the meeting was at the main library .,studied until quite late .,studied,0,en,,claude-opus-4.7
+18,subject_drop,subj_1pl,1,a loud strange noise was heard .,we checked every room quickly .,checked,1,en,,claude-opus-4.7
+18,subject_drop,subj_1pl,0,a loud strange noise was heard .,checked every room quickly .,checked,0,en,,claude-opus-4.7
+19,subject_drop,subj_1pl,1,dinner tonight was fresh pasta .,we rolled the dough by hand .,rolled,1,en,,claude-opus-4.7
+19,subject_drop,subj_1pl,0,dinner tonight was fresh pasta .,rolled the dough by hand .,rolled,0,en,,claude-opus-4.7
+20,subject_drop,subj_1pl,1,the walking tour covered the old town .,we learned lots of local history .,learned,1,en,,claude-opus-4.7
+20,subject_drop,subj_1pl,0,the walking tour covered the old town .,learned lots of local history .,learned,0,en,,claude-opus-4.7
+21,subject_drop,subj_1pl,1,the sunset looked beautiful from home .,we took a dozen quick photos .,took,1,en,,claude-opus-4.7
+21,subject_drop,subj_1pl,0,the sunset looked beautiful from home .,took a dozen quick photos .,took,0,en,,claude-opus-4.7
+22,subject_drop,subj_1pl,1,the flight home from vacation landed last night .,we slept through most of the morning .,slept,1,en,,claude-opus-4.7
+22,subject_drop,subj_1pl,0,the flight home from vacation landed last night .,slept through most of the morning .,slept,0,en,,claude-opus-4.7
+23,subject_drop,subj_1pl,1,the small backyard garden did well in the summer .,"we grow tomatoes , basil , and mint .",grow,1,en,,claude-opus-4.7
+23,subject_drop,subj_1pl,0,the small backyard garden did well in the summer .,"grow tomatoes , basil , and mint .",grow,0,en,,claude-opus-4.7
+24,subject_drop,subj_1pl,1,the big puzzle was finished at last .,we framed it above the living room couch .,framed,1,en,,claude-opus-4.7
+24,subject_drop,subj_1pl,0,the big puzzle was finished at last .,framed it above the living room couch .,framed,0,en,,claude-opus-4.7
+1,subject_drop,subj_1sg,1,the project just wrapped up .,i believe the result is good .,believe,1,en,,claude-opus-4.7
+1,subject_drop,subj_1sg,0,the project just wrapped up .,believe the result is good .,believe,0,en,,claude-opus-4.7
+2,subject_drop,subj_1sg,1,the new movie came out .,i think the plot is clever .,think,1,en,,claude-opus-4.7
+2,subject_drop,subj_1sg,0,the new movie came out .,think the plot is clever .,think,0,en,,claude-opus-4.7
+3,subject_drop,subj_1sg,1,the long message arrived today .,i understand your main concerns .,understand,1,en,,claude-opus-4.7
+3,subject_drop,subj_1sg,0,the long message arrived today .,understand your main concerns .,understand,0,en,,claude-opus-4.7
+4,subject_drop,subj_1sg,1,the new recipe turned out great .,i recommend it to everyone .,recommend,1,en,,claude-opus-4.7
+4,subject_drop,subj_1sg,0,the new recipe turned out great .,recommend it to everyone .,recommend,0,en,,claude-opus-4.7
+5,subject_drop,subj_1sg,1,the art exhibition opened last week .,i admire the artist ' s work .,admire,1,en,,claude-opus-4.7
+5,subject_drop,subj_1sg,0,the art exhibition opened last week .,admire the artist ' s work .,admire,0,en,,claude-opus-4.7
+6,subject_drop,subj_1sg,1,the new contract was reviewed .,i accept the main terms .,accept,1,en,,claude-opus-4.7
+6,subject_drop,subj_1sg,0,the new contract was reviewed .,accept the main terms .,accept,0,en,,claude-opus-4.7
+7,subject_drop,subj_1sg,1,the surprise announcement came today .,i welcome the unexpected news .,welcome,1,en,,claude-opus-4.7
+7,subject_drop,subj_1sg,0,the surprise announcement came today .,welcome the unexpected news .,welcome,0,en,,claude-opus-4.7
+8,subject_drop,subj_1sg,1,the evening rehearsal went well .,i enjoy the opening scene .,enjoy,1,en,,claude-opus-4.7
+8,subject_drop,subj_1sg,0,the evening rehearsal went well .,enjoy the opening scene .,enjoy,0,en,,claude-opus-4.7
+9,subject_drop,subj_1sg,1,the new colleague started today .,i find him quite friendly .,find,1,en,,claude-opus-4.7
+9,subject_drop,subj_1sg,0,the new colleague started today .,find him quite friendly .,find,0,en,,claude-opus-4.7
+10,subject_drop,subj_1sg,1,the thick soup simmered for hours .,i prefer a bit more salt .,prefer,1,en,,claude-opus-4.7
+10,subject_drop,subj_1sg,0,the thick soup simmered for hours .,prefer a bit more salt .,prefer,0,en,,claude-opus-4.7
+11,subject_drop,subj_1sg,1,the old museum reopened last year .,i remember every single painting .,remember,1,en,,claude-opus-4.7
+11,subject_drop,subj_1sg,0,the old museum reopened last year .,remember every single painting .,remember,0,en,,claude-opus-4.7
+12,subject_drop,subj_1sg,1,the folded map showed every road .,i know the shortest route .,know,1,en,,claude-opus-4.7
+12,subject_drop,subj_1sg,0,the folded map showed every road .,know the shortest route .,know,0,en,,claude-opus-4.7
+13,subject_drop,subj_1sg,1,the doorbell rang twice .,i greet our guests warmly .,greet,1,en,,claude-opus-4.7
+13,subject_drop,subj_1sg,0,the doorbell rang twice .,greet our guests warmly .,greet,0,en,,claude-opus-4.7
+14,subject_drop,subj_1sg,1,the small kitchen was cleaned .,i polished each wooden counter .,polished,1,en,,claude-opus-4.7
+14,subject_drop,subj_1sg,0,the small kitchen was cleaned .,polished each wooden counter .,polished,0,en,,claude-opus-4.7
+15,subject_drop,subj_1sg,1,the dog went out early .,i beat the morning heat today .,beat,1,en,,claude-opus-4.7
+15,subject_drop,subj_1sg,0,the dog went out early .,beat the morning heat today .,beat,0,en,,claude-opus-4.7
+16,subject_drop,subj_1sg,1,the new lease was signed .,i move in on friday .,move,1,en,,claude-opus-4.7
+16,subject_drop,subj_1sg,0,the new lease was signed .,move in on friday .,move,0,en,,claude-opus-4.7
+17,subject_drop,subj_1sg,1,the heavy letter came in the mail .,i read it right away .,read,1,en,,claude-opus-4.7
+17,subject_drop,subj_1sg,0,the heavy letter came in the mail .,read it right away .,read,0,en,,claude-opus-4.7
+18,subject_drop,subj_1sg,1,the evening weather looked stormy .,i expect hard rain tonight .,expect,1,en,,claude-opus-4.7
+18,subject_drop,subj_1sg,0,the evening weather looked stormy .,expect hard rain tonight .,expect,0,en,,claude-opus-4.7
+19,subject_drop,subj_1sg,1,the local doctor answered the phone .,i scheduled a quick checkup .,scheduled,1,en,,claude-opus-4.7
+19,subject_drop,subj_1sg,0,the local doctor answered the phone .,scheduled a quick checkup .,scheduled,0,en,,claude-opus-4.7
+20,subject_drop,subj_1sg,1,the long report took a whole week .,i submit it by tomorrow .,submit,1,en,,claude-opus-4.7
+20,subject_drop,subj_1sg,0,the long report took a whole week .,submit it by tomorrow .,submit,0,en,,claude-opus-4.7
+21,subject_drop,subj_1sg,1,the morning flight was booked .,i pack my suitcase tonight .,pack,1,en,,claude-opus-4.7
+21,subject_drop,subj_1sg,0,the morning flight was booked .,pack my suitcase tonight .,pack,0,en,,claude-opus-4.7
+22,subject_drop,subj_1sg,1,the small tomatoes were planted .,i water them every morning .,water,1,en,,claude-opus-4.7
+22,subject_drop,subj_1sg,0,the small tomatoes were planted .,water them every morning .,water,0,en,,claude-opus-4.7
+23,subject_drop,subj_1sg,1,the new neighbor stopped by today .,i like her quite a lot .,like,1,en,,claude-opus-4.7
+23,subject_drop,subj_1sg,0,the new neighbor stopped by today .,like her quite a lot .,like,0,en,,claude-opus-4.7
+24,subject_drop,subj_1sg,1,the training lasted the whole summer .,i feel much stronger now .,feel,1,en,,claude-opus-4.7
+24,subject_drop,subj_1sg,0,the training lasted the whole summer .,feel much stronger now .,feel,0,en,,claude-opus-4.7
+1,subject_drop,subj_2pl,1,"team , the window is always open .",you let the cat inside .,let,1,en,,claude-opus-4.7
+1,subject_drop,subj_2pl,0,"team , the window is always open .",let the cat inside .,let,0,en,,claude-opus-4.7
+2,subject_drop,subj_2pl,1,"folks , the rehearsal starts late again .",you delay the whole rehearsal .,delay,1,en,,claude-opus-4.7
+2,subject_drop,subj_2pl,0,"folks , the rehearsal starts late again .",delay the whole rehearsal .,delay,0,en,,claude-opus-4.7
+3,subject_drop,subj_2pl,1,"friends , piles of food show up every time .",you overflow our small fridge .,overflow,1,en,,claude-opus-4.7
+3,subject_drop,subj_2pl,0,"friends , piles of food show up every time .",overflow our small fridge .,overflow,0,en,,claude-opus-4.7
+4,subject_drop,subj_2pl,1,"class , the whispering goes on during the lecture .",you distract the front row .,distract,1,en,,claude-opus-4.7
+4,subject_drop,subj_2pl,0,"class , the whispering goes on during the lecture .",distract the front row .,distract,0,en,,claude-opus-4.7
+5,subject_drop,subj_2pl,1,"folks , the cars end up on the lawn .",you damage the fresh grass .,damage,1,en,,claude-opus-4.7
+5,subject_drop,subj_2pl,0,"folks , the cars end up on the lawn .",damage the fresh grass .,damage,0,en,,claude-opus-4.7
+6,subject_drop,subj_2pl,1,"guests , the narrow hallway gets crowded .",you block the main door .,block,1,en,,claude-opus-4.7
+6,subject_drop,subj_2pl,0,"guests , the narrow hallway gets crowded .",block the main door .,block,0,en,,claude-opus-4.7
+7,subject_drop,subj_2pl,1,"children , the running goes on in the kitchen .",you bother the busy cook .,bother,1,en,,claude-opus-4.7
+7,subject_drop,subj_2pl,0,"children , the running goes on in the kitchen .",bother the busy cook .,bother,0,en,,claude-opus-4.7
+8,subject_drop,subj_2pl,1,"neighbors , the boxes pile up outside .",you clutter the shared pathway .,clutter,1,en,,claude-opus-4.7
+8,subject_drop,subj_2pl,0,"neighbors , the boxes pile up outside .",clutter the shared pathway .,clutter,0,en,,claude-opus-4.7
+9,subject_drop,subj_2pl,1,"guys , the jackets never leave the hook .",you catch colds every winter .,catch,1,en,,claude-opus-4.7
+9,subject_drop,subj_2pl,0,"guys , the jackets never leave the hook .",catch colds every winter .,catch,0,en,,claude-opus-4.7
+10,subject_drop,subj_2pl,1,"folks , the voices rise together .",you drown out the main speaker .,drown,1,en,,claude-opus-4.7
+10,subject_drop,subj_2pl,0,"folks , the voices rise together .",drown out the main speaker .,drown,0,en,,claude-opus-4.7
+11,subject_drop,subj_2pl,1,"friends , the text messages go unread .",you miss all the party details .,miss,1,en,,claude-opus-4.7
+11,subject_drop,subj_2pl,0,"friends , the text messages go unread .",miss all the party details .,miss,0,en,,claude-opus-4.7
+12,subject_drop,subj_2pl,1,"class , the problems are always rushed .",you skip the hardest final step .,skip,1,en,,claude-opus-4.7
+12,subject_drop,subj_2pl,0,"class , the problems are always rushed .",skip the hardest final step .,skip,0,en,,claude-opus-4.7
+13,subject_drop,subj_2pl,1,"folks , the chairs always come from home .",you save the host some trouble .,save,1,en,,claude-opus-4.7
+13,subject_drop,subj_2pl,0,"folks , the chairs always come from home .",save the host some trouble .,save,0,en,,claude-opus-4.7
+14,subject_drop,subj_2pl,1,"guests , the visit runs past midnight again .",you exhaust the tired hosts .,exhaust,1,en,,claude-opus-4.7
+14,subject_drop,subj_2pl,0,"guests , the visit runs past midnight again .",exhaust the tired hosts .,exhaust,0,en,,claude-opus-4.7
+15,subject_drop,subj_2pl,1,"children , the ripe fruit fills the baskets .",you help the farmer quickly .,help,1,en,,claude-opus-4.7
+15,subject_drop,subj_2pl,0,"children , the ripe fruit fills the baskets .",help the farmer quickly .,help,0,en,,claude-opus-4.7
+16,subject_drop,subj_2pl,1,"neighbors , the good tools go from house to house .",you build a real community .,build,1,en,,claude-opus-4.7
+16,subject_drop,subj_2pl,0,"neighbors , the good tools go from house to house .",build a real community .,build,0,en,,claude-opus-4.7
+17,subject_drop,subj_2pl,1,"gentlemen , the group eats well every night .",you feed eight hungry people .,feed,1,en,,claude-opus-4.7
+17,subject_drop,subj_2pl,0,"gentlemen , the group eats well every night .",feed eight hungry people .,feed,0,en,,claude-opus-4.7
+18,subject_drop,subj_2pl,1,"ladies , the tape gets a careful review .",you spot the small mistakes .,spot,1,en,,claude-opus-4.7
+18,subject_drop,subj_2pl,0,"ladies , the tape gets a careful review .",spot the small mistakes .,spot,0,en,,claude-opus-4.7
+19,subject_drop,subj_2pl,1,"students , the whispering goes on in the library .",you respect the quiet rule .,respect,1,en,,claude-opus-4.7
+19,subject_drop,subj_2pl,0,"students , the whispering goes on in the library .",respect the quiet rule .,respect,0,en,,claude-opus-4.7
+20,subject_drop,subj_2pl,1,"travelers , the trip is well organized .",you plan every single detail .,plan,1,en,,claude-opus-4.7
+20,subject_drop,subj_2pl,0,"travelers , the trip is well organized .",plan every single detail .,plan,0,en,,claude-opus-4.7
+21,subject_drop,subj_2pl,1,"ana and sara , the notes are always detailed .",you remember all the key points .,remember,1,en,ana;sara,claude-opus-4.7
+21,subject_drop,subj_2pl,0,"ana and sara , the notes are always detailed .",remember all the key points .,remember,0,en,ana;sara,claude-opus-4.7
+22,subject_drop,subj_2pl,1,"mario and lucas , a pie comes out of the oven every fall .",you fill the house with cinnamon .,fill,1,en,mario;lucas,claude-opus-4.7
+22,subject_drop,subj_2pl,0,"mario and lucas , a pie comes out of the oven every fall .",fill the house with cinnamon .,fill,0,en,mario;lucas,claude-opus-4.7
+23,subject_drop,subj_2pl,1,"elena and clara , the book fills with kind words .",you leave a warm short note .,leave,1,en,elena;clara,claude-opus-4.7
+23,subject_drop,subj_2pl,0,"elena and clara , the book fills with kind words .",leave a warm short note .,leave,0,en,elena;clara,claude-opus-4.7
+24,subject_drop,subj_2pl,1,"david and oscar , every dinner bill comes out even .",you treat each guest fairly .,treat,1,en,david;oscar,claude-opus-4.7
+24,subject_drop,subj_2pl,0,"david and oscar , every dinner bill comes out even .",treat each guest fairly .,treat,0,en,david;oscar,claude-opus-4.7
+1,subject_drop,subj_2sg,1,"ana , the keys go missing often .",you take them before leaving .,take,1,en,ana,claude-opus-4.7
+1,subject_drop,subj_2sg,0,"ana , the keys go missing often .",take them before leaving .,take,0,en,ana,claude-opus-4.7
+2,subject_drop,subj_2sg,1,"sara , breakfast goes uneaten every day .",you need a real morning meal .,need,1,en,sara,claude-opus-4.7
+2,subject_drop,subj_2sg,0,"sara , breakfast goes uneaten every day .",need a real morning meal .,need,0,en,sara,claude-opus-4.7
+3,subject_drop,subj_2sg,1,"elena , practice always starts late .",you waste the coach ' s time .,waste,1,en,elena,claude-opus-4.7
+3,subject_drop,subj_2sg,0,"elena , practice always starts late .",waste the coach ' s time .,waste,0,en,elena,claude-opus-4.7
+4,subject_drop,subj_2sg,1,"marta , the lights are always on .",you raise our electric bill .,raise,1,en,marta,claude-opus-4.7
+4,subject_drop,subj_2sg,0,"marta , the lights are always on .",raise our electric bill .,raise,0,en,marta,claude-opus-4.7
+5,subject_drop,subj_2sg,1,"clara , the reply never comes .",you owe me a quick message .,owe,1,en,clara,claude-opus-4.7
+5,subject_drop,subj_2sg,0,"clara , the reply never comes .",owe me a quick message .,owe,0,en,clara,claude-opus-4.7
+6,subject_drop,subj_2sg,1,"lucia , the umbrella goes missing often .",you buy a new one monthly .,buy,1,en,lucia,claude-opus-4.7
+6,subject_drop,subj_2sg,0,"lucia , the umbrella goes missing often .",buy a new one monthly .,buy,0,en,lucia,claude-opus-4.7
+7,subject_drop,subj_2sg,1,"sofia , the meals are always rushed .",you miss the real flavor .,miss,1,en,sofia,claude-opus-4.7
+7,subject_drop,subj_2sg,0,"sofia , the meals are always rushed .",miss the real flavor .,miss,0,en,sofia,claude-opus-4.7
+8,subject_drop,subj_2sg,1,"daniel , the car ends up in the wrong spot .",you block the main driveway .,block,1,en,daniel,claude-opus-4.7
+8,subject_drop,subj_2sg,0,"daniel , the car ends up in the wrong spot .",block the main driveway .,block,0,en,daniel,claude-opus-4.7
+9,subject_drop,subj_2sg,1,"mario , the coffee keeps flowing day and night .",you struggle to fall asleep .,struggle,1,en,mario,claude-opus-4.7
+9,subject_drop,subj_2sg,0,"mario , the coffee keeps flowing day and night .",struggle to fall asleep .,struggle,0,en,mario,claude-opus-4.7
+10,subject_drop,subj_2sg,1,"pablo , the warm up never happens .",you risk a real injury .,risk,1,en,pablo,claude-opus-4.7
+10,subject_drop,subj_2sg,0,"pablo , the warm up never happens .",risk a real injury .,risk,0,en,pablo,claude-opus-4.7
+11,subject_drop,subj_2sg,1,"lucas , the books never come home .",you forget your homework constantly .,forget,1,en,lucas,claude-opus-4.7
+11,subject_drop,subj_2sg,0,"lucas , the books never come home .",forget your homework constantly .,forget,0,en,lucas,claude-opus-4.7
+12,subject_drop,subj_2sg,1,"marco , the talking goes on during the movie .",you annoy the whole row .,annoy,1,en,marco,claude-opus-4.7
+12,subject_drop,subj_2sg,0,"marco , the talking goes on during the movie .",annoy the whole row .,annoy,0,en,marco,claude-opus-4.7
+13,subject_drop,subj_2sg,1,"david , the teacher never gets to finish .",you frustrate the whole class .,frustrate,1,en,david,claude-opus-4.7
+13,subject_drop,subj_2sg,0,"david , the teacher never gets to finish .",frustrate the whole class .,frustrate,0,en,david,claude-opus-4.7
+14,subject_drop,subj_2sg,1,"oscar , the cookies disappear before dinner .",you spoil your own appetite .,spoil,1,en,oscar,claude-opus-4.7
+14,subject_drop,subj_2sg,0,"oscar , the cookies disappear before dinner .",spoil your own appetite .,spoil,0,en,oscar,claude-opus-4.7
+15,subject_drop,subj_2sg,1,"coach , the drills are hard on the players .",you prepare them for tough games .,prepare,1,en,,claude-opus-4.7
+15,subject_drop,subj_2sg,0,"coach , the drills are hard on the players .",prepare them for tough games .,prepare,0,en,,claude-opus-4.7
+16,subject_drop,subj_2sg,1,"doctor , no concern goes unheard .",you calm the worried patients .,calm,1,en,,claude-opus-4.7
+16,subject_drop,subj_2sg,0,"doctor , no concern goes unheard .",calm the worried patients .,calm,0,en,,claude-opus-4.7
+17,subject_drop,subj_2sg,1,"driver , the ride always takes the long route .",you avoid the city traffic .,avoid,1,en,,claude-opus-4.7
+17,subject_drop,subj_2sg,0,"driver , the ride always takes the long route .",avoid the city traffic .,avoid,0,en,,claude-opus-4.7
+18,subject_drop,subj_2sg,1,"chef , every single sauce gets a quick taste .",you judge a good dish quickly .,judge,1,en,,claude-opus-4.7
+18,subject_drop,subj_2sg,0,"chef , every single sauce gets a quick taste .",judge a good dish quickly .,judge,0,en,,claude-opus-4.7
+19,subject_drop,subj_2sg,1,"teacher , every small error gets a red mark .",you track each student ' s progress .,track,1,en,,claude-opus-4.7
+19,subject_drop,subj_2sg,0,"teacher , every small error gets a red mark .",track each student ' s progress .,track,0,en,,claude-opus-4.7
+20,subject_drop,subj_2sg,1,"captain , every opposing team gets a close look .",you plan each match carefully .,plan,1,en,,claude-opus-4.7
+20,subject_drop,subj_2sg,0,"captain , every opposing team gets a close look .",plan each match carefully .,plan,0,en,,claude-opus-4.7
+21,subject_drop,subj_2sg,1,"friend , the suitcase is always light .",you save money on luggage .,save,1,en,,claude-opus-4.7
+21,subject_drop,subj_2sg,0,"friend , the suitcase is always light .",save money on luggage .,save,0,en,,claude-opus-4.7
+22,subject_drop,subj_2sg,1,"neighbor , the alarm rings at dawn .",you catch the earliest train .,catch,1,en,,claude-opus-4.7
+22,subject_drop,subj_2sg,0,"neighbor , the alarm rings at dawn .",catch the earliest train .,catch,0,en,,claude-opus-4.7
+23,subject_drop,subj_2sg,1,"stranger , every call gets a polite answer .",you help many lost travelers .,help,1,en,,claude-opus-4.7
+23,subject_drop,subj_2sg,0,"stranger , every call gets a polite answer .",help many lost travelers .,help,0,en,,claude-opus-4.7
+24,subject_drop,subj_2sg,1,"partner , the yoga mat comes out every single morning .",you avoid most back pain .,avoid,1,en,,claude-opus-4.7
+24,subject_drop,subj_2sg,0,"partner , the yoga mat comes out every single morning .",avoid most back pain .,avoid,0,en,,claude-opus-4.7
+1,subject_drop,subj_3pl,1,the tourists missed the bus .,they called a local taxi .,called,1,en,,claude-opus-4.7
+1,subject_drop,subj_3pl,0,the tourists missed the bus .,called a local taxi .,called,0,en,,claude-opus-4.7
+2,subject_drop,subj_3pl,1,the students finished the test .,they left the quiet room .,left,1,en,,claude-opus-4.7
+2,subject_drop,subj_3pl,0,the students finished the test .,left the quiet room .,left,0,en,,claude-opus-4.7
+3,subject_drop,subj_3pl,1,the guests arrived quite late .,they apologized to the host .,apologized,1,en,,claude-opus-4.7
+3,subject_drop,subj_3pl,0,the guests arrived quite late .,apologized to the host .,apologized,0,en,,claude-opus-4.7
+4,subject_drop,subj_3pl,1,the neighbors heard the alarm .,they rushed outside right away .,rushed,1,en,,claude-opus-4.7
+4,subject_drop,subj_3pl,0,the neighbors heard the alarm .,rushed outside right away .,rushed,0,en,,claude-opus-4.7
+5,subject_drop,subj_3pl,1,the dancers rehearsed for weeks .,they perfected the new routine .,perfected,1,en,,claude-opus-4.7
+5,subject_drop,subj_3pl,0,the dancers rehearsed for weeks .,perfected the new routine .,perfected,0,en,,claude-opus-4.7
+6,subject_drop,subj_3pl,1,the climbers reached the high summit .,they posed for a photo .,posed,1,en,,claude-opus-4.7
+6,subject_drop,subj_3pl,0,the climbers reached the high summit .,posed for a photo .,posed,0,en,,claude-opus-4.7
+7,subject_drop,subj_3pl,1,the musicians tuned the instruments .,they began the evening concert .,began,1,en,,claude-opus-4.7
+7,subject_drop,subj_3pl,0,the musicians tuned the instruments .,began the evening concert .,began,0,en,,claude-opus-4.7
+8,subject_drop,subj_3pl,1,the workers fixed the broken roof .,they cleaned the whole yard .,cleaned,1,en,,claude-opus-4.7
+8,subject_drop,subj_3pl,0,the workers fixed the broken roof .,cleaned the whole yard .,cleaned,0,en,,claude-opus-4.7
+9,subject_drop,subj_3pl,1,the bakers opened the shop early .,they sold every single loaf .,sold,1,en,,claude-opus-4.7
+9,subject_drop,subj_3pl,0,the bakers opened the shop early .,sold every single loaf .,sold,0,en,,claude-opus-4.7
+10,subject_drop,subj_3pl,1,the teachers reviewed the plan carefully .,they voted in its favor .,voted,1,en,,claude-opus-4.7
+10,subject_drop,subj_3pl,0,the teachers reviewed the plan carefully .,voted in its favor .,voted,0,en,,claude-opus-4.7
+11,subject_drop,subj_3pl,1,ana and sara hosted a dinner .,they served fresh warm bread .,served,1,en,ana;sara,claude-opus-4.7
+11,subject_drop,subj_3pl,0,ana and sara hosted a dinner .,served fresh warm bread .,served,0,en,ana;sara,claude-opus-4.7
+12,subject_drop,subj_3pl,1,mario and lucas built a treehouse .,they painted it bright green .,painted,1,en,mario;lucas,claude-opus-4.7
+12,subject_drop,subj_3pl,0,mario and lucas built a treehouse .,painted it bright green .,painted,0,en,mario;lucas,claude-opus-4.7
+13,subject_drop,subj_3pl,1,elena and clara joined the choir .,they rehearse on most sundays .,rehearse,1,en,elena;clara,claude-opus-4.7
+13,subject_drop,subj_3pl,0,elena and clara joined the choir .,rehearse on most sundays .,rehearse,0,en,elena;clara,claude-opus-4.7
+14,subject_drop,subj_3pl,1,david and oscar ran the marathon .,they trained for several months .,trained,1,en,david;oscar,claude-opus-4.7
+14,subject_drop,subj_3pl,0,david and oscar ran the marathon .,trained for several months .,trained,0,en,david;oscar,claude-opus-4.7
+15,subject_drop,subj_3pl,1,the pipes froze overnight .,they burst by early morning .,burst,1,en,,claude-opus-4.7
+15,subject_drop,subj_3pl,0,the pipes froze overnight .,burst by early morning .,burst,0,en,,claude-opus-4.7
+16,subject_drop,subj_3pl,1,the candles burned down fast .,they dripped onto the table .,dripped,1,en,,claude-opus-4.7
+16,subject_drop,subj_3pl,0,the candles burned down fast .,dripped onto the table .,dripped,0,en,,claude-opus-4.7
+17,subject_drop,subj_3pl,1,the leaves fell from the tree .,they covered the long driveway .,covered,1,en,,claude-opus-4.7
+17,subject_drop,subj_3pl,0,the leaves fell from the tree .,covered the long driveway .,covered,0,en,,claude-opus-4.7
+18,subject_drop,subj_3pl,1,the books piled on the desk .,they blocked the small lamp .,blocked,1,en,,claude-opus-4.7
+18,subject_drop,subj_3pl,0,the books piled on the desk .,blocked the small lamp .,blocked,0,en,,claude-opus-4.7
+19,subject_drop,subj_3pl,1,the puppies escaped the yard .,they chased a grey squirrel .,chased,1,en,,claude-opus-4.7
+19,subject_drop,subj_3pl,0,the puppies escaped the yard .,chased a grey squirrel .,chased,0,en,,claude-opus-4.7
+20,subject_drop,subj_3pl,1,the birds returned in early spring .,they built a new nest .,built,1,en,,claude-opus-4.7
+20,subject_drop,subj_3pl,0,the birds returned in early spring .,built a new nest .,built,0,en,,claude-opus-4.7
+21,subject_drop,subj_3pl,1,the fireworks lit the night sky .,they delighted the excited children .,delighted,1,en,,claude-opus-4.7
+21,subject_drop,subj_3pl,0,the fireworks lit the night sky .,delighted the excited children .,delighted,0,en,,claude-opus-4.7
+22,subject_drop,subj_3pl,1,the rehearsals ran very long .,they exhausted the entire cast .,exhausted,1,en,,claude-opus-4.7
+22,subject_drop,subj_3pl,0,the rehearsals ran very long .,exhausted the entire cast .,exhausted,0,en,,claude-opus-4.7
+23,subject_drop,subj_3pl,1,the rumors spread quickly today .,they worried the new manager .,worried,1,en,,claude-opus-4.7
+23,subject_drop,subj_3pl,0,the rumors spread quickly today .,worried the new manager .,worried,0,en,,claude-opus-4.7
+24,subject_drop,subj_3pl,1,the results surprised the whole team .,they changed the core strategy .,changed,1,en,,claude-opus-4.7
+24,subject_drop,subj_3pl,0,the results surprised the whole team .,changed the core strategy .,changed,0,en,,claude-opus-4.7
+1,subject_drop,subj_3sg,1,ana won the award .,she shows her pride openly .,shows,1,en,ana,claude-opus-4.7
+1,subject_drop,subj_3sg,0,ana won the award .,shows her pride openly .,shows,0,en,ana,claude-opus-4.7
+2,subject_drop,subj_3sg,1,sara joined the orchestra .,she practices the violin daily .,practices,1,en,sara,claude-opus-4.7
+2,subject_drop,subj_3sg,0,sara joined the orchestra .,practices the violin daily .,practices,0,en,sara,claude-opus-4.7
+3,subject_drop,subj_3sg,1,elena painted a huge mural .,she signed the bottom corner .,signed,1,en,elena,claude-opus-4.7
+3,subject_drop,subj_3sg,0,elena painted a huge mural .,signed the bottom corner .,signed,0,en,elena,claude-opus-4.7
+4,subject_drop,subj_3sg,1,marta baked a chocolate cake .,she brought a slice home .,brought,1,en,marta,claude-opus-4.7
+4,subject_drop,subj_3sg,0,marta baked a chocolate cake .,brought a slice home .,brought,0,en,marta,claude-opus-4.7
+5,subject_drop,subj_3sg,1,clara finished the long novel .,she recommended it to me .,recommended,1,en,clara,claude-opus-4.7
+5,subject_drop,subj_3sg,0,clara finished the long novel .,recommended it to me .,recommended,0,en,clara,claude-opus-4.7
+6,subject_drop,subj_3sg,1,lucia lost the wallet again .,she called every local bank .,called,1,en,lucia,claude-opus-4.7
+6,subject_drop,subj_3sg,0,lucia lost the wallet again .,called every local bank .,called,0,en,lucia,claude-opus-4.7
+7,subject_drop,subj_3sg,1,sofia moved to the city .,she found a small apartment .,found,1,en,sofia,claude-opus-4.7
+7,subject_drop,subj_3sg,0,sofia moved to the city .,found a small apartment .,found,0,en,sofia,claude-opus-4.7
+8,subject_drop,subj_3sg,1,daniel opened a small bakery .,he hires three part time helpers .,hires,1,en,daniel,claude-opus-4.7
+8,subject_drop,subj_3sg,0,daniel opened a small bakery .,hires three part time helpers .,hires,0,en,daniel,claude-opus-4.7
+9,subject_drop,subj_3sg,1,mario caught a bad cold .,he stayed in bed today .,stayed,1,en,mario,claude-opus-4.7
+9,subject_drop,subj_3sg,0,mario caught a bad cold .,stayed in bed today .,stayed,0,en,mario,claude-opus-4.7
+10,subject_drop,subj_3sg,1,pablo studied the whole night .,he passed the final exam .,passed,1,en,pablo,claude-opus-4.7
+10,subject_drop,subj_3sg,0,pablo studied the whole night .,passed the final exam .,passed,0,en,pablo,claude-opus-4.7
+11,subject_drop,subj_3sg,1,lucas joined the debate team .,he argues with real clarity .,argues,1,en,lucas,claude-opus-4.7
+11,subject_drop,subj_3sg,0,lucas joined the debate team .,argues with real clarity .,argues,0,en,lucas,claude-opus-4.7
+12,subject_drop,subj_3sg,1,marco booked a lakeside cabin .,he invited his two cousins .,invited,1,en,marco,claude-opus-4.7
+12,subject_drop,subj_3sg,0,marco booked a lakeside cabin .,invited his two cousins .,invited,0,en,marco,claude-opus-4.7
+13,subject_drop,subj_3sg,1,david adopted a small puppy .,he named the dog milo .,named,1,en,david,claude-opus-4.7
+13,subject_drop,subj_3sg,0,david adopted a small puppy .,named the dog milo .,named,0,en,david,claude-opus-4.7
+14,subject_drop,subj_3sg,1,oscar learned to swim over the summer .,he enjoys the public pool .,enjoys,1,en,oscar,claude-opus-4.7
+14,subject_drop,subj_3sg,0,oscar learned to swim over the summer .,enjoys the public pool .,enjoys,0,en,oscar,claude-opus-4.7
+15,subject_drop,subj_3sg,1,the old car broke down .,it needs four new tires .,needs,1,en,,claude-opus-4.7
+15,subject_drop,subj_3sg,0,the old car broke down .,needs four new tires .,needs,0,en,,claude-opus-4.7
+16,subject_drop,subj_3sg,1,the kettle boiled over again .,it ruined the new stove .,ruined,1,en,,claude-opus-4.7
+16,subject_drop,subj_3sg,0,the kettle boiled over again .,ruined the new stove .,ruined,0,en,,claude-opus-4.7
+17,subject_drop,subj_3sg,1,the front door creaked loudly .,it woke the sleeping baby .,woke,1,en,,claude-opus-4.7
+17,subject_drop,subj_3sg,0,the front door creaked loudly .,woke the sleeping baby .,woke,0,en,,claude-opus-4.7
+18,subject_drop,subj_3sg,1,the lamp fell from the shelf .,it cracked the heavy base .,cracked,1,en,,claude-opus-4.7
+18,subject_drop,subj_3sg,0,the lamp fell from the shelf .,cracked the heavy base .,cracked,0,en,,claude-opus-4.7
+19,subject_drop,subj_3sg,1,the meeting ended early today .,it pleased the whole staff .,pleased,1,en,,claude-opus-4.7
+19,subject_drop,subj_3sg,0,the meeting ended early today .,pleased the whole staff .,pleased,0,en,,claude-opus-4.7
+20,subject_drop,subj_3sg,1,the concert sold out in minutes .,it surprised the entire band .,surprised,1,en,,claude-opus-4.7
+20,subject_drop,subj_3sg,0,the concert sold out in minutes .,surprised the entire band .,surprised,0,en,,claude-opus-4.7
+21,subject_drop,subj_3sg,1,the storm arrived quite suddenly .,it flooded the main road .,flooded,1,en,,claude-opus-4.7
+21,subject_drop,subj_3sg,0,the storm arrived quite suddenly .,flooded the main road .,flooded,0,en,,claude-opus-4.7
+22,subject_drop,subj_3sg,1,the game went into overtime .,it thrilled the home crowd .,thrilled,1,en,,claude-opus-4.7
+22,subject_drop,subj_3sg,0,the game went into overtime .,thrilled the home crowd .,thrilled,0,en,,claude-opus-4.7
+23,subject_drop,subj_3sg,1,the new plan looked promising .,it pleases the major investors .,pleases,1,en,,claude-opus-4.7
+23,subject_drop,subj_3sg,0,the new plan looked promising .,pleases the major investors .,pleases,0,en,,claude-opus-4.7
+24,subject_drop,subj_3sg,1,the idea gained real traction .,it inspires many young writers .,inspires,1,en,,claude-opus-4.7
+24,subject_drop,subj_3sg,0,the idea gained real traction .,inspires many young writers .,inspires,0,en,,claude-opus-4.7
