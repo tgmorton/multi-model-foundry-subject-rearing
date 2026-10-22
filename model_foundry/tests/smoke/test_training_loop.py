@@ -103,6 +103,15 @@ def _dummy_batch(seq_len: int = 8):
     }
 
 
+def _assert_detached_loss(loss_val, expected: float = 1.0):
+    """_training_step returns the loss as a detached scalar tensor (no
+    per-micro-batch .item() sync), un-scaled by gradient accumulation."""
+    assert isinstance(loss_val, torch.Tensor)
+    assert loss_val.dim() == 0
+    assert not loss_val.requires_grad
+    assert loss_val.item() == pytest.approx(expected)
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -117,7 +126,7 @@ class TestTrainingStep:
 
         loss_val, did_step = loop._training_step(batch, micro_step=0)
 
-        assert isinstance(loss_val, float)
+        _assert_detached_loss(loss_val)
         assert did_step is False
         loop.optimizer.step.assert_not_called()
         loop.lr_scheduler.step.assert_not_called()
@@ -129,7 +138,7 @@ class TestTrainingStep:
 
         loss_val, did_step = loop._training_step(batch, micro_step=3)
 
-        assert isinstance(loss_val, float)
+        _assert_detached_loss(loss_val)
         assert did_step is True
         loop.optimizer.step.assert_called_once()
         loop.lr_scheduler.step.assert_called_once()
@@ -261,7 +270,7 @@ class TestAMPDisabledPath:
 
         loss_val, did_step = loop._training_step(batch, micro_step=0)
 
-        assert isinstance(loss_val, float)
+        _assert_detached_loss(loss_val)
         assert did_step is True
         loop.optimizer.step.assert_called_once()
 

@@ -114,30 +114,29 @@ def test_generate_subsequent_epoch_checkpoints():
     """Test subsequent epoch checkpoint generation."""
     epoch_start = 100
     epoch_end = 200
-    
-    # Test linear spacing
+
+    # Test linear spacing (min-per-epoch fill disabled)
     linear_checkpoints = generate_subsequent_epoch_checkpoints(
-        epoch_start, epoch_end, "linear", linear_interval=20
+        epoch_start, epoch_end, "linear", linear_interval=20,
+        min_checkpoints_per_epoch=0
     )
-    
-    assert len(linear_checkpoints) > 0
-    for checkpoint in linear_checkpoints:
-        assert epoch_start < checkpoint < epoch_end
-    
-    # Test log spacing
+    assert linear_checkpoints == [120, 140, 160, 180]
+
+    # Test log spacing (min-per-epoch fill disabled): each step is the
+    # previous one times log_base, starting from epoch_start + log_base
     log_checkpoints = generate_subsequent_epoch_checkpoints(
+        epoch_start, 1000, "log", log_base=2, min_checkpoints_per_epoch=0
+    )
+    assert log_checkpoints == [102, 204, 408, 816]
+
+    # With the default min_checkpoints_per_epoch=5, log spacing over a short
+    # epoch yields only [102], so it is replaced by 5 evenly spaced steps
+    filled_checkpoints = generate_subsequent_epoch_checkpoints(
         epoch_start, epoch_end, "log", log_base=2
     )
-    
-    assert len(log_checkpoints) > 0
-    for checkpoint in log_checkpoints:
+    assert filled_checkpoints == [116, 132, 148, 164, 180]
+    for checkpoint in filled_checkpoints:
         assert epoch_start < checkpoint < epoch_end
-    
-    # Verify log spacing follows the pattern
-    if len(log_checkpoints) > 1:
-        for i in range(len(log_checkpoints) - 1):
-            ratio = log_checkpoints[i+1] / log_checkpoints[i]
-            assert ratio >= 2  # Should be at least base 2
 
 
 def test_calculate_steps_per_epoch():
@@ -169,10 +168,12 @@ def test_generate_checkpoint_schedule():
     # Should have generated a schedule
     assert len(schedule) > 0
     
-    # All steps should be positive and within training range
+    # All steps should be within training range
     for step in schedule:
-        assert step > 0
-        assert step <= config.training.train_steps
+        assert 0 <= step <= config.training.train_steps
+
+    # Should include step 0 (the initialization checkpoint)
+    assert schedule[0] == 0
     
     # Should be sorted
     assert schedule == sorted(schedule)

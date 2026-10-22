@@ -534,8 +534,10 @@ class TrainingLoop:
                 ``(micro_step + 1) % gradient_accumulation_steps == 0``.
 
         Returns:
-            Tuple of (loss_value, did_optimizer_step) where did_optimizer_step
-            is True when the optimizer stepped at an accumulation boundary.
+            Tuple of (loss, did_optimizer_step). ``loss`` is the detached
+            scalar loss tensor, un-scaled by gradient accumulation (not a
+            Python float; see 0.3 below). did_optimizer_step is True when
+            the optimizer stepped at an accumulation boundary.
         """
         grad_accum = self.config.training.gradient_accumulation_steps
         did_step = False
