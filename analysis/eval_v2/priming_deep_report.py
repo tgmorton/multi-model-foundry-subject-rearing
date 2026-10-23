@@ -1718,6 +1718,116 @@ def p_cross_timing(doc, S, cw, T):
 
 
 
+# --- appendix: every target × prime combination over training -----------------
+def _grid_fig(doc, title, lede, legend):
+    """A large appendix page (16 × 12 in) with an 8 × 8 panel grid: rows = target, columns = prime."""
+    fig = doc.plt.figure(figsize=(16, 12))
+    doc.n += 1
+    fig.text(0.04, 0.965, "9 · APPENDIX", family=HEAD, size=8.5, color=MUTED, weight="demibold")
+    fig.text(0.04, 0.95, title, family=HEAD, size=20, weight="bold", color=INK, va="top")
+    fig.text(0.04, 0.915, "\n".join(textwrap.wrap(lede, 190)), family=BODY, size=11, color=INK2, va="top", linespacing=1.4)
+    fig.legend(handles=legend, loc="upper right", bbox_to_anchor=(0.975, 0.955), ncol=len(legend), fontsize=9, frameon=False)
+    fig.text(0.04, 0.015, FOOT, family=HEAD, size=7.5, color=MUTED)
+    fig.text(0.975, 0.015, str(doc.n), family=HEAD, size=8, color=MUTED, ha="right")
+    gs = fig.add_gridspec(8, 8, left=0.115, right=0.975, bottom=0.065, top=0.835, wspace=0.12, hspace=0.18)
+    return fig, gs
+
+
+def _grid_axis(fig, gs, i, j, rows, cols, ylim, T):
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+    ax = fig.add_subplot(gs[i, j])
+    ax.set_xscale("log")
+    ax.set_xlim(0.45, 4500)
+    ax.set_ylim(*ylim)
+    ax.xaxis.set_major_locator(FixedLocator([1, 10, 100, 1000]))
+    ax.xaxis.set_minor_locator(NullLocator())
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}M" if v < 1000 else f"{v / 1000:g}B"))
+    ax.tick_params(labelsize=6.2, length=2)
+    if i < 7:
+        ax.set_xticklabels([])
+    if j > 0:
+        ax.set_yticklabels([])
+    if i == 0:
+        ax.set_title(cols[j], size=8.6, loc="center", pad=5)
+    if j == 0:
+        ax.set_ylabel(rows[i], size=8.2, rotation=0, ha="right", va="center", labelpad=8)
+    zero(ax)
+    return ax
+
+
+def p_grid_cells(doc, cw, ca, T):
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    legend = [Line2D([], [], color=AQUA, lw=2, label="different words"),
+              Line2D([], [], color=CTRL, lw=1.4, label="all pairings (with repetition)"),
+              Patch(facecolor="#e8f1fb", label="different-word end-state ≥ +0.03"),
+              Patch(facecolor="#efecfa", label="≤ −0.03")]
+    fig, gs = _grid_fig(
+        doc, "Every cross-construction combination over training",
+        "Priming effect (Δ log-prob, nats/token) for each target construction (rows) after each prime construction (columns), "
+        "mean of 140 runs with 95% CI, tokens on a log scale. Same y-scale in every panel. Numbers: end-state for "
+        "different-word pairings and, in brackets, all pairings. Diagonal = same construction, different items.",
+        legend)
+    lab = [SHORT[c] for c in CATS]
+    ylim = (-0.1, 0.27)
+    for i, t in enumerate(CATS):
+        for j, pr in enumerate(CATS):
+            ax = _grid_axis(fig, gs, i, j, lab, lab, ylim, T)
+            dw = cw[(cw.target_category == t) & (cw.prime_category == pr)]
+            al = ca[(ca.target_category == t) & (ca.prime_category == pr)]
+            band(ax, al, "dlpd", CTRL, T, lw=1.1, alpha=0.1)
+            txt = ""
+            if len(dw):
+                band(ax, dw, "dlpd", AQUA, T, lw=1.6, alpha=0.18)
+                v = dw[dw.idx >= dw.idx.max() - 2].dlpd.mean()
+                if v >= 0.03:
+                    ax.set_facecolor("#e8f1fb")
+                elif v <= -0.03:
+                    ax.set_facecolor("#efecfa")
+                txt = f"{v:+.3f}"
+            va = al[al.idx >= al.idx.max() - 2].dlpd.mean()
+            txt = (txt + f" ({va:+.3f})") if txt else f"– ({va:+.3f})"
+            ax.text(0.04, 0.94, txt, transform=ax.transAxes, size=6.6, color=INK2, va="top", family=HEAD)
+            ax.grid(color=GRID, lw=0.4)
+    fig.text(0.012, 0.45, "TARGET CONSTRUCTION", rotation=90, family=HEAD, size=8, color=MUTED, weight="demibold", va="center")
+    fig.text(0.545, 0.862, "PRIME CONSTRUCTION", family=HEAD, size=8, color=MUTED, weight="demibold", ha="center")
+    doc.save(fig)
+
+
+def p_grid_sides(doc, side, T):
+    from matplotlib.lines import Line2D
+    legend = [Line2D([], [], color=ORANGE, lw=2, label="toward null (null version vs reference)"),
+              Line2D([], [], color=BLUE, lw=2, label="toward overt (overt version vs reference)")]
+    d = sagg(side, None, ["target_category", "prime_group"])
+    d["target_category"] = d.target_category.astype(str)
+    d["prime_group"] = d.prime_group.astype(str)
+    fig, gs = _grid_fig(
+        doc, "Every combination, split into null and overt sides",
+        "For each target (rows) and prime construction (columns; subject-drop primes of both agreement types pooled and split "
+        "into clean 3rd-person drop and imperative-like 1st/2nd person): how far the prime's null version pushes the target "
+        "toward null, and its overt version toward overt, relative to the same target after the reference prime (object "
+        "drop; extraction for object-drop targets). 'ref' = the row's reference. Same y-scale throughout.",
+        legend)
+    ylim = (-0.17, 0.2)
+    for i, t in enumerate(CATS):
+        for j, g in enumerate(PGROUPS):
+            ax = _grid_axis(fig, gs, i, j, [SHORT[c] for c in CATS], [PG_SHORT[x] for x in PGROUPS], ylim, T)
+            x = d[(d.target_category == t) & (d.prime_group == g)]
+            ax.grid(color=GRID, lw=0.4)
+            if not len(x):
+                ax.text(0.5, 0.5, "ref", transform=ax.transAxes, ha="center", va="center", size=9, color=MUTED)
+                continue
+            band(ax, x, "null_lpd", ORANGE, T, lw=1.5, alpha=0.15)
+            band(ax, x, "overt_lpd", BLUE, T, lw=1.5, alpha=0.15)
+            e_ = x[x.idx >= x.idx.max() - 2]
+            ax.text(0.04, 0.94, f"null {e_.null_lpd.mean():+.3f} · overt {e_.overt_lpd.mean():+.3f}", transform=ax.transAxes,
+                    size=6.2, color=INK2, va="top", family=HEAD)
+    fig.text(0.012, 0.45, "TARGET CONSTRUCTION", rotation=90, family=HEAD, size=8, color=MUTED, weight="demibold", va="center")
+    fig.text(0.545, 0.862, "PRIME CONSTRUCTION", family=HEAD, size=8, color=MUTED, weight="demibold", ha="center")
+    doc.save(fig)
+
+
+
 def p_caveats(doc, S):
     doc.text_page(
         "8 · Caveats and next steps", "What this does and does not show",
@@ -1803,6 +1913,8 @@ def main():
     doc.ref["examples"] = doc.n
     p_prime_items(doc, S, e, meta)
     p_caveats(doc, S)
+    p_grid_cells(doc, cw, ca, T)
+    p_grid_sides(doc, side, T)
     doc.close()
     print(f"wrote {a.out} ({doc.n} pages)")
 
