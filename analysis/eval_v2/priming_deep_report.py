@@ -1725,11 +1725,14 @@ def _grid_fig(doc, title, lede, legend):
     doc.n += 1
     fig.text(0.04, 0.965, "9 · APPENDIX", family=HEAD, size=8.5, color=MUTED, weight="demibold")
     fig.text(0.04, 0.95, title, family=HEAD, size=20, weight="bold", color=INK, va="top")
-    fig.text(0.04, 0.915, "\n".join(textwrap.wrap(lede, 190)), family=BODY, size=11, color=INK2, va="top", linespacing=1.4)
+    lines = textwrap.wrap(lede, 190)
+    fig.text(0.04, 0.915, "\n".join(lines), family=BODY, size=11, color=INK2, va="top", linespacing=1.4)
+    top = min(0.835, 0.915 - 0.0215 * len(lines) - 0.05)
     fig.legend(handles=legend, loc="upper right", bbox_to_anchor=(0.975, 0.955), ncol=len(legend), fontsize=9, frameon=False)
     fig.text(0.04, 0.015, FOOT, family=HEAD, size=7.5, color=MUTED)
     fig.text(0.975, 0.015, str(doc.n), family=HEAD, size=8, color=MUTED, ha="right")
-    gs = fig.add_gridspec(8, 8, left=0.115, right=0.975, bottom=0.065, top=0.835, wspace=0.12, hspace=0.18)
+    gs = fig.add_gridspec(8, 8, left=0.115, right=0.975, bottom=0.065, top=top, wspace=0.12, hspace=0.18)
+    fig.text(0.545, top + 0.027, "PRIME CONSTRUCTION", family=HEAD, size=8, color=MUTED, weight="demibold", ha="center")
     return fig, gs
 
 
@@ -1790,25 +1793,66 @@ def p_grid_cells(doc, cw, ca, T):
             ax.text(0.04, 0.94, txt, transform=ax.transAxes, size=6.6, color=INK2, va="top", family=HEAD)
             ax.grid(color=GRID, lw=0.4)
     fig.text(0.012, 0.45, "TARGET CONSTRUCTION", rotation=90, family=HEAD, size=8, color=MUTED, weight="demibold", va="center")
-    fig.text(0.545, 0.862, "PRIME CONSTRUCTION", family=HEAD, size=8, color=MUTED, weight="demibold", ha="center")
     doc.save(fig)
 
 
-def p_grid_sides(doc, side, T):
+def beyond_element_share(meta, cond_dir, cats=R.SUBJ):
+    """Share of items in `cats` whose overt and null versions differ by more than one inserted word (e.g. a verb
+    that changes agreement along with the pronoun)."""
+    mb = split_prime(meta, cond_dir)
+    tg = mb[mb.target_category.isin(cats)].drop_duplicates(["target_category", "target_item_id", "target_condition"])
+
+    def more(o, n):
+        ops = [op for op in difflib.SequenceMatcher(a=o.split(), b=n.split(), autojunk=False).get_opcodes() if op[0] != "equal"]
+        return not (len(ops) == 1 and ops[0][0] == "delete" and ops[0][2] - ops[0][1] == 1)
+    return float(np.mean([more(o, n) for o, n in zip(tg.target_o, tg.target_n)]))
+
+
+def side_cells(side):
+    d = R.parse_runs(sagg(side, None, ["target_category", "prime_group"]))
+    d["target_category"] = d.target_category.astype(str)
+    d["prime_group"] = d.prime_group.astype(str)
+    return d
+
+
+def side_grid_ylim(d):
+    """One y-range for the pooled grid and every per-intervention grid, so the pages compare directly."""
+    m = d[d.idx > 0].groupby(["iv", "target_category", "prime_group", "idx"])[["null_lpd", "overt_lpd"]].mean()
+    lo, hi = float(np.nanmin(m.to_numpy())), float(np.nanmax(m.to_numpy()))
+    return (np.floor(lo * 1.1 * 20) / 20, np.ceil(hi * 1.1 * 20) / 20)
+
+
+def p_grid_sides(doc, d, T, ylim, iv=None, meta=None):
     from matplotlib.lines import Line2D
     legend = [Line2D([], [], color=ORANGE, lw=2, label="toward null (null version vs reference)"),
               Line2D([], [], color=BLUE, lw=2, label="toward overt (overt version vs reference)")]
-    d = sagg(side, None, ["target_category", "prime_group"])
-    d["target_category"] = d.target_category.astype(str)
-    d["prime_group"] = d.prime_group.astype(str)
-    fig, gs = _grid_fig(
-        doc, "Every combination, split into null and overt sides",
-        "For each target (rows) and prime construction (columns; subject-drop primes of both agreement types pooled and split "
-        "into clean 3rd-person drop and imperative-like 1st/2nd person): how far the prime's null version pushes the target "
-        "toward null, and its overt version toward overt, relative to the same target after the reference prime (object "
-        "drop; extraction for object-drop targets). 'ref' = the row's reference. Same y-scale throughout.",
-        legend)
-    ylim = (-0.17, 0.2)
+    if iv is not None:
+        pooled = d
+        d = d[d.iv == iv]
+
+        def head(x):
+            e_ = x[(x.idx >= x.idx.max() - 2) & x.target_category.isin(R.SUBJ) & (x.prime_group == "subj drop 3rd")]
+            return e_.null_lpd.mean(), e_.overt_lpd.mean()
+        (n_, o_), (pn, po) = head(d), head(pooled)
+        title = f"Null and overt sides: {R.IV_LABEL[iv]}"
+        lede = (f"As page {doc.ref['grid_sides']}, for the {d.run.nunique()} {R.IV_LABEL[iv]} runs only (all arms and removal "
+                f"levels). Clean 3rd-person subject drop on subject-drop targets, end-state: toward null {n_:+.3f}, toward "
+                f"overt {o_:+.3f} (all interventions: {pn:+.3f} / {po:+.3f}). Same y-scale as page {doc.ref['grid_sides']} "
+                "and the other intervention pages.")
+        share = beyond_element_share(meta, P.IV_DIR[iv]) if meta is not None else 0.0
+        if share > 0.1:
+            lede += (f" CAUTION: in this condition {share:.0%} of subject-drop items change verb agreement between versions "
+                     "(overt 'we enjoyimus the breeze', null 'enjoyikt the breeze'; the same holds in matched-v1), so the "
+                     "subject-drop rows and columns here mix the pronoun with agreement morphology and are not comparable "
+                     "with the other pages.")
+    else:
+        title = "Every combination, split into null and overt sides"
+        lede = ("For each target (rows) and prime construction (columns; subject-drop primes of both agreement types pooled "
+                "and split into clean 3rd-person drop and imperative-like 1st/2nd person): how far the prime's null version "
+                "pushes the target toward null, and its overt version toward overt, relative to the same target after the "
+                "reference prime (object drop; extraction for object-drop targets). 'ref' = the row's reference. Same "
+                "y-scale throughout.")
+    fig, gs = _grid_fig(doc, title, lede, legend)
     for i, t in enumerate(CATS):
         for j, g in enumerate(PGROUPS):
             ax = _grid_axis(fig, gs, i, j, [SHORT[c] for c in CATS], [PG_SHORT[x] for x in PGROUPS], ylim, T)
@@ -1823,7 +1867,6 @@ def p_grid_sides(doc, side, T):
             ax.text(0.04, 0.94, f"null {e_.null_lpd.mean():+.3f} · overt {e_.overt_lpd.mean():+.3f}", transform=ax.transAxes,
                     size=6.2, color=INK2, va="top", family=HEAD)
     fig.text(0.012, 0.45, "TARGET CONSTRUCTION", rotation=90, family=HEAD, size=8, color=MUTED, weight="demibold", va="center")
-    fig.text(0.545, 0.862, "PRIME CONSTRUCTION", family=HEAD, size=8, color=MUTED, weight="demibold", ha="center")
     doc.save(fig)
 
 
@@ -1855,6 +1898,8 @@ def p_caveats(doc, S):
              f"Same-construction primes can share the target's sentence template (page {doc.ref['examples']}). The strongest "
              "different-word effects may be template priming rather than function priming.",
              "One seed per cell, and runs share their training text: run-level CIs are narrow by construction.",
+             "Enriched verbal morphology: most subject-drop items also change verb agreement between versions "
+             "('we enjoyimus' / 'enjoyikt'), as in matched-v1.",
              "Pronoun-free contexts remove the speaker, so first-person targets and primes are odd discourse.",
          ]), ("Next steps (cheap to expensive)", [
              "Score the neutral root on the last 3 checkpoints of each run to identify direction.",
@@ -1862,8 +1907,7 @@ def p_caveats(doc, S):
              "overt-subject priming with no pronoun to copy.",
              "A human-vetted pass over the 576 prime items, starting with the potent and interfering ones on page "
              f"{doc.n}.",
-             "Run the same analysis on BERT-v2 once tranche 1 finishes, to see whether a bidirectional learner shows the "
-             "same lexical-then-structural sequence.",
+             "Repeat on BERT-v2 once tranche 1 finishes.",
          ])]])
 
 
@@ -1914,7 +1958,12 @@ def main():
     p_prime_items(doc, S, e, meta)
     p_caveats(doc, S)
     p_grid_cells(doc, cw, ca, T)
-    p_grid_sides(doc, side, T)
+    sd = side_cells(side)
+    ylim = side_grid_ylim(sd)
+    p_grid_sides(doc, sd, T, ylim)
+    doc.ref["grid_sides"] = doc.n
+    for iv in R.IVS:
+        p_grid_sides(doc, sd, T, ylim, iv, meta)
     doc.close()
     print(f"wrote {a.out} ({doc.n} pages)")
 
