@@ -73,7 +73,25 @@ def load():
         tr[f"d{m}"] = tr[f"{m}_o"] - tr[f"{m}_n"]
     for c in VALS:
         tr[f"{c}_w"] = tr[c] * tr.n
-    return meta, e, tr, T
+    side = pd.read_parquet(P.OUT / "side.parquet").merge(tok[["run", "step", "idx"]], on=["run", "step"], validate="m:1")
+    for c in SIDE_VALS:
+        side[f"{c}_w"] = side[c] * side.n
+    return meta, e, tr, T, side
+
+
+SIDE_VALS = ["null_lpd", "overt_lpd", "null_pref", "overt_pref"]
+PGROUPS = ["subj drop 3rd", "subj drop 1st/2nd", "expletive", "conjunction", "embedded_drop", "control", "extraction",
+           "object_drop"]
+PG_SHORT = {"subj drop 3rd": "subj drop, 3rd p.", "subj drop 1st/2nd": "subj drop, 1st/2nd p.", **SHORT}
+
+
+def sagg(side, mask=None, keys=()):
+    """Run × checkpoint (× keys) means of the reference-relative sides, weighted by pairings."""
+    d = side if mask is None else side[mask]
+    g = d.groupby(["run", "idx", *keys], observed=True)
+    out = g[[f"{c}_w" for c in SIDE_VALS]].sum().div(g.n.sum(), axis=0)
+    out.columns = SIDE_VALS
+    return out.reset_index()
 
 
 def tagg(tr, mask=None, keys=()):
@@ -140,6 +158,7 @@ class Doc:
     def __init__(self, path, plt):
         from matplotlib.backends.backend_pdf import PdfPages
         self.pdf, self.plt, self.n = PdfPages(path), plt, 0
+        self.ref = {}   # page name -> number, for cross-references
 
     def page(self, section, title, lede, notes=None, notes_title="What to see"):
         fig = self.plt.figure(figsize=(11, 8.5))
@@ -174,7 +193,7 @@ class Doc:
         for j in range(ncol):
             y = top - 0.03
             for b in notes[j * per:(j + 1) * per]:
-                wl = textwrap.wrap(b, int(150 / ncol))
+                wl = textwrap.wrap(b, int(140 / ncol))
                 fig.text(0.075 + j * w, y, "—", family=BODY, size=9.0, color=MUTED, va="top")
                 fig.text(0.092 + j * w, y, "\n".join(wl), family=BODY, size=9.0, color=INK, va="top", linespacing=1.35)
                 y -= 0.019 * len(wl) + 0.012
@@ -229,7 +248,7 @@ def zero(ax, axis="y"):
     (ax.axhline if axis == "y" else ax.axvline)(0, color=MUTED, lw=0.8, zorder=1)
 
 
-def heat(ax, M, rows, cols, lim, fmt="{:+.2f}", size=7.2):
+def heat(ax, M, rows, cols, lim, fmt="{:+.2f}", size=7.2, annotate=True, nan_text="–"):
     from matplotlib.colors import LinearSegmentedColormap
     cmap = LinearSegmentedColormap.from_list("div", ["#a8431a", "#f0a47f", "#f4f3ef", "#8db6e8", "#1c58a3"])
     cmap.set_bad("#f7f6f3")
@@ -238,7 +257,9 @@ def heat(ax, M, rows, cols, lim, fmt="{:+.2f}", size=7.2):
     for i in range(A.shape[0]):
         for j in range(A.shape[1]):
             v = A[i, j]
-            ax.text(j, i, "–" if np.isnan(v) else fmt.format(v), ha="center", va="center", size=size,
+            if not annotate and not np.isnan(v):
+                continue
+            ax.text(j, i, nan_text if np.isnan(v) else fmt.format(v), ha="center", va="center", size=size,
                     color=MUTED if np.isnan(v) else ("white" if abs(v) > 0.55 * lim else INK))
     ax.set_xticks(range(len(cols)), cols)
     ax.set_yticks(range(len(rows)), rows)
@@ -343,17 +364,34 @@ def summarise(e, tr, T):
     return S
 
 
-def emergence(df, T, n=300, seed=1):
-    W = df.pivot(index="run", columns="idx", values="dlpd").sort_index(axis=1)
+def side_end(side, targets):
+    """End-state (last 3 checkpoints) reference-relative sides per run × prime group, for some targets."""
+    d = sagg(side, side.target_category.isin(targets) & (side.idx >= side.idx.max() - 2), ["prime_group"])
+    return d.groupby(["run", "prime_group"])[SIDE_VALS].mean().reset_index()
+
+
+def summarise_sides(S, side):
+    se = side_end(side, R.SUBJ).groupby("prime_group")[SIDE_VALS].mean()
+    S["side_subj"] = se
+    S["side_3rd_null"], S["side_3rd_overt"] = se.at["subj drop 3rd", "null_lpd"], se.at["subj drop 3rd", "overt_lpd"]
+    S["side_expl_null"] = se.at["expletive", "null_lpd"]
+    S["side_conj_null"] = se.at["conjunction", "null_lpd"]
+
+
+def emergence(df, T, n=300, seed=1, col="dlpd"):
+    """Tokens at which the run-mean curve first reaches 50% / 90% of its end-state (in the
+    direction of the end-state sign), with run-bootstrap CIs."""
+    W = df.pivot(index="run", columns="idx", values=col).sort_index(axis=1)
     A = W.to_numpy()
     rng = np.random.default_rng(seed)
 
     def times(mat):
         m = pd.Series(np.nanmean(mat, 0), index=W.columns).rolling(3, center=True, min_periods=1).mean()
         fin = m.iloc[-3:].mean()
+        sg = 1.0 if fin >= 0 else -1.0
         out = []
         for f in (0.5, 0.9):
-            hit = m[(m.index > 0) & (m >= f * fin)]
+            hit = m[(m.index > 0) & (m * sg >= f * abs(fin))]
             out.append(T.loc[hit.index[0]] if len(hit) else np.nan)
         return out
     point = times(A)
@@ -400,12 +438,17 @@ def p_cover(doc, S):
          f"Subject-position elements prime overt subjects; object-position elements prime objects. Expletive 'it' raises other "
          f"subject pronouns by +{S['it_expl_subj']:.3f}, object 'it' by {S['it_obj_subj']:+.3f}, while object 'it' primes "
          f"overt objects by +{S['it_obj_obj']:.3f}. Subject drop and expletives prime each other in both directions."),
+        ("Null primes do real work",
+         f"Against an object-drop reference, a dropped 3rd-person subject pushes the next subject-drop target "
+         f"+{S['side_3rd_null']:.3f} nats/token toward null, while its overt version adds only {S['side_3rd_overt']:+.3f}. "
+         f"Dropped expletives push toward null too (+{S['side_expl_null']:.3f}). Coordination drop, which English allows, "
+         f"does not ({S['side_conj_null']:+.3f}). The split holds under four different reference primes."),
         ("Competition too",
          f"he ↔ she primes negatively ({rel['he/she competition']['dlpd']:+.3f}); I / we / you / they facilitate each other."),
         ("Early, then stable",
          f"Flat to 16M tokens; lexical priming reaches half size by {fmt_tok(tm['same word']['t50'])}, the abstract subject "
-         f"cluster by {fmt_tok(tm['subject cluster']['t50'])}; everything is in place by ~{fmt_tok(tm['subject cluster']['t90'])} "
-         "and stable for the remaining ~3B tokens."),
+         f"cluster by {fmt_tok(tm['subject cluster']['t50'])}; most of it is in place by ~{fmt_tok(tm['subject cluster']['t90'])} "
+         "and stable for the remaining ~3B tokens. Interference involving embedded drop is the exception: it keeps growing."),
         ("Rearing sets primeability",
          f"At matched removal volume, recoverability-ordered removal roughly doubles priming over random removal "
          f"(+{b_rob:.3f} / +{b_anti:.3f} nats, t = {t_rob:.0f}), beyond what the models' overt preference explains. The change "
@@ -857,8 +900,9 @@ def p_levels(doc, S, e):
                "for extraction (−0.09) and embedded (−0.04), near zero elsewhere.",
                "So 'after an overt prime vs unprimed' and 'after a null prime vs unprimed' cannot be read as the two "
                "directions of priming; both are dominated by the discourse shift.",
-               "The neutral root (prime context with no prime sentence, 4,608 pairs, already built and unscored) fixes "
-               "this. Scoring it on the end-state checkpoints only (3 per run) would be a small job."])
+               "The next two pages get part of the way with a reference prime instead. The neutral root (prime context "
+               "with no prime sentence, 4,608 pairs, built and unscored) would settle it; scoring only the end-state "
+               "checkpoints (3 per run) is a small job."])
     box = {**box, "bottom": 0.16}
     gs = fig.add_gridspec(1, 2, **box, wspace=0.45, width_ratios=[1.5, 1])
     ax = fig.add_subplot(gs[0])
@@ -900,7 +944,7 @@ def p_traj_overview(doc, S, tr, T):
                f"{mu.dpref.iloc[-3:].mean():+.3f}; in log-prob it holds. Fewer items sit near the decision boundary late in "
                "training, so the same shift flips fewer of them.",
                "Unprimed drifts below both primed curves late in training: the extra discourse itself raises overt "
-               "preference for subject-drop targets (page 11).",
+               f"preference for subject-drop targets (page {doc.ref['levels']}).",
                "Checkpoints double in token count up to 262M (16M, 33M, 66M, 131M, 262M) and are dense after, so onset "
                "timing below 262M has factor-of-two resolution."])
     gs = fig.add_gridspec(2, 2, **box, hspace=0.5, wspace=0.3, height_ratios=[1.25, 1])
@@ -1360,6 +1404,320 @@ def p_prime_items(doc, S, e, meta):
     doc.save(fig)
 
 
+# --- which side does the work (reference-relative) ---------------------------
+def p_sides(doc, S, e, side, T, meta):
+    se = side_end(side, R.SUBJ)
+    groups = [g for g in PGROUPS if g != "object_drop"]
+    m = se.groupby("prime_group")[SIDE_VALS].mean()
+    c = se.groupby("prime_group")[SIDE_VALS].agg(run_ci)
+    ref_eff = e[e.target_category.isin(R.SUBJ) & (e.prime_category == "object_drop")].groupby("run").dlpd.mean().mean()
+    tl = {g: emergence(sagg(side, side.target_category.isin(R.SUBJ) & (side.prime_group == g)), T, col="null_lpd")
+          for g in ["subj drop 3rd", "expletive"]}
+    tl_ov = emergence(sagg(side, side.target_category.isin(R.SUBJ) & (side.prime_group == "expletive")), T, col="overt_lpd")
+    mb = split_prime(meta)
+    emb = mb[mb.prime_category == "embedded_drop"].drop_duplicates("prime_item_id")
+    emb_share = np.mean([bool(set(t.split()) & set(P.PRON)) for t in emb.prime_n])
+    v = lambda g, k: m.at[g, k]  # noqa: E731
+    fig, box = doc.page(
+        "4 · Across constructions", "Which side does the work: null primes vs overt primes",
+        "Subject-drop targets. Each prime's null version is compared with the same target after an object-drop prime's null "
+        "version, and its overt version with the object-drop prime's overt version. Object-drop primes leave subject targets "
+        f"in place (their own overt − null effect here: {ref_eff:+.3f}), so they serve as the reference.",
+        notes=[f"Clean 3rd-person subject drop: toward null {v('subj drop 3rd', 'null_lpd'):+.3f}, toward overt "
+               f"{v('subj drop 3rd', 'overt_lpd'):+.3f}. Nearly all of its priming effect is the null version making the "
+               "target less overt: null-subject priming.",
+               f"Expletive: toward null {v('expletive', 'null_lpd'):+.3f}, toward overt {v('expletive', 'overt_lpd'):+.3f}. A "
+               "dropped expletive ('seems that ...') also pushes the next subject toward null.",
+               f"1st/2nd-person subject drop: both sides ({v('subj drop 1st/2nd', 'null_lpd'):+.3f} / "
+               f"{v('subj drop 1st/2nd', 'overt_lpd'):+.3f}). The overt side is mostly I/we/you repeating; the null side may "
+               "be imperative priming.",
+               f"Conjunction ({v('conjunction', 'null_lpd'):+.3f}), control and extraction do not push toward null. A subject "
+               "dropped inside a coordination is ordinary English, and it does not prime null subjects.",
+               f"Embedded primes look anti-null ({v('embedded_drop', 'null_lpd'):+.3f}) because {emb_share:.0%} of them keep an "
+               "overt matrix subject in both versions ('i believe that ∅ plays the guitar'); that pronoun is what the "
+               "target sees.",
+               f"Over training the null side forms first: half size by {fmt_tok(tl['subj drop 3rd']['t50'])} (subject drop, "
+               f"3rd) and {fmt_tok(tl['expletive']['t50'])} (expletive). The expletive's overt side comes much later "
+               f"({fmt_tok(tl_ov['t50'])}) and is still growing at the end.",
+               "Assumption: apart from the dropped element, a prime's text affects the target as the reference's text does. "
+               f"Page {doc.n + 3} checks it against three other references."])
+    gs = fig.add_gridspec(3, 2, **{**box, "left": 0.17}, wspace=0.42, hspace=0.55, width_ratios=[1.05, 1])
+    ax = fig.add_subplot(gs[:, 0])
+    y = np.arange(len(groups))
+    for k, (col, colr, lab) in enumerate([("null_lpd", ORANGE, "toward null"), ("overt_lpd", BLUE, "toward overt")]):
+        ax.barh(y + (k - 0.5) * 0.38, [m.at[g, col] for g in groups], 0.36, xerr=[c.at[g, col] for g in groups],
+                color=colr, label=lab, error_kw={"lw": 0.8, "ecolor": INK2, "capsize": 2})
+    ax.set_yticks(y, [PG_SHORT[g] for g in groups])
+    ax.invert_yaxis()
+    ax.grid(axis="y", visible=False)
+    zero(ax, "x")
+    ax.set_xlabel("shift of the target, Δ log-prob (nats/token)")
+    ax.set_title("End-state, by prime construction")
+    ax.legend(loc="upper left", fontsize=7)
+    for r, g in enumerate(["subj drop 3rd", "subj drop 1st/2nd", "expletive"]):
+        a2 = fig.add_subplot(gs[r, 1])
+        d = sagg(side, side.target_category.isin(R.SUBJ) & (side.prime_group == g))
+        band(a2, d, "null_lpd", ORANGE, T, label="toward null", lw=1.7)
+        band(a2, d, "overt_lpd", BLUE, T, label="toward overt", lw=1.7)
+        zero(a2)
+        tokens_axis(a2, label=r == 2)
+        a2.set_title(PG_SHORT[g] + " primes, over training", size=9)
+        a2.set_ylim(-0.04, 0.16)
+        if r == 0:
+            a2.legend(loc="upper left", fontsize=7)
+    doc.save(fig)
+
+
+def p_sides_all(doc, S, side):
+    d = sagg(side, side.idx >= side.idx.max() - 2, ["target_category", "prime_group"])
+    d = d.groupby(["run", "target_category", "prime_group"])[SIDE_VALS].mean().reset_index()
+    Mn = d.groupby(["target_category", "prime_group"]).null_lpd.mean().unstack().reindex(index=CATS, columns=PGROUPS)
+    Mo = d.groupby(["target_category", "prime_group"]).overt_lpd.mean().unstack().reindex(index=CATS, columns=PGROUPS)
+    fig, box = doc.page(
+        "4 · Across constructions", "Both sides, every construction",
+        "The same decomposition for every target. Left: how far each prime's null version pushes the target toward null; "
+        "right: how far its overt version pushes it toward overt. Reference: object drop (extraction for object-drop "
+        "targets). All pairings, so the overt side includes word repetition; the null side never repeats a word.")
+    notes = [f"The null side carries the subject block: subj drop ← subj drop 3rd {Mn.at['subject_drop', 'subj drop 3rd']:+.3f}, "
+             f"expletive ← subj drop 3rd {Mn.at['expletive', 'subj drop 3rd']:+.3f}, subj drop ← expletive "
+             f"{Mn.at['subject_drop', 'expletive']:+.3f}, subj drop (no agr) ← expletive {Mn.at['subject_drop_no_agreement', 'expletive']:+.3f}.",
+             f"Object-drop targets are primed on both sides by object-drop primes (null {Mn.at['object_drop', 'object_drop']:+.3f}, "
+             f"overt {Mo.at['object_drop', 'object_drop']:+.3f}).",
+             f"Same-construction overt sides are large where the word repeats (control ← control {Mo.at['control', 'control']:+.3f}, "
+             f"extraction ← extraction {Mo.at['extraction', 'extraction']:+.3f}); their null sides are small "
+             f"({Mn.at['control', 'control']:+.3f}, {Mn.at['extraction', 'extraction']:+.3f}): repetition, not structure.",
+             "The embedded column is negative on the null side and positive on the overt side for most targets: the overt "
+             "matrix subject both of its versions carry.",
+             f"Where a row has opposite signs on the two sides in nearly every column (extraction: null side "
+             f"{Mn.loc['extraction'].min():+.2f} to {Mn.loc['extraction'].max():+.2f}, overt side {Mo.loc['extraction'].min():+.2f} "
+             f"to {Mo.loc['extraction'].max():+.2f}), the reference's own text shifts that target and the split there "
+             "reflects the reference, not the primes. Read the subject rows.",
+             "'ref' marks each row's reference cell (zero by construction)."]
+    box = {**box, "left": 0.14, "right": 0.95, "bottom": 0.4}
+    gs = fig.add_gridspec(1, 2, **box, wspace=0.32)
+    cols = [PG_SHORT[g] for g in PGROUPS]
+    for j, (M, t) in enumerate([(Mn, "Toward null (null version vs reference)"), (Mo, "Toward overt (overt version vs reference)")]):
+        ax = fig.add_subplot(gs[j])
+        heat(ax, M.to_numpy(), [SHORT[c] for c in CATS], cols, 0.2, fmt="{:+.2f}", size=6.6, nan_text="ref")
+        ax.set_xticklabels(cols, rotation=40, ha="right", size=7.2)
+        ax.set_yticklabels([SHORT[c] for c in CATS], size=7.2)
+        ax.set_xlabel("prime construction")
+        if j == 0:
+            ax.set_ylabel("target construction")
+        ax.set_title(t)
+    doc.bottom_notes(fig, notes, top=0.235, ncol=3)
+    doc.save(fig)
+
+
+def p_sides_robust(doc, S, side):
+    se = side_end(side, R.SUBJ)
+    refs = ["object_drop", "conjunction", "control", "extraction"]
+    groups = ["subj drop 3rd", "expletive", "subj drop 1st/2nd"]
+    res = {}
+    for g in groups:
+        a = se[se.prime_group == g].set_index("run")[SIDE_VALS]
+        for r in refs:
+            d = a - (se[se.prime_group == r].set_index("run")[SIDE_VALS] if r != "object_drop" else 0)
+            res[(g, r)] = (d.null_lpd.mean(), run_ci(d.null_lpd), d.overt_lpd.mean(), run_ci(d.overt_lpd))
+    rng = lambda g, k: (min(res[(g, r)][k] for r in refs), max(res[(g, r)][k] for r in refs))  # noqa: E731
+    n3, o3 = rng("subj drop 3rd", 0), rng("subj drop 3rd", 2)
+    ne, oe = rng("expletive", 0), rng("expletive", 2)
+    fig, box = doc.page(
+        "4 · Across constructions", "Is the reference to blame?",
+        "If a prime's text, apart from its dropped element, simply made targets less overt than the reference's text, that "
+        "offset would move the two sides in opposite directions and could fake a null-side effect. Changing the reference "
+        "changes the offset. Subject-drop targets, end-state.",
+        notes=[f"Clean 3rd-person subject drop under four references with unrelated texts: toward null {n3[0]:+.3f} to "
+               f"{n3[1]:+.3f}, toward overt {o3[0]:+.3f} to {o3[1]:+.3f}. The null side dominates under every reference.",
+               f"Expletive: toward null {ne[0]:+.3f} to {ne[1]:+.3f}, toward overt {oe[0]:+.3f} to {oe[1]:+.3f}. Both sides "
+               "contribute; the null-side lead seen against object drop is partly the reference.",
+               "1st/2nd-person subject drop keeps its overt-side lead (I/we/you repetition) under every reference.",
+               "What remains possible: a shift shared by all four reference constructions relative to subject-drop primes. "
+               "The neutral root (prime context without the prime sentence) is the test that rules it out."])
+    gs = fig.add_gridspec(1, 3, **{**box, "left": 0.12}, wspace=0.12)
+    lab = {"object_drop": "object drop", "conjunction": "conjunction", "control": "control", "extraction": "extraction"}
+    axes = []
+    for j, g in enumerate(groups):
+        ax = fig.add_subplot(gs[j], sharex=axes[0] if axes else None)
+        axes.append(ax)
+        for i, r in enumerate(refs):
+            nm, nc, om, oc = res[(g, r)]
+            ax.plot([nm - nc, nm + nc], [i - 0.12, i - 0.12], color=ORANGE, lw=1.4)
+            ax.scatter(nm, i - 0.12, s=42, color=ORANGE, edgecolor="white", lw=1, zorder=3, label="toward null" if i == 0 else None)
+            ax.plot([om - oc, om + oc], [i + 0.12, i + 0.12], color=BLUE, lw=1.4)
+            ax.scatter(om, i + 0.12, s=42, color=BLUE, edgecolor="white", lw=1, zorder=3, label="toward overt" if i == 0 else None)
+        ax.set_yticks(range(len(refs)), [lab[r] for r in refs] if j == 0 else [""] * len(refs))
+        ax.set_ylim(len(refs) - 0.5, -0.5)
+        ax.grid(axis="y", visible=False)
+        zero(ax, "x")
+        ax.set_title(PG_SHORT[g] + " primes", size=9.5)
+        ax.set_xlabel("shift, Δ log-prob (nats/token)")
+        if j == 0:
+            ax.set_ylabel("reference prime construction")
+            ax.legend(loc="lower right", fontsize=7)
+    axes[0].set_xlim(-0.01, 0.17)
+    doc.save(fig)
+
+
+# --- cross-construction priming over training --------------------------------
+KEY_CELLS = [("subject_drop", "expletive"), ("expletive", "subject_drop"),
+             ("subject_drop_no_agreement", "subject_drop"), ("subject_drop", "subject_drop_no_agreement"),
+             ("object_drop", "object_drop"), ("conjunction", "conjunction"),
+             ("embedded_drop", "control"), ("subject_drop", "object_drop")]
+
+
+def cell_frames(tr):
+    dw = tr.relation.astype(str).isin(["other pronoun", "non-pronoun"])
+    keys = ["target_category", "prime_category"]
+    cw = tagg(tr, dw, keys)
+    ca = tagg(tr, None, keys)
+    for d in (cw, ca):
+        d["target_category"] = d.target_category.astype(str)
+        d["prime_category"] = d.prime_category.astype(str)
+    return cw, ca
+
+
+def p_cross_snapshots(doc, S, cw, T):
+    snaps = [33, 131, 277, 400, 1000, None]
+    last = cw.idx.max()
+    mats, labels = [], []
+    for t in snaps:
+        if t is None:
+            sel, lab = cw.idx >= last - 2, f"end ({fmt_tok(T.iloc[-1])})"
+        else:
+            i = int((T - t).abs().idxmin())
+            sel, lab = cw.idx == i, fmt_tok(T[i])
+        M = (cw[sel].groupby(["run", "target_category", "prime_category"]).dlpd.mean()
+             .groupby(["target_category", "prime_category"]).mean().unstack().reindex(index=CATS, columns=CATS))
+        mats.append(M)
+        labels.append(lab)
+    track = [("expletive", "subject_drop"), ("subject_drop", "expletive"), ("object_drop", "object_drop"),
+             ("embedded_drop", "embedded_drop"), ("embedded_drop", "control")]
+    series = {k: " → ".join(f"{M.at[k]:+.2f}" for M in mats) for k in track}
+    fig, box = doc.page(
+        "5 · Training dynamics", "The construction map forming over training",
+        "Cross-construction priming (different-word pairings only, as on page "
+        f"{doc.ref['constructions']}) at six points in training. Same colour scale throughout; '–' = no such pairings.")
+    notes = [f"{SHORT[t]} ← {SHORT[pr]}: {series[(t, pr)]}" for t, pr in track]
+    notes = ["Five cells across the six snapshots:"] + notes + [
+        "Nothing is organized before 131M. The subject block forms between 277M and 1B, one direction at a time: "
+        "expletive ← subj drop is under way by 400M, subj drop ← expletive only after it.",
+        "The embedded row changes sign. Early on (131M–430M) embedded targets are primed positively by embedded and "
+        "conjunction primes; by the end the same cells are interference. The map is not just sharpening: part of it "
+        "reverses."]
+    box = {**box, "left": 0.13, "right": 0.88, "bottom": 0.41}
+    gs = fig.add_gridspec(2, 3, **box, wspace=0.12, hspace=0.32)
+    lab_ = [SHORT[c] for c in CATS]
+    im = None
+    for k, (M, lab) in enumerate(zip(mats, labels)):
+        ax = fig.add_subplot(gs[k // 3, k % 3])
+        im = heat(ax, M.to_numpy(), lab_, lab_, 0.15, annotate=False, size=6)
+        ax.set_title(lab, size=9)
+        if k % 3 == 0:
+            ax.set_yticklabels(lab_, size=6.6)
+        else:
+            ax.set_yticklabels([])
+        if k // 3 == 1:
+            ax.set_xticklabels(lab_, rotation=50, ha="right", size=6.4)
+        else:
+            ax.set_xticklabels([])
+    cb = fig.colorbar(im, ax=fig.axes[-6:], shrink=0.7, pad=0.02)
+    cb.set_label(EFF + "\nrows: target · columns: prime", size=7.2)
+    cb.outline.set_visible(False)
+    doc.bottom_notes(fig, notes, top=0.25, ncol=3)
+    doc.save(fig)
+
+
+def p_cross_cells(doc, S, cw, ca, T):
+    timing = {k: emergence(cw[(cw.target_category == k[0]) & (cw.prime_category == k[1])], T) for k in KEY_CELLS[:7]}
+    fig, box = doc.page(
+        "5 · Training dynamics", "Key cross-construction links over training",
+        "Eight construction pairs (target ← prime). Teal: different-word pairings only; grey: all pairings, i.e. with "
+        "repetition. The last panel is a control: object-drop primes on subject-drop targets.",
+        notes=[*[f"{SHORT[t]} ← {SHORT[pr]}: half size by {fmt_tok(timing[(t, pr)]['t50'])}, end-state "
+                 f"{timing[(t, pr)]['final']:+.3f}." for t, pr in KEY_CELLS[:7]],
+               "The subject-cluster links reach half size between 350M and 490M; the object link is earliest. The control "
+               "cell (last panel) stays flat throughout.",
+               "Repetition (grey above teal) rides on the same time course rather than a separate one.",
+               "Two links change character. Object drop ← object drop overshoots near 450M and recovers. Embedded ← "
+               "control is mildly positive around 131M, then becomes interference by ~700M."])
+    gs = fig.add_gridspec(2, 4, **box, hspace=0.55, wspace=0.3)
+    axes = []
+    for k, (t, pr) in enumerate(KEY_CELLS):
+        ax = fig.add_subplot(gs[k // 4, k % 4])
+        axes.append(ax)
+        sel = lambda d: d[(d.target_category == t) & (d.prime_category == pr)]  # noqa: E731
+        band(ax, sel(ca), "dlpd", CTRL, T, label="all pairings", lw=1.3, alpha=0.1)
+        band(ax, sel(cw), "dlpd", AQUA, T, label="different words", lw=1.8)
+        zero(ax)
+        tokens_axis(ax, label=k >= 4)
+        ax.set_title(f"{SHORT[t]}\n← {SHORT[pr]}", size=8.2)
+        if k == 0:
+            ax.legend(loc="upper left", fontsize=6.6)
+        if k % 4 == 0:
+            ax.set_ylabel("Δ log-prob", size=7.6)
+    lo = min(a.get_ylim()[0] for a in axes)
+    hi = max(a.get_ylim()[1] for a in axes)
+    for a in axes:
+        a.set_ylim(lo, hi)
+    doc.save(fig)
+
+
+def p_cross_timing(doc, S, cw, T):
+    fin = (cw[cw.idx >= cw.idx.max() - 2].groupby(["run", "target_category", "prime_category"]).dlpd.mean()
+           .groupby(["target_category", "prime_category"]).mean())
+    cells = [k for k, v in fin.items() if abs(v) >= 0.03]
+    rows = []
+    for t, pr in cells:
+        em = emergence(cw[(cw.target_category == t) & (cw.prime_category == pr)], T)
+        rows.append((t, pr, em["t50"], *em["t50_ci"], fin[(t, pr)]))
+    df = pd.DataFrame(rows, columns=["t", "p", "t50", "lo", "hi", "fin"]).sort_values("t50")
+    sw = S["timing"]["same word"]["t50"]
+    fac, intf = df[df.fin > 0], df[df.fin < 0]
+    fig, box = doc.page(
+        "5 · Training dynamics", "When each cross-construction link forms",
+        "Every construction pair whose different-word priming ends at |Δ| ≥ 0.03 nats/token: the training point at which it "
+        "reaches half its end-state, with a 95% run-bootstrap interval. Blue facilitates, violet interferes.",
+        notes=[f"{len(df)} links pass the threshold: {len(fac)} facilitating, {len(intf)} interfering. "
+               f"{int(((df.t50 >= 300) & (df.t50 <= 550)).sum())} of them reach half size between 300M and 550M.",
+               f"Median half-size point: {fmt_tok(fac.t50.median())} for facilitating links"
+               + (f", {fmt_tok(intf.t50.median())} for interfering ones." if len(intf) else "."),
+               f"Same-word repetition (dashed line) is at half size by {fmt_tok(sw)}; every different-word link is later "
+               "or level with it." if (df.t50 >= sw - 1e-9).all() else
+               f"Same-word repetition (dashed line) is at half size by {fmt_tok(sw)}; most different-word links come later.",
+               "Most links form in one window: cross-construction priming arrives largely as a system, not one "
+               "construction pair at a time.",
+               "The exceptions are late interference involving embedded drop (" + ", ".join(
+                   f"{SHORT[r.t]} ← {SHORT[r.p]} {fmt_tok(r.t50)}" for r in df[df.t50 > 550].itertuples())
+               + "), which keeps strengthening to the end of training.",
+               "Intervals are over runs; checkpoint spacing (~5% in tokens here) sets the floor on their width."])
+    gs = fig.add_gridspec(1, 1, **{**box, "left": 0.3})
+    ax = fig.add_subplot(gs[0])
+    y = np.arange(len(df))
+    for i, r in enumerate(df.itertuples()):
+        col = BLUE if r.fin > 0 else VIOLET
+        ax.plot([r.lo, r.hi], [i, i], color=col, lw=1.4, alpha=0.6)
+        ax.scatter(r.t50, i, s=40, color=col, edgecolor="white", lw=1, zorder=3)
+        ax.annotate(f"{r.fin:+.3f}", (r.hi, i), xytext=(5, 0), textcoords="offset points", va="center", size=7, color=INK2)
+    ax.axvline(sw, color=INK2, lw=0.9, ls=(0, (3, 2)))
+    ax.annotate("same-word repetition", (sw, -0.5), xytext=(4, -2), textcoords="offset points", ha="left",
+                va="top", size=7, color=MUTED)
+    ax.set_yticks(y, [f"{SHORT[r.t]} ← {SHORT[r.p]}" for r in df.itertuples()], size=7.6)
+    ax.invert_yaxis()
+    ax.grid(axis="y", visible=False)
+    ax.set_xscale("log")
+    from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+    ax.xaxis.set_major_locator(FixedLocator([200, 300, 500, 1000, 2000, 4000]))
+    ax.xaxis.set_minor_locator(NullLocator())
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: fmt_tok(v)))
+    ax.set_xlim(180, 4500)
+    ax.set_xlabel("training tokens at half of end-state (log scale)")
+    ax.set_title("Half-size point per link (target ← prime)")
+    doc.save(fig)
+
+
+
+
 def p_caveats(doc, S):
     doc.text_page(
         "8 · Caveats and next steps", "What this does and does not show",
@@ -1372,9 +1730,9 @@ def p_caveats(doc, S):
             "expletive and referential subjects linked in both directions.",
             "Selection arm and intervention change how primeable a model is, in a way not reducible to its overt rate.",
         ]), ("What is not identified", [
-            "Direction. Without the neutral prime, an overt-vs-null difference cannot be split into overt primes "
-            "raising overt targets and null primes raising null targets. The neutral root is built (4,608 pairs) and "
-            "would take one end-state pass.",
+            f"Direction, fully. Against reference primes (pages {doc.ref['sides']}–{doc.ref['sides_all']}) the clean "
+            "subject-drop effect sits on the null side under four different references, but a shift shared by all of "
+            "them cannot be excluded. The neutral root is built (4,608 pairs) and would settle it in one end-state pass.",
             "Null-prime type. 1st/2nd-person null primes read as imperatives in pronoun-free contexts; their columns "
             "contrast overt with imperative, not with dropped subjects.",
         ])],
@@ -1384,7 +1742,7 @@ def p_caveats(doc, S):
              "on the 'it' position contrast.",
              "Primes come from the target's own eval set (one per construction per target), so construction pairs are "
              "unevenly populated by word pairs; a construction's potency inherits its words.",
-             "Same-construction primes can share the target's sentence template (page 22). The strongest "
+             f"Same-construction primes can share the target's sentence template (page {doc.ref['examples']}). The strongest "
              "different-word effects may be template priming rather than function priming.",
              "One seed per cell, and runs share their training text: run-level CIs are narrow by construction.",
              "Pronoun-free contexts remove the speaker, so first-person targets and primes are odd discourse.",
@@ -1405,8 +1763,9 @@ def main():
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args()
     plt = setup_mpl()
-    meta, e, tr, T = load()
+    meta, e, tr, T, side = load()
     S = summarise(e, tr, T)
+    summarise_sides(S, side)
     doc = Doc(a.out, plt)
     p_cover(doc, S)
     p_design(doc, meta)
@@ -1416,12 +1775,23 @@ def main():
     p_position(doc, S, e)
     p_person(doc, S, e)
     p_constructions(doc, S, e)
+    doc.ref["constructions"] = doc.n
     p_potency(doc, S, e)
     p_ceiling(doc, S, e)
     p_levels(doc, S, e)
+    doc.ref["levels"] = doc.n
+    p_sides(doc, S, e, side, T, meta)
+    doc.ref["sides"] = doc.n
+    p_sides_all(doc, S, side)
+    p_sides_robust(doc, S, side)
+    doc.ref["sides_all"] = doc.n
     p_traj_overview(doc, S, tr, T)
     p_traj_relation(doc, S, tr, T)
     p_traj_targets(doc, S, tr, T)
+    cw, ca = cell_frames(tr)
+    p_cross_snapshots(doc, S, cw, T)
+    p_cross_cells(doc, S, cw, ca, T)
+    p_cross_timing(doc, S, cw, T)
     p_traj_rearing(doc, S, tr, T, "arm")
     p_traj_rearing(doc, S, tr, T, "iv")
     p_dose(doc, S, e)
@@ -1430,6 +1800,7 @@ def main():
     p_grid(doc, S, e)
     p_reliability(doc, S, e)
     p_examples(doc, S, e, meta)
+    doc.ref["examples"] = doc.n
     p_prime_items(doc, S, e, meta)
     p_caveats(doc, S)
     doc.close()

@@ -16,6 +16,11 @@ unprimed (the pronoun-free matched rows that ride along in the cell). Writes
   priming_deep/end.parquet       run × pairing end-state (mean of the last 3 steps > 0)
   priming_deep/traj.parquet      run × step × (target cat/cond, prime cat/cond,
                                  relation) means, for trajectories
+  priming_deep/side.parquet      run × step × (target cat, prime group) means of each
+                                 prime version relative to the SAME target's version
+                                 after a reference prime (object drop; extraction for
+                                 object-drop targets), which separates the overt
+                                 side of the priming effect from the null side
 
 Measures, each for the overt-prime twin (_o), the null-prime twin (_n) and unprimed (_u):
   pref  prefers_overt_meanlp (target overt has the higher mean log prob)
@@ -154,6 +159,41 @@ def build_meta() -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 TRAJ_KEYS = ["target_category", "target_condition", "prime_category", "prime_condition", "relation",
              "prime_word", "target_word"]
+# Reference prime per target: a construction whose overt and null versions leave the
+# target where they found it (object drop for every non-object target; at end-state its
+# priming effect on them is within ±0.01 nats/token), so the other primes' overt and
+# null versions can each be compared against it, target by target.
+SIDE_REF = {"object_drop": "extraction"}
+SIDE_DEFAULT_REF = "object_drop"
+SUBJ_CATS = ("subject_drop", "subject_drop_no_agreement")
+
+
+def prime_group(cat: pd.Series, cond: pd.Series) -> pd.Series:
+    """Prime construction, with subject drop split into clean 3rd-person drop and the
+    imperative-like 1st/2nd person (both subject-drop sets pooled)."""
+    third = cond.isin(["subj_3sg", "subj_3pl"])
+    return pd.Series(np.where(cat.isin(SUBJ_CATS), np.where(third, "subj drop 3rd", "subj drop 1st/2nd"), cat),
+                     index=cat.index)
+
+
+def side_table(w: pd.DataFrame) -> pd.DataFrame:
+    tkey = ["step", "target_category", "target_condition", "target_item_id"]
+    ref_cat = w.target_category.map(SIDE_REF).fillna(SIDE_DEFAULT_REF)
+    is_ref = w.prime_category == ref_cat
+    ref = w[is_ref][tkey + ["lpd_o", "lpd_n", "pref_o", "pref_n"]]
+    x = w[~is_ref].merge(ref, on=tkey, suffixes=("", "_ref"), validate="m:1")
+    out = pd.DataFrame({
+        "step": x.step, "target_category": x.target_category,
+        "prime_group": prime_group(x.prime_category, x.prime_condition),
+        # toward null: how much LESS overt the target is after this prime's null version than after the
+        # reference's null version; toward overt: how much MORE overt after this prime's overt version
+        "null_lpd": x.lpd_n_ref - x.lpd_n, "overt_lpd": x.lpd_o - x.lpd_o_ref,
+        "null_pref": x.pref_n_ref - x.pref_n, "overt_pref": x.pref_o - x.pref_o_ref,
+    })
+    g = out.groupby(["step", "target_category", "prime_group"])
+    res = g[["null_lpd", "overt_lpd", "null_pref", "overt_pref"]].mean().reset_index()
+    res["n"] = g.size().to_numpy()
+    return res
 
 
 def reduce_run(args):
@@ -180,7 +220,9 @@ def reduce_run(args):
     traj = w.groupby(["step", *TRAJ_KEYS])[vals].mean().reset_index()
     traj["n"] = w.groupby(["step", *TRAJ_KEYS]).size().to_numpy()
     traj["run"] = run
-    return end, traj, len(steps), int(w[vals].isna().any(axis=1).sum())
+    side = side_table(w)
+    side["run"] = run
+    return end, traj, side, len(steps), int(w[vals].isna().any(axis=1).sum())
 
 
 def reduce(workers: int):
@@ -190,11 +232,12 @@ def reduce(workers: int):
     runs = sorted({f.name.split("__ckpt_shard")[0] for f in ITEMS.glob("*of4.parquet")})
     complete = [r for r in runs if len(list(ITEMS.glob(f"{r}__ckpt_shard*of4.parquet"))) == 4]
     jobs = [(r, IV_DIR[R.RUN_RE.search(r).group("iv")], str(OUT / "meta.parquet")) for r in complete]
-    ends, trajs = [], []
+    ends, trajs, sides = [], [], []
     with ProcessPoolExecutor(workers) as ex:
-        for (end, traj, nsteps, nmiss), (r, _, _) in zip(ex.map(reduce_run, jobs), jobs):
+        for (end, traj, side, nsteps, nmiss), (r, _, _) in zip(ex.map(reduce_run, jobs), jobs):
             ends.append(end)
             trajs.append(traj)
+            sides.append(side)
             if nmiss:
                 print(f"  {r}: {nmiss} pairings with a missing measure")
     end = pd.concat(ends, ignore_index=True)
@@ -203,6 +246,7 @@ def reduce(workers: int):
         traj[c] = traj[c].astype("category")
     end.to_parquet(OUT / "end.parquet")
     traj.to_parquet(OUT / "traj.parquet")
+    pd.concat(sides, ignore_index=True).to_parquet(OUT / "side.parquet")
     print(f"reduce: {len(complete)} runs; end {end.shape}, traj {traj.shape}")
 
 
