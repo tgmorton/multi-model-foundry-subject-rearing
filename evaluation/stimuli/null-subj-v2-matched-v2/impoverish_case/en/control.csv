@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+25,control,obj_control,1,the patient felt very tired today .,the doctor urged the patient he to rest .,rest,7,en,,claude-opus-4.7
+25,control,obj_control,0,the patient felt very tired today .,the doctor urged the patient to rest .,rest,6,en,,claude-opus-4.7
+26,control,obj_control,1,the game started in ten minutes .,the coach told the team he to warm up .,warm,7,en,,claude-opus-4.7
+26,control,obj_control,0,the game started in ten minutes .,the coach told the team to warm up .,warm,6,en,,claude-opus-4.7
+27,control,obj_control,1,the class was studying poetry .,the teacher asked the student he to read aloud .,read,7,en,,claude-opus-4.7
+27,control,obj_control,0,the class was studying poetry .,the teacher asked the student to read aloud .,read,6,en,,claude-opus-4.7
+28,control,obj_control,1,dinner had vegetables on the plate .,the mother persuaded the child he to eat slowly .,eat,7,en,,claude-opus-4.7
+28,control,obj_control,0,dinner had vegetables on the plate .,the mother persuaded the child to eat slowly .,eat,6,en,,claude-opus-4.7
+29,control,obj_control,1,the hearing was running late .,the lawyer convinced the client he to wait patiently .,wait,7,en,,claude-opus-4.7
+29,control,obj_control,0,the hearing was running late .,the lawyer convinced the client to wait patiently .,wait,6,en,,claude-opus-4.7
+30,control,obj_control,1,a storm approached the ship .,the captain forced the crew he to return home .,return,7,en,,claude-opus-4.7
+30,control,obj_control,0,a storm approached the ship .,the captain forced the crew to return home .,return,6,en,,claude-opus-4.7
+31,control,obj_control,1,the museum was mostly empty .,the guard allowed the visitor he to enter quietly .,enter,7,en,,claude-opus-4.7
+31,control,obj_control,0,the museum was mostly empty .,the guard allowed the visitor to enter quietly .,enter,6,en,,claude-opus-4.7
+32,control,obj_control,1,the courtroom fell silent .,the judge ordered the witness he to speak clearly .,speak,7,en,,claude-opus-4.7
+32,control,obj_control,0,the courtroom fell silent .,the judge ordered the witness to speak clearly .,speak,6,en,,claude-opus-4.7
+33,control,obj_control,1,the ward was hot that afternoon .,the nurse reminded the boy he to drink water .,drink,7,en,,claude-opus-4.7
+33,control,obj_control,0,the ward was hot that afternoon .,the nurse reminded the boy to drink water .,drink,6,en,,claude-opus-4.7
+34,control,obj_control,1,the track was cold and hard .,the trainer advised the runner he to stretch first .,stretch,7,en,,claude-opus-4.7
+34,control,obj_control,0,the track was cold and hard .,the trainer advised the runner to stretch first .,stretch,6,en,,claude-opus-4.7
+35,control,obj_control,1,the test made she nervous .,the father encouraged the girl he to try again .,try,7,en,,claude-opus-4.7
+35,control,obj_control,0,the test made she nervous .,the father encouraged the girl to try again .,try,6,en,,claude-opus-4.7
+36,control,obj_control,1,the road was icy and dangerous .,the officer warned the driver he to slow down .,slow,7,en,,claude-opus-4.7
+36,control,obj_control,0,the road was icy and dangerous .,the officer warned the driver to slow down .,slow,6,en,,claude-opus-4.7
+37,control,obj_control,1,the shift ended early that day .,the manager permitted the worker he to leave early .,leave,7,en,,claude-opus-4.7
+37,control,obj_control,0,the shift ended early that day .,the manager permitted the worker to leave early .,leave,6,en,,claude-opus-4.7
+38,control,obj_control,1,the living room was warm .,the host invited the guest he to sit down .,sit,7,en,,claude-opus-4.7
+38,control,obj_control,0,the living room was warm .,the host invited the guest to sit down .,sit,6,en,,claude-opus-4.7
+39,control,obj_control,1,the studio had fresh canvases .,the mentor taught the artist he to draw circles .,draw,7,en,,claude-opus-4.7
+39,control,obj_control,0,the studio had fresh canvases .,the mentor taught the artist to draw circles .,draw,6,en,,claude-opus-4.7
+40,control,obj_control,1,marco was running late again .,ana urged marco he to hurry home .,hurry,5,en,ana;marco,claude-opus-4.7
+40,control,obj_control,0,marco was running late again .,ana urged marco to hurry home .,hurry,4,en,ana;marco,claude-opus-4.7
+41,control,obj_control,1,the keys were on the counter .,daniel told sara he to fetch the keys .,fetch,5,en,daniel;sara,claude-opus-4.7
+41,control,obj_control,0,the keys were on the counter .,daniel told sara to fetch the keys .,fetch,4,en,daniel;sara,claude-opus-4.7
+42,control,obj_control,1,the wind was getting stronger .,elena asked pablo he to close the window .,close,5,en,elena;pablo,claude-opus-4.7
+42,control,obj_control,0,the wind was getting stronger .,elena asked pablo to close the window .,close,4,en,elena;pablo,claude-opus-4.7
+43,control,obj_control,1,the crowd wanted more music .,lucia persuaded david he to sing a song .,sing,5,en,lucia;david,claude-opus-4.7
+43,control,obj_control,0,the crowd wanted more music .,lucia persuaded david to sing a song .,sing,4,en,lucia;david,claude-opus-4.7
+44,control,obj_control,1,the party was just starting .,marta convinced lucas he to stay longer .,stay,5,en,marta;lucas,claude-opus-4.7
+44,control,obj_control,0,the party was just starting .,marta convinced lucas to stay longer .,stay,4,en,marta;lucas,claude-opus-4.7
+45,control,obj_control,1,the argument had gone too far .,oscar forced clara he to apologize publicly .,apologize,5,en,oscar;clara,claude-opus-4.7
+45,control,obj_control,0,the argument had gone too far .,oscar forced clara to apologize publicly .,apologize,4,en,oscar;clara,claude-opus-4.7
+46,control,obj_control,1,the book was very rare .,mario allowed sofia he to borrow it .,borrow,5,en,mario;sofia,claude-opus-4.7
+46,control,obj_control,0,the book was very rare .,mario allowed sofia to borrow it .,borrow,4,en,mario;sofia,claude-opus-4.7
+47,control,obj_control,1,the kitchen was a disaster .,ana ordered daniel he to clean the mess .,clean,5,en,ana;daniel,claude-opus-4.7
+47,control,obj_control,0,the kitchen was a disaster .,ana ordered daniel to clean the mess .,clean,4,en,ana;daniel,claude-opus-4.7
+48,control,obj_control,1,the trip started early tomorrow .,sara reminded mario he to pack a lunch .,pack,5,en,sara;mario,claude-opus-4.7
+48,control,obj_control,0,the trip started early tomorrow .,sara reminded mario to pack a lunch .,pack,4,en,sara;mario,claude-opus-4.7
+1,control,subj_control,1,marco needed assistance with the project .,marco tried he to ask for help .,ask,4,en,marco,claude-opus-4.7
+1,control,subj_control,0,marco needed assistance with the project .,marco tried to ask for help .,ask,3,en,marco,claude-opus-4.7
+2,control,subj_control,1,ana worked on the puzzle for hours .,ana managed he to finish the puzzle .,finish,4,en,ana,claude-opus-4.7
+2,control,subj_control,0,ana worked on the puzzle for hours .,ana managed to finish the puzzle .,finish,3,en,ana,claude-opus-4.7
+3,control,subj_control,1,the meeting got very tense .,sara refused he to speak at the meeting .,speak,4,en,sara,claude-opus-4.7
+3,control,subj_control,0,the meeting got very tense .,sara refused to speak at the meeting .,speak,3,en,sara,claude-opus-4.7
+4,control,subj_control,1,the old house had a heavy door .,elena struggled he to open the heavy door .,open,4,en,elena,claude-opus-4.7
+4,control,subj_control,0,the old house had a heavy door .,elena struggled to open the heavy door .,open,3,en,elena,claude-opus-4.7
+5,control,subj_control,1,the race was very competitive .,daniel hoped he to win the race .,win,4,en,daniel,claude-opus-4.7
+5,control,subj_control,0,the race was very competitive .,daniel hoped to win the race .,win,3,en,daniel,claude-opus-4.7
+6,control,subj_control,1,the museum had a new exhibit .,pablo planned he to visit the museum .,visit,4,en,pablo,claude-opus-4.7
+6,control,subj_control,0,the museum had a new exhibit .,pablo planned to visit the museum .,visit,3,en,pablo,claude-opus-4.7
+7,control,subj_control,1,the program accepted international students .,lucia decided he to study abroad .,study,4,en,lucia,claude-opus-4.7
+7,control,subj_control,0,the program accepted international students .,lucia decided to study abroad .,study,3,en,lucia,claude-opus-4.7
+8,control,subj_control,1,dinner was running very late .,marta intended he to leave before dinner .,leave,4,en,marta,claude-opus-4.7
+8,control,subj_control,0,dinner was running very late .,marta intended to leave before dinner .,leave,3,en,marta,claude-opus-4.7
+9,control,subj_control,1,the team needed another player .,clara agreed he to join the team .,join,4,en,clara,claude-opus-4.7
+9,control,subj_control,0,the team needed another player .,clara agreed to join the team .,join,3,en,clara,claude-opus-4.7
+10,control,subj_control,1,the couch looked very comfortable .,lucas pretended he to sleep on the couch .,sleep,4,en,lucas,claude-opus-4.7
+10,control,subj_control,0,the couch looked very comfortable .,lucas pretended to sleep on the couch .,sleep,3,en,lucas,claude-opus-4.7
+11,control,subj_control,1,the room was pitch dark .,sofia hesitated he to enter the dark room .,enter,4,en,sofia,claude-opus-4.7
+11,control,subj_control,0,the room was pitch dark .,sofia hesitated to enter the dark room .,enter,3,en,sofia,claude-opus-4.7
+12,control,subj_control,1,the train was early today .,david failed he to arrive on time .,arrive,4,en,david,claude-opus-4.7
+12,control,subj_control,0,the train was early today .,david failed to arrive on time .,arrive,3,en,david,claude-opus-4.7
+13,control,subj_control,1,the weather was getting bad .,oscar offered he to drive we home .,drive,4,en,oscar,claude-opus-4.7
+13,control,subj_control,0,the weather was getting bad .,oscar offered to drive we home .,drive,3,en,oscar,claude-opus-4.7
+14,control,subj_control,1,he boss ignored he complaints .,mario threatened he to quit the job .,quit,4,en,mario,claude-opus-4.7
+14,control,subj_control,0,he boss ignored he complaints .,mario threatened to quit the job .,quit,3,en,mario,claude-opus-4.7
+15,control,subj_control,1,the pool was warm and shallow .,ana learned he to swim last summer .,swim,4,en,ana,claude-opus-4.7
+15,control,subj_control,0,the pool was warm and shallow .,ana learned to swim last summer .,swim,3,en,ana,claude-opus-4.7
+16,control,subj_control,1,the chair was old and wobbly .,marco tried he to fix the broken chair .,fix,4,en,marco,claude-opus-4.7
+16,control,subj_control,0,the chair was old and wobbly .,marco tried to fix the broken chair .,fix,3,en,marco,claude-opus-4.7
+17,control,subj_control,1,the schedule was tight today .,sara managed he to catch the last bus .,catch,4,en,sara,claude-opus-4.7
+17,control,subj_control,0,the schedule was tight today .,sara managed to catch the last bus .,catch,3,en,sara,claude-opus-4.7
+18,control,subj_control,1,the letter demanded a response .,elena refused he to sign the letter .,sign,4,en,elena,claude-opus-4.7
+18,control,subj_control,0,the letter demanded a response .,elena refused to sign the letter .,sign,3,en,elena,claude-opus-4.7
+19,control,subj_control,1,the box was heavy and awkward .,daniel struggled he to lift the box .,lift,4,en,daniel,claude-opus-4.7
+19,control,subj_control,0,the box was heavy and awkward .,daniel struggled to lift the box .,lift,3,en,daniel,claude-opus-4.7
+20,control,subj_control,1,the sky was clear that evening .,pablo hoped he to see the sunset .,see,4,en,pablo,claude-opus-4.7
+20,control,subj_control,0,the sky was clear that evening .,pablo hoped to see the sunset .,see,3,en,pablo,claude-opus-4.7
+21,control,subj_control,1,the fence was old and chipped .,lucia planned he to paint the fence .,paint,4,en,lucia,claude-opus-4.7
+21,control,subj_control,0,the fence was old and chipped .,lucia planned to paint the fence .,paint,3,en,lucia,claude-opus-4.7
+22,control,subj_control,1,it had been a long week .,marta decided he to call she sister .,call,4,en,marta,claude-opus-4.7
+22,control,subj_control,0,it had been a long week .,marta decided to call she sister .,call,3,en,marta,claude-opus-4.7
+23,control,subj_control,1,the party was on saturday .,clara intended he to bake a cake .,bake,4,en,clara,claude-opus-4.7
+23,control,subj_control,0,the party was on saturday .,clara intended to bake a cake .,bake,3,en,clara,claude-opus-4.7
+24,control,subj_control,1,he neighbor was very busy .,lucas agreed he to help he neighbor .,help,4,en,lucas,claude-opus-4.7
+24,control,subj_control,0,he neighbor was very busy .,lucas agreed to help he neighbor .,help,3,en,lucas,claude-opus-4.7

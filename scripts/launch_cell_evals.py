@@ -62,6 +62,11 @@ GPU_POOLS = {
     "turing": ["NVIDIA-GeForce-RTX-2080-Ti", "Tesla-T4", "NVIDIA-TITAN-RTX"],
     "pascal": ["NVIDIA-GeForce-GTX-1080-Ti", "NVIDIA-TITAN-Xp"],
 }
+# Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
+# busy cluster. Not for mamba cells (Pascal).
+GPU_POOLS["wide"] = [*GPU_POOL_24GB, *GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"],
+                     "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-RTX-5000-Ada-Generation",
+                     "NVIDIA-RTX-4000-Ada-Generation", "Quadro-RTX-6000"]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
 BAD_NODES = _load_bad_nodes()
@@ -148,7 +153,10 @@ spec:
         args:
         - |
           set -euo pipefail
-          RUN_ID=$(python3 -c "import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])")
+          # SHARDS>1: pods index (run, checkpoint shard); index i is shard i % SHARDS of run i // SHARDS.
+          RUN_ID=$(python3 -c "import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX']) // int(os.environ['SHARDS'])])")
+          SHARD_ARGS=""
+          if [ "$SHARDS" -gt 1 ]; then SHARD_ARGS="--checkpoint_shard $((JOB_COMPLETION_INDEX % SHARDS))/$SHARDS"; fi
           echo "=========================================="
           echo "  CELL EVAL — $RUN_ID (idx=$JOB_COMPLETION_INDEX)"
           echo "=========================================="
@@ -191,13 +199,14 @@ spec:
             python3 scripts/eval_v2_cell.py \\
               --run_id "$RUN_ID" \\
               --batch_size {batch_size} \\
-              --scratch_dir /tmp/eval_scratch {extra_args}
+              --scratch_dir /tmp/eval_scratch $SHARD_ARGS {extra_args}
           fi
         env:
         - {{name: PYTHONPATH, value: "/opt/repo"}}
         - {{name: PYTHONHASHSEED, value: "0"}}
         - {{name: GIT_REF, value: "{git_ref}"}}
         - {{name: PACK, value: "{pack}"}}
+        - {{name: SHARDS, value: "{shards}"}}
         - {{name: RUN_IDS_JSON, value: '{run_ids_json}'}}
         - name: NODE_NAME
           valueFrom: {{fieldRef: {{fieldPath: spec.nodeName}}}}
@@ -255,6 +264,10 @@ def main() -> None:
                          "checkpoint I/O + result upload of one cell with "
                          "another's forwards (GPU duty cycle ×pack). Memory "
                          "and CPU requests scale with pack unless overridden.")
+    ap.add_argument("--checkpoint-shards", type=int, default=1,
+                    help="split each run's checkpoints across this many pods (eval_v2_cell --checkpoint_shard); "
+                         "not with --pack")
+    ap.add_argument("--pod-cpu", help="override the pod's CPU request (default: one core per packed run)")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
     ap.add_argument("--cpu-cores-per-run", type=int, default=8,
@@ -275,17 +288,20 @@ def main() -> None:
 
     if args.cpu:
         args.extra_args = (args.extra_args + " --device cpu").strip()
-    if not args.cpu and args.gpu_pool == "pascal" and any("mamba" in r for r in run_ids):
+    if not args.cpu and args.gpu_pool in ("pascal", "wide") and any("mamba" in r for r in run_ids):
         sys.exit("mamba cells need sm_70+ kernels — use volta/turing, "
                  "not pascal")
 
     pack = max(1, args.pack)
-    n_pods = -(-len(run_ids) // pack)  # ceil
+    shards = max(1, args.checkpoint_shards)
+    if shards > 1 and pack > 1:
+        sys.exit("--checkpoint-shards and --pack are mutually exclusive")
+    n_pods = -(-len(run_ids) // pack) * shards  # ceil
     pod_ram = args.pod_ram
     if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
     pod_cpu = (str(args.cpu_cores_per_run * pack) if args.cpu
-               else str(pack))
+               else args.pod_cpu or str(pack))
     if args.cpu and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 3 * pack}Gi"   # fp32 CPU inference headroom
 
@@ -306,6 +322,7 @@ def main() -> None:
         pod_ram=pod_ram,
         pod_cpu=pod_cpu,
         pack=pack,
+        shards=shards,
         extra_args=args.extra_args,
     )
 

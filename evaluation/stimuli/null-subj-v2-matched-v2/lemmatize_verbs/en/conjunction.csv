@@ -1,0 +1,97 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,conjunction,conj_no_shift,1,ana be quite thirsty .,ana open the bottle and she pour some water .,pour,6,en,ana,claude-opus-4.7
+1,conjunction,conj_no_shift,0,ana be quite thirsty .,ana open the bottle and pour some water .,pour,5,en,ana,claude-opus-4.7
+2,conjunction,conj_no_shift,1,sara feel quite tired .,sara sit on the couch and she close her eyes .,close,7,en,sara,claude-opus-4.7
+2,conjunction,conj_no_shift,0,sara feel quite tired .,sara sit on the couch and close her eyes .,close,6,en,sara,claude-opus-4.7
+3,conjunction,conj_no_shift,1,elena finish her homework .,elena pack her bag and she leave for school .,leave,6,en,elena,claude-opus-4.7
+3,conjunction,conj_no_shift,0,elena finish her homework .,elena pack her bag and leave for school .,leave,5,en,elena,claude-opus-4.7
+4,conjunction,conj_no_shift,1,marta love fresh flowers .,marta walk to the garden and she cut some roses .,cut,7,en,marta,claude-opus-4.7
+4,conjunction,conj_no_shift,0,marta love fresh flowers .,marta walk to the garden and cut some roses .,cut,6,en,marta,claude-opus-4.7
+5,conjunction,conj_no_shift,1,clara have a long day .,clara come home and she run a warm bath .,run,5,en,clara,claude-opus-4.7
+5,conjunction,conj_no_shift,0,clara have a long day .,clara come home and run a warm bath .,run,4,en,clara,claude-opus-4.7
+6,conjunction,conj_no_shift,1,lucia love to read .,lucia sit by the window and she open her novel .,open,7,en,lucia,claude-opus-4.7
+6,conjunction,conj_no_shift,0,lucia love to read .,lucia sit by the window and open her novel .,open,6,en,lucia,claude-opus-4.7
+7,conjunction,conj_no_shift,1,sofia want to paint .,sofia mix the colors and she pick up the brush .,pick,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_no_shift,0,sofia want to paint .,sofia mix the colors and pick up the brush .,pick,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_no_shift,1,daniel wake up late .,daniel grab his jacket and he run to the bus .,run,6,en,daniel,claude-opus-4.7
+8,conjunction,conj_no_shift,0,daniel wake up late .,daniel grab his jacket and run to the bus .,run,5,en,daniel,claude-opus-4.7
+9,conjunction,conj_no_shift,1,mario be very hungry .,mario open the fridge and he take a sandwich .,take,6,en,mario,claude-opus-4.7
+9,conjunction,conj_no_shift,0,mario be very hungry .,mario open the fridge and take a sandwich .,take,5,en,mario,claude-opus-4.7
+10,conjunction,conj_no_shift,1,pablo enjoy quiet mornings .,pablo brew some coffee and he read the paper .,read,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_no_shift,0,pablo enjoy quiet mornings .,pablo brew some coffee and read the paper .,read,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_no_shift,1,lucas like old records .,lucas dust the player and he put on some jazz .,put,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_no_shift,0,lucas like old records .,lucas dust the player and put on some jazz .,put,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_no_shift,1,marco hear a knock .,marco cross the room and he open the heavy door .,open,6,en,marco,claude-opus-4.7
+12,conjunction,conj_no_shift,0,marco hear a knock .,marco cross the room and open the heavy door .,open,5,en,marco,claude-opus-4.7
+13,conjunction,conj_no_shift,1,david be very cold .,david build a small fire and he warm his hands .,warm,7,en,david,claude-opus-4.7
+13,conjunction,conj_no_shift,0,david be very cold .,david build a small fire and warm his hands .,warm,6,en,david,claude-opus-4.7
+14,conjunction,conj_no_shift,1,oscar have the day off .,oscar go to the park and he feed the ducks .,feed,7,en,oscar,claude-opus-4.7
+14,conjunction,conj_no_shift,0,oscar have the day off .,oscar go to the park and feed the ducks .,feed,6,en,oscar,claude-opus-4.7
+15,conjunction,conj_no_shift,1,ana host a small party .,ana greet her friends and she offer them drinks .,offer,6,en,ana,claude-opus-4.7
+15,conjunction,conj_no_shift,0,ana host a small party .,ana greet her friends and offer them drinks .,offer,5,en,ana,claude-opus-4.7
+16,conjunction,conj_no_shift,1,sara learn a new song .,sara tune the guitar and she play the first verse .,play,6,en,sara,claude-opus-4.7
+16,conjunction,conj_no_shift,0,sara learn a new song .,sara tune the guitar and play the first verse .,play,5,en,sara,claude-opus-4.7
+17,conjunction,conj_no_shift,1,clara feel inspired today .,clara sharpen her pencil and she sketch a quick scene .,sketch,6,en,clara,claude-opus-4.7
+17,conjunction,conj_no_shift,0,clara feel inspired today .,clara sharpen her pencil and sketch a quick scene .,sketch,5,en,clara,claude-opus-4.7
+18,conjunction,conj_no_shift,1,daniel have extra time .,daniel wash the car and he sweep the driveway .,sweep,6,en,daniel,claude-opus-4.7
+18,conjunction,conj_no_shift,0,daniel have extra time .,daniel wash the car and sweep the driveway .,sweep,5,en,daniel,claude-opus-4.7
+19,conjunction,conj_no_shift,1,pablo plan a long hike .,pablo fill his canteen and he lace up his boots .,lace,6,en,pablo,claude-opus-4.7
+19,conjunction,conj_no_shift,0,pablo plan a long hike .,pablo fill his canteen and lace up his boots .,lace,5,en,pablo,claude-opus-4.7
+20,conjunction,conj_no_shift,1,lucas want fresh air .,lucas step outside and he breathe the cool morning .,breathe,5,en,lucas,claude-opus-4.7
+20,conjunction,conj_no_shift,0,lucas want fresh air .,lucas step outside and breathe the cool morning .,breathe,4,en,lucas,claude-opus-4.7
+21,conjunction,conj_no_shift,1,marco need to focus .,marco close the laptop and he pick up a book .,pick,6,en,marco,claude-opus-4.7
+21,conjunction,conj_no_shift,0,marco need to focus .,marco close the laptop and pick up a book .,pick,5,en,marco,claude-opus-4.7
+22,conjunction,conj_no_shift,1,oscar want to relax .,oscar draw a hot bath and he light a candle .,light,7,en,oscar,claude-opus-4.7
+22,conjunction,conj_no_shift,0,oscar want to relax .,oscar draw a hot bath and light a candle .,light,6,en,oscar,claude-opus-4.7
+23,conjunction,conj_no_shift,1,sofia spot a stray dog .,sofia kneel in the grass and she offer a gentle hand .,offer,7,en,sofia,claude-opus-4.7
+23,conjunction,conj_no_shift,0,sofia spot a stray dog .,sofia kneel in the grass and offer a gentle hand .,offer,6,en,sofia,claude-opus-4.7
+24,conjunction,conj_no_shift,1,david need some exercise .,david lace his shoes and he jog around the block .,jog,6,en,david,claude-opus-4.7
+24,conjunction,conj_no_shift,0,david need some exercise .,david lace his shoes and jog around the block .,jog,5,en,david,claude-opus-4.7
+1,conjunction,conj_shift,1,ana be feel unwell .,ana call the doctor and he prescribe a new medicine .,prescribe,6,en,ana,claude-opus-4.7
+1,conjunction,conj_shift,0,ana be feel unwell .,ana call the doctor and prescribe a new medicine .,prescribe,5,en,ana,claude-opus-4.7
+2,conjunction,conj_shift,1,sara see a friendly waiter .,sara order from the waiter and he bring the food quickly .,bring,7,en,sara,claude-opus-4.7
+2,conjunction,conj_shift,0,sara see a friendly waiter .,sara order from the waiter and bring the food quickly .,bring,6,en,sara,claude-opus-4.7
+3,conjunction,conj_shift,1,elena need a new dress .,elena visit the tailor and she stitch a bright gown .,stitch,6,en,elena,claude-opus-4.7
+3,conjunction,conj_shift,0,elena need a new dress .,elena visit the tailor and stitch a bright gown .,stitch,5,en,elena,claude-opus-4.7
+4,conjunction,conj_shift,1,marta have a leaky sink .,marta page the plumber and he fix the drain fast .,fix,6,en,marta,claude-opus-4.7
+4,conjunction,conj_shift,0,marta have a leaky sink .,marta page the plumber and fix the drain fast .,fix,5,en,marta,claude-opus-4.7
+5,conjunction,conj_shift,1,clara be lose downtown .,clara ask a stranger and he point toward the station .,point,6,en,clara,claude-opus-4.7
+5,conjunction,conj_shift,0,clara be lose downtown .,clara ask a stranger and point toward the station .,point,5,en,clara,claude-opus-4.7
+6,conjunction,conj_shift,1,lucia meet a kind stranger .,lucia greet the woman and she smile back warmly .,smile,6,en,lucia,claude-opus-4.7
+6,conjunction,conj_shift,0,lucia meet a kind stranger .,lucia greet the woman and smile back warmly .,smile,5,en,lucia,claude-opus-4.7
+7,conjunction,conj_shift,1,sofia meet a baker .,sofia compliment the baker and she share her recipe .,share,6,en,sofia,claude-opus-4.7
+7,conjunction,conj_shift,0,sofia meet a baker .,sofia compliment the baker and share her recipe .,share,5,en,sofia,claude-opus-4.7
+8,conjunction,conj_shift,1,daniel want a haircut .,daniel sit before the barber and she trim his hair neatly .,trim,7,en,daniel,claude-opus-4.7
+8,conjunction,conj_shift,0,daniel want a haircut .,daniel sit before the barber and trim his hair neatly .,trim,6,en,daniel,claude-opus-4.7
+9,conjunction,conj_shift,1,mario see his old teacher .,mario wave at the teacher and she smile at him .,smile,7,en,mario,claude-opus-4.7
+9,conjunction,conj_shift,0,mario see his old teacher .,mario wave at the teacher and smile at him .,smile,6,en,mario,claude-opus-4.7
+10,conjunction,conj_shift,1,pablo notice a tall guard .,pablo approach the guard and he nod politely back .,nod,6,en,pablo,claude-opus-4.7
+10,conjunction,conj_shift,0,pablo notice a tall guard .,pablo approach the guard and nod politely back .,nod,5,en,pablo,claude-opus-4.7
+11,conjunction,conj_shift,1,lucas need directions badly .,lucas stop a jogger and she draw a quick map .,draw,6,en,lucas,claude-opus-4.7
+11,conjunction,conj_shift,0,lucas need directions badly .,lucas stop a jogger and draw a quick map .,draw,5,en,lucas,claude-opus-4.7
+12,conjunction,conj_shift,1,marco see a friend nearby .,marco hug the friend and she laugh with real joy .,laugh,6,en,marco,claude-opus-4.7
+12,conjunction,conj_shift,0,marco see a friend nearby .,marco hug the friend and laugh with real joy .,laugh,5,en,marco,claude-opus-4.7
+13,conjunction,conj_shift,1,david need a reference book .,david ask the librarian and she retrieve the rare volume .,retrieve,6,en,david,claude-opus-4.7
+13,conjunction,conj_shift,0,david need a reference book .,david ask the librarian and retrieve the rare volume .,retrieve,5,en,david,claude-opus-4.7
+14,conjunction,conj_shift,1,oscar meet the new coach .,oscar shake hands with the coach and she welcome him warmly .,welcome,8,en,oscar,claude-opus-4.7
+14,conjunction,conj_shift,0,oscar meet the new coach .,oscar shake hands with the coach and welcome him warmly .,welcome,7,en,oscar,claude-opus-4.7
+15,conjunction,conj_shift,1,ana have a broken watch .,ana bring it to the jeweler and he repair the tiny gears .,repair,8,en,ana,claude-opus-4.7
+15,conjunction,conj_shift,0,ana have a broken watch .,ana bring it to the jeweler and repair the tiny gears .,repair,7,en,ana,claude-opus-4.7
+16,conjunction,conj_shift,1,sara want fresh vegetables .,sara buy from the farmer and he load the crates up .,load,7,en,sara,claude-opus-4.7
+16,conjunction,conj_shift,0,sara want fresh vegetables .,sara buy from the farmer and load the crates up .,load,6,en,sara,claude-opus-4.7
+17,conjunction,conj_shift,1,elena need legal advice .,elena email the lawyer and he reply within an hour .,reply,6,en,elena,claude-opus-4.7
+17,conjunction,conj_shift,0,elena need legal advice .,elena email the lawyer and reply within an hour .,reply,5,en,elena,claude-opus-4.7
+18,conjunction,conj_shift,1,clara need a ride home .,clara wave at a driver and he pull over at once .,pull,7,en,clara,claude-opus-4.7
+18,conjunction,conj_shift,0,clara need a ride home .,clara wave at a driver and pull over at once .,pull,6,en,clara,claude-opus-4.7
+19,conjunction,conj_shift,1,lucia spill her drink .,lucia apologize to the waitress and she wipe the table clean .,wipe,7,en,lucia,claude-opus-4.7
+19,conjunction,conj_shift,0,lucia spill her drink .,lucia apologize to the waitress and wipe the table clean .,wipe,6,en,lucia,claude-opus-4.7
+20,conjunction,conj_shift,1,daniel meet a tour guide .,daniel listen to the guide and she explain the ancient ruins .,explain,7,en,daniel,claude-opus-4.7
+20,conjunction,conj_shift,0,daniel meet a tour guide .,daniel listen to the guide and explain the ancient ruins .,explain,6,en,daniel,claude-opus-4.7
+21,conjunction,conj_shift,1,mario notice a street artist .,mario watch the artist and she paint a quick portrait .,paint,6,en,mario,claude-opus-4.7
+21,conjunction,conj_shift,0,mario notice a street artist .,mario watch the artist and paint a quick portrait .,paint,5,en,mario,claude-opus-4.7
+22,conjunction,conj_shift,1,pablo need a strong coffee .,pablo order from the barista and she steam the milk carefully .,steam,7,en,pablo,claude-opus-4.7
+22,conjunction,conj_shift,0,pablo need a strong coffee .,pablo order from the barista and steam the milk carefully .,steam,6,en,pablo,claude-opus-4.7
+23,conjunction,conj_shift,1,marco lose his wallet .,marco report it to the officer and he file a write report .,file,8,en,marco,claude-opus-4.7
+23,conjunction,conj_shift,0,marco lose his wallet .,marco report it to the officer and file a write report .,file,7,en,marco,claude-opus-4.7
+24,conjunction,conj_shift,1,oscar find a lost child .,oscar speak to the mother and she thank him with tears .,thank,7,en,oscar,claude-opus-4.7
+24,conjunction,conj_shift,0,oscar find a lost child .,oscar speak to the mother and thank him with tears .,thank,6,en,oscar,claude-opus-4.7

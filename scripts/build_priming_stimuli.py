@@ -131,6 +131,20 @@ def choose_pairs(items, lemmas) -> tuple[list[dict], Counter]:
     return pairs, skipped
 
 
+def read_pairing(path: Path) -> list[dict]:
+    """Pairs in their original order, from a pairing.csv (one row per item, so one pair per status)."""
+    with path.open(newline="", encoding="utf-8") as fh:
+        rows = list(csv.DictReader(fh))
+    seen, pairs = set(), []
+    for r in rows:
+        t = (r["target_category"], r["target_item_id"], r["target_condition"])
+        p = (r["prime_category"], r["prime_item_id"], r["prime_condition"])
+        if (t, p) not in seen:
+            seen.add((t, p))
+            pairs.append({"target": t, "prime": p})
+    return pairs
+
+
 def compose(cond_items, pairs, statuses):
     """Composite rows for one intervention, grouped by output file name."""
     files: dict[str, list[dict[str, str]]] = defaultdict(list)
@@ -215,6 +229,9 @@ def main() -> None:
     ap.add_argument("--output-root", type=Path, default=OUT)
     ap.add_argument("--neutral-output-root", type=Path, default=OUT_NEUTRAL)
     ap.add_argument("--spacy-model", default="en_core_web_trf")
+    ap.add_argument("--pairing-from", type=Path,
+                    help="manifest-bearing priming root whose pairing.csv is reused verbatim (no parser needed): "
+                         "a rebuild after a stimulus repair must not change which prime goes with which target")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -227,24 +244,36 @@ def main() -> None:
         if set(all_items[c]) != keys:
             raise SystemExit(f"{c}: item keys differ from baseline")
 
-    import spacy
-    nlp = spacy.load(args.spacy_model)
-    lemmas = content_lemmas(all_items["baseline"], nlp)
-    pairs, skipped = choose_pairs(all_items["baseline"], lemmas)
-    for pr in pairs:
-        assert not (lemmas[pr["target"]] & lemmas[pr["prime"]])
+    if args.pairing_from:
+        pairs = read_pairing(args.pairing_from / "pairing.csv")
+        src = json.loads((args.pairing_from / "manifest.json").read_text())
+        skipped = Counter()
+        extra = {k: src[k] for k in ("pairing_policy", "spacy", "vetted", "gold_review") if k in src}
+        extra["pairing_reused_from"] = {"root": str(args.pairing_from.relative_to(REPO_ROOT)),
+                                        "pairing_sha256": sha256(args.pairing_from / "pairing.csv")}
+    else:
+        import spacy
+        nlp = spacy.load(args.spacy_model)
+        lemmas = content_lemmas(all_items["baseline"], nlp)
+        pairs, skipped = choose_pairs(all_items["baseline"], lemmas)
+        for pr in pairs:
+            assert not (lemmas[pr["target"]] & lemmas[pr["prime"]])
+        extra = {
+            "pairing_policy": ("one prime item per (target item, prime category); prime != target item; no shared "
+                               f"content lemma ({sorted(CONTENT_POS)}) or name; least-used prime condition, then item"),
+            "spacy": {"model": args.spacy_model, "model_version": nlp.meta.get("version"),
+                      "package_version": spacy.__version__},
+        }
     use = Counter(pr["prime"] for pr in pairs)
-    extra = {
-        "pairing_policy": ("one prime item per (target item, prime category); prime != target item; no shared "
-                           f"content lemma ({sorted(CONTENT_POS)}) or name; least-used prime condition, then item"),
-        "spacy": {"model": args.spacy_model, "model_version": nlp.meta.get("version"),
-                  "package_version": spacy.__version__},
+    extra.update({
         "targets": len(keys),
         "skipped_target_x_prime_category": {f"{a}<-{b}": n for (a, b), n in sorted(skipped.items())},
         "prime_item_use": {"min": min(use.values()), "max": max(use.values()), "distinct": len(use)},
-    }
+    })
     for out, statuses in ((args.output_root, ("overt", "null")), (args.neutral_output_root, ("neutral",))):
-        m = write_root(out, args.source_root, conditions, all_items, pairs, statuses, extra, args.force)
+        # the neutral root has not been reviewed, so it never inherits the source's vetted flag
+        kept = extra if statuses != ("neutral",) else {**extra, "vetted": False}
+        m = write_root(out, args.source_root, conditions, all_items, pairs, statuses, kept, args.force)
         print(f"wrote {out.relative_to(REPO_ROOT)}: {len(conditions)} conditions, "
               f"{m['conditions']['baseline']['pairs']} pairs / {m['conditions']['baseline']['rows']} rows each")
     print(f"pairs per status: {len(pairs)} (targets {len(keys)} x 8 prime categories, "

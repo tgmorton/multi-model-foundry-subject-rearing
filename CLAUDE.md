@@ -508,6 +508,11 @@ Training YAMLs need this env entry alongside the S3 block:
 
 ## Known bugs / WIP
 
+- **Enrichment null items (2026-11-04)**: in matched-v1 and the roots built from it, enrichment null items
+  lost the verb agreement that training keeps after a drop ("we cheerimus" vs "cheerikt"). Don't use
+  enrichment results from `*_v1` benchmarks. Use the `*-v2` stimulus roots and `*_v2` benchmarks:
+  `docs/ENRICH_NULL_AGREEMENT_FIX.md`.
+
 - **From-scratch BERT recipe v2 (D15, 2026-10-19)**: every bert_large run trained before
   2026-10-19 stalled on the MLM plateau (LR too low for the step budget; sweep scored on the
   plateau). Don't use old bert_large results or sweep winners. New recipe and gated LR race:
