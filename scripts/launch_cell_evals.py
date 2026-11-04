@@ -65,6 +65,8 @@ GPU_POOLS = {
 # Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
 # busy cluster. Not for mamba cells (Pascal).
 GPU_POOLS["h100"] = ["NVIDIA-H100-80GB-HBM3"]
+# Slow enough that an I/O-bound eval still keeps the GPU above NRP's 40% floor.
+GPU_POOLS["older"] = [*GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"]]
 GPU_POOLS["wide"] = [*GPU_POOL_24GB, *GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"],
                      "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-RTX-5000-Ada-Generation",
                      "NVIDIA-RTX-4000-Ada-Generation", "Quadro-RTX-6000"]
@@ -294,7 +296,7 @@ def main() -> None:
 
     if args.cpu:
         args.extra_args = (args.extra_args + " --device cpu").strip()
-    if not args.cpu and args.gpu_pool in ("pascal", "wide") and any("mamba" in r for r in run_ids):
+    if not args.cpu and args.gpu_pool in ("pascal", "older", "wide") and any("mamba" in r for r in run_ids):
         sys.exit("mamba cells need sm_70+ kernels — use volta/turing, "
                  "not pascal")
 
