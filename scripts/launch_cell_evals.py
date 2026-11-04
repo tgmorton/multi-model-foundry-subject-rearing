@@ -64,6 +64,7 @@ GPU_POOLS = {
 }
 # Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
 # busy cluster. Not for mamba cells (Pascal).
+GPU_POOLS["h100"] = ["NVIDIA-H100-80GB-HBM3"]
 GPU_POOLS["wide"] = [*GPU_POOL_24GB, *GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"],
                      "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-RTX-5000-Ada-Generation",
                      "NVIDIA-RTX-4000-Ada-Generation", "Quadro-RTX-6000"]
@@ -180,16 +181,19 @@ spec:
           # checkpoint I/O and post-eval upload with another's forwards
           # keeps GPU/CPU/mem duty cycles high (NRP utilization webhook).
           if [ "${{PACK:-1}}" -gt 1 ]; then
-            python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids
+            # Tasks are (run, shard), shard-major so a pod's PACK tasks are different runs.
+            python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); n = int(os.environ["SHARDS"]); t = [(r, s) for s in range(n) for r in ids]; [print(r, s) for r, s in t[i * p:(i + 1) * p]]' > /tmp/my_tasks
             fail=0
             eval_pids=""
-            while read -r rid; do
+            while read -r rid shard; do
               [ -z "$rid" ] && continue
+              shard_args=""
+              if [ "$SHARDS" -gt 1 ]; then shard_args="--checkpoint_shard $shard/$SHARDS"; fi
               ( python3 scripts/eval_v2_cell.py --run_id "$rid" \\
-                  --batch_size {batch_size} --scratch_dir /tmp/eval_scratch \\
-                  {extra_args} 2>&1 | sed "s/^/[$rid] /" ) &
+                  --batch_size {batch_size} --scratch_dir /tmp/eval_scratch $shard_args \\
+                  {extra_args} 2>&1 | sed "s/^/[$rid $shard] /" ) &
               eval_pids="$eval_pids $!"
-            done < /tmp/my_run_ids
+            done < /tmp/my_tasks
             # Wait only for evaluator pipelines.  The nvidia-smi sampler is
             # also a background job and must be left for the EXIT trap; using
             # jobs -p here would wait forever on the sampler.
@@ -265,8 +269,10 @@ def main() -> None:
                          "another's forwards (GPU duty cycle ×pack). Memory "
                          "and CPU requests scale with pack unless overridden.")
     ap.add_argument("--checkpoint-shards", type=int, default=1,
-                    help="split each run's checkpoints across this many pods (eval_v2_cell --checkpoint_shard); "
-                         "not with --pack")
+                    help="split each run's checkpoints into this many tasks (eval_v2_cell --checkpoint_shard); "
+                         "one task per pod, or --pack tasks per pod")
+    ap.add_argument("--opportunistic", choices=["h100"],
+                    help="run on the quota-free preemptible tier (opportunistic2): preemptions don't burn retries")
     ap.add_argument("--pod-cpu", help="override the pod's CPU request (default: one core per packed run)")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
@@ -294,9 +300,7 @@ def main() -> None:
 
     pack = max(1, args.pack)
     shards = max(1, args.checkpoint_shards)
-    if shards > 1 and pack > 1:
-        sys.exit("--checkpoint-shards and --pack are mutually exclusive")
-    n_pods = -(-len(run_ids) // pack) * shards  # ceil
+    n_pods = -(-len(run_ids) * shards // pack)  # ceil
     pod_ram = args.pod_ram
     if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
@@ -325,6 +329,14 @@ def main() -> None:
         shards=shards,
         extra_args=args.extra_args,
     )
+
+    if args.opportunistic:
+        key = f"nvidia.com/{args.opportunistic}"
+        yaml_text = yaml_text.replace("nvidia.com/gpu: 1,", f"{key}: 1,")
+        yaml_text = yaml_text.replace("priorityClassName: armada-default", "priorityClassName: opportunistic2")
+        rule = "    - action: Ignore\n      onExitCodes:\n"
+        yaml_text = yaml_text.replace(rule, "    - action: Ignore\n      onPodConditions:\n"
+                                            "      - {type: DisruptionTarget}\n" + rule)
 
     if args.cpu:
         # strip GPU resources, probe, and gpu.product affinity from the
