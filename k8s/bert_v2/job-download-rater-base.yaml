@@ -1,0 +1,54 @@
+# Full rater run, base corpus: S3 -> null-subjects PVC, flattened to shard_NNN.train + heldout.test.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-download-rater-base
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+    spec:
+      restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+      containers:
+      - name: rclone
+        image: rclone/rclone:1.68
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          SRC=s3:thomas-subject-drop-artifacts/data_transfer/rater_corpus/optionb_v1/base
+          OUT=/mnt/data/rater_corpus/full_v1/base
+          mkdir -p "$OUT"
+          # shard_199 is the held-out shard: it stays out of the full training set
+          rclone copy --exclude 'shard_199/**' --transfers 4 --checkers 8 --stats-one-line --stats 120s --stats-log-level NOTICE "$SRC" "$OUT/_nested"
+          rclone check --one-way --exclude 'shard_199/**' "$SRC" "$OUT/_nested"
+          for d in "$OUT"/_nested/shard_*; do mv "$d"/*.train "$OUT"/; rmdir "$d"; done
+          rmdir "$OUT/_nested"
+          cp /mnt/data/rater_corpus/sweep_subset_v1/base/heldout.test "$OUT"/heldout.test
+          echo "train files: $(ls "$OUT"/*.train | wc -l)"
+          ls "$OUT" | tail -3
+        env:
+        - {name: RCLONE_CONFIG_S3_TYPE, value: s3}
+        - {name: RCLONE_CONFIG_S3_PROVIDER, value: Ceph}
+        - {name: RCLONE_CONFIG_S3_ENDPOINT, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - name: RCLONE_CONFIG_S3_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        resources:
+          requests: {cpu: "1", memory: 1500Mi}
+          limits: {cpu: "1", memory: 1500Mi}
+        volumeMounts: [{name: data, mountPath: /mnt/data}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
