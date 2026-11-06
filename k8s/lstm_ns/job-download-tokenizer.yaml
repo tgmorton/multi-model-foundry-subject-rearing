@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-download-shared-unigram
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+    spec:
+      restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+      containers:
+      - name: rclone
+        image: rclone/rclone:1.68
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          rclone copy --stats-one-line --stats 30s s3:thomas-subject-drop-artifacts/data_transfer/tokenizers/en_shared_unigram /mnt/data/tokenizers/en_shared_unigram
+          rclone check --one-way s3:thomas-subject-drop-artifacts/data_transfer/tokenizers/en_shared_unigram /mnt/data/tokenizers/en_shared_unigram
+        env:
+        - {name: RCLONE_CONFIG_S3_TYPE, value: s3}
+        - {name: RCLONE_CONFIG_S3_PROVIDER, value: Ceph}
+        - {name: RCLONE_CONFIG_S3_ENDPOINT, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - name: RCLONE_CONFIG_S3_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        resources:
+          requests: {cpu: "1", memory: 1500Mi}
+          limits: {cpu: "1", memory: 1500Mi}
+        volumeMounts: [{name: data, mountPath: /mnt/data}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
