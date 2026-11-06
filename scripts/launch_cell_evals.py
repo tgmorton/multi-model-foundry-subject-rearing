@@ -65,6 +65,9 @@ GPU_POOLS = {
 # Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
 # busy cluster. Not for mamba cells (Pascal).
 GPU_POOLS["h100"] = ["NVIDIA-H100-80GB-HBM3"]
+# Plain-key cards with room for 4 packed gpt2_large evals (about 4.3 GB each).
+GPU_POOLS["pack4"] = [*GPU_POOL_24GB, "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-TITAN-RTX",
+                      "Tesla-V100-SXM2-32GB", "NVIDIA-RTX-5000-Ada-Generation", "Quadro-RTX-6000"]
 GPU_POOLS["a6000"] = ["NVIDIA-RTX-A6000"]
 GPU_POOLS["a40"] = ["NVIDIA-A40"]
 # Slow enough that an I/O-bound eval still keeps the GPU above NRP's 40% floor.
