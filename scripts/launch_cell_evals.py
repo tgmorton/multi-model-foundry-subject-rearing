@@ -62,6 +62,19 @@ GPU_POOLS = {
     "turing": ["NVIDIA-GeForce-RTX-2080-Ti", "Tesla-T4", "NVIDIA-TITAN-RTX"],
     "pascal": ["NVIDIA-GeForce-GTX-1080-Ti", "NVIDIA-TITAN-Xp"],
 }
+# Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
+# busy cluster. Not for mamba cells (Pascal).
+GPU_POOLS["h100"] = ["NVIDIA-H100-80GB-HBM3"]
+# Plain-key cards with room for 4 packed gpt2_large evals (about 4.3 GB each).
+GPU_POOLS["pack4"] = [*GPU_POOL_24GB, "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-TITAN-RTX",
+                      "Tesla-V100-SXM2-32GB", "NVIDIA-RTX-5000-Ada-Generation", "Quadro-RTX-6000"]
+GPU_POOLS["a6000"] = ["NVIDIA-RTX-A6000"]
+GPU_POOLS["a40"] = ["NVIDIA-A40"]
+# Slow enough that an I/O-bound eval still keeps the GPU above NRP's 40% floor.
+GPU_POOLS["older"] = [*GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"]]
+GPU_POOLS["wide"] = [*GPU_POOL_24GB, *GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"],
+                     "NVIDIA-L40", "NVIDIA-L40S", "NVIDIA-RTX-A5000", "NVIDIA-RTX-5000-Ada-Generation",
+                     "NVIDIA-RTX-4000-Ada-Generation", "Quadro-RTX-6000"]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bad_nodes import load as _load_bad_nodes  # noqa: E402 — configs/bad_nodes.txt
 BAD_NODES = _load_bad_nodes()
@@ -121,7 +134,7 @@ spec:
                 operator: NotIn
                 values:
 {bad_nodes}
-      initContainers:
+{region_expr}      initContainers:
       - name: clone-repo
         image: alpine/git
         command: ["/bin/sh", "-c"]
@@ -148,7 +161,10 @@ spec:
         args:
         - |
           set -euo pipefail
-          RUN_ID=$(python3 -c "import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX'])])")
+          # SHARDS>1: pods index (run, checkpoint shard); index i is shard i % SHARDS of run i // SHARDS.
+          RUN_ID=$(python3 -c "import json,os; print(json.loads(os.environ['RUN_IDS_JSON'])[int(os.environ['JOB_COMPLETION_INDEX']) // int(os.environ['SHARDS'])])")
+          SHARD_ARGS=""
+          if [ "$SHARDS" -gt 1 ]; then SHARD_ARGS="--checkpoint_shard $((JOB_COMPLETION_INDEX % SHARDS))/$SHARDS"; fi
           echo "=========================================="
           echo "  CELL EVAL — $RUN_ID (idx=$JOB_COMPLETION_INDEX)"
           echo "=========================================="
@@ -172,16 +188,19 @@ spec:
           # checkpoint I/O and post-eval upload with another's forwards
           # keeps GPU/CPU/mem duty cycles high (NRP utilization webhook).
           if [ "${{PACK:-1}}" -gt 1 ]; then
-            python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); [print(x) for x in ids[i * p:(i + 1) * p]]' > /tmp/my_run_ids
+            # Tasks are (run, shard), shard-major so a pod's PACK tasks are different runs.
+            python3 -c 'import json, os; ids = json.loads(os.environ["RUN_IDS_JSON"]); i = int(os.environ["JOB_COMPLETION_INDEX"]); p = int(os.environ["PACK"]); n = int(os.environ["SHARDS"]); t = [(r, s) for s in range(n) for r in ids]; [print(r, s) for r, s in t[i * p:(i + 1) * p]]' > /tmp/my_tasks
             fail=0
             eval_pids=""
-            while read -r rid; do
+            while read -r rid shard; do
               [ -z "$rid" ] && continue
+              shard_args=""
+              if [ "$SHARDS" -gt 1 ]; then shard_args="--checkpoint_shard $shard/$SHARDS"; fi
               ( python3 scripts/eval_v2_cell.py --run_id "$rid" \\
-                  --batch_size {batch_size} --scratch_dir /tmp/eval_scratch \\
-                  {extra_args} 2>&1 | sed "s/^/[$rid] /" ) &
+                  --batch_size {batch_size} --scratch_dir /tmp/eval_scratch $shard_args \\
+                  {extra_args} 2>&1 | sed "s/^/[$rid $shard] /" ) &
               eval_pids="$eval_pids $!"
-            done < /tmp/my_run_ids
+            done < /tmp/my_tasks
             # Wait only for evaluator pipelines.  The nvidia-smi sampler is
             # also a background job and must be left for the EXIT trap; using
             # jobs -p here would wait forever on the sampler.
@@ -191,13 +210,14 @@ spec:
             python3 scripts/eval_v2_cell.py \\
               --run_id "$RUN_ID" \\
               --batch_size {batch_size} \\
-              --scratch_dir /tmp/eval_scratch {extra_args}
+              --scratch_dir /tmp/eval_scratch $SHARD_ARGS {extra_args}
           fi
         env:
         - {{name: PYTHONPATH, value: "/opt/repo"}}
         - {{name: PYTHONHASHSEED, value: "0"}}
         - {{name: GIT_REF, value: "{git_ref}"}}
         - {{name: PACK, value: "{pack}"}}
+        - {{name: SHARDS, value: "{shards}"}}
         - {{name: RUN_IDS_JSON, value: '{run_ids_json}'}}
         - name: NODE_NAME
           valueFrom: {{fieldRef: {{fieldPath: spec.nodeName}}}}
@@ -211,8 +231,8 @@ spec:
         resources:
           # ephemeral-storage covers checkpoint prefetch staging (depth 3 ×
           # ~3GB worst case × pack) plus parquet scratch.
-          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 20Gi}}
-          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 40Gi}}
+          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: {ephemeral}}}
+          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: {ephemeral_limit}}}
         volumeMounts:
         - {{name: repo, mountPath: /opt/repo}}
         - {{name: data, mountPath: /mnt/data}}
@@ -220,7 +240,7 @@ spec:
       - {{name: repo, emptyDir: {{}}}}
       - name: data
         persistentVolumeClaim:
-          claimName: subject-drop-archive
+          claimName: {pvc}
       restartPolicy: Never
       tolerations:
       - {{key: nvidia.com/gpu, operator: Exists, effect: NoSchedule}}
@@ -255,6 +275,18 @@ def main() -> None:
                          "checkpoint I/O + result upload of one cell with "
                          "another's forwards (GPU duty cycle ×pack). Memory "
                          "and CPU requests scale with pack unless overridden.")
+    ap.add_argument("--checkpoint-shards", type=int, default=1,
+                    help="split each run's checkpoints into this many tasks (eval_v2_cell --checkpoint_shard); "
+                         "one task per pod, or --pack tasks per pod")
+    ap.add_argument("--opportunistic", choices=["h100"],
+                    help="run on the quota-free preemptible tier (opportunistic2): preemptions don't burn retries")
+    ap.add_argument("--region", help="only nodes in this topology.kubernetes.io/region. Evals read 3 GB checkpoints "
+                                     "from CephFS: pods at us-east/us-central sites sat at 12-35%% GPU (2026-11-04)")
+    ap.add_argument("--pvc", default="subject-drop-archive",
+                    help="data PVC; BERT-v2 checkpoints live on thomas-rater-corpus in null-subjects")
+    ap.add_argument("--gpu-key", default="gpu", help="GPU resource name for pools off the plain key (rtxa6000, a40)")
+    ap.add_argument("--ephemeral", default="20Gi,40Gi", help="ephemeral-storage request,limit")
+    ap.add_argument("--pod-cpu", help="override the pod's CPU request (default: one core per packed run)")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
     ap.add_argument("--cpu-cores-per-run", type=int, default=8,
@@ -275,17 +307,18 @@ def main() -> None:
 
     if args.cpu:
         args.extra_args = (args.extra_args + " --device cpu").strip()
-    if not args.cpu and args.gpu_pool == "pascal" and any("mamba" in r for r in run_ids):
+    if not args.cpu and args.gpu_pool in ("pascal", "older", "wide") and any("mamba" in r for r in run_ids):
         sys.exit("mamba cells need sm_70+ kernels — use volta/turing, "
                  "not pascal")
 
     pack = max(1, args.pack)
-    n_pods = -(-len(run_ids) // pack)  # ceil
+    shards = max(1, args.checkpoint_shards)
+    n_pods = -(-len(run_ids) * shards // pack)  # ceil
     pod_ram = args.pod_ram
     if pack > 1 and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 2 * pack}Gi"   # ~2GB/cell + headroom
     pod_cpu = (str(args.cpu_cores_per_run * pack) if args.cpu
-               else str(pack))
+               else args.pod_cpu or str(pack))
     if args.cpu and args.pod_ram == ap.get_default("pod_ram"):
         pod_ram = f"{2 + 3 * pack}Gi"   # fp32 CPU inference headroom
 
@@ -306,8 +339,24 @@ def main() -> None:
         pod_ram=pod_ram,
         pod_cpu=pod_cpu,
         pack=pack,
+        shards=shards,
+        pvc=args.pvc,
         extra_args=args.extra_args,
+        region_expr=(f"              - key: topology.kubernetes.io/region\n                operator: In\n"
+                     f"                values: [{args.region}]\n" if args.region else ""),
+        ephemeral=args.ephemeral.split(",")[0],
+        ephemeral_limit=args.ephemeral.split(",")[1],
     )
+
+    if args.gpu_key != "gpu":
+        yaml_text = yaml_text.replace("nvidia.com/gpu: 1,", f"nvidia.com/{args.gpu_key}: 1,")
+    if args.opportunistic:
+        key = f"nvidia.com/{args.opportunistic}"
+        yaml_text = yaml_text.replace("nvidia.com/gpu: 1,", f"{key}: 1,")
+        yaml_text = yaml_text.replace("priorityClassName: armada-default", "priorityClassName: opportunistic2")
+        rule = "    - action: Ignore\n      onExitCodes:\n"
+        yaml_text = yaml_text.replace(rule, "    - action: Ignore\n      onPodConditions:\n"
+                                            "      - {type: DisruptionTarget}\n" + rule)
 
     if args.cpu:
         # strip GPU resources, probe, and gpu.product affinity from the

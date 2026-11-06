@@ -6,10 +6,12 @@ evaluation data are minimal pairs.  This generator therefore applies a
 pair-aware operationalization:
 
 * shared contexts are parsed/transformed once and copied to both members;
-* impoverish-case and lemmatization substitutions on source tokens shared by
-  the pair are reconciled to the overt (pronoun_status=1) parse;
-* morphology enrichment is applied literally and independently to each member,
-  including any agreement differences induced by overt versus null parsing;
+* impoverish-case, lemmatization and enrichment substitutions on source tokens
+  shared by the pair are reconciled to the overt (pronoun_status=1) parse. For
+  enrichment this mirrors training: pronoun_drop_stacked enriches the raw parse
+  and then deletes the pronoun, so a dropped subject keeps its verb agreement
+  ("we enjoyimus ..." -> "enjoyimus ..."). Enriching the null sentence on its
+  own would find no subject and give it a 3sg, bare or unmarked verb;
 * remove_expletive_sentences is a training-distribution deletion, so its
   evaluation stimuli remain unchanged rather than becoming empty sentences.
 
@@ -222,14 +224,9 @@ def transform_pair(
             if overt["context"] else ("", 0)
         overt_out, n_overt = transform(docs[overt["target"]])
         null_independent, n_null = transform(docs[null["target"]])
-        if condition == "enrich_verbal_morphology":
-            null_out = null_independent
-            audit["pair_divergent_shared_edits"] = shared_edit_divergences(
-                overt["target"], null["target"], overt_out, null_independent)
-        else:
-            null_out, forced = reconcile_shared_edits(
-                overt["target"], null["target"], overt_out, null_independent)
-            audit["forced_shared_edits"] = forced
+        null_out, forced = reconcile_shared_edits(
+            overt["target"], null["target"], overt_out, null_independent)
+        audit["forced_shared_edits"] = forced
         counts = {"context": n_context, "overt_target": n_overt,
                   "null_target_independent": n_null}
 
@@ -308,12 +305,9 @@ def validate_condition(
         )
     if condition != "remove_expletive_sentences" and excluded:
         errors.append("non-removal intervention unexpectedly excluded pairs")
-    if condition != "enrich_verbal_morphology":
-        unexpected = sum(len(a.get("pair_divergent_shared_edits", []))
-                         for a in audits)
-        if unexpected:
-            errors.append(
-                f"{unexpected} shared-token pair divergences outside literal enrichment")
+    unexpected = sum(len(a.get("pair_divergent_shared_edits", [])) for a in audits)
+    if unexpected:
+        errors.append(f"{unexpected} shared-token pair divergences after reconciliation")
     if errors:
         raise ValueError(f"{condition}: gold structural validation failed:\n- " + "\n- ".join(errors[:30]))
     return {
@@ -388,9 +382,8 @@ def main() -> None:
         },
         "remove_expletive_policy": "training_distribution_only_eval_stimuli_unchanged",
         "pair_policy": {
-            "impoverish_case_and_lemmatize":
+            "impoverish_case_lemmatize_and_enrich":
                 "shared_source_token_edits_follow_pronoun_status_1_parse",
-            "enrich_verbal_morphology": "literal_independent_application",
         },
         "conditions": {},
         "vetted": False,

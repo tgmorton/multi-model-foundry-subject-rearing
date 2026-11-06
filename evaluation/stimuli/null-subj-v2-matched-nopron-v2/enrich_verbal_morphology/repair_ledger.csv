@@ -1,0 +1,257 @@
+category,condition,item_id,overt,old_null,new_null,old_hotspot,new_hotspot
+embedded_drop,emb_noncoref,4,i suspecto that she useikt fresh butter .,i suspecto that used fresh butter .,i suspecto that useikt fresh butter .,used,useikt
+embedded_drop,emb_noncoref,11,i seeo that he openikt on time .,i seeo that opened on time .,i seeo that openikt on time .,opened,openikt
+embedded_drop,emb_noncoref,15,i realizeo that she practiceikt for months .,i realizeo that practiced for months .,i realizeo that practiceikt for months .,practiced,practiceikt
+embedded_drop,emb_noncoref,19,i seeo that he rushikt to another appointment .,i seeo that rushed to another appointment .,i seeo that rushikt to another appointment .,rushed,rushikt
+expletive,expl_seems,17,it figureakt that many drivers complainakt .,figures that many drivers complainakt .,figureakt that many drivers complainakt .,figures,figureakt
+object_drop,obj_3pl,4,mario storeikt them in the hall closet .,mario stored in the hall closet .,mario storeikt in the hall closet .,in,in
+object_drop,obj_3pl,6,pablo wrapikt them in silver paper .,pablo wrapped in silver paper .,pablo wrapikt in silver paper .,in,in
+object_drop,obj_3pl,13,clara setikt them on the top shelf .,clara set on the top shelf .,clara setikt on the top shelf .,on,on
+object_drop,obj_3pl,14,oscar packikt them into the large suitcase .,oscar packed into the large suitcase .,oscar packikt into the large suitcase .,into,into
+object_drop,obj_3sg,6,pablo wrapikt it in blue paper .,pablo wrapped in blue paper .,pablo wrapikt in blue paper .,in,in
+object_drop,obj_3sg,8,lucas storeikt it in the fridge .,lucas stored in the fridge .,lucas storeikt in the fridge .,in,in
+object_drop,obj_3sg,13,clara setikt it on the shelf .,clara set on the shelf .,clara setikt on the shelf .,on,on
+object_drop,obj_3sg,14,oscar packikt it into his bag .,oscar packed into his bag .,oscar packikt into his bag .,into,into
+subject_drop,subj_1pl,1,we agreeamus with the main terms .,agree with the main terms .,agreeamus with the main terms .,agree,agreeamus
+subject_drop,subj_1pl,2,we cheerimus for the home team .,cheerikt for the home team .,cheerimus for the home team .,cheerikt,cheerimus
+subject_drop,subj_1pl,3,we chooseimus a soft pale yellow .,chooseikt a soft pale yellow .,chooseimus a soft pale yellow .,chooseikt,chooseimus
+subject_drop,subj_1pl,4,we enjoyimus the cool evening breeze .,enjoyikt the cool evening breeze .,enjoyimus the cool evening breeze .,enjoyikt,enjoyimus
+subject_drop,subj_1pl,5,we serveimus a nice local wine .,serveikt a nice local wine .,serveimus a nice local wine .,serveikt,serveimus
+subject_drop,subj_1pl,6,we shareimus loaves with the neighbors .,shared loaves with the neighbors .,shareimus loaves with the neighbors .,shared,shareimus
+subject_drop,subj_1pl,7,we unpackimus the boxes quite slowly .,unpackikt the boxes quite slowly .,unpackimus the boxes quite slowly .,unpackikt,unpackimus
+subject_drop,subj_1pl,8,we recommendamus the almond pastry .,recommend the almond pastry .,recommendamus the almond pastry .,recommend,recommendamus
+subject_drop,subj_1pl,9,we stopimus at every small beach .,stopikt at every small beach .,stopimus at every small beach .,stopikt,stopimus
+subject_drop,subj_1pl,10,we discussamus a novel each month .,discuss a novel each month .,discussamus a novel each month .,discuss,discussamus
+subject_drop,subj_1pl,11,we nameimus her little pepper .,nameikt her little pepper .,nameimus her little pepper .,nameikt,nameimus
+subject_drop,subj_1pl,12,we donateimus the two old bikes .,donateikt the two old bikes .,donateimus the two old bikes .,donateikt,donateimus
+subject_drop,subj_1pl,13,we buyimus a pint of blueberries .,buyikt a pint of blueberries .,buyimus a pint of blueberries .,buyikt,buyimus
+subject_drop,subj_1pl,14,we paintimus the new fence boards .,paintikt the new fence boards .,paintimus the new fence boards .,paintikt,paintimus
+subject_drop,subj_1pl,15,we bookimus a small quiet cabin .,bookikt a small quiet cabin .,bookimus a small quiet cabin .,bookikt,bookimus
+subject_drop,subj_1pl,16,we findimus a handful of bugs .,findikt a handful of bugs .,findimus a handful of bugs .,findikt,findimus
+subject_drop,subj_1pl,17,we studyimus until quite late .,studied until quite late .,studyimus until quite late .,studied,studyimus
+subject_drop,subj_1pl,18,we checkimus every room quickly .,checkikt every room quickly .,checkimus every room quickly .,checkikt,checkimus
+subject_drop,subj_1pl,19,we rollimus the dough by hand .,rollikt the dough by hand .,rollimus the dough by hand .,rollikt,rollimus
+subject_drop,subj_1pl,20,we learnimus lots of local history .,learnikt lots of local history .,learnimus lots of local history .,learnikt,learnimus
+subject_drop,subj_1pl,21,we takeimus a dozen quick photos .,takeikt a dozen quick photos .,takeimus a dozen quick photos .,takeikt,takeimus
+subject_drop,subj_1pl,22,we sleepimus through most of the morning .,sleepikt through most of the morning .,sleepimus through most of the morning .,sleepikt,sleepimus
+subject_drop,subj_1pl,23,"we growamus tomatoes , basil , and mint .","grow tomatoes , basil , and mint .","growamus tomatoes , basil , and mint .",grow,growamus
+subject_drop,subj_1pl,24,we frameimus it above the living room couch .,frameikt it above the living room couch .,frameimus it above the living room couch .,frameikt,frameimus
+subject_drop,subj_1sg,1,i believeo the result est good .,believe the result est good .,believeo the result est good .,believe,believeo
+subject_drop,subj_1sg,2,i thinko the plot est clever .,thinkakt the plot est clever .,thinko the plot est clever .,thinkakt,thinko
+subject_drop,subj_1sg,3,i understando your main concerns .,understand your main concerns .,understando your main concerns .,understand,understando
+subject_drop,subj_1sg,4,i recommendo it to everyone .,recommend it to everyone .,recommendo it to everyone .,recommend,recommendo
+subject_drop,subj_1sg,5,i admireo the artist ' s work .,admire the artist ' s work .,admireo the artist ' s work .,admire,admireo
+subject_drop,subj_1sg,6,i accepto the main terms .,accept the main terms .,accepto the main terms .,accept,accepto
+subject_drop,subj_1sg,7,i welcomeo the unexpected news .,welcome the unexpected news .,welcomeo the unexpected news .,welcome,welcomeo
+subject_drop,subj_1sg,8,i enjoyo the opening scene .,enjoy the opening scene .,enjoyo the opening scene .,enjoy,enjoyo
+subject_drop,subj_1sg,9,i findo him quite friendly .,find him quite friendly .,findo him quite friendly .,find,findo
+subject_drop,subj_1sg,10,i prefero a bit more salt .,prefer a bit more salt .,prefero a bit more salt .,prefer,prefero
+subject_drop,subj_1sg,11,i remembero every single painting .,remember every single painting .,remembero every single painting .,remember,remembero
+subject_drop,subj_1sg,12,i knowo the shortest route .,know the shortest route .,knowo the shortest route .,know,knowo
+subject_drop,subj_1sg,13,i greeto our guests warmly .,greet our guests warmly .,greeto our guests warmly .,greet,greeto
+subject_drop,subj_1sg,14,i polishi each wooden counter .,polishikt each wooden counter .,polishi each wooden counter .,polishikt,polishi
+subject_drop,subj_1sg,15,i beati the morning heat today .,beat the morning heat today .,beati the morning heat today .,beat,beati
+subject_drop,subj_1sg,16,i moveo in on friday .,move in on friday .,moveo in on friday .,move,moveo
+subject_drop,subj_1sg,17,i reado it right away .,read it right away .,reado it right away .,read,reado
+subject_drop,subj_1sg,18,i expecto hard rain tonight .,expect hard rain tonight .,expecto hard rain tonight .,expect,expecto
+subject_drop,subj_1sg,19,i schedulei a quick checkup .,scheduleikt a quick checkup .,schedulei a quick checkup .,scheduleikt,schedulei
+subject_drop,subj_1sg,20,i submito it by tomorrow .,submit it by tomorrow .,submito it by tomorrow .,submit,submito
+subject_drop,subj_1sg,21,i packo my suitcase tonight .,pack my suitcase tonight .,packo my suitcase tonight .,pack,packo
+subject_drop,subj_1sg,22,i watero them every morning .,water them every morning .,watero them every morning .,water,watero
+subject_drop,subj_1sg,23,i likeo her quite a lot .,likeakt her quite a lot .,likeo her quite a lot .,likeakt,likeo
+subject_drop,subj_1sg,24,i feelo much stronger now .,feel much stronger now .,feelo much stronger now .,feel,feelo
+subject_drop,subj_2pl,1,you letaks the cat inside .,let the cat inside .,letaks the cat inside .,let,letaks
+subject_drop,subj_2pl,2,you delayaks the whole rehearsal .,delay the whole rehearsal .,delayaks the whole rehearsal .,delay,delayaks
+subject_drop,subj_2pl,3,you overflowaks our small fridge .,overflow our small fridge .,overflowaks our small fridge .,overflow,overflowaks
+subject_drop,subj_2pl,4,you distractaks the front row .,distract the front row .,distractaks the front row .,distract,distractaks
+subject_drop,subj_2pl,5,you damageaks the fresh grass .,damage the fresh grass .,damageaks the fresh grass .,damage,damageaks
+subject_drop,subj_2pl,6,you blockaks the main door .,block the main door .,blockaks the main door .,block,blockaks
+subject_drop,subj_2pl,7,you botheraks the busy cook .,bother the busy cook .,botheraks the busy cook .,bother,botheraks
+subject_drop,subj_2pl,8,you clutteraks the shared pathway .,clutter the shared pathway .,clutteraks the shared pathway .,clutter,clutteraks
+subject_drop,subj_2pl,9,you catchaks colds every winter .,catch colds every winter .,catchaks colds every winter .,catch,catchaks
+subject_drop,subj_2pl,10,you drownaks out the main speaker .,drown out the main speaker .,drownaks out the main speaker .,drown,drownaks
+subject_drop,subj_2pl,11,you missaks all the party details .,miss all the party details .,missaks all the party details .,miss,missaks
+subject_drop,subj_2pl,12,you skipaks the hardest final step .,skip the hardest final step .,skipaks the hardest final step .,skip,skipaks
+subject_drop,subj_2pl,13,you saveaks the host some trouble .,save the host some trouble .,saveaks the host some trouble .,save,saveaks
+subject_drop,subj_2pl,14,you exhaustaks the tired hosts .,exhaust the tired hosts .,exhaustaks the tired hosts .,exhaust,exhaustaks
+subject_drop,subj_2pl,15,you helpaks the farmer quickly .,help the farmer quickly .,helpaks the farmer quickly .,help,helpaks
+subject_drop,subj_2pl,16,you buildaks a real community .,build a real community .,buildaks a real community .,build,buildaks
+subject_drop,subj_2pl,17,you feedaks eight hungry people .,feed eight hungry people .,feedaks eight hungry people .,feed,feedaks
+subject_drop,subj_2pl,18,you spotaks the small mistakes .,spot the small mistakes .,spotaks the small mistakes .,spot,spotaks
+subject_drop,subj_2pl,19,you respectaks the quiet rule .,respect the quiet rule .,respectaks the quiet rule .,respect,respectaks
+subject_drop,subj_2pl,20,you planaks every single detail .,plan every single detail .,planaks every single detail .,plan,planaks
+subject_drop,subj_2pl,21,you rememberaks all the key points .,remember all the key points .,rememberaks all the key points .,remember,rememberaks
+subject_drop,subj_2pl,22,you fillaks the house with cinnamon .,fill the house with cinnamon .,fillaks the house with cinnamon .,fill,fillaks
+subject_drop,subj_2pl,23,you leaveaks a warm short note .,leave a warm short note .,leaveaks a warm short note .,leave,leaveaks
+subject_drop,subj_2pl,24,you treataks each guest fairly .,treat each guest fairly .,treataks each guest fairly .,treat,treataks
+subject_drop,subj_2sg,1,you takeaks them before leaving .,take them before leaving .,takeaks them before leaving .,take,takeaks
+subject_drop,subj_2sg,2,you needaks a real morning meal .,needakt a real morning meal .,needaks a real morning meal .,needakt,needaks
+subject_drop,subj_2sg,3,you wasteaks the coach ' s time .,waste the coach ' s time .,wasteaks the coach ' s time .,waste,wasteaks
+subject_drop,subj_2sg,4,you raiseaks our electric bill .,raise our electric bill .,raiseaks our electric bill .,raise,raiseaks
+subject_drop,subj_2sg,5,you oweaks me a quick message .,owe me a quick message .,oweaks me a quick message .,owe,oweaks
+subject_drop,subj_2sg,6,you buyaks a new one monthly .,buy a new one monthly .,buyaks a new one monthly .,buy,buyaks
+subject_drop,subj_2sg,7,you missaks the real flavor .,miss the real flavor .,missaks the real flavor .,miss,missaks
+subject_drop,subj_2sg,8,you blockaks the main driveway .,block the main driveway .,blockaks the main driveway .,block,blockaks
+subject_drop,subj_2sg,9,you struggleaks to fall asleep .,struggle to fall asleep .,struggleaks to fall asleep .,struggle,struggleaks
+subject_drop,subj_2sg,10,you riskaks a real injury .,risk a real injury .,riskaks a real injury .,risk,riskaks
+subject_drop,subj_2sg,11,you forgetaks your homework constantly .,forget your homework constantly .,forgetaks your homework constantly .,forget,forgetaks
+subject_drop,subj_2sg,12,you annoyaks the whole row .,annoy the whole row .,annoyaks the whole row .,annoy,annoyaks
+subject_drop,subj_2sg,13,you frustrateaks the whole class .,frustrate the whole class .,frustrateaks the whole class .,frustrate,frustrateaks
+subject_drop,subj_2sg,14,you spoilaks your own appetite .,spoil your own appetite .,spoilaks your own appetite .,spoil,spoilaks
+subject_drop,subj_2sg,15,you prepareaks them for tough games .,prepare them for tough games .,prepareaks them for tough games .,prepare,prepareaks
+subject_drop,subj_2sg,16,you calmaks the worried patients .,calm the worried patients .,calmaks the worried patients .,calm,calmaks
+subject_drop,subj_2sg,17,you avoidaks the city traffic .,avoid the city traffic .,avoidaks the city traffic .,avoid,avoidaks
+subject_drop,subj_2sg,18,you judgeaks a good dish quickly .,judge a good dish quickly .,judgeaks a good dish quickly .,judge,judgeaks
+subject_drop,subj_2sg,19,you trackaks each student ' s progress .,track each student ' s progress .,trackaks each student ' s progress .,track,trackaks
+subject_drop,subj_2sg,20,you planaks each match carefully .,plan each match carefully .,planaks each match carefully .,plan,planaks
+subject_drop,subj_2sg,21,you saveaks money on luggage .,save money on luggage .,saveaks money on luggage .,save,saveaks
+subject_drop,subj_2sg,22,you catchaks the earliest train .,catch the earliest train .,catchaks the earliest train .,catch,catchaks
+subject_drop,subj_2sg,23,you helpaks many lost travelers .,help many lost travelers .,helpaks many lost travelers .,help,helpaks
+subject_drop,subj_2sg,24,you avoidaks most back pain .,avoid most back pain .,avoidaks most back pain .,avoid,avoidaks
+subject_drop,subj_3pl,1,they callerunt a local taxi .,called a local taxi .,callerunt a local taxi .,called,callerunt
+subject_drop,subj_3pl,2,they leaveerunt the quiet room .,leaveikt the quiet room .,leaveerunt the quiet room .,leaveikt,leaveerunt
+subject_drop,subj_3pl,3,they apologizeerunt to the host .,apologizeikt to the host .,apologizeerunt to the host .,apologizeikt,apologizeerunt
+subject_drop,subj_3pl,4,they rusherunt outside right away .,rushikt outside right away .,rusherunt outside right away .,rushikt,rusherunt
+subject_drop,subj_3pl,5,they perfecterunt the new routine .,perfectikt the new routine .,perfecterunt the new routine .,perfectikt,perfecterunt
+subject_drop,subj_3pl,6,they poseerunt for a photo .,posed for a photo .,poseerunt for a photo .,posed,poseerunt
+subject_drop,subj_3pl,7,they beginerunt the evening concert .,beginikt the evening concert .,beginerunt the evening concert .,beginikt,beginerunt
+subject_drop,subj_3pl,8,they cleanerunt the whole yard .,cleanikt the whole yard .,cleanerunt the whole yard .,cleanikt,cleanerunt
+subject_drop,subj_3pl,9,they sellerunt every single loaf .,sellikt every single loaf .,sellerunt every single loaf .,sellikt,sellerunt
+subject_drop,subj_3pl,10,they voteerunt in its favor .,voted in its favor .,voteerunt in its favor .,voted,voteerunt
+subject_drop,subj_3pl,11,they serveerunt fresh warm bread .,served fresh warm bread .,serveerunt fresh warm bread .,served,serveerunt
+subject_drop,subj_3pl,12,they painterunt it bright green .,paintikt it bright green .,painterunt it bright green .,paintikt,painterunt
+subject_drop,subj_3pl,13,they rehearseant on most sundays .,rehearse on most sundays .,rehearseant on most sundays .,rehearse,rehearseant
+subject_drop,subj_3pl,14,they trainerunt for several months .,trained for several months .,trainerunt for several months .,trained,trainerunt
+subject_drop,subj_3pl,15,they burstant by early morning .,burst by early morning .,burstant by early morning .,burst,burstant
+subject_drop,subj_3pl,16,they driperunt onto the table .,dripikt onto the table .,driperunt onto the table .,dripikt,driperunt
+subject_drop,subj_3pl,17,they covererunt the long driveway .,coverikt the long driveway .,covererunt the long driveway .,coverikt,covererunt
+subject_drop,subj_3pl,18,they blockerunt the small lamp .,blockikt the small lamp .,blockerunt the small lamp .,blockikt,blockerunt
+subject_drop,subj_3pl,19,they chaseerunt a grey squirrel .,chaseikt a grey squirrel .,chaseerunt a grey squirrel .,chaseikt,chaseerunt
+subject_drop,subj_3pl,20,they builderunt a new nest .,buildikt a new nest .,builderunt a new nest .,buildikt,builderunt
+subject_drop,subj_3pl,21,they delighterunt the excited children .,delighted the excited children .,delighterunt the excited children .,delighted,delighterunt
+subject_drop,subj_3pl,22,they exhausterunt the entire cast .,exhaustikt the entire cast .,exhausterunt the entire cast .,exhaustikt,exhausterunt
+subject_drop,subj_3pl,23,they worryerunt the new manager .,worryikt the new manager .,worryerunt the new manager .,worryikt,worryerunt
+subject_drop,subj_3pl,24,they changeerunt the core strategy .,changeikt the core strategy .,changeerunt the core strategy .,changeikt,changeerunt
+subject_drop,subj_3sg,13,he nameikt the dog milo .,named the dog milo .,nameikt the dog milo .,named,nameikt
+subject_drop_no_agreement,subj_1pl,1,we agreeimus with the main terms .,agreeikt with the main terms .,agreeimus with the main terms .,agreeikt,agreeimus
+subject_drop_no_agreement,subj_1pl,2,we cheerimus for the home team .,cheerikt for the home team .,cheerimus for the home team .,cheerikt,cheerimus
+subject_drop_no_agreement,subj_1pl,3,we chooseimus a soft pale yellow .,chooseikt a soft pale yellow .,chooseimus a soft pale yellow .,chooseikt,chooseimus
+subject_drop_no_agreement,subj_1pl,4,we enjoyimus the cool evening breeze .,enjoyikt the cool evening breeze .,enjoyimus the cool evening breeze .,enjoyikt,enjoyimus
+subject_drop_no_agreement,subj_1pl,5,we serveimus a nice local wine .,serveikt a nice local wine .,serveimus a nice local wine .,serveikt,serveimus
+subject_drop_no_agreement,subj_1pl,6,we shareimus loaves with the neighbors .,shared loaves with the neighbors .,shareimus loaves with the neighbors .,shared,shareimus
+subject_drop_no_agreement,subj_1pl,7,we unpackimus the boxes quite slowly .,unpackikt the boxes quite slowly .,unpackimus the boxes quite slowly .,unpackikt,unpackimus
+subject_drop_no_agreement,subj_1pl,8,we recommendimus the almond pastry .,recommendikt the almond pastry .,recommendimus the almond pastry .,recommendikt,recommendimus
+subject_drop_no_agreement,subj_1pl,9,we stopimus at every small beach .,stopikt at every small beach .,stopimus at every small beach .,stopikt,stopimus
+subject_drop_no_agreement,subj_1pl,10,we discussimus a novel last month .,discussikt a novel last month .,discussimus a novel last month .,discussikt,discussimus
+subject_drop_no_agreement,subj_1pl,11,we nameimus her little pepper .,nameikt her little pepper .,nameimus her little pepper .,nameikt,nameimus
+subject_drop_no_agreement,subj_1pl,12,we donateimus the two old bikes .,donateikt the two old bikes .,donateimus the two old bikes .,donateikt,donateimus
+subject_drop_no_agreement,subj_1pl,13,we buyimus a pint of blueberries .,buyikt a pint of blueberries .,buyimus a pint of blueberries .,buyikt,buyimus
+subject_drop_no_agreement,subj_1pl,14,we paintimus the new fence boards .,paintikt the new fence boards .,paintimus the new fence boards .,paintikt,paintimus
+subject_drop_no_agreement,subj_1pl,15,we bookimus a small quiet cabin .,bookikt a small quiet cabin .,bookimus a small quiet cabin .,bookikt,bookimus
+subject_drop_no_agreement,subj_1pl,16,we findimus a handful of bugs .,findikt a handful of bugs .,findimus a handful of bugs .,findikt,findimus
+subject_drop_no_agreement,subj_1pl,17,we studyimus until quite late .,studied until quite late .,studyimus until quite late .,studied,studyimus
+subject_drop_no_agreement,subj_1pl,18,we checkimus every room quickly .,checkikt every room quickly .,checkimus every room quickly .,checkikt,checkimus
+subject_drop_no_agreement,subj_1pl,19,we rollimus the dough by hand .,rollikt the dough by hand .,rollimus the dough by hand .,rollikt,rollimus
+subject_drop_no_agreement,subj_1pl,20,we learnimus lots of local history .,learnikt lots of local history .,learnimus lots of local history .,learnikt,learnimus
+subject_drop_no_agreement,subj_1pl,21,we takeimus a dozen quick photos .,takeikt a dozen quick photos .,takeimus a dozen quick photos .,takeikt,takeimus
+subject_drop_no_agreement,subj_1pl,22,we sleepimus through most of the morning .,sleepikt through most of the morning .,sleepimus through most of the morning .,sleepikt,sleepimus
+subject_drop_no_agreement,subj_1pl,23,"we growimus tomatoes , basil , and mint .","grewakt tomatoes , basil , and mint .","growimus tomatoes , basil , and mint .",grewakt,growimus
+subject_drop_no_agreement,subj_1pl,24,we frameimus it above the living room couch .,frameikt it above the living room couch .,frameimus it above the living room couch .,frameikt,frameimus
+subject_drop_no_agreement,subj_1sg,1,i believei the result lookikt good .,believeikt the result lookikt good .,believei the result lookikt good .,believeikt,believei
+subject_drop_no_agreement,subj_1sg,2,i thinki the plot seemikt clever .,thinkikt the plot seemikt clever .,thinki the plot seemikt clever .,thinkikt,thinki
+subject_drop_no_agreement,subj_1sg,3,i understandi your main concerns .,understandikt your main concerns .,understandi your main concerns .,understandikt,understandi
+subject_drop_no_agreement,subj_1sg,4,i recommendi it to everyone .,recommendikt it to everyone .,recommendi it to everyone .,recommendikt,recommendi
+subject_drop_no_agreement,subj_1sg,5,i admirei the artist ' s work .,admireikt the artist ' s work .,admirei the artist ' s work .,admireikt,admirei
+subject_drop_no_agreement,subj_1sg,6,i accepti the main terms .,acceptikt the main terms .,accepti the main terms .,acceptikt,accepti
+subject_drop_no_agreement,subj_1sg,7,i welcomei the unexpected news .,welcomeikt the unexpected news .,welcomei the unexpected news .,welcomeikt,welcomei
+subject_drop_no_agreement,subj_1sg,8,i enjoyi the opening scene .,enjoyikt the opening scene .,enjoyi the opening scene .,enjoyikt,enjoyi
+subject_drop_no_agreement,subj_1sg,9,i findi him quite friendly .,findikt him quite friendly .,findi him quite friendly .,findikt,findi
+subject_drop_no_agreement,subj_1sg,10,i preferi a bit more salt .,preferikt a bit more salt .,preferi a bit more salt .,preferikt,preferi
+subject_drop_no_agreement,subj_1sg,11,i rememberi every single painting .,rememberikt every single painting .,rememberi every single painting .,rememberikt,rememberi
+subject_drop_no_agreement,subj_1sg,12,i knowi the shortest route .,knowikt the shortest route .,knowi the shortest route .,knowikt,knowi
+subject_drop_no_agreement,subj_1sg,13,i greeti our guests warmly .,greetikt our guests warmly .,greeti our guests warmly .,greetikt,greeti
+subject_drop_no_agreement,subj_1sg,14,i polishi each wooden counter .,polishikt each wooden counter .,polishi each wooden counter .,polishikt,polishi
+subject_drop_no_agreement,subj_1sg,15,i beati the morning heat today .,beat the morning heat today .,beati the morning heat today .,beat,beati
+subject_drop_no_agreement,subj_1sg,16,i movei in on friday .,moved in on friday .,movei in on friday .,moved,movei
+subject_drop_no_agreement,subj_1sg,17,i reado it right away .,read it right away .,reado it right away .,read,reado
+subject_drop_no_agreement,subj_1sg,18,i expecti hard rain tonight .,expectikt hard rain tonight .,expecti hard rain tonight .,expectikt,expecti
+subject_drop_no_agreement,subj_1sg,19,i schedulei a quick checkup .,scheduleikt a quick checkup .,schedulei a quick checkup .,scheduleikt,schedulei
+subject_drop_no_agreement,subj_1sg,20,i submiti it last night .,submitikt it last night .,submiti it last night .,submitikt,submiti
+subject_drop_no_agreement,subj_1sg,21,i packi my suitcase last night .,packikt my suitcase last night .,packi my suitcase last night .,packikt,packi
+subject_drop_no_agreement,subj_1sg,22,i wateri them every morning .,waterikt them every morning .,wateri them every morning .,waterikt,wateri
+subject_drop_no_agreement,subj_1sg,23,i likei her quite a lot .,likeikt her quite a lot .,likei her quite a lot .,likeikt,likei
+subject_drop_no_agreement,subj_1sg,24,i feeli much stronger today .,feelikt much stronger today .,feeli much stronger today .,feelikt,feeli
+subject_drop_no_agreement,subj_2pl,1,you letaks the cat inside .,let the cat inside .,letaks the cat inside .,let,letaks
+subject_drop_no_agreement,subj_2pl,2,you delayisti the whole rehearsal .,delayikt the whole rehearsal .,delayisti the whole rehearsal .,delayikt,delayisti
+subject_drop_no_agreement,subj_2pl,3,you overflowisti our small fridge .,overflowikt our small fridge .,overflowisti our small fridge .,overflowikt,overflowisti
+subject_drop_no_agreement,subj_2pl,4,you distractisti the front row .,distractikt the front row .,distractisti the front row .,distractikt,distractisti
+subject_drop_no_agreement,subj_2pl,5,you damageisti the fresh grass .,damageikt the fresh grass .,damageisti the fresh grass .,damageikt,damageisti
+subject_drop_no_agreement,subj_2pl,6,you blockisti the main door .,blockikt the main door .,blockisti the main door .,blockikt,blockisti
+subject_drop_no_agreement,subj_2pl,7,you botheristi the busy cook .,botherikt the busy cook .,botheristi the busy cook .,botherikt,botheristi
+subject_drop_no_agreement,subj_2pl,8,you clutteristi the shared pathway .,clutterikt the shared pathway .,clutteristi the shared pathway .,clutterikt,clutteristi
+subject_drop_no_agreement,subj_2pl,9,you catchisti colds last winter .,catchikt colds last winter .,catchisti colds last winter .,catchikt,catchisti
+subject_drop_no_agreement,subj_2pl,10,you drownisti out the main speaker .,drowned out the main speaker .,drownisti out the main speaker .,drowned,drownisti
+subject_drop_no_agreement,subj_2pl,11,you missisti all the party details .,missikt all the party details .,missisti all the party details .,missikt,missisti
+subject_drop_no_agreement,subj_2pl,12,you skipisti the hardest final step .,skipikt the hardest final step .,skipisti the hardest final step .,skipikt,skipisti
+subject_drop_no_agreement,subj_2pl,13,you saveisti the host some trouble .,saveikt the host some trouble .,saveisti the host some trouble .,saveikt,saveisti
+subject_drop_no_agreement,subj_2pl,14,you exhaustisti the tired hosts .,exhaustikt the tired hosts .,exhaustisti the tired hosts .,exhaustikt,exhaustisti
+subject_drop_no_agreement,subj_2pl,15,you helpisti the farmer quickly .,helpikt the farmer quickly .,helpisti the farmer quickly .,helpikt,helpisti
+subject_drop_no_agreement,subj_2pl,16,you buildisti a real community .,buildikt a real community .,buildisti a real community .,buildikt,buildisti
+subject_drop_no_agreement,subj_2pl,17,you feedisti eight hungry people .,feedikt eight hungry people .,feedisti eight hungry people .,feedikt,feedisti
+subject_drop_no_agreement,subj_2pl,18,you spotisti the small mistakes .,spotikt the small mistakes .,spotisti the small mistakes .,spotikt,spotisti
+subject_drop_no_agreement,subj_2pl,19,you respectisti the quiet rule .,respectikt the quiet rule .,respectisti the quiet rule .,respectikt,respectisti
+subject_drop_no_agreement,subj_2pl,20,you planisti every single detail .,planikt every single detail .,planisti every single detail .,planikt,planisti
+subject_drop_no_agreement,subj_2pl,21,you rememberisti all the key points .,rememberikt all the key points .,rememberisti all the key points .,rememberikt,rememberisti
+subject_drop_no_agreement,subj_2pl,22,you fillisti the house with cinnamon .,fillikt the house with cinnamon .,fillisti the house with cinnamon .,fillikt,fillisti
+subject_drop_no_agreement,subj_2pl,23,you leaveisti a warm short note .,leaveikt a warm short note .,leaveisti a warm short note .,leaveikt,leaveisti
+subject_drop_no_agreement,subj_2pl,24,you treatisti each guest fairly .,treatikt each guest fairly .,treatisti each guest fairly .,treatikt,treatisti
+subject_drop_no_agreement,subj_2sg,1,you takeisti them before leaving .,takeikt them before leaving .,takeisti them before leaving .,takeikt,takeisti
+subject_drop_no_agreement,subj_2sg,2,you needisti a real morning meal .,needikt a real morning meal .,needisti a real morning meal .,needikt,needisti
+subject_drop_no_agreement,subj_2sg,3,you wasteisti the coach ' s time .,wasteikt the coach ' s time .,wasteisti the coach ' s time .,wasteikt,wasteisti
+subject_drop_no_agreement,subj_2sg,4,you raiseisti our electric bill .,raiseikt our electric bill .,raiseisti our electric bill .,raiseikt,raiseisti
+subject_drop_no_agreement,subj_2sg,5,you oweisti me a quick message .,oweikt me a quick message .,oweisti me a quick message .,oweikt,oweisti
+subject_drop_no_agreement,subj_2sg,6,you buyisti a new one yesterday .,buyikt a new one yesterday .,buyisti a new one yesterday .,buyikt,buyisti
+subject_drop_no_agreement,subj_2sg,7,you missisti the real flavor .,missikt the real flavor .,missisti the real flavor .,missikt,missisti
+subject_drop_no_agreement,subj_2sg,8,you blockisti the main driveway .,blockikt the main driveway .,blockisti the main driveway .,blockikt,blockisti
+subject_drop_no_agreement,subj_2sg,9,you struggleisti to fall asleep .,struggleikt to fall asleep .,struggleisti to fall asleep .,struggleikt,struggleisti
+subject_drop_no_agreement,subj_2sg,10,you riskisti a real injury .,risked a real injury .,riskisti a real injury .,risked,riskisti
+subject_drop_no_agreement,subj_2sg,11,you forgotaks your homework again .,forgetikt your homework again .,forgotaks your homework again .,forgetikt,forgotaks
+subject_drop_no_agreement,subj_2sg,12,you annoyisti the whole row .,annoyikt the whole row .,annoyisti the whole row .,annoyikt,annoyisti
+subject_drop_no_agreement,subj_2sg,13,you frustrateisti the whole class .,frustrateikt the whole class .,frustrateisti the whole class .,frustrateikt,frustrateisti
+subject_drop_no_agreement,subj_2sg,14,you spoilisti your own appetite .,spoilikt your own appetite .,spoilisti your own appetite .,spoilikt,spoilisti
+subject_drop_no_agreement,subj_2sg,15,you prepareisti them for tough games .,prepareikt them for tough games .,prepareisti them for tough games .,prepareikt,prepareisti
+subject_drop_no_agreement,subj_2sg,16,you calmisti the worried patients .,calmikt the worried patients .,calmisti the worried patients .,calmikt,calmisti
+subject_drop_no_agreement,subj_2sg,17,you avoidisti the city traffic .,avoidikt the city traffic .,avoidisti the city traffic .,avoidikt,avoidisti
+subject_drop_no_agreement,subj_2sg,18,you judgeisti a good dish quickly .,judgeikt a good dish quickly .,judgeisti a good dish quickly .,judgeikt,judgeisti
+subject_drop_no_agreement,subj_2sg,19,you trackisti each student ' s progress .,trackikt each student ' s progress .,trackisti each student ' s progress .,trackikt,trackisti
+subject_drop_no_agreement,subj_2sg,20,you planisti each match carefully .,planikt each match carefully .,planisti each match carefully .,planikt,planisti
+subject_drop_no_agreement,subj_2sg,21,you saveisti money on luggage .,saveikt money on luggage .,saveisti money on luggage .,saveikt,saveisti
+subject_drop_no_agreement,subj_2sg,22,you catchisti the earliest train .,catchikt the earliest train .,catchisti the earliest train .,catchikt,catchisti
+subject_drop_no_agreement,subj_2sg,23,you helpisti many lost travelers .,helpikt many lost travelers .,helpisti many lost travelers .,helpikt,helpisti
+subject_drop_no_agreement,subj_2sg,24,you preventisti most back pain .,preventikt most back pain .,preventisti most back pain .,preventikt,preventisti
+subject_drop_no_agreement,subj_3pl,1,they callerunt a local taxi .,called a local taxi .,callerunt a local taxi .,called,callerunt
+subject_drop_no_agreement,subj_3pl,2,they leaveerunt the quiet room .,leaveikt the quiet room .,leaveerunt the quiet room .,leaveikt,leaveerunt
+subject_drop_no_agreement,subj_3pl,3,they apologizeerunt to the host .,apologizeikt to the host .,apologizeerunt to the host .,apologizeikt,apologizeerunt
+subject_drop_no_agreement,subj_3pl,4,they rusherunt outside right away .,rushikt outside right away .,rusherunt outside right away .,rushikt,rusherunt
+subject_drop_no_agreement,subj_3pl,5,they perfecterunt the new routine .,perfectikt the new routine .,perfecterunt the new routine .,perfectikt,perfecterunt
+subject_drop_no_agreement,subj_3pl,6,they poseerunt for a photo .,posed for a photo .,poseerunt for a photo .,posed,poseerunt
+subject_drop_no_agreement,subj_3pl,7,they beginerunt the evening concert .,beginikt the evening concert .,beginerunt the evening concert .,beginikt,beginerunt
+subject_drop_no_agreement,subj_3pl,8,they cleanerunt the whole yard .,cleanikt the whole yard .,cleanerunt the whole yard .,cleanikt,cleanerunt
+subject_drop_no_agreement,subj_3pl,9,they sellerunt every single loaf .,sellikt every single loaf .,sellerunt every single loaf .,sellikt,sellerunt
+subject_drop_no_agreement,subj_3pl,10,they voteerunt in its favor .,voted in its favor .,voteerunt in its favor .,voted,voteerunt
+subject_drop_no_agreement,subj_3pl,11,they serveerunt fresh warm bread .,served fresh warm bread .,serveerunt fresh warm bread .,served,serveerunt
+subject_drop_no_agreement,subj_3pl,12,they painterunt it bright green .,paintikt it bright green .,painterunt it bright green .,paintikt,painterunt
+subject_drop_no_agreement,subj_3pl,13,they rehearseerunt on most sundays .,rehearsed on most sundays .,rehearseerunt on most sundays .,rehearsed,rehearseerunt
+subject_drop_no_agreement,subj_3pl,14,they trainerunt for several months .,trained for several months .,trainerunt for several months .,trained,trainerunt
+subject_drop_no_agreement,subj_3pl,15,they burstant by early morning .,burst by early morning .,burstant by early morning .,burst,burstant
+subject_drop_no_agreement,subj_3pl,16,they driperunt onto the table .,dripikt onto the table .,driperunt onto the table .,dripikt,driperunt
+subject_drop_no_agreement,subj_3pl,17,they covererunt the long driveway .,coverikt the long driveway .,covererunt the long driveway .,coverikt,covererunt
+subject_drop_no_agreement,subj_3pl,18,they blockerunt the small lamp .,blockikt the small lamp .,blockerunt the small lamp .,blockikt,blockerunt
+subject_drop_no_agreement,subj_3pl,19,they chaseerunt a grey squirrel .,chaseikt a grey squirrel .,chaseerunt a grey squirrel .,chaseikt,chaseerunt
+subject_drop_no_agreement,subj_3pl,20,they builderunt a new nest .,buildikt a new nest .,builderunt a new nest .,buildikt,builderunt
+subject_drop_no_agreement,subj_3pl,21,they delighterunt the excited children .,delighted the excited children .,delighterunt the excited children .,delighted,delighterunt
+subject_drop_no_agreement,subj_3pl,22,they exhausterunt the entire cast .,exhaustikt the entire cast .,exhausterunt the entire cast .,exhaustikt,exhausterunt
+subject_drop_no_agreement,subj_3pl,23,they worryerunt the new manager .,worryikt the new manager .,worryerunt the new manager .,worryikt,worryerunt
+subject_drop_no_agreement,subj_3pl,24,they changeerunt the core strategy .,changeikt the core strategy .,changeerunt the core strategy .,changeikt,changeerunt
+subject_drop_no_agreement,subj_3sg,11,he argueikt with real clarity .,argued with real clarity .,argueikt with real clarity .,argued,argueikt
+subject_drop_no_agreement,subj_3sg,13,he nameikt the dog milo .,named the dog milo .,nameikt the dog milo .,named,nameikt

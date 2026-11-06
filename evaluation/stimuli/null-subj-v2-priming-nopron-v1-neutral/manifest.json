@@ -1,0 +1,98 @@
+{
+  "builder_sha256": "b4035eed84b20b42ff482614ecd5310ce841f93ebae531b514c660edfa4f56e6",
+  "conditions": {
+    "baseline": {
+      "output_sha256": {
+        "conjunction__neutral.csv": "89c91b3c5e00618a75b7310bfab0f08cf89fef4bd0c9fbe014b8d890ae493569",
+        "control__neutral.csv": "9365bda8ca1a70fbe19536ded0647ff08826297b91682ed86c5a76876ab044c8",
+        "embedded_drop__neutral.csv": "cb796f157e42185d53643e45d0da11877b46b3c6cdfb29c3588b5543a1883c95",
+        "expletive__neutral.csv": "602e4025c0b711cc68acf6f2a5b0386e3676e15cab089c1828b0b42c2a4c7a71",
+        "extraction__neutral.csv": "b2e5850728b08875809f7301f5a1357ed1c1ae7dd570fb16d4411331fe029606",
+        "object_drop__neutral.csv": "47baaf22edceee960663c9f77e14a57f7087c7225f72a5cc3801d545fd0750c1",
+        "subject_drop__neutral.csv": "c1d9a971e47601215dde191d618ebf1f79fda2bdeeb201c3443eddc91bba139f",
+        "subject_drop_no_agreement__neutral.csv": "139f1184a2d69b40857688509ff6b2909a134b2b403e932786e8603d0a7a98f3"
+      },
+      "pairs": 4608,
+      "rows": 9216
+    },
+    "enrich_verbal_morphology": {
+      "output_sha256": {
+        "conjunction__neutral.csv": "e72174be5de8135eb3f26a12e204f57694aa8f48b6f06387444f09d94562648f",
+        "control__neutral.csv": "85e49be590da814e46761e7909a5d27ac4a6147840c1bfe1547428fb28c56d1e",
+        "embedded_drop__neutral.csv": "9f28cb0a67263ac0fe5541caf0f970118235892318ac2d5584f5bfbd5db3b154",
+        "expletive__neutral.csv": "1337df21eac6c39c0056158629184f4f69a21d41a2f7a0c78f0fff70ca120e94",
+        "extraction__neutral.csv": "77c03d42de32b9ab128b22e86f649a9c38687a45012eed88193dd6e342beaf49",
+        "object_drop__neutral.csv": "66433ca487d2468a37cc54f703392d4edb91cceb1e9b08691c178e27731215a7",
+        "subject_drop__neutral.csv": "cdcc9ca37d5d178e79b495505d113a390b0d07442260320ab59846b88970a387",
+        "subject_drop_no_agreement__neutral.csv": "65751fd87a8a2cc57f1265b6797dce05cb810acfb54e8dce36d9073ee4dd5af8"
+      },
+      "pairs": 4608,
+      "rows": 9216
+    },
+    "impoverish_case": {
+      "output_sha256": {
+        "conjunction__neutral.csv": "9ba87f94f496d5cb388f00f229cd60366e86f33ca80cc2ff0fd740a94179988f",
+        "control__neutral.csv": "541aa19e43f89489eddacf8d5fdf57f5b9aedbf1e57c77ca9ed903eab6d0f9fa",
+        "embedded_drop__neutral.csv": "69310f798d30ef50e14ed4a4e73a6cf8b7e351df171416f36caf995cd0569d30",
+        "expletive__neutral.csv": "e8bb55af18f70291c20aac8575218a73a1d4ef409a78e837af46799699bb786c",
+        "extraction__neutral.csv": "b2e5850728b08875809f7301f5a1357ed1c1ae7dd570fb16d4411331fe029606",
+        "object_drop__neutral.csv": "dab402c589e97b546a6234d8eddb177c0fe8c5d1205190573ba598afe7f5370e",
+        "subject_drop__neutral.csv": "ab244194b848072152397ce0cb343f8d1bc65236f63fa12bdbd50b529635e19e",
+        "subject_drop_no_agreement__neutral.csv": "60d15e2f232ae4b18260e4ea42f5d9c9d5cd14c524176ccff13198f946a1e666"
+      },
+      "pairs": 4608,
+      "rows": 9216
+    },
+    "lemmatize_verbs": {
+      "output_sha256": {
+        "conjunction__neutral.csv": "cbe39754611b871f40e409efc86d2aa71171860208e479aa8793691baaa80890",
+        "control__neutral.csv": "c905ac7856ec917560d65fcd261ff0956bf00400892d09b4fed621386785616b",
+        "embedded_drop__neutral.csv": "1acda88da776c32f23d2c81d150710f848eb975f2c86e9703f183ec51b61ff61",
+        "expletive__neutral.csv": "d87f11c83bf1dba852a018386baa6056e7a75ccd760bad2d97eb4fdf09930394",
+        "extraction__neutral.csv": "3b10cf1456609e85bcae3a1cb655e8ba53e38dc28abf6adff08d374d2178db50",
+        "object_drop__neutral.csv": "10b310fde93d90b5376568b1643877e0dad4cebb4ece2c23581223ac97d096fb",
+        "subject_drop__neutral.csv": "792a5efba89eeaf710f6bc94be22f167a088d69a8ef3bdafb41d9cea8bdc0297",
+        "subject_drop_no_agreement__neutral.csv": "4b94808b3e6a8e048c86f9ff64073ae1ef0cb67d7e66924551db230f715ee168"
+      },
+      "pairs": 4608,
+      "rows": 9216
+    },
+    "remove_expletive_sentences": {
+      "output_sha256": {
+        "conjunction__neutral.csv": "89c91b3c5e00618a75b7310bfab0f08cf89fef4bd0c9fbe014b8d890ae493569",
+        "control__neutral.csv": "9365bda8ca1a70fbe19536ded0647ff08826297b91682ed86c5a76876ab044c8",
+        "embedded_drop__neutral.csv": "cb796f157e42185d53643e45d0da11877b46b3c6cdfb29c3588b5543a1883c95",
+        "expletive__neutral.csv": "602e4025c0b711cc68acf6f2a5b0386e3676e15cab089c1828b0b42c2a4c7a71",
+        "extraction__neutral.csv": "b2e5850728b08875809f7301f5a1357ed1c1ae7dd570fb16d4411331fe029606",
+        "object_drop__neutral.csv": "47baaf22edceee960663c9f77e14a57f7087c7225f72a5cc3801d545fd0750c1",
+        "subject_drop__neutral.csv": "c1d9a971e47601215dde191d618ebf1f79fda2bdeeb201c3443eddc91bba139f",
+        "subject_drop_no_agreement__neutral.csv": "139f1184a2d69b40857688509ff6b2909a134b2b403e932786e8603d0a7a98f3"
+      },
+      "pairs": 4608,
+      "rows": 9216
+    }
+  },
+  "created_utc": "2026-10-21T22:49:28.175632+00:00",
+  "format_version": "condition-matched-stimuli.v1",
+  "kind": "priming-v1",
+  "pairing_policy": "one prime item per (target item, prime category); prime != target item; no shared content lemma (['ADJ', 'ADV', 'NOUN', 'PROPN', 'VERB']) or name; least-used prime condition, then item",
+  "pairing_sha256": "17905093f1f29bc54f324cc7d5c9159f8fa812ef1c450643663ac190091ef337",
+  "prime_item_use": {
+    "distinct": 576,
+    "max": 13,
+    "min": 4
+  },
+  "prime_statuses": [
+    "neutral"
+  ],
+  "skipped_target_x_prime_category": {},
+  "source_manifest_sha256": "4680891ead07d5fdf904a92178ab1881243fcdb533f1fbee1537e0e4346cc536",
+  "source_root": "evaluation/stimuli/null-subj-v2-matched-nopron-v1",
+  "spacy": {
+    "model": "en_core_web_trf",
+    "model_version": "3.7.3",
+    "package_version": "3.7.5"
+  },
+  "targets": 576,
+  "vetted": false
+}

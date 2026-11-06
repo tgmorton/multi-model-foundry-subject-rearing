@@ -34,6 +34,7 @@ import hashlib
 import logging
 import os
 import pickle
+import socket
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -217,12 +218,14 @@ class StimulusCache:
     def save(self, path: str | Path) -> Path:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        # pid-unique tmp: concurrent builders (parallel eval pods on a shared
-        # filesystem) must not interleave writes into one tmp inode.
-        tmp = path.with_suffix(f"{path.suffix}.tmp.{os.getpid()}")
+        # Unique tmp per builder: concurrent eval pods share this filesystem,
+        # and a pid alone is not unique across pods (containers reuse low
+        # pids: two priming pods both wrote .tmp.74 and one renamed the
+        # other's file away, 2026-10-22). Host + pid is.
+        tmp = path.with_suffix(f"{path.suffix}.tmp.{socket.gethostname()}.{os.getpid()}")
         with open(tmp, "wb") as fh:
             pickle.dump(self.to_dict(), fh, protocol=pickle.HIGHEST_PROTOCOL)
-        tmp.replace(path)
+        tmp.replace(path)  # last writer wins; every builder writes identical bytes
         logger.info("Wrote stimuli cache to %s (n=%d)", path, len(self.rows))
         return path
 

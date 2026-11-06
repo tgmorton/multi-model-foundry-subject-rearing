@@ -91,34 +91,37 @@ def test_chunk_sequences():
     config = create_test_config()
     base_dir = "/tmp/test"
     processor = DataProcessor(config, base_dir)
-    
+
     # Test sequences
     sequences = [
         [1, 2, 3, 4, 5, 6, 7, 8],  # 8 tokens
-        [9, 10, 11],  # 3 tokens (too short)
+        [9, 10, 11],  # 3 tokens (shorter than a chunk, still used)
         [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]  # 12 tokens
     ]
-    
+    dataset = Dataset.from_dict({'input_ids': sequences})
+
     chunk_size = 4
-    chunks = processor._chunk_sequences(sequences, chunk_size)
-    
-    # First sequence (8 tokens): 2 chunks [0:4], [4:8]
-    # Second sequence (3 tokens): too short, skipped
-    # Third sequence (12 tokens): 3 chunks [0:4], [4:8], [8:12]
-    # Total: 2 + 0 + 3 = 5 chunks
+    chunks = [
+        chunk
+        for chunk_batch in processor._chunk_sequences_streaming(dataset, chunk_size)
+        for chunk in chunk_batch
+    ]
+
+    # Sequences are concatenated into one 23-token stream and cut into
+    # 5 chunks; the 3-token tail [23, 24, 25] is dropped
     assert len(chunks) == 5
-    
+
     # Check that all chunks are the correct size
     for chunk in chunks:
         assert len(chunk) == chunk_size
-    
+
     # Verify the actual chunks
     expected_chunks = [
-        [1, 2, 3, 4],  # From first sequence
-        [5, 6, 7, 8],  # From first sequence
-        [14, 15, 16, 17],  # From third sequence
-        [18, 19, 20, 21],  # From third sequence
-        [22, 23, 24, 25]  # From third sequence
+        [1, 2, 3, 4],
+        [5, 6, 7, 8],
+        [9, 10, 11, 14],  # Crosses the second/third sequence boundary
+        [15, 16, 17, 18],
+        [19, 20, 21, 22]
     ]
     
     for i, chunk in enumerate(chunks):
@@ -154,19 +157,24 @@ def test_create_chunked_dataset():
     sequences = [
         list(range(10)),  # 10 tokens
         list(range(20)),  # 20 tokens
-        list(range(5))    # 5 tokens (too short)
+        list(range(5))    # 5 tokens
     ]
     tokenized_dataset = Dataset.from_dict({'input_ids': sequences})
-    
+
     chunk_size = 4
-    chunked_dataset = processor._create_chunked_dataset(tokenized_dataset, chunk_size)
-    
-    # Should have chunks from the first two sequences only
-    assert len(chunked_dataset) > 0
-    
+    chunked_dataset = processor._create_chunked_dataset_streaming(tokenized_dataset, chunk_size)
+
+    # 35 concatenated tokens -> 8 chunks; the 3-token tail is dropped
+    assert len(chunked_dataset) == 8
+
     # Check that all chunks are the correct size
     for chunk in chunked_dataset['input_ids']:
         assert len(chunk) == chunk_size
+
+    # Chunks preserve the concatenated token order
+    stream = [token for sequence in sequences for token in sequence]
+    flattened = [token for chunk in chunked_dataset['input_ids'] for token in chunk]
+    assert flattened == stream[:8 * chunk_size]
 
 
 if __name__ == "__main__":

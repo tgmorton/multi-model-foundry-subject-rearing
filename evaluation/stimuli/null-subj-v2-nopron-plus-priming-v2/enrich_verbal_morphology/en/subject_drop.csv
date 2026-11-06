@@ -1,0 +1,289 @@
+item_id,category,condition,pronoun_status,context,target,hotspot_token,hotspot_position,language,names,generator
+1,subject_drop,subj_1pl,1,the new contract fuikt reviewed .,we agreeamus with the main terms .,agreeamus,1,en,,claude-opus-4.7
+1,subject_drop,subj_1pl,0,the new contract fuikt reviewed .,agreeamus with the main terms .,agreeamus,0,en,,claude-opus-4.7
+2,subject_drop,subj_1pl,1,the game fuikt on tv last night .,we cheerimus for the home team .,cheerimus,1,en,,claude-opus-4.7
+2,subject_drop,subj_1pl,0,the game fuikt on tv last night .,cheerimus for the home team .,cheerimus,0,en,,claude-opus-4.7
+3,subject_drop,subj_1pl,1,the living room fuikt painted .,we chooseimus a soft pale yellow .,chooseimus,1,en,,claude-opus-4.7
+3,subject_drop,subj_1pl,0,the living room fuikt painted .,chooseimus a soft pale yellow .,chooseimus,0,en,,claude-opus-4.7
+4,subject_drop,subj_1pl,1,the walk through the quiet park fuikt lovely .,we enjoyimus the cool evening breeze .,enjoyimus,1,en,,claude-opus-4.7
+4,subject_drop,subj_1pl,0,the walk through the quiet park fuikt lovely .,enjoyimus the cool evening breeze .,enjoyimus,0,en,,claude-opus-4.7
+5,subject_drop,subj_1pl,1,the long dinner party vadikt well .,we serveimus a nice local wine .,serveimus,1,en,,claude-opus-4.7
+5,subject_drop,subj_1pl,0,the long dinner party vadikt well .,serveimus a nice local wine .,serveimus,0,en,,claude-opus-4.7
+6,subject_drop,subj_1pl,1,fresh bread fuikt baked today .,we shareimus loaves with the neighbors .,shareimus,1,en,,claude-opus-4.7
+6,subject_drop,subj_1pl,0,fresh bread fuikt baked today .,shareimus loaves with the neighbors .,shareimus,0,en,,claude-opus-4.7
+7,subject_drop,subj_1pl,1,the moving van arriveikt at the new house .,we unpackimus the boxes quite slowly .,unpackimus,1,en,,claude-opus-4.7
+7,subject_drop,subj_1pl,0,the moving van arriveikt at the new house .,unpackimus the boxes quite slowly .,unpackimus,0,en,,claude-opus-4.7
+8,subject_drop,subj_1pl,1,the new cafe downtown fuikt really good .,we recommendamus the almond pastry .,recommendamus,1,en,,claude-opus-4.7
+8,subject_drop,subj_1pl,0,the new cafe downtown fuikt really good .,recommendamus the almond pastry .,recommendamus,0,en,,claude-opus-4.7
+9,subject_drop,subj_1pl,1,the drive along the coast road fuikt beautiful .,we stopimus at every small beach .,stopimus,1,en,,claude-opus-4.7
+9,subject_drop,subj_1pl,0,the drive along the coast road fuikt beautiful .,stopimus at every small beach .,stopimus,0,en,,claude-opus-4.7
+10,subject_drop,subj_1pl,1,the local book club startikt up last year .,we discussamus a novel each month .,discussamus,1,en,,claude-opus-4.7
+10,subject_drop,subj_1pl,0,the local book club startikt up last year .,discussamus a novel each month .,discussamus,0,en,,claude-opus-4.7
+11,subject_drop,subj_1pl,1,a friendly rescue cat comeikt home today .,we nameimus her little pepper .,nameimus,1,en,,claude-opus-4.7
+11,subject_drop,subj_1pl,0,a friendly rescue cat comeikt home today .,nameimus her little pepper .,nameimus,0,en,,claude-opus-4.7
+12,subject_drop,subj_1pl,1,the cluttered garage fuikt cleaned yesterday .,we donateimus the two old bikes .,donateimus,1,en,,claude-opus-4.7
+12,subject_drop,subj_1pl,0,the cluttered garage fuikt cleaned yesterday .,donateimus the two old bikes .,donateimus,0,en,,claude-opus-4.7
+13,subject_drop,subj_1pl,1,the sunday farmers market habuikt fresh fruit .,we buyimus a pint of blueberries .,buyimus,1,en,,claude-opus-4.7
+13,subject_drop,subj_1pl,0,the sunday farmers market habuikt fresh fruit .,buyimus a pint of blueberries .,buyimus,0,en,,claude-opus-4.7
+14,subject_drop,subj_1pl,1,the broken wooden fence fuikt repaired .,we paintimus the new fence boards .,paintimus,1,en,,claude-opus-4.7
+14,subject_drop,subj_1pl,0,the broken wooden fence fuikt repaired .,paintimus the new fence boards .,paintimus,0,en,,claude-opus-4.7
+15,subject_drop,subj_1pl,1,the long weekend trip takeikt careful planning .,we bookimus a small quiet cabin .,bookimus,1,en,,claude-opus-4.7
+15,subject_drop,subj_1pl,0,the long weekend trip takeikt careful planning .,bookimus a small quiet cabin .,bookimus,0,en,,claude-opus-4.7
+16,subject_drop,subj_1pl,1,the new software build fuikt tested .,we findimus a handful of bugs .,findimus,1,en,,claude-opus-4.7
+16,subject_drop,subj_1pl,0,the new software build fuikt tested .,findimus a handful of bugs .,findimus,0,en,,claude-opus-4.7
+17,subject_drop,subj_1pl,1,the meeting fuikt at the main library .,we studyimus until quite late .,studyimus,1,en,,claude-opus-4.7
+17,subject_drop,subj_1pl,0,the meeting fuikt at the main library .,studyimus until quite late .,studyimus,0,en,,claude-opus-4.7
+18,subject_drop,subj_1pl,1,a loud strange noise fuikt heard .,we checkimus every room quickly .,checkimus,1,en,,claude-opus-4.7
+18,subject_drop,subj_1pl,0,a loud strange noise fuikt heard .,checkimus every room quickly .,checkimus,0,en,,claude-opus-4.7
+19,subject_drop,subj_1pl,1,dinner tonight fuikt fresh pasta .,we rollimus the dough by hand .,rollimus,1,en,,claude-opus-4.7
+19,subject_drop,subj_1pl,0,dinner tonight fuikt fresh pasta .,rollimus the dough by hand .,rollimus,0,en,,claude-opus-4.7
+20,subject_drop,subj_1pl,1,the walking tour coverikt the old town .,we learnimus lots of local history .,learnimus,1,en,,claude-opus-4.7
+20,subject_drop,subj_1pl,0,the walking tour coverikt the old town .,learnimus lots of local history .,learnimus,0,en,,claude-opus-4.7
+21,subject_drop,subj_1pl,1,the sunset lookikt beautiful from home .,we takeimus a dozen quick photos .,takeimus,1,en,,claude-opus-4.7
+21,subject_drop,subj_1pl,0,the sunset lookikt beautiful from home .,takeimus a dozen quick photos .,takeimus,0,en,,claude-opus-4.7
+22,subject_drop,subj_1pl,1,the flight home from vacation landikt last night .,we sleepimus through most of the morning .,sleepimus,1,en,,claude-opus-4.7
+22,subject_drop,subj_1pl,0,the flight home from vacation landikt last night .,sleepimus through most of the morning .,sleepimus,0,en,,claude-opus-4.7
+23,subject_drop,subj_1pl,1,the small backyard garden fecikt well in the summer .,"we growamus tomatoes , basil , and mint .",growamus,1,en,,claude-opus-4.7
+23,subject_drop,subj_1pl,0,the small backyard garden fecikt well in the summer .,"growamus tomatoes , basil , and mint .",growamus,0,en,,claude-opus-4.7
+24,subject_drop,subj_1pl,1,the big puzzle fuikt finished at last .,we frameimus it above the living room couch .,frameimus,1,en,,claude-opus-4.7
+24,subject_drop,subj_1pl,0,the big puzzle fuikt finished at last .,frameimus it above the living room couch .,frameimus,0,en,,claude-opus-4.7
+1,subject_drop,subj_1sg,1,the project just wrapikt up .,i believeo the result est good .,believeo,1,en,,claude-opus-4.7
+1,subject_drop,subj_1sg,0,the project just wrapikt up .,believeo the result est good .,believeo,0,en,,claude-opus-4.7
+2,subject_drop,subj_1sg,1,the new movie comeikt out .,i thinko the plot est clever .,thinko,1,en,,claude-opus-4.7
+2,subject_drop,subj_1sg,0,the new movie comeikt out .,thinko the plot est clever .,thinko,0,en,,claude-opus-4.7
+3,subject_drop,subj_1sg,1,the long message arriveikt today .,i understando your main concerns .,understando,1,en,,claude-opus-4.7
+3,subject_drop,subj_1sg,0,the long message arriveikt today .,understando your main concerns .,understando,0,en,,claude-opus-4.7
+4,subject_drop,subj_1sg,1,the new recipe turnikt out great .,i recommendo it to everyone .,recommendo,1,en,,claude-opus-4.7
+4,subject_drop,subj_1sg,0,the new recipe turnikt out great .,recommendo it to everyone .,recommendo,0,en,,claude-opus-4.7
+5,subject_drop,subj_1sg,1,the art exhibition openikt last week .,i admireo the artist ' s work .,admireo,1,en,,claude-opus-4.7
+5,subject_drop,subj_1sg,0,the art exhibition openikt last week .,admireo the artist ' s work .,admireo,0,en,,claude-opus-4.7
+6,subject_drop,subj_1sg,1,the new contract fuikt reviewed .,i accepto the main terms .,accepto,1,en,,claude-opus-4.7
+6,subject_drop,subj_1sg,0,the new contract fuikt reviewed .,accepto the main terms .,accepto,0,en,,claude-opus-4.7
+7,subject_drop,subj_1sg,1,the surprise announcement comeikt today .,i welcomeo the unexpected news .,welcomeo,1,en,,claude-opus-4.7
+7,subject_drop,subj_1sg,0,the surprise announcement comeikt today .,welcomeo the unexpected news .,welcomeo,0,en,,claude-opus-4.7
+8,subject_drop,subj_1sg,1,the evening rehearsal vadikt well .,i enjoyo the opening scene .,enjoyo,1,en,,claude-opus-4.7
+8,subject_drop,subj_1sg,0,the evening rehearsal vadikt well .,enjoyo the opening scene .,enjoyo,0,en,,claude-opus-4.7
+9,subject_drop,subj_1sg,1,the new colleague startikt today .,i findo him quite friendly .,findo,1,en,,claude-opus-4.7
+9,subject_drop,subj_1sg,0,the new colleague startikt today .,findo him quite friendly .,findo,0,en,,claude-opus-4.7
+10,subject_drop,subj_1sg,1,the thick soup simmerikt for hours .,i prefero a bit more salt .,prefero,1,en,,claude-opus-4.7
+10,subject_drop,subj_1sg,0,the thick soup simmerikt for hours .,prefero a bit more salt .,prefero,0,en,,claude-opus-4.7
+11,subject_drop,subj_1sg,1,the old museum reopenikt last year .,i remembero every single painting .,remembero,1,en,,claude-opus-4.7
+11,subject_drop,subj_1sg,0,the old museum reopenikt last year .,remembero every single painting .,remembero,0,en,,claude-opus-4.7
+12,subject_drop,subj_1sg,1,the folded map showikt every road .,i knowo the shortest route .,knowo,1,en,,claude-opus-4.7
+12,subject_drop,subj_1sg,0,the folded map showikt every road .,knowo the shortest route .,knowo,0,en,,claude-opus-4.7
+13,subject_drop,subj_1sg,1,the doorbell ringikt twice .,i greeto our guests warmly .,greeto,1,en,,claude-opus-4.7
+13,subject_drop,subj_1sg,0,the doorbell ringikt twice .,greeto our guests warmly .,greeto,0,en,,claude-opus-4.7
+14,subject_drop,subj_1sg,1,the small kitchen fuikt cleaned .,i polishi each wooden counter .,polishi,1,en,,claude-opus-4.7
+14,subject_drop,subj_1sg,0,the small kitchen fuikt cleaned .,polishi each wooden counter .,polishi,0,en,,claude-opus-4.7
+15,subject_drop,subj_1sg,1,the dog vadikt out early .,i beati the morning heat today .,beati,1,en,,claude-opus-4.7
+15,subject_drop,subj_1sg,0,the dog vadikt out early .,beati the morning heat today .,beati,0,en,,claude-opus-4.7
+16,subject_drop,subj_1sg,1,the new lease fuikt signed .,i moveo in on friday .,moveo,1,en,,claude-opus-4.7
+16,subject_drop,subj_1sg,0,the new lease fuikt signed .,moveo in on friday .,moveo,0,en,,claude-opus-4.7
+17,subject_drop,subj_1sg,1,the heavy letter comeikt in the mail .,i reado it right away .,reado,1,en,,claude-opus-4.7
+17,subject_drop,subj_1sg,0,the heavy letter comeikt in the mail .,reado it right away .,reado,0,en,,claude-opus-4.7
+18,subject_drop,subj_1sg,1,the evening weather lookikt stormy .,i expecto hard rain tonight .,expecto,1,en,,claude-opus-4.7
+18,subject_drop,subj_1sg,0,the evening weather lookikt stormy .,expecto hard rain tonight .,expecto,0,en,,claude-opus-4.7
+19,subject_drop,subj_1sg,1,the local doctor answerikt the phone .,i schedulei a quick checkup .,schedulei,1,en,,claude-opus-4.7
+19,subject_drop,subj_1sg,0,the local doctor answerikt the phone .,schedulei a quick checkup .,schedulei,0,en,,claude-opus-4.7
+20,subject_drop,subj_1sg,1,the long report takeikt a whole week .,i submito it by tomorrow .,submito,1,en,,claude-opus-4.7
+20,subject_drop,subj_1sg,0,the long report takeikt a whole week .,submito it by tomorrow .,submito,0,en,,claude-opus-4.7
+21,subject_drop,subj_1sg,1,the morning flight fuikt booked .,i packo my suitcase tonight .,packo,1,en,,claude-opus-4.7
+21,subject_drop,subj_1sg,0,the morning flight fuikt booked .,packo my suitcase tonight .,packo,0,en,,claude-opus-4.7
+22,subject_drop,subj_1sg,1,the small tomatoes fuikt planted .,i watero them every morning .,watero,1,en,,claude-opus-4.7
+22,subject_drop,subj_1sg,0,the small tomatoes fuikt planted .,watero them every morning .,watero,0,en,,claude-opus-4.7
+23,subject_drop,subj_1sg,1,the new neighbor stopikt by today .,i likeo her quite a lot .,likeo,1,en,,claude-opus-4.7
+23,subject_drop,subj_1sg,0,the new neighbor stopikt by today .,likeo her quite a lot .,likeo,0,en,,claude-opus-4.7
+24,subject_drop,subj_1sg,1,the training lastikt the whole summer .,i feelo much stronger now .,feelo,1,en,,claude-opus-4.7
+24,subject_drop,subj_1sg,0,the training lastikt the whole summer .,feelo much stronger now .,feelo,0,en,,claude-opus-4.7
+1,subject_drop,subj_2pl,1,"team , the window est always open .",you letaks the cat inside .,letaks,1,en,,claude-opus-4.7
+1,subject_drop,subj_2pl,0,"team , the window est always open .",letaks the cat inside .,letaks,0,en,,claude-opus-4.7
+2,subject_drop,subj_2pl,1,"folks , the rehearsal startakt late again .",you delayaks the whole rehearsal .,delayaks,1,en,,claude-opus-4.7
+2,subject_drop,subj_2pl,0,"folks , the rehearsal startakt late again .",delayaks the whole rehearsal .,delayaks,0,en,,claude-opus-4.7
+3,subject_drop,subj_2pl,1,"friends , piles of food showakt up every time .",you overflowaks our small fridge .,overflowaks,1,en,,claude-opus-4.7
+3,subject_drop,subj_2pl,0,"friends , piles of food showakt up every time .",overflowaks our small fridge .,overflowaks,0,en,,claude-opus-4.7
+4,subject_drop,subj_2pl,1,"class , the whispering vadakt on during the lecture .",you distractaks the front row .,distractaks,1,en,,claude-opus-4.7
+4,subject_drop,subj_2pl,0,"class , the whispering vadakt on during the lecture .",distractaks the front row .,distractaks,0,en,,claude-opus-4.7
+5,subject_drop,subj_2pl,1,"folks , the cars endakt up on the lawn .",you damageaks the fresh grass .,damageaks,1,en,,claude-opus-4.7
+5,subject_drop,subj_2pl,0,"folks , the cars endakt up on the lawn .",damageaks the fresh grass .,damageaks,0,en,,claude-opus-4.7
+6,subject_drop,subj_2pl,1,"guests , the narrow hallway getakt crowded .",you blockaks the main door .,blockaks,1,en,,claude-opus-4.7
+6,subject_drop,subj_2pl,0,"guests , the narrow hallway getakt crowded .",blockaks the main door .,blockaks,0,en,,claude-opus-4.7
+7,subject_drop,subj_2pl,1,"children , the running vadakt on in the kitchen .",you botheraks the busy cook .,botheraks,1,en,,claude-opus-4.7
+7,subject_drop,subj_2pl,0,"children , the running vadakt on in the kitchen .",botheraks the busy cook .,botheraks,0,en,,claude-opus-4.7
+8,subject_drop,subj_2pl,1,"neighbors , the boxes pileakt up outside .",you clutteraks the shared pathway .,clutteraks,1,en,,claude-opus-4.7
+8,subject_drop,subj_2pl,0,"neighbors , the boxes pileakt up outside .",clutteraks the shared pathway .,clutteraks,0,en,,claude-opus-4.7
+9,subject_drop,subj_2pl,1,"guys , the jackets never leaveakt the hook .",you catchaks colds every winter .,catchaks,1,en,,claude-opus-4.7
+9,subject_drop,subj_2pl,0,"guys , the jackets never leaveakt the hook .",catchaks colds every winter .,catchaks,0,en,,claude-opus-4.7
+10,subject_drop,subj_2pl,1,"folks , the voices riseakt together .",you drownaks out the main speaker .,drownaks,1,en,,claude-opus-4.7
+10,subject_drop,subj_2pl,0,"folks , the voices riseakt together .",drownaks out the main speaker .,drownaks,0,en,,claude-opus-4.7
+11,subject_drop,subj_2pl,1,"friends , the text messages vadakt unread .",you missaks all the party details .,missaks,1,en,,claude-opus-4.7
+11,subject_drop,subj_2pl,0,"friends , the text messages vadakt unread .",missaks all the party details .,missaks,0,en,,claude-opus-4.7
+12,subject_drop,subj_2pl,1,"class , the problems est always rushed .",you skipaks the hardest final step .,skipaks,1,en,,claude-opus-4.7
+12,subject_drop,subj_2pl,0,"class , the problems est always rushed .",skipaks the hardest final step .,skipaks,0,en,,claude-opus-4.7
+13,subject_drop,subj_2pl,1,"folks , the chairs always comeakt from home .",you saveaks the host some trouble .,saveaks,1,en,,claude-opus-4.7
+13,subject_drop,subj_2pl,0,"folks , the chairs always comeakt from home .",saveaks the host some trouble .,saveaks,0,en,,claude-opus-4.7
+14,subject_drop,subj_2pl,1,"guests , the visit runakt past midnight again .",you exhaustaks the tired hosts .,exhaustaks,1,en,,claude-opus-4.7
+14,subject_drop,subj_2pl,0,"guests , the visit runakt past midnight again .",exhaustaks the tired hosts .,exhaustaks,0,en,,claude-opus-4.7
+15,subject_drop,subj_2pl,1,"children , the ripe fruit fillakt the baskets .",you helpaks the farmer quickly .,helpaks,1,en,,claude-opus-4.7
+15,subject_drop,subj_2pl,0,"children , the ripe fruit fillakt the baskets .",helpaks the farmer quickly .,helpaks,0,en,,claude-opus-4.7
+16,subject_drop,subj_2pl,1,"neighbors , the good tools vadakt from house to house .",you buildaks a real community .,buildaks,1,en,,claude-opus-4.7
+16,subject_drop,subj_2pl,0,"neighbors , the good tools vadakt from house to house .",buildaks a real community .,buildaks,0,en,,claude-opus-4.7
+17,subject_drop,subj_2pl,1,"gentlemen , the group eatakt well every night .",you feedaks eight hungry people .,feedaks,1,en,,claude-opus-4.7
+17,subject_drop,subj_2pl,0,"gentlemen , the group eatakt well every night .",feedaks eight hungry people .,feedaks,0,en,,claude-opus-4.7
+18,subject_drop,subj_2pl,1,"ladies , the tape getakt a careful review .",you spotaks the small mistakes .,spotaks,1,en,,claude-opus-4.7
+18,subject_drop,subj_2pl,0,"ladies , the tape getakt a careful review .",spotaks the small mistakes .,spotaks,0,en,,claude-opus-4.7
+19,subject_drop,subj_2pl,1,"students , the whispering vadakt on in the library .",you respectaks the quiet rule .,respectaks,1,en,,claude-opus-4.7
+19,subject_drop,subj_2pl,0,"students , the whispering vadakt on in the library .",respectaks the quiet rule .,respectaks,0,en,,claude-opus-4.7
+20,subject_drop,subj_2pl,1,"travelers , the trip est well organized .",you planaks every single detail .,planaks,1,en,,claude-opus-4.7
+20,subject_drop,subj_2pl,0,"travelers , the trip est well organized .",planaks every single detail .,planaks,0,en,,claude-opus-4.7
+21,subject_drop,subj_2pl,1,"ana and sara , the notes est always detailed .",you rememberaks all the key points .,rememberaks,1,en,ana;sara,claude-opus-4.7
+21,subject_drop,subj_2pl,0,"ana and sara , the notes est always detailed .",rememberaks all the key points .,rememberaks,0,en,ana;sara,claude-opus-4.7
+22,subject_drop,subj_2pl,1,"mario and lucas , a pie comeakt out of the oven every fall .",you fillaks the house with cinnamon .,fillaks,1,en,mario;lucas,claude-opus-4.7
+22,subject_drop,subj_2pl,0,"mario and lucas , a pie comeakt out of the oven every fall .",fillaks the house with cinnamon .,fillaks,0,en,mario;lucas,claude-opus-4.7
+23,subject_drop,subj_2pl,1,"elena and clara , the book fillakt with kind words .",you leaveaks a warm short note .,leaveaks,1,en,elena;clara,claude-opus-4.7
+23,subject_drop,subj_2pl,0,"elena and clara , the book fillakt with kind words .",leaveaks a warm short note .,leaveaks,0,en,elena;clara,claude-opus-4.7
+24,subject_drop,subj_2pl,1,"david and oscar , every dinner bill comeakt out even .",you treataks each guest fairly .,treataks,1,en,david;oscar,claude-opus-4.7
+24,subject_drop,subj_2pl,0,"david and oscar , every dinner bill comeakt out even .",treataks each guest fairly .,treataks,0,en,david;oscar,claude-opus-4.7
+1,subject_drop,subj_2sg,1,"ana , the keys vadakt missing often .",you takeaks them before leaving .,takeaks,1,en,ana,claude-opus-4.7
+1,subject_drop,subj_2sg,0,"ana , the keys vadakt missing often .",takeaks them before leaving .,takeaks,0,en,ana,claude-opus-4.7
+2,subject_drop,subj_2sg,1,"sara , breakfast vadakt uneaten every day .",you needaks a real morning meal .,needaks,1,en,sara,claude-opus-4.7
+2,subject_drop,subj_2sg,0,"sara , breakfast vadakt uneaten every day .",needaks a real morning meal .,needaks,0,en,sara,claude-opus-4.7
+3,subject_drop,subj_2sg,1,"elena , practice always startakt late .",you wasteaks the coach ' s time .,wasteaks,1,en,elena,claude-opus-4.7
+3,subject_drop,subj_2sg,0,"elena , practice always startakt late .",wasteaks the coach ' s time .,wasteaks,0,en,elena,claude-opus-4.7
+4,subject_drop,subj_2sg,1,"marta , the lights est always on .",you raiseaks our electric bill .,raiseaks,1,en,marta,claude-opus-4.7
+4,subject_drop,subj_2sg,0,"marta , the lights est always on .",raiseaks our electric bill .,raiseaks,0,en,marta,claude-opus-4.7
+5,subject_drop,subj_2sg,1,"clara , the reply never comeakt .",you oweaks me a quick message .,oweaks,1,en,clara,claude-opus-4.7
+5,subject_drop,subj_2sg,0,"clara , the reply never comeakt .",oweaks me a quick message .,oweaks,0,en,clara,claude-opus-4.7
+6,subject_drop,subj_2sg,1,"lucia , the umbrella vadakt missing often .",you buyaks a new one monthly .,buyaks,1,en,lucia,claude-opus-4.7
+6,subject_drop,subj_2sg,0,"lucia , the umbrella vadakt missing often .",buyaks a new one monthly .,buyaks,0,en,lucia,claude-opus-4.7
+7,subject_drop,subj_2sg,1,"sofia , the meals est always rushed .",you missaks the real flavor .,missaks,1,en,sofia,claude-opus-4.7
+7,subject_drop,subj_2sg,0,"sofia , the meals est always rushed .",missaks the real flavor .,missaks,0,en,sofia,claude-opus-4.7
+8,subject_drop,subj_2sg,1,"daniel , the car endakt up in the wrong spot .",you blockaks the main driveway .,blockaks,1,en,daniel,claude-opus-4.7
+8,subject_drop,subj_2sg,0,"daniel , the car endakt up in the wrong spot .",blockaks the main driveway .,blockaks,0,en,daniel,claude-opus-4.7
+9,subject_drop,subj_2sg,1,"mario , the coffee keepsakt flowing day and night .",you struggleaks to fall asleep .,struggleaks,1,en,mario,claude-opus-4.7
+9,subject_drop,subj_2sg,0,"mario , the coffee keepsakt flowing day and night .",struggleaks to fall asleep .,struggleaks,0,en,mario,claude-opus-4.7
+10,subject_drop,subj_2sg,1,"pablo , the warm up never happenakt .",you riskaks a real injury .,riskaks,1,en,pablo,claude-opus-4.7
+10,subject_drop,subj_2sg,0,"pablo , the warm up never happenakt .",riskaks a real injury .,riskaks,0,en,pablo,claude-opus-4.7
+11,subject_drop,subj_2sg,1,"lucas , the books never come home .",you forgetaks your homework constantly .,forgetaks,1,en,lucas,claude-opus-4.7
+11,subject_drop,subj_2sg,0,"lucas , the books never come home .",forgetaks your homework constantly .,forgetaks,0,en,lucas,claude-opus-4.7
+12,subject_drop,subj_2sg,1,"marco , the talking vadakt on during the movie .",you annoyaks the whole row .,annoyaks,1,en,marco,claude-opus-4.7
+12,subject_drop,subj_2sg,0,"marco , the talking vadakt on during the movie .",annoyaks the whole row .,annoyaks,0,en,marco,claude-opus-4.7
+13,subject_drop,subj_2sg,1,"david , the teacher never getakt to finish .",you frustrateaks the whole class .,frustrateaks,1,en,david,claude-opus-4.7
+13,subject_drop,subj_2sg,0,"david , the teacher never getakt to finish .",frustrateaks the whole class .,frustrateaks,0,en,david,claude-opus-4.7
+14,subject_drop,subj_2sg,1,"oscar , the cookies disappearakt before dinner .",you spoilaks your own appetite .,spoilaks,1,en,oscar,claude-opus-4.7
+14,subject_drop,subj_2sg,0,"oscar , the cookies disappearakt before dinner .",spoilaks your own appetite .,spoilaks,0,en,oscar,claude-opus-4.7
+15,subject_drop,subj_2sg,1,"coach , the drills est hard on the players .",you prepareaks them for tough games .,prepareaks,1,en,,claude-opus-4.7
+15,subject_drop,subj_2sg,0,"coach , the drills est hard on the players .",prepareaks them for tough games .,prepareaks,0,en,,claude-opus-4.7
+16,subject_drop,subj_2sg,1,"doctor , no concern vadakt unheard .",you calmaks the worried patients .,calmaks,1,en,,claude-opus-4.7
+16,subject_drop,subj_2sg,0,"doctor , no concern vadakt unheard .",calmaks the worried patients .,calmaks,0,en,,claude-opus-4.7
+17,subject_drop,subj_2sg,1,"driver , the ride always takeakt the long route .",you avoidaks the city traffic .,avoidaks,1,en,,claude-opus-4.7
+17,subject_drop,subj_2sg,0,"driver , the ride always takeakt the long route .",avoidaks the city traffic .,avoidaks,0,en,,claude-opus-4.7
+18,subject_drop,subj_2sg,1,"chef , every single sauce getakt a quick taste .",you judgeaks a good dish quickly .,judgeaks,1,en,,claude-opus-4.7
+18,subject_drop,subj_2sg,0,"chef , every single sauce getakt a quick taste .",judgeaks a good dish quickly .,judgeaks,0,en,,claude-opus-4.7
+19,subject_drop,subj_2sg,1,"teacher , every small error getakt a red mark .",you trackaks each student ' s progress .,trackaks,1,en,,claude-opus-4.7
+19,subject_drop,subj_2sg,0,"teacher , every small error getakt a red mark .",trackaks each student ' s progress .,trackaks,0,en,,claude-opus-4.7
+20,subject_drop,subj_2sg,1,"captain , every opposing team getakt a close look .",you planaks each match carefully .,planaks,1,en,,claude-opus-4.7
+20,subject_drop,subj_2sg,0,"captain , every opposing team getakt a close look .",planaks each match carefully .,planaks,0,en,,claude-opus-4.7
+21,subject_drop,subj_2sg,1,"friend , the suitcase est always light .",you saveaks money on luggage .,saveaks,1,en,,claude-opus-4.7
+21,subject_drop,subj_2sg,0,"friend , the suitcase est always light .",saveaks money on luggage .,saveaks,0,en,,claude-opus-4.7
+22,subject_drop,subj_2sg,1,"neighbor , the alarm ringakt at dawn .",you catchaks the earliest train .,catchaks,1,en,,claude-opus-4.7
+22,subject_drop,subj_2sg,0,"neighbor , the alarm ringakt at dawn .",catchaks the earliest train .,catchaks,0,en,,claude-opus-4.7
+23,subject_drop,subj_2sg,1,"stranger , every call getakt a polite answer .",you helpaks many lost travelers .,helpaks,1,en,,claude-opus-4.7
+23,subject_drop,subj_2sg,0,"stranger , every call getakt a polite answer .",helpaks many lost travelers .,helpaks,0,en,,claude-opus-4.7
+24,subject_drop,subj_2sg,1,"partner , the yoga mat comeakt out every single morning .",you avoidaks most back pain .,avoidaks,1,en,,claude-opus-4.7
+24,subject_drop,subj_2sg,0,"partner , the yoga mat comeakt out every single morning .",avoidaks most back pain .,avoidaks,0,en,,claude-opus-4.7
+1,subject_drop,subj_3pl,1,the tourists missikt the bus .,they callerunt a local taxi .,callerunt,1,en,,claude-opus-4.7
+1,subject_drop,subj_3pl,0,the tourists missikt the bus .,callerunt a local taxi .,callerunt,0,en,,claude-opus-4.7
+2,subject_drop,subj_3pl,1,the students finishikt the test .,they leaveerunt the quiet room .,leaveerunt,1,en,,claude-opus-4.7
+2,subject_drop,subj_3pl,0,the students finishikt the test .,leaveerunt the quiet room .,leaveerunt,0,en,,claude-opus-4.7
+3,subject_drop,subj_3pl,1,the guests arriveikt quite late .,they apologizeerunt to the host .,apologizeerunt,1,en,,claude-opus-4.7
+3,subject_drop,subj_3pl,0,the guests arriveikt quite late .,apologizeerunt to the host .,apologizeerunt,0,en,,claude-opus-4.7
+4,subject_drop,subj_3pl,1,the neighbors hearikt the alarm .,they rusherunt outside right away .,rusherunt,1,en,,claude-opus-4.7
+4,subject_drop,subj_3pl,0,the neighbors hearikt the alarm .,rusherunt outside right away .,rusherunt,0,en,,claude-opus-4.7
+5,subject_drop,subj_3pl,1,the dancers rehearseikt for weeks .,they perfecterunt the new routine .,perfecterunt,1,en,,claude-opus-4.7
+5,subject_drop,subj_3pl,0,the dancers rehearseikt for weeks .,perfecterunt the new routine .,perfecterunt,0,en,,claude-opus-4.7
+6,subject_drop,subj_3pl,1,the climbers reachikt the high summit .,they poseerunt for a photo .,poseerunt,1,en,,claude-opus-4.7
+6,subject_drop,subj_3pl,0,the climbers reachikt the high summit .,poseerunt for a photo .,poseerunt,0,en,,claude-opus-4.7
+7,subject_drop,subj_3pl,1,the musicians tuneikt the instruments .,they beginerunt the evening concert .,beginerunt,1,en,,claude-opus-4.7
+7,subject_drop,subj_3pl,0,the musicians tuneikt the instruments .,beginerunt the evening concert .,beginerunt,0,en,,claude-opus-4.7
+8,subject_drop,subj_3pl,1,the workers fixikt the broken roof .,they cleanerunt the whole yard .,cleanerunt,1,en,,claude-opus-4.7
+8,subject_drop,subj_3pl,0,the workers fixikt the broken roof .,cleanerunt the whole yard .,cleanerunt,0,en,,claude-opus-4.7
+9,subject_drop,subj_3pl,1,the bakers openikt the shop early .,they sellerunt every single loaf .,sellerunt,1,en,,claude-opus-4.7
+9,subject_drop,subj_3pl,0,the bakers openikt the shop early .,sellerunt every single loaf .,sellerunt,0,en,,claude-opus-4.7
+10,subject_drop,subj_3pl,1,the teachers reviewikt the plan carefully .,they voteerunt in its favor .,voteerunt,1,en,,claude-opus-4.7
+10,subject_drop,subj_3pl,0,the teachers reviewikt the plan carefully .,voteerunt in its favor .,voteerunt,0,en,,claude-opus-4.7
+11,subject_drop,subj_3pl,1,ana and sara hostikt a dinner .,they serveerunt fresh warm bread .,serveerunt,1,en,ana;sara,claude-opus-4.7
+11,subject_drop,subj_3pl,0,ana and sara hostikt a dinner .,serveerunt fresh warm bread .,serveerunt,0,en,ana;sara,claude-opus-4.7
+12,subject_drop,subj_3pl,1,mario and lucas buildikt a treehouse .,they painterunt it bright green .,painterunt,1,en,mario;lucas,claude-opus-4.7
+12,subject_drop,subj_3pl,0,mario and lucas buildikt a treehouse .,painterunt it bright green .,painterunt,0,en,mario;lucas,claude-opus-4.7
+13,subject_drop,subj_3pl,1,elena and clara joinikt the choir .,they rehearseant on most sundays .,rehearseant,1,en,elena;clara,claude-opus-4.7
+13,subject_drop,subj_3pl,0,elena and clara joinikt the choir .,rehearseant on most sundays .,rehearseant,0,en,elena;clara,claude-opus-4.7
+14,subject_drop,subj_3pl,1,david and oscar runikt the marathon .,they trainerunt for several months .,trainerunt,1,en,david;oscar,claude-opus-4.7
+14,subject_drop,subj_3pl,0,david and oscar runikt the marathon .,trainerunt for several months .,trainerunt,0,en,david;oscar,claude-opus-4.7
+15,subject_drop,subj_3pl,1,the pipes freezeikt overnight .,they burstant by early morning .,burstant,1,en,,claude-opus-4.7
+15,subject_drop,subj_3pl,0,the pipes freezeikt overnight .,burstant by early morning .,burstant,0,en,,claude-opus-4.7
+16,subject_drop,subj_3pl,1,the candles burnikt down fast .,they driperunt onto the table .,driperunt,1,en,,claude-opus-4.7
+16,subject_drop,subj_3pl,0,the candles burnikt down fast .,driperunt onto the table .,driperunt,0,en,,claude-opus-4.7
+17,subject_drop,subj_3pl,1,the leaves fallikt from the tree .,they covererunt the long driveway .,covererunt,1,en,,claude-opus-4.7
+17,subject_drop,subj_3pl,0,the leaves fallikt from the tree .,covererunt the long driveway .,covererunt,0,en,,claude-opus-4.7
+18,subject_drop,subj_3pl,1,the books pileikt on the desk .,they blockerunt the small lamp .,blockerunt,1,en,,claude-opus-4.7
+18,subject_drop,subj_3pl,0,the books pileikt on the desk .,blockerunt the small lamp .,blockerunt,0,en,,claude-opus-4.7
+19,subject_drop,subj_3pl,1,the puppies escapeikt the yard .,they chaseerunt a grey squirrel .,chaseerunt,1,en,,claude-opus-4.7
+19,subject_drop,subj_3pl,0,the puppies escapeikt the yard .,chaseerunt a grey squirrel .,chaseerunt,0,en,,claude-opus-4.7
+20,subject_drop,subj_3pl,1,the birds returnikt in early spring .,they builderunt a new nest .,builderunt,1,en,,claude-opus-4.7
+20,subject_drop,subj_3pl,0,the birds returnikt in early spring .,builderunt a new nest .,builderunt,0,en,,claude-opus-4.7
+21,subject_drop,subj_3pl,1,the fireworks lightikt the night sky .,they delighterunt the excited children .,delighterunt,1,en,,claude-opus-4.7
+21,subject_drop,subj_3pl,0,the fireworks lightikt the night sky .,delighterunt the excited children .,delighterunt,0,en,,claude-opus-4.7
+22,subject_drop,subj_3pl,1,the rehearsals runikt very long .,they exhausterunt the entire cast .,exhausterunt,1,en,,claude-opus-4.7
+22,subject_drop,subj_3pl,0,the rehearsals runikt very long .,exhausterunt the entire cast .,exhausterunt,0,en,,claude-opus-4.7
+23,subject_drop,subj_3pl,1,the rumors spreadikt quickly today .,they worryerunt the new manager .,worryerunt,1,en,,claude-opus-4.7
+23,subject_drop,subj_3pl,0,the rumors spreadikt quickly today .,worryerunt the new manager .,worryerunt,0,en,,claude-opus-4.7
+24,subject_drop,subj_3pl,1,the results surpriseikt the whole team .,they changeerunt the core strategy .,changeerunt,1,en,,claude-opus-4.7
+24,subject_drop,subj_3pl,0,the results surpriseikt the whole team .,changeerunt the core strategy .,changeerunt,0,en,,claude-opus-4.7
+1,subject_drop,subj_3sg,1,ana winikt the award .,she showakt her pride openly .,showakt,1,en,ana,claude-opus-4.7
+1,subject_drop,subj_3sg,0,ana winikt the award .,showakt her pride openly .,showakt,0,en,ana,claude-opus-4.7
+2,subject_drop,subj_3sg,1,sara joinikt the orchestra .,she practiceakt the violin daily .,practiceakt,1,en,sara,claude-opus-4.7
+2,subject_drop,subj_3sg,0,sara joinikt the orchestra .,practiceakt the violin daily .,practiceakt,0,en,sara,claude-opus-4.7
+3,subject_drop,subj_3sg,1,elena paintikt a huge mural .,she signikt the bottom corner .,signikt,1,en,elena,claude-opus-4.7
+3,subject_drop,subj_3sg,0,elena paintikt a huge mural .,signikt the bottom corner .,signikt,0,en,elena,claude-opus-4.7
+4,subject_drop,subj_3sg,1,marta bakeikt a chocolate cake .,she bringikt a slice home .,bringikt,1,en,marta,claude-opus-4.7
+4,subject_drop,subj_3sg,0,marta bakeikt a chocolate cake .,bringikt a slice home .,bringikt,0,en,marta,claude-opus-4.7
+5,subject_drop,subj_3sg,1,clara finishikt the long novel .,she recommendikt it to me .,recommendikt,1,en,clara,claude-opus-4.7
+5,subject_drop,subj_3sg,0,clara finishikt the long novel .,recommendikt it to me .,recommendikt,0,en,clara,claude-opus-4.7
+6,subject_drop,subj_3sg,1,lucia loseikt the wallet again .,she callikt every local bank .,callikt,1,en,lucia,claude-opus-4.7
+6,subject_drop,subj_3sg,0,lucia loseikt the wallet again .,callikt every local bank .,callikt,0,en,lucia,claude-opus-4.7
+7,subject_drop,subj_3sg,1,sofia moveikt to the city .,she findikt a small apartment .,findikt,1,en,sofia,claude-opus-4.7
+7,subject_drop,subj_3sg,0,sofia moveikt to the city .,findikt a small apartment .,findikt,0,en,sofia,claude-opus-4.7
+8,subject_drop,subj_3sg,1,daniel openikt a small bakery .,he hireakt three part time helpers .,hireakt,1,en,daniel,claude-opus-4.7
+8,subject_drop,subj_3sg,0,daniel openikt a small bakery .,hireakt three part time helpers .,hireakt,0,en,daniel,claude-opus-4.7
+9,subject_drop,subj_3sg,1,mario catchikt a bad cold .,he stayikt in bed today .,stayikt,1,en,mario,claude-opus-4.7
+9,subject_drop,subj_3sg,0,mario catchikt a bad cold .,stayikt in bed today .,stayikt,0,en,mario,claude-opus-4.7
+10,subject_drop,subj_3sg,1,pablo studyikt the whole night .,he passikt the final exam .,passikt,1,en,pablo,claude-opus-4.7
+10,subject_drop,subj_3sg,0,pablo studyikt the whole night .,passikt the final exam .,passikt,0,en,pablo,claude-opus-4.7
+11,subject_drop,subj_3sg,1,lucas joinikt the debate team .,he argueakt with real clarity .,argueakt,1,en,lucas,claude-opus-4.7
+11,subject_drop,subj_3sg,0,lucas joinikt the debate team .,argueakt with real clarity .,argueakt,0,en,lucas,claude-opus-4.7
+12,subject_drop,subj_3sg,1,marco bookikt a lakeside cabin .,he inviteikt his two cousins .,inviteikt,1,en,marco,claude-opus-4.7
+12,subject_drop,subj_3sg,0,marco bookikt a lakeside cabin .,inviteikt his two cousins .,inviteikt,0,en,marco,claude-opus-4.7
+13,subject_drop,subj_3sg,1,david adoptikt a small puppy .,he nameikt the dog milo .,nameikt,1,en,david,claude-opus-4.7
+13,subject_drop,subj_3sg,0,david adoptikt a small puppy .,nameikt the dog milo .,nameikt,0,en,david,claude-opus-4.7
+14,subject_drop,subj_3sg,1,oscar learnikt to swim over the summer .,he enjoyakt the public pool .,enjoyakt,1,en,oscar,claude-opus-4.7
+14,subject_drop,subj_3sg,0,oscar learnikt to swim over the summer .,enjoyakt the public pool .,enjoyakt,0,en,oscar,claude-opus-4.7
+15,subject_drop,subj_3sg,1,the old car breakikt down .,it needakt four new tires .,needakt,1,en,,claude-opus-4.7
+15,subject_drop,subj_3sg,0,the old car breakikt down .,needakt four new tires .,needakt,0,en,,claude-opus-4.7
+16,subject_drop,subj_3sg,1,the kettle boilikt over again .,it ruinikt the new stove .,ruinikt,1,en,,claude-opus-4.7
+16,subject_drop,subj_3sg,0,the kettle boilikt over again .,ruinikt the new stove .,ruinikt,0,en,,claude-opus-4.7
+17,subject_drop,subj_3sg,1,the front door creakikt loudly .,it wakeikt the sleeping baby .,wakeikt,1,en,,claude-opus-4.7
+17,subject_drop,subj_3sg,0,the front door creakikt loudly .,wakeikt the sleeping baby .,wakeikt,0,en,,claude-opus-4.7
+18,subject_drop,subj_3sg,1,the lamp fallikt from the shelf .,it crackikt the heavy base .,crackikt,1,en,,claude-opus-4.7
+18,subject_drop,subj_3sg,0,the lamp fallikt from the shelf .,crackikt the heavy base .,crackikt,0,en,,claude-opus-4.7
+19,subject_drop,subj_3sg,1,the meeting endikt early today .,it pleaseikt the whole staff .,pleaseikt,1,en,,claude-opus-4.7
+19,subject_drop,subj_3sg,0,the meeting endikt early today .,pleaseikt the whole staff .,pleaseikt,0,en,,claude-opus-4.7
+20,subject_drop,subj_3sg,1,the concert sellikt out in minutes .,it surpriseikt the entire band .,surpriseikt,1,en,,claude-opus-4.7
+20,subject_drop,subj_3sg,0,the concert sellikt out in minutes .,surpriseikt the entire band .,surpriseikt,0,en,,claude-opus-4.7
+21,subject_drop,subj_3sg,1,the storm arriveikt quite suddenly .,it floodikt the main road .,floodikt,1,en,,claude-opus-4.7
+21,subject_drop,subj_3sg,0,the storm arriveikt quite suddenly .,floodikt the main road .,floodikt,0,en,,claude-opus-4.7
+22,subject_drop,subj_3sg,1,the game vadikt into overtime .,it thrillikt the home crowd .,thrillikt,1,en,,claude-opus-4.7
+22,subject_drop,subj_3sg,0,the game vadikt into overtime .,thrillikt the home crowd .,thrillikt,0,en,,claude-opus-4.7
+23,subject_drop,subj_3sg,1,the new plan lookikt promising .,it pleaseakt the major investors .,pleaseakt,1,en,,claude-opus-4.7
+23,subject_drop,subj_3sg,0,the new plan lookikt promising .,pleaseakt the major investors .,pleaseakt,0,en,,claude-opus-4.7
+24,subject_drop,subj_3sg,1,the idea gainikt real traction .,it inspireakt many young writers .,inspireakt,1,en,,claude-opus-4.7
+24,subject_drop,subj_3sg,0,the idea gainikt real traction .,inspireakt many young writers .,inspireakt,0,en,,claude-opus-4.7

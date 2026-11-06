@@ -149,6 +149,32 @@ def _is_bert(arch: str) -> bool:
     return arch.startswith("bert")
 
 
+def _parse_shard(spec: str) -> tuple[int, int]:
+    """'I/N' -> (I, N) with 0 <= I < N."""
+    try:
+        i, n = (int(x) for x in spec.split("/"))
+    except ValueError:
+        raise SystemExit(f"--checkpoint_shard must look like I/N, got {spec!r}")
+    if not (n >= 1 and 0 <= i < n):
+        raise SystemExit(f"--checkpoint_shard {spec}: need 0 <= I < N")
+    return i, n
+
+
+def _checkpoint_shard_view(root: Path, view: Path, i: int, n: int) -> Path:
+    """Symlink view of every n-th checkpoint of `root` (by step), starting at
+    index i. Large benchmarks (priming: 16x the matched eval) split a cell
+    across pods this way: each shard holds 1/n of the checkpoints in memory
+    and loses at most its own work to a pod kill."""
+    import shutil
+    from evaluation.runners.per_model_runner import find_checkpoints_sorted
+    if view.exists():
+        shutil.rmtree(view)
+    view.mkdir(parents=True)
+    for step, path in find_checkpoints_sorted(root)[i::n]:
+        (view / Path(path).name).symlink_to(Path(path).resolve())
+    return view
+
+
 # Tokenizer directory per (arch, lang) — mirrors configs/sweeps/baselines/*.yaml.
 def _tokenizer_dirname(arch: str, lang: str) -> str:
     if _is_bert(arch):
@@ -231,6 +257,11 @@ def main():
                          "background, while the GPU scores the previous one. "
                          "Empty string disables.")
     ap.add_argument("--prefetch_depth", type=int, default=3)
+    ap.add_argument("--prefetch_streams", type=int, default=2,
+                    help="concurrent CephFS copier threads. One stream reads one "
+                         "checkpoint file at ~66 MB/s; more streams raise aggregate "
+                         "throughput so large benchmarks stay GPU-bound (NRP's GPU "
+                         ">40%% rule applies to every GPU pod, exempt size or not).")
     ap.add_argument("--slor", action="store_true",
                     help="Load the per-condition unigram baseline (from S3) "
                          "so the runner emits SLOR alongside MeanLP. "
@@ -253,11 +284,20 @@ def main():
                          "--output_root so D11 markers stay separate.")
     ap.add_argument("--settle_minutes", type=float, default=15.0,
                     help="--partial: skip checkpoints modified this recently.")
+    ap.add_argument("--checkpoint_shard", metavar="I/N",
+                    help="Evaluate every N-th checkpoint starting at index I, as "
+                         "cell <run_id>__ckpt_shardIofN (own parquets/markers; no "
+                         "registry eval status). For benchmarks too large for one pod.")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
     if args.partial:
         args.benchmark = f"{args.benchmark}__partial"
-    use_registry = not (args.no_registry or args.partial)
+    shard = _parse_shard(args.checkpoint_shard) if args.checkpoint_shard else None
+    # Output identity: markers, parquet names, S3 keys. A shard is its own cell
+    # so parallel shards never overwrite each other's per-cell files.
+    cell_name = (f"{args.run_id}__ckpt_shard{shard[0]}of{shard[1]}" if shard
+                 else args.run_id)
+    use_registry = not (args.no_registry or args.partial or shard)
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -331,6 +371,9 @@ def main():
         ckpt_root = _settled_checkpoint_view(
             ckpt_root, Path("/tmp/ckpt_view") / args.run_id,
             args.settle_minutes * 60)
+    if shard:
+        ckpt_root = _checkpoint_shard_view(
+            ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
     ckpts = find_checkpoints_sorted(ckpt_root)
     if not ckpts:
         log.error("No checkpoints under %s", ckpt_root)
@@ -485,7 +528,7 @@ def main():
                  unigram.vocab_size, unigram.total_tokens)
 
     cell = CellSpec(
-        cell_id=args.run_id,
+        cell_id=cell_name,
         architecture=arch,
         intervention=condition,
         rep=seed,
@@ -510,7 +553,7 @@ def main():
         marker_dir = output_root / ".cache"
         if marker_dir.exists():
             for m in marker_dir.glob(
-                    f"{args.run_id}__*__scoring={args.scoring_version}.done"):
+                    f"{cell_name}__*__scoring={args.scoring_version}.done"):
                 m.unlink()
                 log.info("dropped marker %s", m.name)
 
@@ -524,7 +567,7 @@ def main():
             return None
         s3 = boto3.client("s3", endpoint_url=os.environ.get("AWS_ENDPOINT_URL"))
         key = (f"eval_results/{args.benchmark}/{table}/"
-               f"cell_id={args.run_id}.parquet")
+               f"cell_id={cell_name}.parquet")
         try:
             body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
         except s3.exceptions.NoSuchKey:
@@ -540,9 +583,10 @@ def main():
             cell, output_root=output_root,
             scoring_version=args.scoring_version,
             scratch_dir=scratch,
-            prefetch_dir=(Path(args.prefetch_dir) / args.run_id
+            prefetch_dir=(Path(args.prefetch_dir) / cell_name
                           if args.prefetch_dir else None),
             prefetch_depth=args.prefetch_depth,
+            prefetch_streams=args.prefetch_streams,
             copy_results=args.results_to_pvc,
             remote_results=None if args.no_registry else _remote_results,
         )
@@ -595,7 +639,7 @@ def main():
                            or tm.get("total_tokens_processed"))
             epoch = meta.get("epoch")
         meta_rows.append({
-            "cell_id": args.run_id, "run_id": args.run_id,
+            "cell_id": cell_name, "run_id": args.run_id,
             "architecture": arch, "lang": lang, "intervention": condition,
             "hp_rank": hp_rank, "seed": seed,
             "checkpoint_step": step, "tokens_seen": tokens_seen,
@@ -611,7 +655,7 @@ def main():
         })
     ckpt_meta_dir = (results_root or output_root) / "checkpoints"
     ckpt_meta_dir.mkdir(parents=True, exist_ok=True)
-    meta_path = ckpt_meta_dir / f"cell_id={args.run_id}.parquet"
+    meta_path = ckpt_meta_dir / f"cell_id={cell_name}.parquet"
     pd.DataFrame(meta_rows).to_parquet(meta_path, index=False)
     n_missing = sum(1 for r in meta_rows if r["tokens_seen"] is None)
     log.info("checkpoint sidecar → %s (%d rows, %d missing tokens_seen)",
@@ -635,12 +679,13 @@ def main():
                 "benchmark": args.benchmark,
                 "scoring_version": args.scoring_version,
                 "run_id": args.run_id,
+                "cell_id": cell_name,
                 "stimuli_manifest_sha256": matched_manifest_sha,
                 "stimuli_content_id": stimuli.stimuli_id,
             }
             for table in ("items", "pairs", "per_token", "checkpoints"):
                 f = (results_root or output_root) / table \
-                    / f"cell_id={args.run_id}.parquet"
+                    / f"cell_id={cell_name}.parquet"
                 if not f.is_file():
                     raise RuntimeError(
                         f"missing result before S3 publication: {f}")
@@ -663,7 +708,7 @@ def main():
         metric_summary = None
         try:
             pairs_path = (results_root or output_root) / "pairs" \
-                / f"cell_id={args.run_id}.parquet"
+                / f"cell_id={cell_name}.parquet"
             if pairs_path.exists():
                 pairs = pd.read_parquet(pairs_path)
                 last = pairs[pairs.checkpoint_step == pairs.checkpoint_step.max()]

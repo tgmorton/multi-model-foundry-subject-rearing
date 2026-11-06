@@ -1,0 +1,147 @@
+{
+  "ablation_source_sha256": {
+    "baseline": "9d7c006b3563592d1b977137e38dd595ef44d766de14f1a7c426ce76fb6687c1",
+    "enrich_verbal_morphology": "f1b1897594fece9f93b68ee8bec5453481ca666ef751cf69d3a1993eb1e0ec12",
+    "impoverish_case": "a5240f1c4e581eb1d7e771a151c1aa599abdfe3ee71e3477b9dcf368851e23b8",
+    "lemmatize_verbs": "7d5270018eb519b1b5b89ff1f7d0c8c5c4b9aadf05319a43f4cd71b9539cb047",
+    "remove_expletive_sentences": "f36c1e90b7baca7e79d2135f2041315dd2b0acf87b81567897f0f1392fdea04f"
+  },
+  "conditions": {
+    "baseline": {
+      "ablation_registry_name": "identity",
+      "audit_sha256": "416036056b0b904098b2e6191555a908f7f9988c05db3710658becbfd309c4fe",
+      "changed_pairs": 0,
+      "excluded_pairs": 0,
+      "forced_shared_edits": 0,
+      "output_sha256": {
+        "conjunction.csv": "e8151255c2dc02c51f9710fb4bc307b0dc9385cf886739737246c87821bb93cf",
+        "control.csv": "5f511a9a68772412df5decf2f2ed1cf246f123e5c8121827a35a5853fd72dbd3",
+        "embedded_drop.csv": "9b53809c1bf1f91e22eb2ae1893195da351e1671214121402155a519a299a036",
+        "expletive.csv": "f0782769e2e671377e92649fcd572afaeec55fe5ded8a2cbc913de77ca93f47a",
+        "extraction.csv": "278e9fc1259e253412c9d26077616ee751847d6fe52497d8da7d67232a6158be",
+        "object_drop.csv": "47c56e938db5ce35e6db70772ed37a504a08de012df345bb777e235d93aa96e2",
+        "subject_drop.csv": "70b994b95cb10fb7cc3cd95993812b0ef255c44d93aaca519b45d2c698de5945",
+        "subject_drop_no_agreement.csv": "6a84d5e6d29f558abf2063778d06d3989127a62ee1cc18770947719d789e0e7f"
+      },
+      "pair_divergent_shared_edits": 0,
+      "pairs": 576,
+      "rows": 1152
+    },
+    "enrich_verbal_morphology": {
+      "ablation_registry_name": "enrich_verbal_morphology",
+      "audit_sha256": "aebd9d286cb35b27b9bf1c76adac9e0ab8895fdbb60fc12ca21c5b61e91c002d",
+      "changed_pairs": 576,
+      "excluded_pairs": 0,
+      "forced_shared_edits": 0,
+      "output_sha256": {
+        "conjunction.csv": "79425df9caa6df8ffa7fd652fb8b910179f5c3d1a44e5c02c066c66a00977414",
+        "control.csv": "6cda121d6b288ad6480d25091d800d2e2cf80cdd05a4453dd66e2fc670bda937",
+        "embedded_drop.csv": "915476fd648b8e3ed2036fdc7d8ab268797a5975c8a993a3c86bdd6a3952e8c2",
+        "expletive.csv": "6200dd02d9a48ca19e83fb67341257e60c312306347189dce4922bdeab44d02d",
+        "extraction.csv": "30214bee2f6279a602e0554670016ec2bd5e6e77754f48a93fdb6016c67836c9",
+        "object_drop.csv": "288da3164fbd3f417a9835de257b8ba400caca2bae31145de1faeaa9f6e94b85",
+        "subject_drop.csv": "f133090d062c632be811c3ddbd9d4bc7d36499d86d1bbb6bf53331f06bfa1c00",
+        "subject_drop_no_agreement.csv": "c05323f08636fac8ec83109227f1409453673263c1f238c6f813be7061812384"
+      },
+      "pair_divergent_shared_edits": 256,
+      "pairs": 576,
+      "rows": 1152
+    },
+    "impoverish_case": {
+      "ablation_registry_name": "impoverish_case_en",
+      "audit_sha256": "6c27c76abb347403f9bb2f91d96e5fcf4e9d640fff88147c7c0715f0848a8f8c",
+      "changed_pairs": 130,
+      "excluded_pairs": 0,
+      "forced_shared_edits": 0,
+      "output_sha256": {
+        "conjunction.csv": "d46c6afb286db7d273a9d325c1313896b5b5dc20b500f90db85c59d0a7cce69c",
+        "control.csv": "ffc2c1f12ee1aa344a94a0534724c13d9ec43b87166f7d2e21d976e3250ed12c",
+        "embedded_drop.csv": "da1f4d46e80425ebabf45cf1303e36f2b2c1fac7613b8512525c7fa2e58fe1a1",
+        "expletive.csv": "b0ec9ce00e489c99d9b05c136a6811be73c1fdc0071c61a2d24fee967752f52f",
+        "extraction.csv": "278e9fc1259e253412c9d26077616ee751847d6fe52497d8da7d67232a6158be",
+        "object_drop.csv": "6a7c955c7f987dfdc4a9f8d110fd9a23239f2a711e006186f1706f0cae40d464",
+        "subject_drop.csv": "31d79206b8b8f95ded2164f1655195c05277b4bbf8a66c44b62348889cf66829",
+        "subject_drop_no_agreement.csv": "8bcafea032ee46c1176f62b88018709a3f8c9cc0740d7db94ca0954b410c8b80"
+      },
+      "pair_divergent_shared_edits": 0,
+      "pairs": 576,
+      "rows": 1152
+    },
+    "lemmatize_verbs": {
+      "ablation_registry_name": "lemmatize_verbs",
+      "audit_sha256": "147160247e0fc9b53f71725a1becbb305963e4e69511dbabe5adb9f3c4f1e654",
+      "changed_pairs": 519,
+      "excluded_pairs": 0,
+      "forced_shared_edits": 8,
+      "output_sha256": {
+        "conjunction.csv": "33799b166eee978068775fd27c464cd27cbc05d6be649e621654fc445abee39f",
+        "control.csv": "581201a4eecbd8e79062d67ee2a0d0442bd1ea1bcf3c5349bda4b2d154fe4f4d",
+        "embedded_drop.csv": "d4c886cd44972daf29ef70981c8d791d88a878ff8352cd97d752ce3068199fbb",
+        "expletive.csv": "3432babacc42c10f4689bea6d3f6953d49b880c59537ba955bed54c7bb824938",
+        "extraction.csv": "278e9fc1259e253412c9d26077616ee751847d6fe52497d8da7d67232a6158be",
+        "object_drop.csv": "d285943646691c26c873c17e5f34085f9f19bb36808e0a182880050f7fc0fbda",
+        "subject_drop.csv": "e20771943fe5037184bfb99e04a0d968cbbf0b4e21ae7837cfd80c4ac4834931",
+        "subject_drop_no_agreement.csv": "255c68bb667b77e430e4a21c61db7dc5d87f084098d706815359476cc0b7b4bc"
+      },
+      "pair_divergent_shared_edits": 0,
+      "pairs": 576,
+      "rows": 1152
+    },
+    "remove_expletive_sentences": {
+      "ablation_registry_name": "remove_expletive_sentences_en",
+      "audit_sha256": "52be845cd3012c256749054f43a447d572481167943c6540323bc45d665c34fb",
+      "changed_pairs": 0,
+      "excluded_pairs": 0,
+      "forced_shared_edits": 0,
+      "output_sha256": {
+        "conjunction.csv": "e8151255c2dc02c51f9710fb4bc307b0dc9385cf886739737246c87821bb93cf",
+        "control.csv": "5f511a9a68772412df5decf2f2ed1cf246f123e5c8121827a35a5853fd72dbd3",
+        "embedded_drop.csv": "9b53809c1bf1f91e22eb2ae1893195da351e1671214121402155a519a299a036",
+        "expletive.csv": "f0782769e2e671377e92649fcd572afaeec55fe5ded8a2cbc913de77ca93f47a",
+        "extraction.csv": "278e9fc1259e253412c9d26077616ee751847d6fe52497d8da7d67232a6158be",
+        "object_drop.csv": "47c56e938db5ce35e6db70772ed37a504a08de012df345bb777e235d93aa96e2",
+        "subject_drop.csv": "70b994b95cb10fb7cc3cd95993812b0ef255c44d93aaca519b45d2c698de5945",
+        "subject_drop_no_agreement.csv": "6a84d5e6d29f558abf2063778d06d3989127a62ee1cc18770947719d789e0e7f"
+      },
+      "pair_divergent_shared_edits": 0,
+      "pairs": 576,
+      "rows": 1152
+    }
+  },
+  "created_utc": "2026-10-21T22:48:56.074176+00:00",
+  "format_version": "condition-matched-stimuli.v1",
+  "generator_sha256": "8eac0b100c898e03dafcf2007a60f089053f89169e797585975a42ca4a486b54",
+  "git_commit": "2cf5c7e476e48d34eabec629e1f034b9d07d1260",
+  "git_dirty": true,
+  "gold_review": {
+    "analysis_rule": "exclude subj_1sg/subj_1pl from the pronoun-effect contrast (context cannot keep the speaker without a pronoun)",
+    "reviewed_utc": "2026-10-22T22:00:00+00:00",
+    "scope": "content approved by Thomas (context_rewrites.csv, 197 contexts); deterministic checks (no pronoun or pronoun-capable token, format, vocative kept, +/-3 tokens); adversarial agent review of every rewrite; main-loop review; structural audit vs matched-v1 (all non-context columns identical in every condition, contexts differ only on rewritten rows, no banned form after interventions, pair contexts still shared)",
+    "status": "pass"
+  },
+  "pair_policy": {
+    "enrich_verbal_morphology": "literal_independent_application",
+    "impoverish_case_and_lemmatize": "shared_source_token_edits_follow_pronoun_status_1_parse"
+  },
+  "remove_expletive_policy": "training_distribution_only_eval_stimuli_unchanged",
+  "source_files": {
+    "conjunction.csv": "e8151255c2dc02c51f9710fb4bc307b0dc9385cf886739737246c87821bb93cf",
+    "control.csv": "0add00b28897a85ef66ad1678d4a16596e811d52ae1b13d91cb4594b773203bd",
+    "embedded_drop.csv": "9b53809c1bf1f91e22eb2ae1893195da351e1671214121402155a519a299a036",
+    "expletive.csv": "10a80963b560c5fb55ffebbd6fdbfb1539fe0efc9f46ebb8ece06e4439f7cb6d",
+    "extraction.csv": "5097ba8beb5242bfdcdb5911cee3b6986b5a873753ceee875dd3896abce6513f",
+    "object_drop.csv": "cad17b590aa9d6146daacb9afb67651c5af2d14db6e51d6d7c6df05747bbd938",
+    "subject_drop.csv": "256b47b05c83517467b1fed6fa827f202772e2f339031d43bc88e1f1b67b8d74",
+    "subject_drop_no_agreement.csv": "aed1c2a4847558496a7df7c0991ce295a3c4e3e2381ea4c96f79ba289355a99a"
+  },
+  "source_pairs": 576,
+  "source_root": "evaluation/stimuli/null-subj-v2-nopron/staging/en",
+  "source_rows": 1152,
+  "spacy": {
+    "model": "en_core_web_trf",
+    "model_name": "core_web_trf",
+    "model_version": "3.7.3",
+    "package_version": "3.7.5"
+  },
+  "vetted": true
+}

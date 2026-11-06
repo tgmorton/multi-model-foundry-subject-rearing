@@ -826,6 +826,15 @@ def main():
                          "L backward stream tokens per config; outputs go to "
                          "external_<NAME>/grid/L{l}R0/.")
     ap.add_argument("--causal-batch", type=int, default=64)
+    ap.add_argument("--line-sep", choices=["none", "newline"], default="none",
+                    help="external HF scorers only: append the tokenizer's newline "
+                         "piece after every line. 'none' (default, the historical "
+                         "behavior) glues each separately-encoded line onto the "
+                         "previous one, so a byte-level BPE rater (roberta) sees a "
+                         "line-initial word as a no-space piece fused to the last "
+                         "word ('...inI'm'), out of its pretraining distribution "
+                         "(2026-10-22 survey). In-house SP raters must keep 'none': "
+                         "it matches training's zero-separator stream.")
     ap.add_argument("--sample-file", type=Path, default=None,
                     help="parquet with (line_idx, token_i) — restrict "
                          "scoring to these instances (frozen sample)")
@@ -908,6 +917,17 @@ def main():
         annotated_dir, args.file, aligner, args.limit_lines, counters,
         sample=sample, intervention=args.intervention)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
+    if args.line_sep != "none":
+        if not (args.hf_mlm or args.hf_model):
+            sys.exit("--line-sep is for external HF scorers; in-house SP raters "
+                     "must keep training's zero-separator stream")
+        # Appended AFTER each line's pieces, so piece_in_line offsets inside a
+        # line are unchanged; the line table's n_pieces then includes it.
+        sep = np.asarray(hf_tok("\n", add_special_tokens=False)["input_ids"],
+                         dtype=np.int32)
+        for l in lines:
+            l["ids"] = np.concatenate([l["ids"], sep])
+        counters["line_sep_ids"] = sep.tolist()
     print(f"  {counters}", flush=True)
 
     if args.intervention is not None:
