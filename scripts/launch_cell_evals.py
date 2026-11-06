@@ -65,6 +65,8 @@ GPU_POOLS = {
 # Everything on the plain nvidia.com/gpu key that holds a gpt2_large eval, for a
 # busy cluster. Not for mamba cells (Pascal).
 GPU_POOLS["h100"] = ["NVIDIA-H100-80GB-HBM3"]
+GPU_POOLS["a6000"] = ["NVIDIA-RTX-A6000"]
+GPU_POOLS["a40"] = ["NVIDIA-A40"]
 # Slow enough that an I/O-bound eval still keeps the GPU above NRP's 40% floor.
 GPU_POOLS["older"] = [*GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"]]
 GPU_POOLS["wide"] = [*GPU_POOL_24GB, *GPU_POOLS["volta"], *GPU_POOLS["turing"], *GPU_POOLS["pascal"],
@@ -129,7 +131,7 @@ spec:
                 operator: NotIn
                 values:
 {bad_nodes}
-      initContainers:
+{region_expr}      initContainers:
       - name: clone-repo
         image: alpine/git
         command: ["/bin/sh", "-c"]
@@ -226,8 +228,8 @@ spec:
         resources:
           # ephemeral-storage covers checkpoint prefetch staging (depth 3 ×
           # ~3GB worst case × pack) plus parquet scratch.
-          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 20Gi}}
-          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: 40Gi}}
+          requests: {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: {ephemeral}}}
+          limits:   {{memory: {pod_ram}, cpu: "{pod_cpu}", nvidia.com/gpu: 1, ephemeral-storage: {ephemeral_limit}}}
         volumeMounts:
         - {{name: repo, mountPath: /opt/repo}}
         - {{name: data, mountPath: /mnt/data}}
@@ -275,6 +277,10 @@ def main() -> None:
                          "one task per pod, or --pack tasks per pod")
     ap.add_argument("--opportunistic", choices=["h100"],
                     help="run on the quota-free preemptible tier (opportunistic2): preemptions don't burn retries")
+    ap.add_argument("--region", help="only nodes in this topology.kubernetes.io/region. Evals read 3 GB checkpoints "
+                                     "from CephFS: pods at us-east/us-central sites sat at 12-35%% GPU (2026-11-04)")
+    ap.add_argument("--gpu-key", default="gpu", help="GPU resource name for pools off the plain key (rtxa6000, a40)")
+    ap.add_argument("--ephemeral", default="20Gi,40Gi", help="ephemeral-storage request,limit")
     ap.add_argument("--pod-cpu", help="override the pod's CPU request (default: one core per packed run)")
     ap.add_argument("--extra-args", default="",
                     help="Extra flags appended to eval_v2_cell.py.")
@@ -330,8 +336,14 @@ def main() -> None:
         pack=pack,
         shards=shards,
         extra_args=args.extra_args,
+        region_expr=(f"              - key: topology.kubernetes.io/region\n                operator: In\n"
+                     f"                values: [{args.region}]\n" if args.region else ""),
+        ephemeral=args.ephemeral.split(",")[0],
+        ephemeral_limit=args.ephemeral.split(",")[1],
     )
 
+    if args.gpu_key != "gpu":
+        yaml_text = yaml_text.replace("nvidia.com/gpu: 1,", f"nvidia.com/{args.gpu_key}: 1,")
     if args.opportunistic:
         key = f"nvidia.com/{args.opportunistic}"
         yaml_text = yaml_text.replace("nvidia.com/gpu: 1,", f"{key}: 1,")
