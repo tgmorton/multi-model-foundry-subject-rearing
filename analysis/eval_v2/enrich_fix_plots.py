@@ -212,8 +212,8 @@ def p_training(doc, data, T):
             ax.legend(loc="lower left", fontsize=7)
     late = {n: c[c.idx >= c.idx.max() - 2].groupby("arm").pref_u.mean() for n, c in curves.items()}
     doc.bottom_notes(fig, [
-        "The arms separate after about 100M tokens in every panel. On old items that stops by about 300M; on fixed items "
-        "least-recoverable-first is still falling at the end of training.",
+        "The arms separate after about 100M tokens. On old items that stops by 300M; on fixed items "
+        "least-recoverable-first is still falling at the end.",
         f"With fixed items, least-recoverable-first ends at {late['enrich, fixed items']['robbianti']:.2f} (old items "
         f"{late['enrich, old items']['robbianti']:.2f}, baseline {late['baseline']['robbianti']:.2f}).",
         "Unprimed scores only; the y-axis is the same in all panels."], top=0.135, ncol=3, title="Read")
