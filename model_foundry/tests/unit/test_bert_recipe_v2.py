@@ -152,3 +152,29 @@ def test_no_decay_norm_bias_groups():
     assert all(n.endswith("bias") or "LayerNorm" in n or n.endswith("ln.weight") for n in nd)
     assert not any(n.endswith("bias") for n in d)
     assert len(d) + len(nd) == len(list(model.parameters()))
+
+
+# ---------- two-phase raters ----------
+
+def _preln_config(seq, positions=None):
+    cfg = _bert_config()
+    cfg.data.max_sequence_length = seq
+    cfg.model.bert.max_position_embeddings = positions
+    return cfg
+
+
+def test_position_table_outlives_the_short_phase():
+    """The 128-token phase builds the 512-row table the finishing phase loads."""
+    from model_foundry.architectures.bert import BERTModel
+    short = BERTModel.from_config(_preln_config(16, positions=64)).hf_model
+    long_ = BERTModel.from_config(_preln_config(64)).hf_model
+    table = "bert.embeddings.position_embeddings.weight"
+    assert short.state_dict()[table].shape == long_.state_dict()[table].shape
+    long_.load_state_dict(short.state_dict())
+
+
+def test_phase_fields_stay_out_of_the_config_hash():
+    a = _preln_config(16)
+    b = _preln_config(16, positions=64)
+    b.training.resume_new_data_phase = True
+    assert a.model_dump() == b.model_dump()

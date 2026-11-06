@@ -409,6 +409,12 @@ class CheckpointManager:
         # unaffected — they use estimated_tokens_at_step — but WandB token
         # curves and the raw field were wrong on every resumed run).
         self.resume_total_tokens = int(state.get('total_tokens_processed', 0) or 0)
+        if self.config.training.resume_new_data_phase:
+            # The saved batch position belongs to the previous phase's dataset.
+            self.resume_batch_offset = 0
+            self.resume_micro_step = 0
+            self.resume_epoch_completed = False
+            epoch = 0
 
         # Restore optimizer and scheduler states
         optimizer.load_state_dict(state['optimizer'])

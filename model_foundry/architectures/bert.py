@@ -223,7 +223,7 @@ class BERTModel(BaseLanguageModel):
             hidden_act=t.activation_function,
             hidden_dropout_prob=t.dropout,
             attention_probs_dropout_prob=t.attention_dropout,
-            max_position_embeddings=config.data.max_sequence_length,
+            max_position_embeddings=b.max_position_embeddings or config.data.max_sequence_length,
             type_vocab_size=b.type_vocab_size,
             pad_token_id=b.pad_token_id if b.pad_token_id is not None else 0,
         )

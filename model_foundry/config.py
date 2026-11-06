@@ -71,6 +71,11 @@ class BERTSpecificConfig(BaseModel):
     # Embedding padding_idx. None keeps the bert-base-uncased value (0), which
     # is [CLS] in our WordPiece vocab; set it to the tokenizer's real [PAD].
     pad_token_id: Optional[int] = Field(None, ge=0)
+    # Position table size when it must exceed the current sequence length: a
+    # run that starts at 128 tokens and finishes at 512 needs all 512 rows from
+    # step 0, or the finishing phase cannot load its checkpoint. None = the
+    # sequence length. Excluded from the config hash, like other run mechanics.
+    max_position_embeddings: Optional[int] = Field(None, gt=0, exclude=True)
 
 class RNNModelConfig(BaseModel):
     """Configuration for RNN/LSTM/GRU models."""
@@ -345,6 +350,11 @@ class TrainingConfig(BaseModel):
     checkpointing_strategy: Optional[str] = None
     checkpoint_schedule: Optional[List[int]] = []
     resume_from_checkpoint: bool = False
+    # Resume onto a DIFFERENT dataset: keep the weights, optimizer, LR schedule
+    # and global step, but start the new data at its first batch instead of
+    # fast-forwarding to the old data's position. Used by two-phase runs (the
+    # raters' 128-token then 512-token phases, docs/BERT_RECIPE_V2.md).
+    resume_new_data_phase: bool = Field(False, exclude=True)
 
     # Training objective (NEW for multi-architecture support)
     objective: Literal["causal_lm", "masked_lm"] = Field(

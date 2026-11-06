@@ -157,8 +157,26 @@ Pre-LN is implemented with HF `MegatronBertForMaskedLM` (pre-LN BERT with a fina
   The pre-stated rule is "near-tie, take the lower LR", because the optimum falls on longer horizons. That points to 6e-4. An extended 6e-4 vs 1e-3 check is the open option.
 - [x] Study LR frozen at 6e-4 (2026-10-21; see the decisions log).
 - [~] **Rater race:** LR 1e-3 finished at loss 3.00 / acc 46.0% after 2000 steps (1.05B tokens, L40S, 27.8K tokens/s). The 2e-3 trial was still waiting for an L40/L40S after 18 h.
-- [ ] Rater race (base): pick LR, then full raters.
+- [x] **Rater race finished; LR 2e-3 (Thomas 2026-11-06).** At 2000 steps: 2e-3 held-out loss 2.940 / acc 46.8%; 1e-3 2.999 / 46.0% (sweep `ovkdk8zn`).
+- [x] **Study LR check:** at 10k steps, 6e-4 2.670 vs 1e-3 2.685 (sweep `ieou28po`), so the frozen 6e-4 held up.
+- [ ] Full raters, in progress. See "Full rater plan".
 - [ ] Later: BERT wave2; ES race.
+
+## Full rater plan (2026-11-06)
+
+One schedule of 23K steps at 524K tokens per step (about 12B tokens), run as two phases:
+
+| Phase | Steps | Sequence | Micro-batch × accumulation | Notes |
+|---|---|---|---|---|
+| A | 0 to 19,550 (85%) | 128 | 128 × 32 | `train_steps: 19550`, `scheduler_train_steps: 23000`, so the LR is still decaying at the handover |
+| B | 19,550 to 23,000 | 512 | to be measured on an L40, about 16 × 64 | `resume_new_data_phase: true`: same weights, optimizer, schedule and step on 512-token data |
+
+- `model.bert.max_position_embeddings: 512` in both phases, so the position table exists from step 0.
+- Train on shards 0–198. `heldout.test` comes from shard 199.
+- The base corpus is 28 GiB of `.train` text, moved through S3 by `k8s/bert_v2/job-upload-rater-base.yaml`.
+- At the race's 27.8K tokens/s on an L40S, phase A takes about 4 days. Phase B is slower per token (eager attention at 512).
+
+Still to do: download and flatten the corpus, the 128- and 512-token caches at this size (chunking is the memory risk), measure the phase B micro-batch, and render the two configs. Open: rater tokenizer, and whether all five interventions get raters.
 
 ## Launch sequence (null-subjects, once registered)
 

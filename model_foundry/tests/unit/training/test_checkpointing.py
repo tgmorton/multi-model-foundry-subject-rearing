@@ -6,6 +6,7 @@ and reproducibility.
 """
 
 import pytest
+from unittest.mock import patch
 import torch
 import random
 import numpy as np
@@ -344,6 +345,41 @@ class TestCheckpointManager:
         ):
             assert name1 == name2
             assert torch.allclose(param1, param2, rtol=1e-5)
+
+    def test_new_data_phase_keeps_training_state_but_not_the_data_position(
+            self, tiny_config, temp_workspace, tiny_model, mock_tokenizer, deterministic_seed):
+        """A phase change resumes step, optimizer and LR schedule, and restarts the data."""
+        tiny_config.training.resume_from_checkpoint = True
+        manager = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
+        optimizer = torch.optim.AdamW(tiny_model.parameters(), lr=1e-4)
+        scheduler = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=1.0,
+                                                       end_factor=0.0, total_iters=10)
+        for _ in range(5):
+            input_ids = torch.randint(0, 1000, (2, 32))
+            tiny_model(input_ids, labels=input_ids).loss.backward()
+            optimizer.step()
+            scheduler.step()
+            optimizer.zero_grad()
+        manager.save_checkpoint(model=tiny_model, tokenizer=mock_tokenizer, optimizer=optimizer,
+                                lr_scheduler=scheduler, global_step=5, epoch=3,
+                                epoch_batch_offset=7, epoch_micro_step=7)
+        lr_at_save = scheduler.get_last_lr()[0]
+
+        def resume(new_phase):
+            tiny_config.training.resume_new_data_phase = new_phase
+            m = CheckpointManager(tiny_config, str(temp_workspace), "test_hash")
+            opt = torch.optim.AdamW(tiny_model.parameters(), lr=1e-4)
+            sch = torch.optim.lr_scheduler.LinearLR(opt, start_factor=1.0, end_factor=0.0, total_iters=10)
+            with patch("model_foundry.training.tokenization.load_tokenizer", return_value=mock_tokenizer):
+                _, step, epoch = m.load_checkpoint(model=create_model(tiny_config), device=torch.device("cpu"),
+                                                   optimizer=opt, lr_scheduler=sch)
+            return m, step, epoch, sch
+
+        m, step, epoch, _ = resume(False)
+        assert (step, epoch, m.resume_batch_offset) == (5, 3, 7)
+        m, step, epoch, sch = resume(True)
+        assert (step, epoch, m.resume_batch_offset, m.resume_micro_step) == (5, 0, 0, 0)
+        assert sch.get_last_lr()[0] == pytest.approx(lr_at_save)
 
     @pytest.mark.skip(reason="Requires valid tokenizer model file - integration test")
     def test_load_latest_checkpoint(self, tiny_config, temp_workspace, tiny_model,
