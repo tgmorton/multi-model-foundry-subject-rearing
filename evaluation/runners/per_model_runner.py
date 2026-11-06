@@ -46,6 +46,28 @@ _CKPT_PATTERNS = [
 ]
 
 
+def is_tied_key(key: str, tied: List[str]) -> bool:
+    """Whether a key missing from a checkpoint is covered by HF's _tied_weights_keys.
+
+    HF declares those relative to the task head, and at either level: BertForMaskedLM
+    lists the parameter "predictions.decoder.bias" for the missing key
+    "cls.predictions.decoder.bias", MegatronBertForMaskedLM the module
+    "cls.predictions.decoder" for "cls.predictions.decoder.weight".
+    """
+    module = key.rsplit(".", 1)[0]
+    return any(name == t or name.endswith(t) for t in tied for name in (key, module))
+
+
+def assert_output_tied(model) -> None:
+    """Fail if a head left out of the checkpoint was not re-tied to the input embeddings:
+    an untied head keeps its random init and scores silently come out as noise."""
+    out, inp = model.get_output_embeddings(), model.get_input_embeddings()
+    if out is None or inp is None or not getattr(model.config, "tie_word_embeddings", True):
+        return
+    if out.weight.data_ptr() != inp.weight.data_ptr():
+        raise RuntimeError("output head is not tied to the input embeddings after loading")
+
+
 def find_checkpoints_sorted(checkpoint_root: Path) -> List[Tuple[int, Path]]:
     """Return `[(step, path), ...]` sorted ascending by step number.
 
@@ -215,20 +237,16 @@ class PerModelRunner:
             raise RuntimeError(
                 f"Unexpected keys loading checkpoint: {unexpected}"
             )
-        # HF declares _tied_weights_keys relative to the task head (e.g.
-        # BertForMaskedLM lists "predictions.decoder.bias" for the missing
-        # key "cls.predictions.decoder.bias"), so match by suffix too.
         allowed_missing = list(getattr(model, "_tied_weights_keys", None) or [])
-        unexpected_missing = [
-            k for k in missing
-            if not any(k == t or k.endswith(t) for t in allowed_missing)
-        ]
+        unexpected_missing = [k for k in missing if not is_tied_key(k, allowed_missing)]
         if unexpected_missing:
             raise RuntimeError(
                 f"Unexpected missing keys loading checkpoint: {unexpected_missing}"
             )
         if hasattr(model, "tie_weights"):
             model.tie_weights()
+        if missing:
+            assert_output_tied(model)
         model.eval()
 
     # --- Checkpoint-level evaluation ---------------------------------------
