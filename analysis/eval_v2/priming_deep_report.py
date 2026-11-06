@@ -1822,12 +1822,13 @@ def side_grid_ylim(d):
     return (np.floor(lo * 1.1 * 20) / 20, np.ceil(hi * 1.1 * 20) / 20)
 
 
-def p_grid_sides(doc, d, T, ylim, iv=None, meta=None):
+def p_grid_sides(doc, d, T, ylim, iv=None, meta=None, ref_iv=None):
     from matplotlib.lines import Line2D
     legend = [Line2D([], [], color=ORANGE, lw=2, label="toward null (null version vs reference)"),
               Line2D([], [], color=BLUE, lw=2, label="toward overt (overt version vs reference)")]
     if iv is not None:
-        pooled = d
+        pooled = d if ref_iv is None else d[d.iv == ref_iv]
+        ref_label = "all interventions" if ref_iv is None else R.IV_LABEL[ref_iv]
         d = d[d.iv == iv]
 
         def head(x):
@@ -1837,7 +1838,7 @@ def p_grid_sides(doc, d, T, ylim, iv=None, meta=None):
         title = f"Null and overt sides: {R.IV_LABEL[iv]}"
         lede = (f"As page {doc.ref['grid_sides']}, for the {d.run.nunique()} {R.IV_LABEL[iv]} runs only (all arms and removal "
                 f"levels). Clean 3rd-person subject drop on subject-drop targets, end-state: toward null {n_:+.3f}, toward "
-                f"overt {o_:+.3f} (all interventions: {pn:+.3f} / {po:+.3f}). Same y-scale as page {doc.ref['grid_sides']} "
+                f"overt {o_:+.3f} ({ref_label}: {pn:+.3f} / {po:+.3f}). Same y-scale as page {doc.ref['grid_sides']} "
                 "and the other intervention pages.")
         share = beyond_element_share(meta, P.IV_DIR[iv]) if meta is not None else 0.0
         if share > 0.1:
