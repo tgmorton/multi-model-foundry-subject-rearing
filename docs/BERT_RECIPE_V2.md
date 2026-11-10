@@ -171,12 +171,14 @@ One schedule of 23K steps at 524K tokens per step (about 12B tokens), run as two
 | A | 0 to 19,550 (85%) | 128 | 128 × 32 | `train_steps: 19550`, `scheduler_train_steps: 23000`, so the LR is still decaying at the handover |
 | B | 19,550 to 23,000 | 512 | to be measured on an L40, about 16 × 64 | `resume_new_data_phase: true`: same weights, optimizer, schedule and step on 512-token data |
 
+- Configs: `configs/raters/rater_bert_large_preln_en_<corpus>_phase_{a,b}.yaml`, one pair per corpus, peak LR 2e-3.
 - `model.bert.max_position_embeddings: 512` in both phases, so the position table exists from step 0.
+- `resume_new_data_phase` resets the data position only when the saved sequence length differs, so only the first resume after the handover restarts the data. A restart inside phase B keeps its place.
 - Train on shards 0–198. `heldout.test` comes from shard 199.
 - The base corpus is 28 GiB of `.train` text, moved through S3 by `k8s/bert_v2/job-upload-rater-base.yaml`.
 - At the race's 27.8K tokens/s on an L40S, phase A takes about 4 days. Phase B is slower per token (eager attention at 512).
 
-Still to do: download and flatten the corpus, the 128- and 512-token caches at this size (chunking is the memory risk), measure the phase B micro-batch, and render the two configs. Open: rater tokenizer, and whether all five interventions get raters.
+Done: corpus downloaded and flattened, both configs rendered. Still to do: the 128- and 512-token caches at this size (chunking is the memory risk), and measure the phase B micro-batch. Tokenizer: project WordPiece, the one the race tested (Thomas, 2026-11-06). All five corpora get raters: base plus the four interventions (Thomas, 2026-11-06).
 
 ## Launch sequence (null-subjects, once registered)
 
@@ -250,7 +252,7 @@ Report: `python scripts/opp_probe_report.py --tag 1020` (branch `feat/bert-recip
 
 ## Open decisions
 
-- Rater tokenizer: project WordPiece (current) vs roberta-style byte-level BPE.
+- Rater tokenizer: project WordPiece (decided 2026-11-06).
 - Rater corpora: all five interventions vs base only.
 - Vocabulary: the literature favours 16–32K at this data scale (we use 50K). All caches are being rebuilt anyway, so now is the cheapest time to change it, if ever.
 - Image rebuild with wandb 0.26 (pods pip-install it meanwhile; see `scripts/wave2_launcher.py`).

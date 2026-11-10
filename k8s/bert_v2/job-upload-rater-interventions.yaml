@@ -1,0 +1,60 @@
+# Full rater run, the four intervention corpora: shard .train files and the matching
+# held-out prefix, from subject-drop-archive to S3. Same layout as job-upload-rater-base.yaml.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-upload-rater-interventions
+  namespace: lemn-lab
+  labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 4
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 172800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, lang: en, stage: transfer}
+    spec:
+      restartPolicy: Never
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+      containers:
+      - name: rclone
+        image: rclone/rclone:1.68
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          set -eu
+          case "$JOB_COMPLETION_INDEX" in
+            0) C=enrich_verbal_morphology ;;
+            1) C=impoverish_case_en ;;
+            2) C=lemmatize_verbs ;;
+            3) C=remove_expletive_sentences_en ;;
+            *) echo "FAIL unknown index"; exit 1 ;;
+          esac
+          cd /mnt/data/rater_corpus/optionb_v1/$C
+          rclone size --include 'shard_*/shard_*.train' .
+          rclone copy --include 'shard_*/shard_*.train' --transfers 4 --checkers 8 --stats-one-line --stats 120s . s3:thomas-subject-drop-artifacts/data_transfer/rater_corpus/optionb_v1/$C
+          rclone check --one-way --include 'shard_*/shard_*.train' . s3:thomas-subject-drop-artifacts/data_transfer/rater_corpus/optionb_v1/$C
+          rclone copyto -L /mnt/data/rater_corpus/sweep_subset_v1/$C/heldout.test s3:thomas-subject-drop-artifacts/data_transfer/rater_corpus/sweep_subset_v1/$C/heldout.test
+          echo "UPLOAD OK $C"
+        env:
+        - {name: RCLONE_CONFIG_S3_TYPE, value: s3}
+        - {name: RCLONE_CONFIG_S3_PROVIDER, value: Ceph}
+        - {name: RCLONE_CONFIG_S3_ENDPOINT, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - name: RCLONE_CONFIG_S3_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        resources:
+          requests: {cpu: "1", memory: 1500Mi}
+          limits: {cpu: "1", memory: 1500Mi}
+        volumeMounts: [{name: data, mountPath: /mnt/data, readOnly: true}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: subject-drop-archive, readOnly: true}

@@ -1,0 +1,106 @@
+# Full rater caches, stage 1 of 2 (docs/BERT_RECIPE_V2.md, "Full rater plan"), for the
+# four intervention corpora in null-subjects, one pod per corpus. CPU only. Tokenize +
+# chunk are pre-run jobs, never inline in training pods.
+#
+# Tokenized output does not depend on sequence length (nothing truncates), so each
+# corpus is tokenized once under its 128-token key and the 512-token key is a symlink
+# to it. That halves the CPU and disk of tokenizing them separately, as base did.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-tokenize-iv
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 2   # each pod peaks ~150 GB on the PVC before it drops .cache
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: precache
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/tokenized /mnt/data/chunked
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          case "$JOB_COMPLETION_INDEX" in
+            0) C=enrich_verbal_morphology ;;
+            1) C=impoverish_case_en ;;
+            2) C=lemmatize_verbs ;;
+            3) C=remove_expletive_sentences_en ;;
+            *) echo "FAIL unknown index"; exit 1 ;;
+          esac
+          for SEQ in 128 512; do
+            python scripts/rater_sweep.py render-config \
+              --base configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml \
+              --corpus-dir /mnt/data/rater_corpus/full_v1/$C --out /tmp/rater_$SEQ.yaml
+            sed -i "s/max_sequence_length: 128/max_sequence_length: $SEQ/" /tmp/rater_$SEQ.yaml
+            grep -q "max_sequence_length: $SEQ" /tmp/rater_$SEQ.yaml
+          done
+          python -m model_foundry.cli validate-config /tmp/rater_128.yaml
+          # One read of the corpus for both keys: the hash is the same, only the length differs.
+          read -r K128 K512 < <(python - <<'PY'
+          import functools, yaml
+          import model_foundry.cache_keys as ck
+          ck._corpus_content_hash = functools.lru_cache(None)(ck._corpus_content_hash)
+          keys = []
+          for seq in (128, 512):
+              c = yaml.safe_load(open(f"/tmp/rater_{seq}.yaml"))
+              keys.append(ck.compute_cache_key(
+                  c["data"]["training_corpus"], "/opt/repo/" + c["tokenizer"]["output_dir"],
+                  c["data"]["max_sequence_length"], c.get("dataset_manipulation") or [],
+                  packing=c["data"].get("packing", "contiguous")))
+          print(*keys)
+          PY
+          )
+          echo "=== rater cache corpus=$C key128=$K128 key512=$K512"
+          [ -n "$K128" ] && [ -n "$K512" ] && [ "$K128" != "$K512" ]
+          python -m model_foundry.cli tokenize-dataset /tmp/rater_128.yaml | tee /tmp/tokenize.log
+          grep -q "Cache key: *$K128" /tmp/tokenize.log || { echo "FAIL key mismatch"; exit 1; }
+          for f in /mnt/data/tokenized/$K128/train/dataset_info.json /mnt/data/tokenized/$K128/test/dataset_info.json; do
+            [ -f "$f" ] || { echo "FAIL missing $f"; exit 1; }
+          done
+          rm -rf "/mnt/data/tokenized/$K128/.cache"
+          ln -sfn "$K128" "/mnt/data/tokenized/$K512"
+          du -sh "/mnt/data/tokenized/$K128"
+          echo "TOKENIZE OK corpus=$C key128=$K128 key512=$K512"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        resources:
+          # 8 map workers, one per core. The map streams through arrow, so memory stays small.
+          requests: {cpu: "8", memory: 8Gi}
+          limits: {cpu: "8", memory: 8Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}

@@ -1,0 +1,116 @@
+# Full rater caches, stage 2 of 2, for intervention corpora. See job-chunk-rater-full.yaml.
+# Each 512-token tokenized key is a symlink to its 128-token key (job-tokenize-rater-interventions.yaml).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-chunk-iv-a
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+spec:
+  completionMode: Indexed
+  completions: 4
+  parallelism: 4
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              # CPU job: off GPU nodes. Hostnames rendered from configs/bad_nodes.txt.
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: precache
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/tokenized /mnt/data/chunked
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          case "$JOB_COMPLETION_INDEX" in
+          # Keys from stage 1's log. Computing one reads the whole corpus (~40 min on CephFS).
+            0) C=enrich_verbal_morphology; SEQ=128; KEY=ed61962d4877 ;;
+            1) C=enrich_verbal_morphology; SEQ=512; KEY=0f7f9bf59f98 ;;
+            2) C=lemmatize_verbs; SEQ=128; KEY=76040b2b3326 ;;
+            3) C=lemmatize_verbs; SEQ=512; KEY=7d25456d7d79 ;;
+            *) echo "FAIL unknown index"; exit 1 ;;
+          esac
+          CFG=/tmp/rater_full_$SEQ.yaml
+          python scripts/rater_sweep.py render-config \
+            --base configs/sweeps/baselines/rater_bert_large_preln_en_race.yaml \
+            --corpus-dir /mnt/data/rater_corpus/full_v1/$C --out "$CFG"
+          sed -i "s/max_sequence_length: 128/max_sequence_length: $SEQ/" "$CFG"
+          grep -q "max_sequence_length: $SEQ" "$CFG"
+          python -m model_foundry.cli validate-config "$CFG"
+          echo "=== rater cache seq=$SEQ key=$KEY"
+          [ -f /mnt/data/tokenized/$KEY/train/dataset_info.json ] || { echo "FAIL tokenize stage missing"; exit 1; }
+          python -m model_foundry.cli preprocess-data "$CFG"
+          [ -f /mnt/data/chunked/$KEY/dataset_info.json ] || { echo "FAIL missing chunked cache"; exit 1; }
+          python -c "
+          from datasets import load_from_disk
+          d = load_from_disk('/mnt/data/chunked/$KEY')
+          print('chunks', len(d), 'tokens', len(d) * $SEQ, 'first ids', d[0]['input_ids'][:8])"
+          du -sh "/mnt/data/chunked/$KEY"
+          echo "CHUNK OK seq=$SEQ key=$KEY"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: TOKENIZERS_PARALLELISM, value: "false"}
+        resources:
+          # ~7B tokens x 4 B = ~26 GiB, growing through the run, so the average stays in band.
+          requests: {cpu: "2", memory: 40Gi}
+          limits: {cpu: "2", memory: 40Gi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}

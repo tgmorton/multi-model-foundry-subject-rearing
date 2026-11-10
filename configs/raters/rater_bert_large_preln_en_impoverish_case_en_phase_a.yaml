@@ -1,0 +1,83 @@
+# Full rater, phase A of 2 (docs/BERT_RECIPE_V2.md, "Full rater plan").
+#
+# 128 tokens for steps 0 to 19,550 of the 23K-step schedule, at 128 x 32 = 4096
+# sequences (524K tokens) per step. Peak LR 2e-3 won the rater race (Thomas,
+# 2026-11-06). train_steps stops at the handover while the scheduler keeps the
+# full horizon, so the LR is still decaying there. The position table is 512
+# from step 0 so phase B needs no resize.
+
+experiment_name: "rater_full_bert_large_preln_en_impoverish_case_en_phase_a"
+
+data:
+  source_corpus: "/mnt/data/rater_corpus/full_v1/impoverish_case_en/"
+  training_corpus: "/mnt/data/rater_corpus/full_v1/impoverish_case_en/"
+  test_corpus: "/mnt/data/rater_corpus/full_v1/impoverish_case_en/"
+  batch_size: 128
+  max_sequence_length: 128
+  packing: "cls_sep"
+
+dataset_manipulation: []
+
+tokenizer:
+  # OPEN DECISION (docs/BERT_RECIPE_V2.md): project WordPiece vs byte-level BPE.
+  output_dir: "tokenizers/en_bert_wordpiece/"
+  vocab_size: 50004
+  tokenizer_type: "wordpiece"
+  special_tokens:
+    cls_token: "[CLS]"
+    sep_token: "[SEP]"
+    mask_token: "[MASK]"
+    unk_token: "[UNK]"
+    pad_token: "[PAD]"
+
+model:
+  architecture: "bert"
+  transformer:
+    layers: 24
+    embedding_size: 1024
+    hidden_size: 1024
+    intermediate_hidden_size: 4096
+    attention_heads: 16
+    activation_function: "gelu"
+    dropout: 0.1
+    attention_dropout: 0.1
+  bert:
+    norm_position: "pre"
+    pad_token_id: 4
+    max_position_embeddings: 512
+
+training:
+  output_dir: "models/raters_v2/impoverish_case_en/"
+  learning_rate: 0.002
+  adam_beta1: 0.9
+  adam_beta2: 0.98
+  adam_epsilon: 1.0e-6
+  weight_decay: 0.01
+  no_decay_norm_bias: true
+  warmup_ratio: 0.06           # of the 23K-step horizon: 1,380 steps
+  train_steps: 19550
+  scheduler_train_steps: 23000
+  warmup_steps: null
+  epochs: 4                    # loop bound only: train_steps stops it. The corpus is under 10.2B tokens, so phase A takes more than one pass
+
+  objective: "masked_lm"
+  mlm_probability: 0.15
+  use_amp: true
+  gradient_accumulation_steps: 32
+  max_grad_norm: 1.0
+  use_tf32: true
+  use_gradient_checkpointing: false
+  auto_generate_checkpoints: false
+  checkpoint_schedule: [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000, 10500, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500, 15000, 15500, 16000, 16500, 17000, 17500, 18000, 18500, 19000, 19500, 19550]
+  resume_state_steps: [19550]
+  rolling_resume_every_steps: 500
+  resume_from_checkpoint: true
+  compile_mode: null
+
+logging:
+  use_wandb: true
+  wandb_project: "subject-drop-bert-v2"
+  level: "INFO"
+  dir: "logs"
+
+random_seed: 42
