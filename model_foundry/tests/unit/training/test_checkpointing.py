@@ -377,6 +377,15 @@ class TestCheckpointManager:
 
         m, step, epoch, _ = resume(False)
         assert (step, epoch, m.resume_batch_offset) == (5, 3, 7)
+        # A restart inside the new phase: same sequence length, so it keeps its place.
+        m, step, epoch, _ = resume(True)
+        assert (step, epoch, m.resume_batch_offset) == (5, 3, 7)
+
+        # The handover: the saved state comes from a different sequence length.
+        state_path = next(Path(temp_workspace).rglob("training_state.pt"))
+        state = torch.load(state_path, weights_only=False)
+        state['max_sequence_length'] = tiny_config.data.max_sequence_length * 4
+        torch.save(state, state_path)
         m, step, epoch, sch = resume(True)
         assert (step, epoch, m.resume_batch_offset, m.resume_micro_step) == (5, 0, 0, 0)
         assert sch.get_last_lr()[0] == pytest.approx(lr_at_save)

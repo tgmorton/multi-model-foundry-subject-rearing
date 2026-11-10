@@ -198,6 +198,7 @@ class CheckpointManager:
                 'amp_scaler': scaler.state_dict() if scaler is not None else None,
                 # Add token count
                 'total_tokens_processed': total_tokens_processed,
+                'max_sequence_length': self.config.data.max_sequence_length,
             }
             torch.save(state, checkpoint_dir / "training_state.pt")
 
@@ -409,7 +410,10 @@ class CheckpointManager:
         # unaffected — they use estimated_tokens_at_step — but WandB token
         # curves and the raw field were wrong on every resumed run).
         self.resume_total_tokens = int(state.get('total_tokens_processed', 0) or 0)
-        if self.config.training.resume_new_data_phase:
+        # A phase change is a change of sequence length, so only the first resume
+        # after the handover resets. A restart inside the phase keeps its place.
+        if (self.config.training.resume_new_data_phase
+                and state.get('max_sequence_length') != self.config.data.max_sequence_length):
             # The saved batch position belongs to the previous phase's dataset.
             self.resume_batch_offset = 0
             self.resume_micro_step = 0
