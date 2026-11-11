@@ -169,7 +169,7 @@ One schedule of 23K steps at 524K tokens per step (about 12B tokens), run as two
 | Phase | Steps | Sequence | Micro-batch × accumulation | Notes |
 |---|---|---|---|---|
 | A | 0 to 19,550 (85%) | 128 | 128 × 32 | `train_steps: 19550`, `scheduler_train_steps: 23000`, so the LR is still decaying at the handover |
-| B | 19,550 to 23,000 | 512 | to be measured on an L40, about 16 × 64 | `resume_new_data_phase: true`: same weights, optimizer, schedule and step on 512-token data |
+| B | 19,550 to 23,000 | 512 | 16 × 64 (measured 2026-11-11, below) | `resume_new_data_phase: true`: same weights, optimizer, schedule and step on 512-token data |
 
 - Configs: `configs/raters/rater_bert_large_preln_en_<corpus>_phase_{a,b}.yaml`, one pair per corpus, peak LR 2e-3.
 - `model.bert.max_position_embeddings: 512` in both phases, so the position table exists from step 0.
@@ -177,6 +177,8 @@ One schedule of 23K steps at 524K tokens per step (about 12B tokens), run as two
 - Train on shards 0–198. `heldout.test` comes from shard 199.
 - The base corpus is 28 GiB of `.train` text, moved through S3 by `k8s/bert_v2/job-upload-rater-base.yaml`.
 - At the race's 27.8K tokens/s on an L40S, phase A takes about 4 days. Phase B is slower per token (eager attention at 512).
+
+Phase B micro-batch, measured on an RTX A6000 (`k8s/bert_v2/job-probe-rater-phase-b-a6k.yaml`, real model and fused AdamW, fp16 autocast): 16 × 512 peaks at 27.0 GiB at 15.0K tokens/s; 24 peaks at 38.1 GiB at 15.5K tokens/s; 32 runs out of memory. Phase B keeps 16 × 64: 24 does not divide the 1,024 sequences per step and is only 4% faster. At 15K tokens/s phase B's 1.81B tokens take about 34 hours on an A6000.
 
 Done: corpus downloaded and flattened, both configs rendered. Still to do: the 128- and 512-token caches at this size (chunking is the memory risk), and measure the phase B micro-batch. Tokenizer: project WordPiece, the one the race tested (Thomas, 2026-11-06). All five corpora get raters: base plus the four interventions (Thomas, 2026-11-06).
 
