@@ -99,9 +99,28 @@ spec:
           ln -sfn /mnt/data/models     models
           export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
           export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          # Chunked cache keys (128, 512) from the cache jobs' logs.
+          case "$C" in
+            base) KA=9eedf7bc00e3; KB=3313d111c191 ;;
+            enrich_verbal_morphology) KA=ed61962d4877; KB=0f7f9bf59f98 ;;
+            impoverish_case_en) KA=a13205cb5286; KB=68b8ef2e6b00 ;;
+            lemmatize_verbs) KA=76040b2b3326; KB=7d25456d7d79 ;;
+            remove_expletive_sentences_en) KA=e602b62ce064; KB=4f28ebd42ad9 ;;
+            *) echo "FAIL no cache keys for $C"; exit 1 ;;
+          esac
           for PH in a b; do
             CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            KEY=$([ "$PH" = a ] && echo "$KA" || echo "$KB")
             python -m model_foundry.cli validate-config "$CFG"
+            # The loader reads the ~25 GB cache in shuffled order. On CephFS that is one
+            # slow page fault per chunk (2026-11-11: 0% GPU for 30 min), so train from a
+            # copy on node-local disk. Tokenized data (held-out set) stays on the PVC.
+            rm -rf /scratch/chunked && mkdir -p /scratch/chunked
+            echo "=== phase $PH: staging chunked/$KEY to local disk"
+            cp -r "/mnt/data/chunked/$KEY" "/scratch/chunked/$KEY"
+            [ -f "/scratch/chunked/$KEY/dataset_info.json" ] || { echo "FAIL staging $KEY"; exit 1; }
+            du -sh "/scratch/chunked/$KEY"
+            ln -sfn /scratch/chunked data/chunked
             echo "=== phase $PH: $CFG"
             python -m model_foundry.cli run "$CFG"
           done
@@ -125,13 +144,15 @@ spec:
           # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
           # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
           # leaving the RAM band.
-          requests: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1}
-          limits: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1}
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1, ephemeral-storage: 35Gi}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1, ephemeral-storage: 45Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
+        - {name: scratch, mountPath: /scratch}
       volumes:
       - {name: repo, emptyDir: {}}
+      - {name: scratch, emptyDir: {sizeLimit: 40Gi}}
       - name: data
         persistentVolumeClaim: {claimName: thomas-rater-corpus}
 ---
@@ -228,9 +249,28 @@ spec:
           ln -sfn /mnt/data/models     models
           export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
           export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          # Chunked cache keys (128, 512) from the cache jobs' logs.
+          case "$C" in
+            base) KA=9eedf7bc00e3; KB=3313d111c191 ;;
+            enrich_verbal_morphology) KA=ed61962d4877; KB=0f7f9bf59f98 ;;
+            impoverish_case_en) KA=a13205cb5286; KB=68b8ef2e6b00 ;;
+            lemmatize_verbs) KA=76040b2b3326; KB=7d25456d7d79 ;;
+            remove_expletive_sentences_en) KA=e602b62ce064; KB=4f28ebd42ad9 ;;
+            *) echo "FAIL no cache keys for $C"; exit 1 ;;
+          esac
           for PH in a b; do
             CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            KEY=$([ "$PH" = a ] && echo "$KA" || echo "$KB")
             python -m model_foundry.cli validate-config "$CFG"
+            # The loader reads the ~25 GB cache in shuffled order. On CephFS that is one
+            # slow page fault per chunk (2026-11-11: 0% GPU for 30 min), so train from a
+            # copy on node-local disk. Tokenized data (held-out set) stays on the PVC.
+            rm -rf /scratch/chunked && mkdir -p /scratch/chunked
+            echo "=== phase $PH: staging chunked/$KEY to local disk"
+            cp -r "/mnt/data/chunked/$KEY" "/scratch/chunked/$KEY"
+            [ -f "/scratch/chunked/$KEY/dataset_info.json" ] || { echo "FAIL staging $KEY"; exit 1; }
+            du -sh "/scratch/chunked/$KEY"
+            ln -sfn /scratch/chunked data/chunked
             echo "=== phase $PH: $CFG"
             python -m model_foundry.cli run "$CFG"
           done
@@ -254,13 +294,15 @@ spec:
           # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
           # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
           # leaving the RAM band.
-          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
-          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1, ephemeral-storage: 35Gi}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1, ephemeral-storage: 45Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
+        - {name: scratch, mountPath: /scratch}
       volumes:
       - {name: repo, emptyDir: {}}
+      - {name: scratch, emptyDir: {sizeLimit: 40Gi}}
       - name: data
         persistentVolumeClaim: {claimName: thomas-rater-corpus}
 ---
@@ -357,9 +399,28 @@ spec:
           ln -sfn /mnt/data/models     models
           export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
           export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          # Chunked cache keys (128, 512) from the cache jobs' logs.
+          case "$C" in
+            base) KA=9eedf7bc00e3; KB=3313d111c191 ;;
+            enrich_verbal_morphology) KA=ed61962d4877; KB=0f7f9bf59f98 ;;
+            impoverish_case_en) KA=a13205cb5286; KB=68b8ef2e6b00 ;;
+            lemmatize_verbs) KA=76040b2b3326; KB=7d25456d7d79 ;;
+            remove_expletive_sentences_en) KA=e602b62ce064; KB=4f28ebd42ad9 ;;
+            *) echo "FAIL no cache keys for $C"; exit 1 ;;
+          esac
           for PH in a b; do
             CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            KEY=$([ "$PH" = a ] && echo "$KA" || echo "$KB")
             python -m model_foundry.cli validate-config "$CFG"
+            # The loader reads the ~25 GB cache in shuffled order. On CephFS that is one
+            # slow page fault per chunk (2026-11-11: 0% GPU for 30 min), so train from a
+            # copy on node-local disk. Tokenized data (held-out set) stays on the PVC.
+            rm -rf /scratch/chunked && mkdir -p /scratch/chunked
+            echo "=== phase $PH: staging chunked/$KEY to local disk"
+            cp -r "/mnt/data/chunked/$KEY" "/scratch/chunked/$KEY"
+            [ -f "/scratch/chunked/$KEY/dataset_info.json" ] || { echo "FAIL staging $KEY"; exit 1; }
+            du -sh "/scratch/chunked/$KEY"
+            ln -sfn /scratch/chunked data/chunked
             echo "=== phase $PH: $CFG"
             python -m model_foundry.cli run "$CFG"
           done
@@ -383,13 +444,15 @@ spec:
           # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
           # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
           # leaving the RAM band.
-          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
-          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1, ephemeral-storage: 35Gi}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1, ephemeral-storage: 45Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
+        - {name: scratch, mountPath: /scratch}
       volumes:
       - {name: repo, emptyDir: {}}
+      - {name: scratch, emptyDir: {sizeLimit: 40Gi}}
       - name: data
         persistentVolumeClaim: {claimName: thomas-rater-corpus}
 ---
@@ -485,9 +548,28 @@ spec:
           ln -sfn /mnt/data/models     models
           export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
           export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          # Chunked cache keys (128, 512) from the cache jobs' logs.
+          case "$C" in
+            base) KA=9eedf7bc00e3; KB=3313d111c191 ;;
+            enrich_verbal_morphology) KA=ed61962d4877; KB=0f7f9bf59f98 ;;
+            impoverish_case_en) KA=a13205cb5286; KB=68b8ef2e6b00 ;;
+            lemmatize_verbs) KA=76040b2b3326; KB=7d25456d7d79 ;;
+            remove_expletive_sentences_en) KA=e602b62ce064; KB=4f28ebd42ad9 ;;
+            *) echo "FAIL no cache keys for $C"; exit 1 ;;
+          esac
           for PH in a b; do
             CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            KEY=$([ "$PH" = a ] && echo "$KA" || echo "$KB")
             python -m model_foundry.cli validate-config "$CFG"
+            # The loader reads the ~25 GB cache in shuffled order. On CephFS that is one
+            # slow page fault per chunk (2026-11-11: 0% GPU for 30 min), so train from a
+            # copy on node-local disk. Tokenized data (held-out set) stays on the PVC.
+            rm -rf /scratch/chunked && mkdir -p /scratch/chunked
+            echo "=== phase $PH: staging chunked/$KEY to local disk"
+            cp -r "/mnt/data/chunked/$KEY" "/scratch/chunked/$KEY"
+            [ -f "/scratch/chunked/$KEY/dataset_info.json" ] || { echo "FAIL staging $KEY"; exit 1; }
+            du -sh "/scratch/chunked/$KEY"
+            ln -sfn /scratch/chunked data/chunked
             echo "=== phase $PH: $CFG"
             python -m model_foundry.cli run "$CFG"
           done
@@ -511,13 +593,15 @@ spec:
           # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
           # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
           # leaving the RAM band.
-          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
-          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1, ephemeral-storage: 35Gi}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1, ephemeral-storage: 45Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
+        - {name: scratch, mountPath: /scratch}
       volumes:
       - {name: repo, emptyDir: {}}
+      - {name: scratch, emptyDir: {sizeLimit: 40Gi}}
       - name: data
         persistentVolumeClaim: {claimName: thomas-rater-corpus}
 ---
@@ -613,9 +697,28 @@ spec:
           ln -sfn /mnt/data/models     models
           export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
           export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          # Chunked cache keys (128, 512) from the cache jobs' logs.
+          case "$C" in
+            base) KA=9eedf7bc00e3; KB=3313d111c191 ;;
+            enrich_verbal_morphology) KA=ed61962d4877; KB=0f7f9bf59f98 ;;
+            impoverish_case_en) KA=a13205cb5286; KB=68b8ef2e6b00 ;;
+            lemmatize_verbs) KA=76040b2b3326; KB=7d25456d7d79 ;;
+            remove_expletive_sentences_en) KA=e602b62ce064; KB=4f28ebd42ad9 ;;
+            *) echo "FAIL no cache keys for $C"; exit 1 ;;
+          esac
           for PH in a b; do
             CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            KEY=$([ "$PH" = a ] && echo "$KA" || echo "$KB")
             python -m model_foundry.cli validate-config "$CFG"
+            # The loader reads the ~25 GB cache in shuffled order. On CephFS that is one
+            # slow page fault per chunk (2026-11-11: 0% GPU for 30 min), so train from a
+            # copy on node-local disk. Tokenized data (held-out set) stays on the PVC.
+            rm -rf /scratch/chunked && mkdir -p /scratch/chunked
+            echo "=== phase $PH: staging chunked/$KEY to local disk"
+            cp -r "/mnt/data/chunked/$KEY" "/scratch/chunked/$KEY"
+            [ -f "/scratch/chunked/$KEY/dataset_info.json" ] || { echo "FAIL staging $KEY"; exit 1; }
+            du -sh "/scratch/chunked/$KEY"
+            ln -sfn /scratch/chunked data/chunked
             echo "=== phase $PH: $CFG"
             python -m model_foundry.cli run "$CFG"
           done
@@ -639,12 +742,14 @@ spec:
           # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
           # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
           # leaving the RAM band.
-          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
-          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1, ephemeral-storage: 35Gi}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1, ephemeral-storage: 45Gi}
         volumeMounts:
         - {name: repo, mountPath: /opt/repo}
         - {name: data, mountPath: /mnt/data}
+        - {name: scratch, mountPath: /scratch}
       volumes:
       - {name: repo, emptyDir: {}}
+      - {name: scratch, emptyDir: {sizeLimit: 40Gi}}
       - name: data
         persistentVolumeClaim: {claimName: thomas-rater-corpus}
