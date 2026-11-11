@@ -1,0 +1,105 @@
+# Same probe on an RTX A6000 (48 GB): the L40 queue held the first one for a day.
+# Full rater phase B: largest 512-token micro-batch on a 48 GB card (docs/BERT_RECIPE_V2.md).
+# Random tokens, real model and optimizer, fp16 autocast as in training. ~10 minutes of GPU.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-probe-rater-phase-b-a6k
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: probe, arch: bert-large-preln}
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: probe, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: probe
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          cd /opt/repo
+          python - <<'PY'
+          import time, yaml, torch
+          from model_foundry.config import ExperimentConfig
+          from model_foundry.model import create_model
+          cfg = ExperimentConfig(**yaml.safe_load(open("configs/raters/rater_bert_large_preln_en_base_phase_b.yaml")))
+          model = create_model(cfg).cuda().train()
+          opt = torch.optim.AdamW(model.parameters(), lr=1e-4, betas=(0.9, 0.98), eps=1e-6, fused=True)
+          scaler = torch.cuda.amp.GradScaler()
+          print("GPU", torch.cuda.get_device_name(0), "params", sum(p.numel() for p in model.parameters()) // 10**6, "M", flush=True)
+          for b in (8, 12, 16, 20, 24, 32):
+              torch.cuda.empty_cache(); torch.cuda.reset_peak_memory_stats()
+              try:
+                  times = []
+                  for i in range(8):
+                      x = torch.randint(5, 50000, (b, 512), device="cuda")
+                      y = x.clone(); y[torch.rand(b, 512, device="cuda") > 0.15] = -100
+                      torch.cuda.synchronize(); t = time.time()
+                      with torch.autocast("cuda", dtype=torch.float16):
+                          loss = model(input_ids=x, labels=y).loss
+                      scaler.scale(loss).backward(); scaler.step(opt); scaler.update(); opt.zero_grad(set_to_none=True)
+                      torch.cuda.synchronize(); times.append(time.time() - t)
+                  dt = sum(times[3:]) / len(times[3:])
+                  print(f"PROBE b={b} peak_GiB={torch.cuda.max_memory_allocated()/2**30:.1f} s_per_microbatch={dt:.3f} tokens_per_s={b*512/dt:,.0f}", flush=True)
+              except torch.cuda.OutOfMemoryError:
+                  print(f"PROBE b={b} OOM", flush=True); break
+          print("PROBE DONE", flush=True)
+          PY
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        resources:
+          requests: {cpu: "4", memory: 12Gi, nvidia.com/rtxa6000: 1}
+          limits: {cpu: "4", memory: 12Gi, nvidia.com/rtxa6000: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+      volumes:
+      - {name: repo, emptyDir: {}}

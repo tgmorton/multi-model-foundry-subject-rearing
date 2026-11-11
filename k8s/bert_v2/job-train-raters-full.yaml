@@ -1,0 +1,650 @@
+# Full raters (docs/BERT_RECIPE_V2.md, "Full rater plan"): one Job per corpus, phase A
+# (128 tokens, to step 19,550) then phase B (512 tokens, to 23,000) in the same pod.
+# Both configs resume by default, so a replaced pod continues where it stopped: a
+# finished phase A resumes at its end and exits at once, then phase B picks up.
+# Caches are pre-built (job-tokenize-* and job-chunk-*); this pod only reads them.
+# 48 GB cards: phase A's 128 x 128 micro-batch needs one (rater race, 2026-10).
+# One Job per corpus (not one Indexed Job) so each can sit on a different 48 GB pool:
+# base on A40, enrichvm + impcase on L40/L40S, lemverb + rmexpl on RTX A6000 (2026-11-11,
+# every 48 GB pool full; a single pool would queue all five behind one product).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-rater-base
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 1209600
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: trainer, operator: In, values: [2]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          C="$CORPUS"
+          echo "=== FULL RATER $C on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print('  GPU healthy:', torch.cuda.get_device_name(0))
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          cd /opt/repo
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models/raters_v2
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
+          export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          for PH in a b; do
+            CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            python -m model_foundry.cli validate-config "$CFG"
+            echo "=== phase $PH: $CFG"
+            python -m model_foundry.cli run "$CFG"
+          done
+          echo "RATER DONE $C"
+        env:
+        - {name: CORPUS, value: "base"}
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
+          # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
+          # leaving the RAM band.
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/a40: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-rater-enrichvm
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 1209600
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: trainer, operator: In, values: [2]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: nvidia.com/gpu.product, operator: In, values: [NVIDIA-L40, NVIDIA-L40S]}
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          C="$CORPUS"
+          echo "=== FULL RATER $C on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print('  GPU healthy:', torch.cuda.get_device_name(0))
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          cd /opt/repo
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models/raters_v2
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
+          export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          for PH in a b; do
+            CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            python -m model_foundry.cli validate-config "$CFG"
+            echo "=== phase $PH: $CFG"
+            python -m model_foundry.cli run "$CFG"
+          done
+          echo "RATER DONE $C"
+        env:
+        - {name: CORPUS, value: "enrich_verbal_morphology"}
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
+          # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
+          # leaving the RAM band.
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-rater-impcase
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 1209600
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: trainer, operator: In, values: [2]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: nvidia.com/gpu.product, operator: In, values: [NVIDIA-L40, NVIDIA-L40S]}
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          C="$CORPUS"
+          echo "=== FULL RATER $C on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print('  GPU healthy:', torch.cuda.get_device_name(0))
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          cd /opt/repo
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models/raters_v2
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
+          export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          for PH in a b; do
+            CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            python -m model_foundry.cli validate-config "$CFG"
+            echo "=== phase $PH: $CFG"
+            python -m model_foundry.cli run "$CFG"
+          done
+          echo "RATER DONE $C"
+        env:
+        - {name: CORPUS, value: "impoverish_case_en"}
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
+          # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
+          # leaving the RAM band.
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/gpu: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-rater-lemverb
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 1209600
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: trainer, operator: In, values: [2]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          C="$CORPUS"
+          echo "=== FULL RATER $C on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print('  GPU healthy:', torch.cuda.get_device_name(0))
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          cd /opt/repo
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models/raters_v2
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
+          export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          for PH in a b; do
+            CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            python -m model_foundry.cli validate-config "$CFG"
+            echo "=== phase $PH: $CFG"
+            python -m model_foundry.cli run "$CFG"
+          done
+          echo "RATER DONE $C"
+        env:
+        - {name: CORPUS, value: "lemmatize_verbs"}
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
+          # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
+          # leaving the RAM band.
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-train-rater-rmexpl
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 40
+  ttlSecondsAfterFinished: 1209600
+  podFailurePolicy:
+    rules:
+    - action: Ignore
+      onExitCodes: {containerName: trainer, operator: In, values: [2]}
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: rater-train, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      tolerations:
+      - {key: nvidia.com/gpu, operator: Exists, effect: PreferNoSchedule}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: trainer
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          C="$CORPUS"
+          echo "=== FULL RATER $C on ${NODE_NAME:-?} ==="
+          python3 -c "
+          import sys, torch
+          try:
+              torch.cuda.synchronize(); torch.zeros(1024, device='cuda').sum().item()
+              print('  GPU healthy:', torch.cuda.get_device_name(0))
+          except Exception as e:
+              print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
+          "
+          cd /opt/repo
+          pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
+          rm -rf data/raw data/tokenized data/chunked tokenizers models
+          mkdir -p data /mnt/data/models/raters_v2
+          ln -sfn /mnt/data/raw        data/raw
+          ln -sfn /mnt/data/tokenized  data/tokenized
+          ln -sfn /mnt/data/chunked    data/chunked
+          ln -sfn /mnt/data/tokenizers tokenizers
+          ln -sfn /mnt/data/models     models
+          export REGISTRY_RUN_KIND=rater REGISTRY_LANG=en REGISTRY_CONDITION="rater_$C"
+          export REGISTRY_RUN_ID="rater-bert_large_preln-en-$C-full-v1"
+          for PH in a b; do
+            CFG=configs/raters/rater_bert_large_preln_en_${C}_phase_$PH.yaml
+            python -m model_foundry.cli validate-config "$CFG"
+            echo "=== phase $PH: $CFG"
+            python -m model_foundry.cli run "$CFG"
+          done
+          echo "RATER DONE $C"
+        env:
+        - {name: CORPUS, value: "remove_expletive_sentences_en"}
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}
+        - name: NODE_NAME
+          valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+        - name: WANDB_API_KEY
+          valueFrom: {secretKeyRef: {name: wandb-secret-thomas, key: WANDB_API_KEY}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        - {name: AWS_ENDPOINT_URL, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - {name: AWS_DEFAULT_REGION, value: "us-west-1"}
+        - {name: REGISTRY_BUCKET, value: "thomas-subject-drop-artifacts"}
+        resources:
+          # Race pods ran in 6Gi on the subset; the full corpus adds the shuffle index
+          # (51M chunks) and is memory-mapped, so 10Gi keeps headroom without
+          # leaving the RAM band.
+          requests: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+          limits: {memory: 10Gi, cpu: "3", nvidia.com/rtxa6000: 1}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
