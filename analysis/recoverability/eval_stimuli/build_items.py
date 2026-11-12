@@ -78,10 +78,17 @@ def expletive_it(i, lemmas, deps, heads, pos):
         ks = [k for k in range(len(heads)) if int(heads[k]) == j and k != j]
         return any(deps[k] in CLAUSAL or (deps[k] == "mark" and str(lemmas[k]).lower() == "that") for k in ks)
 
+    def has_own_subject(j):
+        return any(int(heads[k]) == j and k != j and deps[k] in ("nsubj", "nsubjpass", "expl", "csubj")
+                   for k in range(len(heads)))
+
     if hl in WEATHER_VERBS:
         return "weather"
     if hl in RAISING_VERBS and clausal(h):
-        return "raising"
+        # "it seems (that) he left": the complement has its own subject, so "it" is an expletive.
+        # "it seems to work": "it" may be the raised, referential subject of the infinitive.
+        finite = any(deps[k] in ("ccomp", "csubj", "advcl") and has_own_subject(k) for k in kids)
+        return "raising" if finite else "raising_xcomp"
     if hl == "be" or pos[h] == "AUX":
         for j in kids:
             if deps[j] in ("acomp", "attr", "oprd") and str(lemmas[j]).lower() in RAISING_ADJECTIVES:
@@ -225,6 +232,8 @@ def main() -> None:
                 "sent_initial": bool(r.sent_initial), "line_initial": bool(r.line_initial), "after_and": bool(r.after_and),
                 "after_that": bool(r.after_that), "l1": r.l1, "r1": r.r1,
                 "lead_n": len(lead), "lead_text": lead_text, "lead_pos": lead_pos,
+                "gov_lemma": (str(brow.lemmas[int(brow.dep_heads[h])]).lower()
+                              if 0 <= h < len(low) and 0 <= int(brow.dep_heads[h]) < len(low) else None),
                 "r1_pos": str(brow.pos_tags[nxt]) if nxt is not None else None,
                 "r1_lemma": str(brow.lemmas[nxt]).lower() if nxt is not None else None,
                 "genre": r.genre, "role": r.role, "n_subj_pronouns": int(r.n_subj_pronouns),
