@@ -175,6 +175,46 @@ def _checkpoint_shard_view(root: Path, view: Path, i: int, n: int) -> Path:
     return view
 
 
+def _safetensors_header_ok(path: Path) -> bool:
+    """True when the file starts with a plausible safetensors header: an 8-byte length, then JSON."""
+    import struct
+    try:
+        with path.open("rb") as fh:
+            head = fh.read(9)
+            size = os.fstat(fh.fileno()).st_size
+    except OSError:
+        return False
+    if len(head) < 9:
+        return False
+    n = struct.unpack("<Q", head[:8])[0]
+    return 0 < n < 100_000_000 and n + 8 <= size and head[8:9] == b"{"
+
+
+def _readable_checkpoint_view(root: Path, view: Path) -> Path:
+    """Symlink view of `root` without checkpoints whose safetensors header is unreadable.
+
+    The 2026-10-06 fp16 rewrite left a few production checkpoints zero-filled; loading one
+    raises SafetensorError and the pod crash-loops (gpt2_medium enrichment h1-s42,
+    checkpoints 0 and 1, 2026-11-12).
+    """
+    import shutil
+    from evaluation.runners.per_model_runner import find_checkpoints_sorted
+    if view.exists():
+        shutil.rmtree(view)
+    view.mkdir(parents=True)
+    skipped = []
+    for step, path in find_checkpoints_sorted(root):
+        f = Path(path) / "model.safetensors"
+        if f.exists() and not _safetensors_header_ok(f):
+            skipped.append(step)
+            continue
+        (view / Path(path).name).symlink_to(Path(path).resolve())
+    if skipped:
+        log.warning("--skip_unreadable_checkpoints: left out %d checkpoint(s) with an unreadable "
+                    "weight file: steps %s", len(skipped), skipped)
+    return view
+
+
 def _final_checkpoint_view(root: Path, view: Path) -> Path:
     """Symlink view of `root` holding only its last checkpoint (by step)."""
     import shutil
@@ -306,6 +346,9 @@ def main():
     ap.add_argument("--pll_max_rows", type=int, default=256,
                     help="BERT: masked copies per forward pass. Each pass holds rows x tokens x vocab logits "
                          "(256 rows of 100-token items is 5.5 GB); lower it for long items or small cards.")
+    ap.add_argument("--skip_unreadable_checkpoints", action="store_true",
+                    help="Leave out checkpoints whose model.safetensors has no valid header (a zero-filled "
+                         "file) instead of crashing on them; each one skipped is logged.")
     ap.add_argument("--final_checkpoint_only", action="store_true",
                     help="Score only the run's last checkpoint (end-state benchmarks). "
                          "Use a benchmark of its own: the cell then holds one checkpoint.")
@@ -397,6 +440,8 @@ def main():
     if shard:
         ckpt_root = _checkpoint_shard_view(
             ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
+    if args.skip_unreadable_checkpoints:
+        ckpt_root = _readable_checkpoint_view(ckpt_root, Path("/tmp/ckpt_readable") / cell_name)
     if args.final_checkpoint_only:
         ckpt_root = _final_checkpoint_view(ckpt_root, Path("/tmp/ckpt_final") / cell_name)
     ckpts = find_checkpoints_sorted(ckpt_root)
