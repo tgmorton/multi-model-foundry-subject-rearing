@@ -46,6 +46,10 @@ import os
 from typing import Any, Dict, List, Optional
 
 
+_CONTENT_HASH_SIDECAR = ".content_hash.json"
+_CONTENT_HASH_MEMO: dict = {}
+
+
 def _hash_file_bytes(path: str, chunk_size: int = 1 << 20) -> str:
     """Stream SHA-256 of a file; safe for arbitrarily large tokenizer files."""
     h = hashlib.sha256()
@@ -105,6 +109,28 @@ def _corpus_content_hash(corpus_path: str) -> str:
             key=os.path.basename,
         )
 
+    # Memo (2026-11-11): streaming a 28 GiB rater corpus off CephFS takes ~40
+    # minutes, and one `cli run` asks for the key several times, so a rater pod
+    # idled its GPU for ~3 hours before step 1. The digest is reused while the
+    # file listing (name, size, mtime) is unchanged: within the process, and
+    # across processes through a sidecar next to the corpus.
+    listing = [[os.path.basename(fp), os.stat(fp).st_size, os.stat(fp).st_mtime_ns]
+               for fp in train_files]
+    memo_key = (os.path.abspath(corpus_path), json.dumps(listing))
+    if memo_key in _CONTENT_HASH_MEMO:
+        return _CONTENT_HASH_MEMO[memo_key]
+    sidecar = (os.path.join(corpus_path, _CONTENT_HASH_SIDECAR)
+               if os.path.isdir(corpus_path) else None)
+    if sidecar and os.path.exists(sidecar):
+        try:
+            with open(sidecar) as f:
+                saved = json.load(f)
+            if saved.get("files") == listing and saved.get("sha256"):
+                _CONTENT_HASH_MEMO[memo_key] = saved["sha256"]
+                return saved["sha256"]
+        except (OSError, ValueError):
+            pass  # unreadable or half-written sidecar: recompute
+
     outer = hashlib.sha256()
     for fp in train_files:
         basename = os.path.basename(fp)
@@ -115,7 +141,17 @@ def _corpus_content_hash(corpus_path: str) -> str:
         outer.update(b"\x00")
         outer.update(file_hash.encode("utf-8"))
         outer.update(b"\x00")
-    return outer.hexdigest()
+    digest = outer.hexdigest()
+    _CONTENT_HASH_MEMO[memo_key] = digest
+    if sidecar:
+        tmp = f"{sidecar}.tmp-{os.getpid()}"
+        try:  # best effort: read-only mounts simply recompute next time
+            with open(tmp, "w") as f:
+                json.dump({"sha256": digest, "files": listing}, f)
+            os.replace(tmp, sidecar)
+        except OSError:
+            pass
+    return digest
 
 
 def _resolve_tokenizer_artefact(tokenizer_dir: str) -> tuple[str, str]:
