@@ -60,6 +60,7 @@ CONJ = {"and", "but", "or", "so"}
 SUBORD = {"if", "when", "because", "as", "while", "since", "before", "after", "until", "till", "though", "although",
           "unless", "once", "whenever", "cause", "'cause", "cos", "'cos", "whereas", "where", "wherever"}
 QUOTES = {'"', "'", "”", "’", "“", "‘", "``", "''"}
+OPENERS = {'"', "'", "“", "‘", "``", "-", "--", "—", "(", "["}
 BREAKS = QUOTES | {":", ";", "-", "--", "—", "(", ")"}
 WH_COMP = {"what", "who", "where", "when", "why", "how", "which", "whether", "if", "whom", "whose"}
 PERSON = {"i": "1sg", "we": "1pl", "you": "2", "he": "3sg", "she": "3sg", "it": "3sg", "they": "3pl"}
@@ -176,6 +177,11 @@ def main() -> None:
                 kind = "that" if l1 == "that" else "bare" if gov == i - 1 else "wh" if l1 in WH_COMP else "other"
             elif ptype == "expletive_it":
                 kind = expl
+            # what precedes the pronoun inside its sentence (opening quotes and dashes aside)
+            lead = [j for j in range(i) if low[j] not in OPENERS]
+            lead_text = " ".join(low[j] for j in lead[-6:])
+            lead_pos = " ".join(str(brow.pos_tags[j]) for j in lead[-6:])
+            nxt = i + 1 if i + 1 < len(low) else None
             # context: walk back over preceding sentences while the word budget allows
             L, s = int(where[k, 0]), int(where[k, 1])
             j, words = k, 0
@@ -218,6 +224,9 @@ def main() -> None:
                 "verb_lemma": str(brow.lemmas[h]).lower() if 0 <= h < len(brow.lemmas) else None,
                 "sent_initial": bool(r.sent_initial), "line_initial": bool(r.line_initial), "after_and": bool(r.after_and),
                 "after_that": bool(r.after_that), "l1": r.l1, "r1": r.r1,
+                "lead_n": len(lead), "lead_text": lead_text, "lead_pos": lead_pos,
+                "r1_pos": str(brow.pos_tags[nxt]) if nxt is not None else None,
+                "r1_lemma": str(brow.lemmas[nxt]).lower() if nxt is not None else None,
                 "genre": r.genre, "role": r.role, "n_subj_pronouns": int(r.n_subj_pronouns),
                 "context": context, "target_overt": sent, "target_null": null,
                 "hotspot_token": words_overt[wi + 1], "hotspot_overt": wi + 1, "hotspot_null": wi,

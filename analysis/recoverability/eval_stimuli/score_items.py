@@ -159,8 +159,10 @@ def main() -> None:
             res, _ = S.phase_b_mlm(lines, inst, a.label, a.hf_mlm, tok, inv_ids, device, 250, batch_size=1,
                                    use_amp=a.amp and device == "cuda", counters={}, model=model)
             ref = -float(res[a.label]["logprob_sum_arr"][0])
-            # excess over a tolerance of 2% + 0.002 nats (fp16 noise on near-zero surprisals)
-            worst = max(worst, abs(ref - surp[k]) - (0.02 * abs(ref) + 0.002))
+            # fp32 agrees to 1e-4. Under fp16 autocast a score moves by a few percent with the
+            # batch it is padded into (the corpus ranking has the same jitter), so allow for it.
+            rel, floor = (0.10, 0.005) if (a.amp and device == "cuda") else (0.005, 0.0005)
+            worst = max(worst, abs(ref - surp[k]) - (rel * abs(ref) + floor))
         print(f"check against phase_b_mlm on {a.check} items: worst excess over tolerance {worst:.2e}", flush=True)
         if worst > 0:
             sys.exit("FAIL: item scoring disagrees with phase_b_mlm")
