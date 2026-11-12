@@ -34,6 +34,10 @@ class CausalLMDataCollator:
     mlm: bool = False
     pad_to_multiple_of: Optional[int] = 8
 
+    # A batch is a pure function of its examples (no randomness, no state), so a
+    # resume may skip batches by index instead of collating and discarding them.
+    index_skippable = True
+
     def __call__(self, examples: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
         """
         Prepare a batch for causal language modeling.
@@ -123,6 +127,20 @@ class MaskedLMDataCollator:
     base_seed: Optional[int] = None
     epoch: int = 0
     _batch_counter: int = field(default=0, init=False, repr=False)
+    # Index of the first batch this epoch's iterator will produce. Non-zero only
+    # on a resumed epoch whose already-consumed batches were skipped by index.
+    _batch_offset: int = field(default=0, init=False, repr=False)
+
+    @property
+    def index_skippable(self) -> bool:
+        """True when a batch's mask depends only on (seed, epoch, batch index).
+
+        Then a resume can skip batches by index (``set_batch_offset``) and get
+        the masks an uninterrupted run would have drawn. With ``base_seed``
+        unset the masks come from the worker's ambient RNG stream, which only
+        collating every skipped batch reproduces.
+        """
+        return self.base_seed is not None
 
     def set_epoch(self, epoch: int) -> None:
         """Called by the training loop before each epoch's ``iter()``.
@@ -133,6 +151,16 @@ class MaskedLMDataCollator:
         """
         self.epoch = int(epoch)
         self._batch_counter = 0
+        self._batch_offset = 0
+
+    def set_batch_offset(self, n_batches: int) -> None:
+        """Say that the next ``iter()`` starts ``n_batches`` into the epoch.
+
+        Call after ``set_epoch`` and before ``iter(dataloader)``. The first
+        batch fetched then goes to worker 0, so batch numbering continues
+        from ``n_batches`` exactly as if the earlier ones had been collated.
+        """
+        self._batch_offset = int(n_batches)
 
     def _next_mask_generator(self) -> Optional[torch.Generator]:
         """Per-batch CPU generator: derive_seed(base, "mlm_mask", epoch, batch).
@@ -151,6 +179,7 @@ class MaskedLMDataCollator:
             global_batch = self._batch_counter
         else:
             global_batch = self._batch_counter * info.num_workers + info.id
+        global_batch += self._batch_offset
         self._batch_counter += 1
         g = torch.Generator()
         g.manual_seed(derive_seed(self.base_seed, "mlm_mask", self.epoch, global_batch))

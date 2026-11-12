@@ -117,6 +117,45 @@ def _worker_init_fn(worker_id: int) -> None:
         torch.cuda.manual_seed(worker_seed)
 
 
+class _SkipFirstIndices:
+    """A sampler whose next pass drops its first ``n`` indices; later passes drop none."""
+
+    def __init__(self, sampler, n: int):
+        self.sampler, self.n = sampler, int(n)
+
+    def __iter__(self):
+        import itertools
+        n, self.n = self.n, 0
+        return itertools.islice(iter(self.sampler), n, None)
+
+    def __len__(self):
+        return len(self.sampler)
+
+
+def skip_first_batches(dataloader, n_batches: int) -> bool:
+    """Make the next ``iter(dataloader)`` start ``n_batches`` into the epoch without loading them.
+
+    The shuffled index order is drawn exactly as usual and its first
+    ``n_batches * batch_size`` indices are dropped before any example is read,
+    so the batches that follow are the ones an iterator that had produced and
+    discarded ``n_batches`` batches would yield next. Returns False, changing
+    nothing, when that equivalence cannot be guaranteed: the collator's output
+    depends on more than the batch's examples and index, or the dataloader is
+    not a plain fixed-size batch sampler over an index sampler.
+    """
+    collate = getattr(dataloader, "collate_fn", None)
+    if not getattr(collate, "index_skippable", False):
+        return False
+    bs = getattr(dataloader, "batch_sampler", None)
+    if type(bs) is not torch.utils.data.BatchSampler or not isinstance(bs.batch_size, int):
+        return False
+    inner = bs.sampler.sampler if isinstance(bs.sampler, _SkipFirstIndices) else bs.sampler
+    bs.sampler = _SkipFirstIndices(inner, n_batches * bs.batch_size)
+    if hasattr(collate, "set_batch_offset"):
+        collate.set_batch_offset(n_batches)
+    return True
+
+
 class DataProcessor:
     """
     Handles data preprocessing, chunking, and loading for language model training.

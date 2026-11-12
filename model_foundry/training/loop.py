@@ -295,6 +295,17 @@ class TrainingLoop:
             if hasattr(_collate, "set_epoch"):
                 _collate.set_epoch(epoch)
 
+            # Resume: skip the already-consumed batches by index when the
+            # dataloader allows it. Collating and discarding them instead cost
+            # ~10 h at 0% GPU for a rater 48,000 micro-batches into an epoch
+            # (2026-11-12). Must be arranged before iter(), which starts the
+            # workers and the index sampler.
+            fast_skipped = None
+            if resume_offset and epoch == start_epoch:
+                from ..data import skip_first_batches
+                if skip_first_batches(self.dataloader, resume_offset):
+                    fast_skipped = min(int(resume_offset), len(self.dataloader))
+
             # Explicit iterator so we can time each next() call cleanly
             # (1.1). Equivalent to the prior `for batch in self.dataloader`.
             data_iter = iter(self.dataloader)
@@ -317,12 +328,16 @@ class TrainingLoop:
                     "micro-batches of epoch %d", resume_offset, epoch + 1
                 )
                 skipped = 0
-                for _ in range(resume_offset):
-                    try:
-                        next(data_iter)
-                    except StopIteration:
-                        break
-                    skipped += 1
+                if fast_skipped is not None:
+                    skipped = fast_skipped
+                    self.logger.info("Resume fast-forward: skipped by index, no batches loaded")
+                else:
+                    for _ in range(resume_offset):
+                        try:
+                            next(data_iter)
+                        except StopIteration:
+                            break
+                        skipped += 1
                 consumed_from_iter = skipped
                 micro_step = int(
                     getattr(self.checkpoint_manager, "resume_micro_step", skipped)
