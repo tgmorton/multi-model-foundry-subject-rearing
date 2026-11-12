@@ -303,6 +303,9 @@ def main():
                     help="Evaluate every N-th checkpoint starting at index I, as "
                          "cell <run_id>__ckpt_shardIofN (own parquets/markers; no "
                          "registry eval status). For benchmarks too large for one pod.")
+    ap.add_argument("--pll_max_rows", type=int, default=256,
+                    help="BERT: masked copies per forward pass. Each pass holds rows x tokens x vocab logits "
+                         "(256 rows of 100-token items is 5.5 GB); lower it for long items or small cards.")
     ap.add_argument("--final_checkpoint_only", action="store_true",
                     help="Score only the run's last checkpoint (end-state benchmarks). "
                          "Use a benchmark of its own: the cell then holds one checkpoint.")
@@ -501,7 +504,7 @@ def main():
         from transformers import AutoConfig, AutoModelForMaskedLM
         from evaluation.core.pll_surprisal import make_pll_scorer
         hf_config = AutoConfig.from_pretrained(str(ckpts[0][1]))
-        scorer = make_pll_scorer(mask_id=mask_id, sep_id=sep_id)
+        scorer = make_pll_scorer(mask_id=mask_id, sep_id=sep_id, max_masked_rows=args.pll_max_rows)
 
         def model_factory():
             return AutoModelForMaskedLM.from_config(
