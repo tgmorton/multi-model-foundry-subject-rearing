@@ -27,3 +27,5 @@ hcc-nrp-shor-c5805.unl.edu         # CephFS client hung on reads of files the sa
 ry-gpu-01.sdsc.optiputer.net       # device-plugin allocate failure, UnexpectedAdmissionError x2 on an eval job (2026-10-15)
 k8s-chase-ci-07.calit2.optiputer.net  # cuDNN INTERNAL_ERROR on LSTM canary, then NotReady and evicted 3 eval pods (2026-11-06)
 nrp-fiona-001.sdmz.amnh.org        # GitLab TLS timeouts (11-06), then unreachable with a BERT pod stuck Unknown 3+ days (11-10)
+k8s-chase-ci-01.calit2.optiputer.net  # init image pull hung, then the pod stuck Terminating (2026-11-12)
+gpengine-uams.areon.net            # init image pull hung 22 min, then the pod stuck Terminating (2026-11-12)
