@@ -149,7 +149,7 @@ def main() -> None:
     if a.check:
         inv_ids = [aligner.inventory_ids(f) for f in S.INVENTORY_FORMS]
         rng = np.random.default_rng(0)
-        worst = 0.0
+        worst = -1.0
         for k in rng.choice(np.flatnonzero(pos >= 0), size=min(a.check, int((pos >= 0).sum())), replace=False):
             ls = json.loads(items[a.lines_col].iat[k])
             enc = tok(ls, add_special_tokens=False)["input_ids"]
@@ -157,11 +157,12 @@ def main() -> None:
             al = aligner.align_line(ls[-1], [S._Shim(int(items[a.start_col].iat[k]), items.form_text.iat[k])])[0]
             inst = [{"line_idx": len(ls) - 1, "piece_in_line": al[0], "n_pieces": al[1], "word_initial": al[2]}]
             res, _ = S.phase_b_mlm(lines, inst, a.label, a.hf_mlm, tok, inv_ids, device, 250, batch_size=1,
-                                   use_amp=False, counters={}, model=model)
+                                   use_amp=a.amp and device == "cuda", counters={}, model=model)
             ref = -float(res[a.label]["logprob_sum_arr"][0])
-            worst = max(worst, abs(ref - surp[k]) / max(1e-3, abs(ref)))
-        print(f"check against phase_b_mlm on {a.check} items: worst relative difference {worst:.2e}", flush=True)
-        if worst > 0.02:
+            # excess over a tolerance of 2% + 0.002 nats (fp16 noise on near-zero surprisals)
+            worst = max(worst, abs(ref - surp[k]) - (0.02 * abs(ref) + 0.002))
+        print(f"check against phase_b_mlm on {a.check} items: worst excess over tolerance {worst:.2e}", flush=True)
+        if worst > 0:
             sys.exit("FAIL: item scoring disagrees with phase_b_mlm")
 
     out = items[[a.id_col]].copy()
