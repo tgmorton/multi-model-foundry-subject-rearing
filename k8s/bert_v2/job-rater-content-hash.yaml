@@ -1,0 +1,101 @@
+# Pre-compute the content-hash sidecar (.content_hash.json) for the five full rater
+# corpora, so a rater pod (or a replacement after a node fault) skips the ~40-minute
+# CephFS read. model_foundry/cache_keys.py writes the sidecar itself on first use;
+# this job just does that first use on CPU. Exempt size (<= 1 CPU, <= 2 GB).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-rater-content-hash
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large-preln}
+spec:
+  completionMode: Indexed
+  completions: 5
+  parallelism: 5
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: precache, arch: bert-large-preln}
+    spec:
+      restartPolicy: Never
+      priorityClassName: armada-default
+      imagePullSecrets:
+      - name: gitlab-registry-cred-thomas
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - {key: feature.node.kubernetes.io/pci-10de.present, operator: NotIn, values: ["true"]}
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - uicnrp-fiona2.evl.uic.edu
+                - gpu-14.nrp.mghpcc.org
+                - gpu-17.nrp.mghpcc.org
+                - gpu-18.nrp.mghpcc.org
+                - hcc-chase-shor-c4715.unl.edu
+                - hcc-nrp-shor-c6017.unl.edu
+                - nautilus-ext-gpu01.fullerton.edu
+                - nautilus-it-gpu01.fullerton.edu
+                - nautilus-it-gpu03.fullerton.edu
+                - rci-tide-gpu-03.sdsu.edu
+                - ry-gpu-10.sdsc.optiputer.net
+                - fiona-1.famu.edu
+                - suncave-3
+                - ry-gpu-04.sdsc.optiputer.net
+                - ren-gp-argo-01.madren.org
+                - hcc-chase-shor-c4705.unl.edu
+                - cph-dgx-node7.humboldt.edu
+                - nautilus-it-gpu06.fullerton.edu
+                - hcc-nrp-shor-c5805.unl.edu
+                - ry-gpu-01.sdsc.optiputer.net
+                - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+      initContainers:
+      - name: clone-repo
+        image: alpine/git
+        args: [clone, --single-branch, --depth=1, --branch=eval/bert-v2,
+               "https://github.com/tgmorton/multi-model-foundry-subject-rearing.git", /opt/repo]
+        resources:
+          requests: {memory: 1Gi, cpu: "200m"}
+          limits: {memory: 1Gi, cpu: "200m"}
+        volumeMounts: [{name: repo, mountPath: /opt/repo}]
+      containers:
+      - name: hash
+        image: gitlab-registry.nrp-nautilus.io/thmorton/multi-model-foundry-subject-rearing:latest
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -euo pipefail
+          CORPORA=(base enrich_verbal_morphology impoverish_case_en lemmatize_verbs remove_expletive_sentences_en)
+          C=${CORPORA[$JOB_COMPLETION_INDEX]}
+          cd /opt/repo
+          python - <<PY
+          import time
+          from model_foundry import cache_keys as ck
+          t = time.time()
+          d = "/mnt/data/rater_corpus/full_v1/$C"
+          h = ck._corpus_content_hash(d)
+          print("content hash", "$C", h, round(time.time() - t), "s")
+          t = time.time()
+          ck._CONTENT_HASH_MEMO.clear()
+          assert ck._corpus_content_hash(d) == h
+          print("second call from sidecar", round(time.time() - t, 2), "s")
+          PY
+          ls -la /mnt/data/rater_corpus/full_v1/$C/.content_hash.json
+          echo "HASH OK $C"
+        env:
+        - {name: PYTHONPATH, value: "/opt/repo"}
+        resources:
+          requests: {cpu: "1", memory: 1900Mi}
+          limits: {cpu: "1", memory: 1900Mi}
+        volumeMounts:
+        - {name: repo, mountPath: /opt/repo}
+        - {name: data, mountPath: /mnt/data}
+      volumes:
+      - {name: repo, emptyDir: {}}
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}
