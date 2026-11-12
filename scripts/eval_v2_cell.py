@@ -175,27 +175,53 @@ def _checkpoint_shard_view(root: Path, view: Path, i: int, n: int) -> Path:
     return view
 
 
-def _safetensors_header_ok(path: Path) -> bool:
-    """True when the file starts with a plausible safetensors header: an 8-byte length, then JSON."""
+def _safetensors_problem(path: Path) -> str | None:
+    """Why a safetensors file cannot be trusted, or None when it looks sound.
+
+    Checks what the loader checks (an 8-byte header length, JSON metadata, tensor byte ranges
+    that tile the rest of the file exactly) without reading the weights, then reads 4 KB from
+    the middle of the largest tensor: a file whose header survived over zero-filled weights
+    loads without error and scores as noise.
+    """
     import struct
     try:
         with path.open("rb") as fh:
-            head = fh.read(9)
             size = os.fstat(fh.fileno()).st_size
-    except OSError:
-        return False
-    if len(head) < 9:
-        return False
-    n = struct.unpack("<Q", head[:8])[0]
-    return 0 < n < 100_000_000 and n + 8 <= size and head[8:9] == b"{"
+            head = fh.read(8)
+            if len(head) < 8:
+                return "shorter than a header"
+            n = struct.unpack("<Q", head)[0]
+            if not (0 < n < 100_000_000 and 8 + n <= size):
+                return "header length is zero or implausible"
+            try:
+                meta = json.loads(fh.read(n))
+            except ValueError:
+                return "header is not JSON"
+            spans = sorted((v["data_offsets"][0], v["data_offsets"][1])
+                           for k, v in meta.items() if k != "__metadata__")
+            end = 0
+            for b, e in spans:
+                if b != end or e < b:
+                    return "tensor byte ranges do not tile the file"
+                end = e
+            if 8 + n + end != size:
+                return "tensors do not cover the file"
+            if spans:
+                b, e = max(spans, key=lambda x: x[1] - x[0])
+                fh.seek(8 + n + b + (e - b) // 2)
+                if not any(fh.read(min(4096, e - b))):
+                    return "weights are zero-filled"
+    except (OSError, KeyError, TypeError, IndexError) as exc:
+        return f"unreadable ({exc.__class__.__name__})"
+    return None
 
 
 def _readable_checkpoint_view(root: Path, view: Path) -> Path:
     """Symlink view of `root` without checkpoints whose safetensors header is unreadable.
 
-    The 2026-10-06 fp16 rewrite left a few production checkpoints zero-filled; loading one
-    raises SafetensorError and the pod crash-loops (gpt2_medium enrichment h1-s42,
-    checkpoints 0 and 1, 2026-11-12).
+    The 2026-10-06 fp16 rewrite left some production checkpoints damaged (zero-filled
+    headers, headers that no longer match the file); loading one raises SafetensorError and
+    the pod crash-loops (gpt2_medium enrichment h1-s42 and h0-s1891911437, 2026-11-12).
     """
     import shutil
     from evaluation.runners.per_model_runner import find_checkpoints_sorted
@@ -205,13 +231,14 @@ def _readable_checkpoint_view(root: Path, view: Path) -> Path:
     skipped = []
     for step, path in find_checkpoints_sorted(root):
         f = Path(path) / "model.safetensors"
-        if f.exists() and not _safetensors_header_ok(f):
-            skipped.append(step)
+        why = _safetensors_problem(f) if f.exists() else None
+        if why:
+            skipped.append((step, why))
             continue
         (view / Path(path).name).symlink_to(Path(path).resolve())
     if skipped:
-        log.warning("--skip_unreadable_checkpoints: left out %d checkpoint(s) with an unreadable "
-                    "weight file: steps %s", len(skipped), skipped)
+        log.warning("--skip_unreadable_checkpoints: left out %d checkpoint(s) with a damaged "
+                    "weight file: %s", len(skipped), "; ".join(f"step {a} ({b})" for a, b in skipped))
     return view
 
 
