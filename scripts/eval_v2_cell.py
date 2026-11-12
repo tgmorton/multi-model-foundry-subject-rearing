@@ -175,6 +175,21 @@ def _checkpoint_shard_view(root: Path, view: Path, i: int, n: int) -> Path:
     return view
 
 
+def _final_checkpoint_view(root: Path, view: Path) -> Path:
+    """Symlink view of `root` holding only its last checkpoint (by step)."""
+    import shutil
+    from evaluation.runners.per_model_runner import find_checkpoints_sorted
+    ckpts = find_checkpoints_sorted(root)
+    if view.exists():
+        shutil.rmtree(view)
+    view.mkdir(parents=True)
+    if ckpts:
+        step, path = ckpts[-1]
+        (view / Path(path).name).symlink_to(Path(path).resolve())
+        log.info("--final_checkpoint_only: step %d of %d checkpoint(s)", step, len(ckpts))
+    return view
+
+
 # Tokenizer directory per (arch, lang) — mirrors configs/sweeps/baselines/*.yaml.
 def _tokenizer_dirname(arch: str, lang: str) -> str:
     if _is_bert(arch):
@@ -288,8 +303,13 @@ def main():
                     help="Evaluate every N-th checkpoint starting at index I, as "
                          "cell <run_id>__ckpt_shardIofN (own parquets/markers; no "
                          "registry eval status). For benchmarks too large for one pod.")
+    ap.add_argument("--final_checkpoint_only", action="store_true",
+                    help="Score only the run's last checkpoint (end-state benchmarks). "
+                         "Use a benchmark of its own: the cell then holds one checkpoint.")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
+    if args.final_checkpoint_only and (args.checkpoint_shard or args.partial):
+        raise SystemExit("--final_checkpoint_only excludes --checkpoint_shard and --partial")
     if args.partial:
         args.benchmark = f"{args.benchmark}__partial"
     shard = _parse_shard(args.checkpoint_shard) if args.checkpoint_shard else None
@@ -374,13 +394,15 @@ def main():
     if shard:
         ckpt_root = _checkpoint_shard_view(
             ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
+    if args.final_checkpoint_only:
+        ckpt_root = _final_checkpoint_view(ckpt_root, Path("/tmp/ckpt_final") / cell_name)
     ckpts = find_checkpoints_sorted(ckpt_root)
     if not ckpts:
         log.error("No checkpoints under %s", ckpt_root)
         sys.exit(3)
     log.info("%d checkpoint(s), steps %d..%d",
              len(ckpts), ckpts[0][0], ckpts[-1][0])
-    if len(ckpts) < 60:
+    if len(ckpts) < 60 and not args.final_checkpoint_only:
         log.warning("Only %d checkpoints — production runs should have ~80. "
                     "Proceeding (registry records the actual count).", len(ckpts))
 

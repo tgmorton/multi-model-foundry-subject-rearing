@@ -18,6 +18,12 @@ respects unless a cell runs short. A cell that cannot be filled from the matched
 topped up from whatever the decile has, and what is still missing is reported as the
 shortfall to cover with synthetic variants.
 
+`--position natural` matches the deciles on source only and draws at random within it, so
+where the pronoun stands varies across deciles as it does in the corpus. `--pool` draws a
+pronoun-free version from a pool built by make_context_variants.py --pronoun-free: every
+item keeps the longest stretch of its real context that has no pronoun, and its decile is
+the one the rater gives it with that context.
+
 Outputs in --out-dir:
   availability.csv     usable items per cell and decile (and the matched capacity)
   sets.parquet         the drawn items with all labels and both scores
@@ -153,6 +159,15 @@ def main() -> None:
                     help="keep the item score this fraction away from its decile's thresholds (fp16 jitter is ~1-4%%)")
     ap.add_argument("--seed", type=int, default=20261112)
     ap.add_argument("--no-variants", action="store_true", help="draw only from sentences as they come")
+    ap.add_argument("--position", choices=["matched", "natural"], default="matched",
+                    help="matched: deciles share one mix of source x line position, closest-to-typical items "
+                         "first. natural: deciles share one mix of source, items drawn at random within it")
+    ap.add_argument("--cells", nargs="*", default=None, help="draw only these cells")
+    ap.add_argument("--pool", default=None,
+                    help="draw only from <pool>_candidates.parquet, scored in <pool>_<label>.parquet "
+                         "(a pronoun-free pool); --exclude then lists ids of this pool")
+    ap.add_argument("--exclude-parents", type=Path, nargs="*", default=[],
+                    help="with --pool: cand_ids of sentences rejected on review in another set")
     ap.add_argument("--reviewed", type=Path, default=None, help="reviewed.csv from review_batches.py merge")
     ap.add_argument("--exclude", type=Path, nargs="*", default=[],
                     help="files with one cand_id per line: items rejected on review, never drawn again")
@@ -169,7 +184,15 @@ def main() -> None:
     # synthetic variants (make_context_variants.py): same target, less of its real context
     vfiles = sorted(a.dir.glob("variants_*.parquet"))
     vfiles = [f for f in vfiles if not f.name.startswith(f"variants_{a.label}__")]
-    if vfiles and not a.no_variants:
+    if a.pool:
+        v = pd.read_parquet(a.dir / f"{a.pool}_candidates.parquet")
+        vs = pd.read_parquet(a.dir / f"{a.pool}_{a.label}.parquet").rename(columns=cols)
+        v = v.merge(vs[["var_id", "surp_item", "decile_item", "rater_tokens", "top1"]], on="var_id", how="inner")
+        # an item whose whole context was already pronoun-free is a sentence as it comes
+        v["variant"] = v.context_words.values < c.set_index("cand_id").context_words.reindex(v.parent_cand_id).values
+        v["cand_id"] = v.var_id
+        d = v.drop(columns=["var_id"]).reset_index(drop=True)
+    elif vfiles and not a.no_variants:
         v = pd.concat([pd.read_parquet(f) for f in vfiles])
         vs = pd.concat([pd.read_parquet(f) for f in sorted(a.dir.glob(f"variants_{a.label}__*.parquet"))]).rename(columns=cols)
         v = v.merge(vs[["var_id", "surp_item", "decile_item", "rater_tokens", "top1"]], on="var_id", how="inner")
@@ -179,7 +202,7 @@ def main() -> None:
     d["genre_group"] = d.stem.map(GENRE_GROUP)
     d["position"] = [position(n, t, p) for n, t, p in zip(d.lead_n, d.lead_text, d.lead_pos)]
     d["place"] = np.where(d.line_initial, "line-initial", np.where(d.sent_initial, "sentence-initial", "internal"))
-    d["stratum"] = d.genre_group + "|" + d.place
+    d["stratum"] = d.genre_group + "|" + d.place if a.position == "matched" else d.genre_group
     # deleting the pronoun leaves a bare verb form first, which also reads as an imperative
     d["null_bare_verb"] = (d.ptype == "matrix") & (d.r1_pos == "VERB") & (d.r1 == d.r1_lemma)
     n0 = int((~d.variant).sum())
@@ -188,8 +211,9 @@ def main() -> None:
     print(f"dropped by the surface checks: {(~ok & ~d.variant).sum():,} of {n0:,} candidates")
     d = d[ok]
     rejected = {int(x) for f in a.exclude for x in f.read_text().split()}
-    if rejected:
-        hit = d.cand_id.isin(rejected) | d.parent_cand_id.isin(rejected)
+    bad_parents = {int(x) for f in a.exclude_parents for x in f.read_text().split()}
+    if rejected or bad_parents:
+        hit = d.cand_id.isin(rejected) | d.parent_cand_id.isin(bad_parents if a.pool else rejected)
         print(f"excluded on review: {(hit & ~d.variant).sum():,} items and {(hit & d.variant).sum():,} variants")
         d = d[~hit]
     nat = d[~d.variant]
@@ -221,14 +245,23 @@ def main() -> None:
     usable["accepted"] = usable.cand_id.isin(accepted)
     drawn, avail_rows, short_rows = [], [], []
     taken: dict = {}                                   # stem -> sorted list of taken line indices
+    # what fills the matched part of a cell, and the order items are taken in
+    first_tiers = [1, 2, 3] if a.pool else [1]
+    if a.pool:
+        order, asc = ["rand"], [True]
+    elif a.position == "natural":
+        order, asc = ["tier", "rand"], [True, True]
+    else:
+        order, asc = ["tier", "accepted", "exact", "len_dist", "rand"], [True, False, False, True, True]
+    cells = {k: v for k, v in CELLS.items() if a.cells is None or k in a.cells}
 
     def free(stem, line):
         return all(abs(line - t) >= a.min_gap_lines for t in taken.get(stem, ()))
 
-    for cell, (category, filt, size) in CELLS.items():
+    for cell, (category, filt, size) in cells.items():
         n = int(round(size * a.scale))
         u = usable[filt(usable)]
-        t1 = u[u.tier == 1]
+        t1 = u[u.tier.isin(first_tiers)]
         avail = t1.groupby(["decile", "stratum"]).size().unstack(fill_value=0).reindex(range(10), fill_value=0)
         quota = matched_quota(avail, n)
         med = t1.target_words.median()
@@ -238,10 +271,9 @@ def main() -> None:
                                "usable_item_only": int(by_tier.loc[dec, 2]), "usable_variants": int(by_tier.loc[dec, 3]),
                                "matched_capacity": int(quota.sum()), "wanted": n})
             pool = u[u.decile == dec]
-            pool = pool.assign(len_dist=(pool.target_words - med).abs()).sort_values(
-                ["tier", "accepted", "exact", "len_dist", "rand"], ascending=[True, False, False, True, True])
+            pool = pool.assign(len_dist=(pool.target_words - med).abs()).sort_values(order, ascending=asc)
             got = []
-            first = pool[pool.tier == 1]
+            first = pool[pool.tier.isin(first_tiers)]
             for stratum, k in quota.items():           # matched part, tier 1 only
                 for r in first[first.stratum == stratum].itertuples():
                     if k == 0:
@@ -273,7 +305,7 @@ def main() -> None:
     flat = sets.sort_values(["decile", "cell", "item_id"])[
         ["item_id", "decile", "cell", "form", "context", "target_overt", "target_null", "surp_item", "surp_corpus",
          "decile_corpus", "stem", "place", "position", "kind", "null_bare_verb", "matched", "tier", "cand_id",
-         "parent_cand_id"]]
+         "parent_cand_id", "context_words", "target_words"]]
     flat.to_csv(a.out_dir / "items_flat.csv", index=False)
     stim = a.out_dir / "stimuli"
     stim.mkdir(exist_ok=True)
@@ -290,14 +322,15 @@ def main() -> None:
         cols = ["item_id", "category", "condition", "pronoun_status", "context", "target", "hotspot_token",
                 "hotspot_position", "language", "names", "generator", "cell", "decile", "cand_id"]
         pd.DataFrame(rows)[cols].to_csv(stim / f"{category}.csv", index=False)
-    meta = {"label": a.label, "n_items": len(sets), "corpus_slack": a.corpus_slack, "seed": a.seed,
+    meta = {"label": a.label, "position": a.position, "pool": a.pool, "n_items": len(sets),
+            "corpus_slack": a.corpus_slack, "seed": a.seed,
             "boundary_margin": a.boundary_margin, "n_candidates": n0, "n_usable": int((usable.tier == 1).sum()),
             "agree_exact": float(np.mean(nat.decile_corpus == nat.decile_item)),
             "agree_within_slack": float(np.mean((nat.decile_corpus - nat.decile_item).abs() <= a.corpus_slack)),
             "drawn_by_tier": {int(k): int(v) for k, v in sets.tier.value_counts().sort_index().items()},
-            "cells": {k: int(round(v[2] * a.scale)) for k, v in CELLS.items()},
+            "cells": {k: int(round(v[2] * a.scale)) for k, v in cells.items()},
             "exact_share": float(sets.exact.mean()), "matched_share": float(sets.matched.mean()),
-            "excluded_on_review": len(rejected),
+            "excluded_on_review": len(rejected) + len(bad_parents),
             "accepted_on_review": int(sets.accepted.mean() * len(sets))}
     (a.out_dir / "sets.meta.json").write_text(json.dumps(meta, indent=2))
     print(json.dumps(meta))

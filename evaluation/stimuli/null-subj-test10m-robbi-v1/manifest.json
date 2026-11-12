@@ -1,0 +1,134 @@
+{
+  "built": "2026-11-12",
+  "conditions": {
+    "baseline": {
+      "ablation_registry_name": "identity",
+      "output_sha256": {
+        "adverbial.csv": "446750200e96c14a1f3c9d16f42e79bfd97550bce409ad7ee4814db5a4dff593",
+        "conjunction.csv": "9e722ef40c46f8b45e19f80907ef7e5721a500faf29f5ad343e9559bda0c0cec",
+        "embedded_drop.csv": "c6288c2b21e502569b730f57bec86c854a4f6064864dcc091d98a1bbab182a53",
+        "expletive.csv": "b6692708bb5be715306c321bbd8f13777d596743645bbf59cf4900ccfc1649d6",
+        "subject_drop.csv": "e599517d044f98aff28027f595c483279ecf7cd428fd3d151e06307c775d642a"
+      },
+      "pairs": 6379,
+      "rows": 12758
+    }
+  },
+  "description": "Decile-graded null-subject pairs sampled from the unseen test split (test_10M) with their real preceding context; one distinct item per row pair, set membership in item_key.csv",
+  "format_version": "condition-matched-stimuli.v1",
+  "item_key_sha256": "af26b3ca2dd088d6917d703e84e7b443004173aa3b437079c03e506ce8d0d1e6",
+  "rater": [
+    "robbi"
+  ],
+  "sets": {
+    "matched": {
+      "accepted_on_review": 2877,
+      "agree_exact": 0.29674554135655107,
+      "agree_within_slack": 0.6348827411880353,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "robbi_v1",
+      "drawn_by_tier": {
+        "1": 2826,
+        "2": 37,
+        "3": 14
+      },
+      "exact_share": 0.8852971845672576,
+      "excluded_on_review": 252,
+      "label": "robbi",
+      "matched_share": 0.8679179701077512,
+      "n_candidates": 178285,
+      "n_items": 2877,
+      "n_usable": 76736,
+      "pairs": 2877,
+      "reviewed_sha256": "6f2c64756111742644f37a0206e848471d69df5e252d56614eb821db0b1a30ce",
+      "seed": 20261112,
+      "unreviewed": 0
+    },
+    "natural": {
+      "accepted_on_review": 2877,
+      "agree_exact": 0.2966612797451752,
+      "agree_within_slack": 0.634643760539629,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "robbi_nat_v1",
+      "drawn_by_tier": {
+        "1": 2824,
+        "2": 36,
+        "3": 17
+      },
+      "exact_share": 0.4456030587417449,
+      "excluded_on_review": 372,
+      "label": "robbi",
+      "matched_share": 0.910670837678137,
+      "n_candidates": 178285,
+      "n_items": 2877,
+      "n_usable": 76619,
+      "pairs": 2877,
+      "pool": null,
+      "position": "natural",
+      "reviewed_sha256": "ae8bbcba970b2208af4ff937f24ec50d7a336d9fce74d9dbaa4986f80e29786d",
+      "seed": 20261112,
+      "unreviewed": 0
+    },
+    "nopron": {
+      "accepted_on_review": 1423,
+      "agree_exact": 0.2572491519859941,
+      "agree_within_slack": 0.5488565488565489,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "emb_bare": 24,
+        "subj_1sg": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "robbi_nopron_v1",
+      "drawn_by_tier": {
+        "1": 268,
+        "2": 167,
+        "3": 988
+      },
+      "exact_share": 0.24877020379479972,
+      "excluded_on_review": 444,
+      "label": "robbi",
+      "matched_share": 0.9177793394237527,
+      "n_candidates": 9547,
+      "n_items": 1423,
+      "n_usable": 3631,
+      "pairs": 1423,
+      "pool": "nopron_personal",
+      "position": "natural",
+      "reviewed_sha256": "8ab073f9201810c11d2e6a493a844340234a71b831bfcbb7946cc61b59f96531",
+      "seed": 20261112,
+      "unreviewed": 0
+    }
+  },
+  "vetted": true,
+  "vetting": "Design (cells, 45-word context, natural line position, personal-pronoun-free reduced design) approved by Thomas Morton 2026-11-12; every item read for type and quality by a model reader (Claude Sonnet), not by a linguist"
+}
