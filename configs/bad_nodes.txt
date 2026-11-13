@@ -29,3 +29,4 @@ k8s-chase-ci-07.calit2.optiputer.net  # cuDNN INTERNAL_ERROR on LSTM canary, the
 nrp-fiona-001.sdmz.amnh.org        # GitLab TLS timeouts (11-06), then unreachable with a BERT pod stuck Unknown 3+ days (11-10)
 k8s-chase-ci-01.calit2.optiputer.net  # init image pull hung, then the pod stuck Terminating (2026-11-12)
 gpengine-uams.areon.net            # init image pull hung 22 min, then the pod stuck Terminating (2026-11-12)
+k8s-haosu-15.sdsc.optiputer.net     # device-plugin allocate failure, 6 UnexpectedAdmissionErrors on one eval job in 100 min (2026-11-13)
