@@ -1,0 +1,65 @@
+{
+  "built": "2026-11-13",
+  "conditions": {
+    "baseline": {
+      "ablation_registry_name": "identity",
+      "output_sha256": {
+        "adverbial.csv": "eb0f43240e8d3f469ec58d4acb80737e53ea449631b33e5fd08686f0cbae5220",
+        "conjunction.csv": "3b18059fb32c45d72d12106d2d6da8b24a6efd4ba28512864acad35f567dd977",
+        "embedded_drop.csv": "498919c897aacad8cc04a58cac80600523bcf20641611d919660720aca3e596a",
+        "expletive.csv": "93e1b4b0d4644f264d6088b1435a298b8db409e506c9e3b7c70351d2d4029d10",
+        "subject_drop.csv": "3ac9dfa8f3f155f76586460eef6379934f936fd218066a609e5b1b567c32a3fc"
+      },
+      "pairs": 2877,
+      "rows": 5754
+    }
+  },
+  "description": "Decile-graded null-subject pairs sampled from the unseen test split (test_10M) with their real preceding context; one distinct item per row pair, set membership in item_key.csv",
+  "format_version": "condition-matched-stimuli.v1",
+  "item_key_sha256": "fe47113f8dc456d609ea7df0e1e48a1543521c748f9b4cbbd951151b36b0b26c",
+  "rater": [
+    "robbi"
+  ],
+  "sets": {
+    "natural": {
+      "accepted_on_review": 2877,
+      "agree_exact": 0.2966612797451752,
+      "agree_within_slack": 0.634643760539629,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "robbi_nat_v1",
+      "drawn_by_tier": {
+        "1": 2824,
+        "2": 36,
+        "3": 17
+      },
+      "exact_share": 0.4456030587417449,
+      "excluded_on_review": 372,
+      "label": "robbi",
+      "matched_share": 0.910670837678137,
+      "n_candidates": 178285,
+      "n_items": 2877,
+      "n_usable": 76619,
+      "pairs": 2877,
+      "pool": null,
+      "position": "natural",
+      "reviewed_sha256": "ae8bbcba970b2208af4ff937f24ec50d7a336d9fce74d9dbaa4986f80e29786d",
+      "seed": 20261112,
+      "unreviewed": 0
+    }
+  },
+  "vetted": true,
+  "vetting": "Natural-position set only (same items as in null-subj-test10m-robbi-v1); design approved by Thomas Morton 2026-11-12; every item read for type and quality by a model reader (Claude Sonnet), not by a linguist"
+}

@@ -242,6 +242,49 @@ def _readable_checkpoint_view(root: Path, view: Path) -> Path:
     return view
 
 
+def _parse_indices(spec: str) -> list[int]:
+    """'0-10,16-94:6,96' -> sorted unique positions."""
+    out = set()
+    for part in spec.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        rng, _, stride = part.partition(":")
+        lo, _, hi = rng.partition("-")
+        try:
+            lo_i, hi_i, st = int(lo), int(hi or lo), int(stride or 1)
+        except ValueError:
+            raise SystemExit(f"--checkpoint_indices: cannot read {part!r}")
+        if st < 1 or hi_i < lo_i or lo_i < 0:
+            raise SystemExit(f"--checkpoint_indices: bad range {part!r}")
+        out.update(range(lo_i, hi_i + 1, st))
+    return sorted(out)
+
+
+def _checkpoint_index_view(root: Path, view: Path, spec: str) -> Path:
+    """Symlink view of the checkpoints at the given positions of the run's step-sorted list.
+
+    Positions, not steps, because runs of one design share a schedule by position while the
+    step numbers shift with the size of the training corpus. A position past the end is an
+    error: it means the run does not have the schedule the selection was written for.
+    """
+    import shutil
+    from evaluation.runners.per_model_runner import find_checkpoints_sorted
+    ckpts = find_checkpoints_sorted(root)
+    want = _parse_indices(spec)
+    if want and want[-1] >= len(ckpts):
+        raise SystemExit(f"--checkpoint_indices asks for position {want[-1]} but {root} has {len(ckpts)} checkpoints")
+    if view.exists():
+        shutil.rmtree(view)
+    view.mkdir(parents=True)
+    for i in want:
+        step, path = ckpts[i]
+        (view / Path(path).name).symlink_to(Path(path).resolve())
+    log.info("--checkpoint_indices: %d of %d checkpoint(s), steps %s", len(want), len(ckpts),
+             [ckpts[i][0] for i in want])
+    return view
+
+
 def _final_checkpoint_view(root: Path, view: Path) -> Path:
     """Symlink view of `root` holding only its last checkpoint (by step)."""
     import shutil
@@ -373,6 +416,10 @@ def main():
     ap.add_argument("--pll_max_rows", type=int, default=256,
                     help="BERT: masked copies per forward pass. Each pass holds rows x tokens x vocab logits "
                          "(256 rows of 100-token items is 5.5 GB); lower it for long items or small cards.")
+    ap.add_argument("--checkpoint_indices", metavar="SPEC",
+                    help="Score only these checkpoints, by position in the run's step-sorted list: comma-separated "
+                         "numbers and ranges, a range may carry a stride (0-10,16-94:6,96). Applied before "
+                         "--checkpoint_shard, so shards split the selection. Use a benchmark of its own.")
     ap.add_argument("--skip_unreadable_checkpoints", action="store_true",
                     help="Leave out checkpoints whose model.safetensors has no valid header (a zero-filled "
                          "file) instead of crashing on them; each one skipped is logged.")
@@ -381,8 +428,8 @@ def main():
                          "Use a benchmark of its own: the cell then holds one checkpoint.")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
-    if args.final_checkpoint_only and (args.checkpoint_shard or args.partial):
-        raise SystemExit("--final_checkpoint_only excludes --checkpoint_shard and --partial")
+    if args.final_checkpoint_only and (args.checkpoint_shard or args.partial or args.checkpoint_indices):
+        raise SystemExit("--final_checkpoint_only excludes --checkpoint_shard, --checkpoint_indices and --partial")
     if args.partial:
         args.benchmark = f"{args.benchmark}__partial"
     shard = _parse_shard(args.checkpoint_shard) if args.checkpoint_shard else None
@@ -467,6 +514,8 @@ def main():
     if shard:
         ckpt_root = _checkpoint_shard_view(
             ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
+    if args.checkpoint_indices:
+        ckpt_root = _checkpoint_index_view(ckpt_root, Path("/tmp/ckpt_idx") / cell_name, args.checkpoint_indices)
     if args.skip_unreadable_checkpoints:
         ckpt_root = _readable_checkpoint_view(ckpt_root, Path("/tmp/ckpt_readable") / cell_name)
     if args.final_checkpoint_only:
@@ -477,7 +526,7 @@ def main():
         sys.exit(3)
     log.info("%d checkpoint(s), steps %d..%d",
              len(ckpts), ckpts[0][0], ckpts[-1][0])
-    if len(ckpts) < 60 and not args.final_checkpoint_only:
+    if len(ckpts) < 60 and not (args.final_checkpoint_only or args.checkpoint_indices):
         log.warning("Only %d checkpoints — production runs should have ~80. "
                     "Proceeding (registry records the actual count).", len(ckpts))
 
