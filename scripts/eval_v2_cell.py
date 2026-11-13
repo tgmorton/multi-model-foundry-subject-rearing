@@ -511,13 +511,14 @@ def main():
         ckpt_root = _settled_checkpoint_view(
             ckpt_root, Path("/tmp/ckpt_view") / args.run_id,
             args.settle_minutes * 60)
-    if shard:
-        ckpt_root = _checkpoint_shard_view(
-            ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
     if args.checkpoint_indices:
         ckpt_root = _checkpoint_index_view(ckpt_root, Path("/tmp/ckpt_idx") / cell_name, args.checkpoint_indices)
     if args.skip_unreadable_checkpoints:
         ckpt_root = _readable_checkpoint_view(ckpt_root, Path("/tmp/ckpt_readable") / cell_name)
+    # a shard splits whatever the selection above left
+    if shard:
+        ckpt_root = _checkpoint_shard_view(
+            ckpt_root, Path("/tmp/ckpt_shard") / cell_name, *shard)
     if args.final_checkpoint_only:
         ckpt_root = _final_checkpoint_view(ckpt_root, Path("/tmp/ckpt_final") / cell_name)
     ckpts = find_checkpoints_sorted(ckpt_root)
