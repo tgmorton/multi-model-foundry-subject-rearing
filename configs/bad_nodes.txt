@@ -31,3 +31,4 @@ k8s-chase-ci-01.calit2.optiputer.net  # init image pull hung, then the pod stuck
 gpengine-uams.areon.net            # init image pull hung 22 min, then the pod stuck Terminating (2026-11-12)
 k8s-haosu-15.sdsc.optiputer.net     # device-plugin allocate failure, 6 UnexpectedAdmissionErrors on one eval job in 100 min (2026-11-13)
 hcc-prp-c5038.unl.edu              # goes NotReady every few hours: 41 + 38 evictions of two rater pods in 5 days, one job failed out (2026-11-16)
+gpn-fiona-mizzou-7.rnet.missouri.edu   # 2026-11-16: image pull canceled then 20+ min re-pull; pod then hung Terminating

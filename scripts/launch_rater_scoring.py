@@ -35,16 +35,20 @@ RATERS = {
 }
 # (corpus, genre) -> (number of shards, memory class). Shards sized from the 2026-08 BERT-large
 # pass (60-140 instances/s): each is about 2.5 h of scoring or less.
+# Memory from the enrichment rater's run (2026-11-16, peak working set): train childes 10.4 GiB
+# while reading the parse cache then ~5; open_subtitles 7.5; gutenberg 4.8; bnc_spoken 3.4;
+# simple_wiki 3.0; switchboard 2.2; pull_10M 0.8-2.9. Requests sit near twice steady use so the
+# pods stay inside NRP's 20-150% memory band (24/12/8 Gi put the small genres under 20%).
 PLAN = {
     ("train_90M", "childes"): (3, "lg"), ("train_90M", "open_subtitles"): (4, "lg"),
     ("train_90M", "gutenberg"): (3, "md"), ("train_90M", "bnc_spoken"): (2, "md"),
-    ("train_90M", "simple_wiki"): (1, "md"), ("train_90M", "switchboard"): (1, "md"),
+    ("train_90M", "simple_wiki"): (1, "md"), ("train_90M", "switchboard"): (1, "sm"),
     **{("pull_10M", g): (1, "sm") for g in
        ("childes", "open_subtitles", "gutenberg", "bnc_spoken", "simple_wiki", "switchboard")},
     **{("test_10M", g): (1, "sm") for g in
        ("childes", "open_subtitles", "gutenberg", "bnc_spoken", "simple_wiki", "switchboard")},
 }
-MEMORY = {"lg": "24Gi", "md": "12Gi", "sm": "8Gi"}
+MEMORY = {"lg": "14Gi", "md": "8Gi", "sm": "4Gi"}
 # Inference only (eager attention, fp16 autocast, under 4 GB at batch 24), so the pre-Ampere pools
 # with fp16 hardware are fine too. Pascal cards (1080 Ti, Titan Xp) are left out: no fast fp16.
 GPUS = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4", "NVIDIA-GeForce-RTX-4090", "NVIDIA-L40", "NVIDIA-L40S",
@@ -204,11 +208,25 @@ spec:
 """
 
 
+def PLAN_ALL(only: list[str]) -> dict[str, list[str]]:
+    """Every task of every corpus by memory class (for --only, which ignores --corpora and --genres)."""
+    out: dict[str, list[str]] = {}
+    for (corpus, genre), (n, mc) in PLAN.items():
+        out.setdefault(mc, []).extend(f"{corpus} {genre} {i}/{n}" for i in range(n))
+    unknown = [t for t in only if not any(t in ts for ts in out.values())]
+    if unknown:
+        sys.exit(f"unknown task(s): {unknown}")
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--rater", required=True, choices=sorted(RATERS))
     ap.add_argument("--corpora", nargs="+", default=["train_90M", "pull_10M"], choices=["train_90M", "pull_10M", "test_10M"])
     ap.add_argument("--genres", nargs="+", default=None, help="restrict to these genres")
+    ap.add_argument("--only", nargs="+", default=None, metavar="'CORPUS GENRE I/N'",
+                    help="launch just these tasks, e.g. 'train_90M open_subtitles 1/4' (a shard whose pod is "
+                         "stuck on a dead node); use a new --suffix")
     ap.add_argument("--suffix", default="v1", help="job-name suffix")
     ap.add_argument("--parallelism", type=int, default=8, help="per Job")
     ap.add_argument("--branch", default="eval/bert-v2")
@@ -217,6 +235,9 @@ def main() -> None:
     for (corpus, genre), (n, mc) in PLAN.items():
         if corpus in a.corpora and (a.genres is None or genre in a.genres):
             by_class.setdefault(mc, []).extend(f"{corpus} {genre} {i}/{n}" for i in range(n))
+    if a.only:
+        by_class = {mc: [t for t in tasks if t in a.only] for mc, tasks in PLAN_ALL(a.only).items()}
+        by_class = {mc: ts for mc, ts in by_class.items() if ts}
     docs = [job(a.rater, mc, tasks, a.suffix, a.parallelism, a.branch) for mc, tasks in sorted(by_class.items())]
     print("---\n".join(docs), end="")
     print(f"# {sum(len(t) for t in by_class.values())} pods in {len(docs)} jobs", file=sys.stderr)
