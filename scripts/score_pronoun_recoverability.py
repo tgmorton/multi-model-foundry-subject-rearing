@@ -545,14 +545,19 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                    if use_amp else torch.no_grad())
             with ctx:
                 out = model(input_ids=batch, attention_mask=attn)
-            lsm = torch.log_softmax(out.logits.float(), dim=-1)
+            logits = out.logits
             for r, i in enumerate(idxs):
                 m0 = mask_slots[r]
                 truth = true_pieces[r]
-                row0 = lsm[r, m0]
+                # log-softmax of the masked rows only: the same numbers as
+                # normalizing the whole (batch, length, vocab) tensor, which
+                # took ~5 GB of GPU memory at batch 24 and most of the step.
+                rows = torch.log_softmax(
+                    logits[r, m0:m0 + len(truth)].float(), dim=-1)
+                row0 = rows[0]
                 logprob_first[i] = float(row0[truth[0]])
                 logprob_sum[i] = float(sum(
-                    lsm[r, m0 + j, t] for j, t in enumerate(truth)))
+                    rows[j, t] for j, t in enumerate(truth)))
                 probs0 = row0.exp()
                 ent[i] = float(-(probs0 * row0).sum())
                 invp[i] = probs0[inv_tensor].cpu().numpy()

@@ -45,8 +45,12 @@ PLAN = {
        ("childes", "open_subtitles", "gutenberg", "bnc_spoken", "simple_wiki", "switchboard")},
 }
 MEMORY = {"lg": "24Gi", "md": "12Gi", "sm": "8Gi"}
+# Inference only (eager attention, fp16 autocast, under 4 GB at batch 24), so the pre-Ampere pools
+# with fp16 hardware are fine too. Pascal cards (1080 Ti, Titan Xp) are left out: no fast fp16.
 GPUS = ["NVIDIA-GeForce-RTX-3090", "NVIDIA-A10", "NVIDIA-L4", "NVIDIA-GeForce-RTX-4090", "NVIDIA-L40", "NVIDIA-L40S",
-        "NVIDIA-RTX-A5000", "NVIDIA-RTX-A4000"]
+        "NVIDIA-RTX-A5000", "NVIDIA-RTX-A4000", "NVIDIA-RTX-4000-Ada-Generation", "NVIDIA-RTX-5000-Ada-Generation",
+        "NVIDIA-GeForce-RTX-2080-Ti", "Tesla-V100-SXM2-16GB", "Tesla-V100-SXM2-32GB", "Tesla-V100-PCIE-16GB",
+        "NVIDIA-TITAN-RTX", "Quadro-RTX-6000"]
 
 SCRIPT = r'''set -euo pipefail
 TASKS=(__TASKS__)
