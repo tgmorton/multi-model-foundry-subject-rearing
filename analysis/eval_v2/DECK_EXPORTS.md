@@ -13,6 +13,7 @@ Results are pulled first with `scripts/pull_eval_results.py --benchmark <b> --de
 | `bridge_order_effect_by_condition`, `s2_item_group_endstate`, `s2_item_group_endstate_by_condition`, `s1_path_endpoint`, `s1_distal_endstate` | `deck_exports_argument.py --only bridge groups groups_by_condition path distal` | as above |
 | `arg_rater_free_slopes`, `arg_rater_free_by_decile`, `arg_rater_free_agreement`, `arg_rater_free_crosstab`, `README_rater_free.txt` | `rater_free_regrade.py` | `--results data/eval_results/null_subj_test10m_robbi_v1 --key <key> --out <exports>` |
 | `arg_decile_trajectories`, `arg_decile_trajectories_minus_random` | `deck_exports_decile_trajectories.py` | `--data data/eval_results --key <nat-root>/item_key.csv --out <exports>` |
+| `s2_seed_check_cells`, `s2_seed_check_order_effect` | `seed_check_endstate.py` | `--data data/eval_results --out <exports>`; needs `null_subj_v2_condition_matched_{v1,v2}` and the second seeds' `..._{v1,v2}_endstate` pulled |
 
 Reports built from the same data:
 
