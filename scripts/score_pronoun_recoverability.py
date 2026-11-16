@@ -268,7 +268,7 @@ def resolve_intervention(name: Optional[str]):
 
 
 def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[int],
-            counters: Dict[str, int], sample=None, intervention=None):
+            counters: Dict[str, int], sample=None, intervention=None, also=None):
     from preprocessing.annotate import iter_annotated_file
     edit_fn, line_remover = resolve_intervention(intervention)
     removed_instances = []   # sampled pronouns whose whole line was removed
@@ -313,6 +313,17 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
         cands = [t for t in doc
                  if t.pos_ == "PRON"
                  and normalize_dep(t.dep_) in ("nsubj", "nsubj:pass")]
+        parse_ids = {t.i for t in cands}
+        if also is not None and line_idx in also:
+            # Instances addressed by character offset in the raw line (a table
+            # built from another annotation): add the tokens that start there.
+            want = also[line_idx]
+            extra = [t for t in doc if t.idx in want and t.i not in parse_ids]
+            counters["also_requested"] = counters.get("also_requested", 0) + len(want)
+            counters["also_added"] = counters.get("also_added", 0) + len(extra)
+            counters["also_no_token"] = counters.get("also_no_token", 0) + len(
+                want - {t.idx for t in doc})
+            cands = sorted(cands + extra, key=lambda t: t.i)
         if not cands:
             continue
         if sample is not None:
@@ -366,6 +377,7 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
                 "n_line_edits": len(edits),
                 "head_piece_in_line": h_aligned[0] if h_aligned else None,
                 "head_n_pieces": h_aligned[1] if h_aligned else None,
+                "from_parse": t.i in parse_ids,
             })
             counters["instances_aligned"] += 1
     return lines, instances, removed_instances
@@ -854,6 +866,10 @@ def main():
                          "append [SEP] after every line and leave out the closing "
                          "[SEP], the layout our cls_sep-packed MLM raters were "
                          "trained on (2026-11-16).")
+    ap.add_argument("--also-instances", type=Path, default=None,
+                    help="parquet with (line_idx, char_start): also score the tokens "
+                         "starting at these offsets of the raw line, whatever this "
+                         "parse calls them (an instance table from another annotation)")
     ap.add_argument("--sample-file", type=Path, default=None,
                     help="parquet with (line_idx, token_i) — restrict "
                          "scoring to these instances (frozen sample)")
@@ -932,9 +948,17 @@ def main():
 
     print(f"=== phase A: {args.corpus}/{args.file} from {annotated_dir}", flush=True)
     t0 = time.time()
+    also = None
+    if args.also_instances is not None:
+        import pyarrow.parquet as _pq
+        at = _pq.read_table(args.also_instances, columns=["line_idx", "char_start"])
+        also = {}
+        for li, cs in zip(at.column("line_idx").to_pylist(), at.column("char_start").to_pylist()):
+            also.setdefault(li, set()).add(cs)
+        print(f"also-instances: {at.num_rows:,} addresses on {len(also):,} lines", flush=True)
     lines, instances, removed_instances = phase_a(
         annotated_dir, args.file, aligner, args.limit_lines, counters,
-        sample=sample, intervention=args.intervention)
+        sample=sample, intervention=args.intervention, also=also)
     counters["seconds_phase_a"] = round(time.time() - t0, 1)
     if args.line_sep != "none":
         if not (args.hf_mlm or args.hf_model):
@@ -995,6 +1019,7 @@ def main():
             "in_lexicon": [i["in_lexicon"] for i in instances],
             "n_pieces": [i["n_pieces"] for i in instances],
             "word_initial": [i["word_initial"] for i in instances],
+            "from_parse": [i["from_parse"] for i in instances],
             "head_edited": [i.get("head_edited") for i in instances],
             "n_line_edits": [i.get("n_line_edits") for i in instances],
             "logprob_sum": [f(x) for x in r["logprob_sum_arr"]],

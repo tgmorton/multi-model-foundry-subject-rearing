@@ -74,11 +74,18 @@ for o in s3.list_objects_v2(Bucket="thomas-subject-drop-artifacts", Prefix=P)["C
     s3.download_file("thomas-subject-drop-artifacts", o["Key"], str(d / o["Key"][len(P):]))
 print("rater files:", sorted(p.name for p in d.iterdir()))
 PYDL
+ALSO=""
+if [ "$CORPUS" = "test_10M" ]; then
+  # The test-set instance table comes from another annotation (build_test_instances.py);
+  # score its pronouns too, addressed by character offset in the raw line.
+  python -c "import boto3; boto3.client('s3').download_file('thomas-subject-drop-artifacts', 'recoverability/eval_stimuli/test_10M/instances__$GENRE.parquet', '/tmp/also.parquet')"
+  ALSO="--also-instances /tmp/also.parquet"
+fi
 python scripts/score_pronoun_recoverability.py \
   --corpus "$CORPUS" --file "$GENRE" \
   --hf-mlm "rater_$SHORT=/tmp/rater" \
   --mlm-ctx 250 --mlm-batch 24 --line-sep sep \
-  --intervention "$IV" --shard "$SHARD" --amp
+  --intervention "$IV" --shard "$SHARD" --amp $ALSO
 # Self-check and upload. A shard with NaN scores exits 1 so the index retries on another pod.
 python - <<PYUP
 import boto3, pathlib, sys, pyarrow.parquet as pq
