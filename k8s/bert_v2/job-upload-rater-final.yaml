@@ -1,0 +1,61 @@
+# Copy a finished rater's final checkpoint (inference files only) from the
+# null-subjects PVC to S3, so scoring jobs in either namespace and local
+# checks can load it. Cross-namespace data moves only through S3.
+#
+#   s3://thomas-subject-drop-artifacts/raters/rater-bert_large_preln-en-<corpus>-full-v1/checkpoint-23000/
+#
+# One Job per rater; fill the two placeholders:
+#
+#   sed -e 's/__CORPUS__/enrich_verbal_morphology/g' -e 's/__SHORT__/enrichvm/g' \
+#       k8s/bert_v2/job-upload-rater-final.yaml | kubectl apply -f -
+#
+# corpus / short: base / base, impoverish_case_en / impcase,
+# lemmatize_verbs / lemverb, remove_expletive_sentences_en / rmexpl,
+# enrich_verbal_morphology / enrichvm.
+#
+# training_state.pt (2.8 GB, optimizer state) is left on the PVC.
+# IO-bound helper -> under NRP's 1 CPU / 2 GB exemption.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: thomas-upload-rater-final-__SHORT__
+  namespace: null-subjects
+  labels: {owner: thomas, study: subject-drop, stage: upload}
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels: {owner: thomas, study: subject-drop, stage: upload}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: rclone
+        image: rclone/rclone:1.68
+        command: ["sh", "-c"]
+        args:
+        - |
+          set -eu
+          SRC=/mnt/data/models/raters_v2/__CORPUS__/checkpoint-23000
+          DST=s3:thomas-subject-drop-artifacts/raters/rater-bert_large_preln-en-__CORPUS__-full-v1/checkpoint-23000
+          ls -la "$SRC"
+          test -s "$SRC/model.safetensors"
+          rclone copy --exclude training_state.pt --transfers 2 --stats-one-line --stats 30s "$SRC" "$DST"
+          rclone check --one-way --exclude training_state.pt "$SRC" "$DST"
+          rclone lsl "$DST"
+          echo UPLOAD DONE
+        env:
+        - {name: RCLONE_CONFIG_S3_TYPE, value: s3}
+        - {name: RCLONE_CONFIG_S3_PROVIDER, value: Ceph}
+        - {name: RCLONE_CONFIG_S3_ENDPOINT, value: "http://rook-ceph-rgw-nautiluss3.rook"}
+        - name: RCLONE_CONFIG_S3_ACCESS_KEY_ID
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_ACCESS_KEY_ID}}
+        - name: RCLONE_CONFIG_S3_SECRET_ACCESS_KEY
+          valueFrom: {secretKeyRef: {name: s3-secret-thomas, key: AWS_SECRET_ACCESS_KEY}}
+        resources:
+          requests: {cpu: "1", memory: 1500Mi}
+          limits: {cpu: "1", memory: 1500Mi}
+        volumeMounts: [{name: data, mountPath: /mnt/data, readOnly: true}]
+      volumes:
+      - name: data
+        persistentVolumeClaim: {claimName: thomas-rater-corpus}

@@ -300,7 +300,8 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
         # open_subtitles) OOM'd at 16Gi on list overhead alone.
         lines.append({"line_idx": line_idx,
                       "doc_idx": entry.get("doc_idx"),
-                      "ids": np.asarray(ids, dtype=np.int32)})
+                      "ids": np.asarray(ids, dtype=np.int32),
+                      "gone": line_gone})
         counters["lines"] += 1
         if doc is None:
             counters["passthrough_lines"] += 1
@@ -347,6 +348,7 @@ def phase_a(annotated_dir: Path, file_stem: str, aligner, limit_lines: Optional[
             instances.append({
                 "line_idx": line_idx,
                 "token_i": t.i,
+                "char_start": t.idx,
                 "piece_ids": [int(x) for x in ids[first:first + n_pieces]],
                 "is_title": t.text[:1].isupper(),
                 "word_initial": word_initial,
@@ -420,8 +422,12 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                 inv_ids: List[List[int]], device: str, ctx_halfwidth: int,
                 batch_size: int, use_amp: bool, counters: Dict[str, int],
                 ctx_right: Optional[int] = None, model=None,
-                ctx_mode: str = "truncate"):
+                ctx_mode: str = "truncate", end_sep: bool = True):
     """Masked-slot scoring with an external MLM (BERT-family).
+
+    end_sep=False leaves out the closing [SEP]: for our own cls_sep-packed
+    raters [SEP] means "a corpus line ended here", and a window is cut
+    mid-line just as their training chunks were ([CLS] + stream tokens).
 
     For each instance: take +-ctx_halfwidth stream tokens around the slot,
     mask ALL of the pronoun's wordpieces (whole-word-masking style, matching
@@ -524,7 +530,7 @@ def phase_b_mlm(lines, instances, mlm_name: str, hf_id: str, tok,
                     keep_hi = min(len(ids), m0 + np_ + cr)
                     ids[:keep_lo] = mask_id
                     ids[keep_hi:] = mask_id
-                seqs.append([cls_id] + ids.tolist() + [sep_id])
+                seqs.append([cls_id] + ids.tolist() + ([sep_id] if end_sep else []))
                 mask_slots.append(m0 + 1)  # +1 for CLS
                 true_pieces.append(truth)
             maxlen = max(len(s) for s in seqs)
@@ -826,7 +832,12 @@ def main():
                          "L backward stream tokens per config; outputs go to "
                          "external_<NAME>/grid/L{l}R0/.")
     ap.add_argument("--causal-batch", type=int, default=64)
-    ap.add_argument("--line-sep", choices=["none", "newline"], default="none",
+    ap.add_argument("--shard", default=None, metavar="I/N",
+                    help="--intervention only: score the I-th of N contiguous slices of "
+                         "the instances (in corpus order); outputs are named "
+                         "<file>.sIofN.*. Every shard still reads the whole file, since "
+                         "the context stream needs all of its lines.")
+    ap.add_argument("--line-sep", choices=["none", "newline", "sep"], default="none",
                     help="external HF scorers only: append the tokenizer's newline "
                          "piece after every line. 'none' (default, the historical "
                          "behavior) glues each separately-encoded line onto the "
@@ -834,7 +845,10 @@ def main():
                          "line-initial word as a no-space piece fused to the last "
                          "word ('...inI'm'), out of its pretraining distribution "
                          "(2026-10-22 survey). In-house SP raters must keep 'none': "
-                         "it matches training's zero-separator stream.")
+                         "it matches training's zero-separator stream. 'sep': "
+                         "append [SEP] after every line and leave out the closing "
+                         "[SEP], the layout our cls_sep-packed MLM raters were "
+                         "trained on (2026-11-16).")
     ap.add_argument("--sample-file", type=Path, default=None,
                     help="parquet with (line_idx, token_i) — restrict "
                          "scoring to these instances (frozen sample)")
@@ -923,9 +937,17 @@ def main():
                      "must keep training's zero-separator stream")
         # Appended AFTER each line's pieces, so piece_in_line offsets inside a
         # line are unchanged; the line table's n_pieces then includes it.
-        sep = np.asarray(hf_tok("\n", add_special_tokens=False)["input_ids"],
-                         dtype=np.int32)
+        if args.line_sep == "sep":
+            assert hf_tok.sep_token_id is not None, "tokenizer has no [SEP]"
+            sep = np.asarray([hf_tok.sep_token_id], dtype=np.int32)
+        else:
+            sep = np.asarray(hf_tok("\n", add_special_tokens=False)["input_ids"],
+                             dtype=np.int32)
+        if len(sep) == 0:
+            sys.exit(f"--line-sep {args.line_sep}: this tokenizer has no piece for it")
         for l in lines:
+            if l.get("gone"):
+                continue    # a line the intervention removed is not in the corpus at all
             l["ids"] = np.concatenate([l["ids"], sep])
         counters["line_sep_ids"] = sep.tolist()
     print(f"  {counters}", flush=True)
@@ -941,38 +963,61 @@ def main():
         cr = args.mlm_ctx_right
         if cr is not None and cr not in ("V", "VX"):
             cr = int(cr)
+        stem = args.file
+        n_all = len(instances)
+        if args.shard:
+            si, sn = (int(x) for x in args.shard.split("/"))
+            assert 0 <= si < sn, args.shard
+            instances = instances[si * n_all // sn:(si + 1) * n_all // sn]
+            stem = f"{args.file}.s{si}of{sn}"
+            print(f"shard {si}/{sn}: {len(instances):,} of {n_all:,} instances", flush=True)
         res, _ = phase_b_mlm(
             lines, instances, hf_name, hf_id, hf_tok, inv_ids, args.device,
             args.mlm_ctx, args.mlm_batch, args.amp, counters, ctx_right=cr,
-            ctx_mode=args.mlm_ctx_mode)
+            ctx_mode=args.mlm_ctx_mode, end_sep=args.line_sep != "sep")
         r = res[hf_name]
         odir = out_root / "intervention" / args.intervention
         odir.mkdir(parents=True, exist_ok=True)
         f = lambda x: None if math.isnan(float(x)) else float(x)
-        pq.write_table(pa.table({
+        cols = {
             "line_idx": [i["line_idx"] for i in instances],
             "token_i": [i["token_i"] for i in instances],
+            "char_start": [i["char_start"] for i in instances],
             "form": [i["form"] for i in instances],
             "form_edited": [i.get("form_edited") for i in instances],
             "person": [i["person"] for i in instances],
             "number": [i["number"] for i in instances],
+            "in_lexicon": [i["in_lexicon"] for i in instances],
+            "n_pieces": [i["n_pieces"] for i in instances],
+            "word_initial": [i["word_initial"] for i in instances],
             "head_edited": [i.get("head_edited") for i in instances],
             "n_line_edits": [i.get("n_line_edits") for i in instances],
             "logprob_sum": [f(x) for x in r["logprob_sum_arr"]],
             "logprob_first": [f(x) for x in r["logprob_first_arr"]],
             "entropy": [f(x) for x in r["entropy"]],
-        }), odir / f"{args.file}.parquet")
-        if removed_instances:
+        }
+        # Probability of each inventory form at the (first) masked slot,
+        # summed over that form's single-piece variants.
+        k = 0
+        for form, grp in zip(INVENTORY_FORMS, inv_ids):
+            p = r["inv"][:, k:k + len(grp)].sum(axis=1) if grp else np.full(len(instances), np.nan)
+            cols[f"p_{form}"] = [f(x) for x in p]
+            k += len(grp)
+        pq.write_table(pa.table(cols), odir / f"{stem}.parquet")
+        if removed_instances and (not args.shard or si == 0):
             pq.write_table(pa.table({
                 "line_idx": [i["line_idx"] for i in removed_instances],
                 "token_i": [i["token_i"] for i in removed_instances],
                 "form": [i["form"] for i in removed_instances],
             }), odir / f"{args.file}.line_removed.parquet")
-        with open(odir / f"{args.file}.manifest.json", "w") as fh:
+        with open(odir / f"{stem}.manifest.json", "w") as fh:
             json.dump({"intervention": args.intervention, "hf_id": hf_id,
                        "mlm_ctx": args.mlm_ctx, "mlm_ctx_right": str(cr),
+                       "line_sep": args.line_sep, "shard": args.shard,
+                       "n_instances_in_file": n_all,
                        "n_scored": len(instances),
                        "n_line_removed": len(removed_instances),
+                       "inventory_ids": inv_meta,
                        "counters": counters}, fh, indent=2)
         print(f"INTERVENTION SCORING OK: {args.intervention} "
               f"({len(instances):,} scored, {len(removed_instances):,} "
