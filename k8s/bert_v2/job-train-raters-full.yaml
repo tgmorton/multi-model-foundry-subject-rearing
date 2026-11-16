@@ -16,7 +16,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 40
+  backoffLimit: 200
   ttlSecondsAfterFinished: 1209600
   podFailurePolicy:
     rules:
@@ -61,6 +61,11 @@ spec:
                 - hcc-nrp-shor-c5805.unl.edu
                 - ry-gpu-01.sdsc.optiputer.net
                 - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+                - k8s-chase-ci-01.calit2.optiputer.net
+                - gpengine-uams.areon.net
+                - k8s-haosu-15.sdsc.optiputer.net
+                - hcc-prp-c5038.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -165,7 +170,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 40
+  backoffLimit: 200
   ttlSecondsAfterFinished: 1209600
   podFailurePolicy:
     rules:
@@ -211,6 +216,11 @@ spec:
                 - hcc-nrp-shor-c5805.unl.edu
                 - ry-gpu-01.sdsc.optiputer.net
                 - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+                - k8s-chase-ci-01.calit2.optiputer.net
+                - gpengine-uams.areon.net
+                - k8s-haosu-15.sdsc.optiputer.net
+                - hcc-prp-c5038.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -315,7 +325,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 40
+  backoffLimit: 200
   ttlSecondsAfterFinished: 1209600
   podFailurePolicy:
     rules:
@@ -361,6 +371,11 @@ spec:
                 - hcc-nrp-shor-c5805.unl.edu
                 - ry-gpu-01.sdsc.optiputer.net
                 - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+                - k8s-chase-ci-01.calit2.optiputer.net
+                - gpengine-uams.areon.net
+                - k8s-haosu-15.sdsc.optiputer.net
+                - hcc-prp-c5038.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -465,7 +480,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 40
+  backoffLimit: 200
   ttlSecondsAfterFinished: 1209600
   podFailurePolicy:
     rules:
@@ -510,6 +525,11 @@ spec:
                 - hcc-nrp-shor-c5805.unl.edu
                 - ry-gpu-01.sdsc.optiputer.net
                 - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+                - k8s-chase-ci-01.calit2.optiputer.net
+                - gpengine-uams.areon.net
+                - k8s-haosu-15.sdsc.optiputer.net
+                - hcc-prp-c5038.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
@@ -614,7 +634,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
-  backoffLimit: 40
+  backoffLimit: 200
   ttlSecondsAfterFinished: 1209600
   podFailurePolicy:
     rules:
@@ -659,6 +679,11 @@ spec:
                 - hcc-nrp-shor-c5805.unl.edu
                 - ry-gpu-01.sdsc.optiputer.net
                 - k8s-chase-ci-07.calit2.optiputer.net
+                - nrp-fiona-001.sdmz.amnh.org
+                - k8s-chase-ci-01.calit2.optiputer.net
+                - gpengine-uams.areon.net
+                - k8s-haosu-15.sdsc.optiputer.net
+                - hcc-prp-c5038.unl.edu
       initContainers:
       - name: clone-repo
         image: alpine/git
