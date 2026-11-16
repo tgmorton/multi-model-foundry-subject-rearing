@@ -98,7 +98,7 @@ def p_order(doc, fr, n):
     fig, box = doc.page(
         "Matched set, wave2", "The order effect on the original contexts",
         f"Most-recoverable-first minus least-recoverable-first at each removal level with both arms scored ({n_levels} of 9 "
-        f"levels so far; {n} of {WAVE2_RUNS} runs).",
+        f"levels; {n} of {WAVE2_RUNS} runs).",
         notes=[f"Mean over those levels: baseline {eff['baseline'].mean():+.3f}, old items {eff['enrich, old items'].mean():+.3f}, "
                f"fixed items {eff['enrich, fixed items'].mean():+.3f}." if n_levels else "No removal level has both arms yet.",
                "Differences of two single-seed runs, so each point is noisy."])

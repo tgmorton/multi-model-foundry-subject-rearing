@@ -1899,8 +1899,8 @@ def p_caveats(doc, S):
              f"Same-construction primes can share the target's sentence template (page {doc.ref['examples']}). The strongest "
              "different-word effects may be template priming rather than function priming.",
              "One seed per cell, and runs share their training text: run-level CIs are narrow by construction.",
-             "Enriched verbal morphology: most subject-drop items also change verb agreement between versions "
-             "('we enjoyimus' / 'enjoyikt'), as in matched-v1.",
+             "Enriched verbal morphology is scored on the fixed v2 stimuli: null items keep the verb's agreement, "
+             "so overt and null differ only in the pronoun (docs/ENRICH_NULL_AGREEMENT_FIX.md).",
              "Pronoun-free contexts remove the speaker, so first-person targets and primes are odd discourse.",
          ]), ("Next steps (cheap to expensive)", [
              "Score the neutral root on the last 3 checkpoints of each run to identify direction.",
@@ -1916,7 +1916,10 @@ def p_caveats(doc, S):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--tables", type=Path, help="table directory, default priming_deep (priming_deep_fixed.py writes the fixed one)")
     a = ap.parse_args()
+    if a.tables:
+        P.OUT = a.tables
     plt = setup_mpl()
     meta, e, tr, T, side = load()
     S = summarise(e, tr, T)

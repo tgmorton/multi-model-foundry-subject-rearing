@@ -35,6 +35,10 @@ BUCKET = "thomas-subject-drop-artifacts"
 ORIG = "null_subj_v2_condition_matched_v1"
 NOPRON = "null_subj_v2_matched_nopron_v1"
 COMB = "null_subj_v2_nopron_plus_priming_v1"
+# Enrichment runs on the fixed stimuli (docs/ENRICH_NULL_AGREEMENT_FIX.md); --fixed-enrich.
+ORIG_V2 = "null_subj_v2_condition_matched_v2"
+COMB_V2 = "null_subj_v2_nopron_plus_priming_v2"
+PAIRING_V2 = "evaluation/stimuli/null-subj-v2-priming-nopron-v2/pairing.csv"
 CACHE = Path.home() / ".cache" / "subject-drop" / "report_cache"
 RUN_RE = re.compile(r"gpt2_large-en-pdrop2_(?P<arm>[a-z]+?)(?P<k>\d+)_(?P<iv>[a-z]+)-h0-s\d+$")
 
@@ -89,7 +93,9 @@ def load_matched(s3, bench, runs):
     """Per (run, step, category, condition) mean prefers_overt_meanlp."""
     f = CACHE / f"{bench}__agg.parquet"
     if f.exists():
-        return pd.read_parquet(f)
+        out = pd.read_parquet(f)
+        if set(runs) <= set(out.run):    # a cache built while runs were arriving is rebuilt
+            return out[out.run.isin(runs)]
 
     def one(run):
         d = get_parquet(s3, bench, "pairs", run, ["checkpoint_step", "category", "condition", "prefers_overt_meanlp"])
@@ -103,10 +109,10 @@ def load_matched(s3, bench, runs):
     return out
 
 
-def load_priming(s3, cells, pairing):
+def load_priming(s3, cells, pairing, comb=COMB):
     """Per (run, step, target cat/cond, prime cat/cond/status) mean preference, from
     the 4-shard combined cells. Pronoun-free rows ride along (cross-check)."""
-    cdir = CACHE / f"{COMB}__cells"
+    cdir = CACHE / f"{comb}__cells"
     cdir.mkdir(parents=True, exist_ok=True)
     pm = pairing.set_index("item_id")
 
@@ -114,7 +120,7 @@ def load_priming(s3, cells, pairing):
         cf = cdir / f"{cell}.parquet"
         if cf.exists():           # per-cell cache: a rebuild fetches only new shards
             return pd.read_parquet(cf)
-        d = get_parquet(s3, COMB, "pairs", cell, ["checkpoint_step", "category", "condition", "item_id", "prefers_overt_meanlp"])
+        d = get_parquet(s3, comb, "pairs", cell, ["checkpoint_step", "category", "condition", "item_id", "prefers_overt_meanlp"])
         run = cell.rsplit("__ckpt_shard", 1)[0]
         pr = d.category.str.contains("__p_")
         a = d[~pr].groupby(["checkpoint_step", "category", "condition"]).prefers_overt_meanlp.mean().reset_index()
@@ -228,7 +234,7 @@ def fig_person(pdf, es, plt):
     ax.axhline(0.5, color="#ccc", lw=0.7)
     ax.set_ylabel("end-state P(prefer overt subject)")
     ax.set_title("Subject drop (with and without agreement), by target person/number\n"
-                 "140 gpt2_large runs, mean ± 95% CI over runs", fontsize=10.5)
+                 f"{es.run.nunique()} gpt2_large runs, mean ± 95% CI over runs", fontsize=10.5)
     ax.legend(frameon=False, fontsize=9, loc="lower right")
     fig.text(0.07, 0.01, "* 1st person: the pronoun-free context cannot mention the speaker, so this contrast is "
                          "'speaker mentioned vs not' and is excluded from the pronoun-effect analysis.", fontsize=7.8, color=GREY)
@@ -300,6 +306,7 @@ def fig_delta(pdf, es, plt):
     ivs = [i for i in IVS if i in set(per.iv)]
     fig, axes = plt.subplots(1, len(ivs), figsize=(3.0 * len(ivs), 3.6), sharey=True, squeeze=False)
     lo = min(per.delta.min(), -0.05) - 0.03
+    hi = max(per.delta.max(), 0.02) + 0.03
     for c, iv in enumerate(ivs):
         ax = axes[0][c]
         sub = per[per.iv == iv]
@@ -311,7 +318,7 @@ def fig_delta(pdf, es, plt):
         if len(anc):
             ax.plot([100], [anc.delta.mean()], "*", color=SIENNA, ms=12, label="all pronouns removed")
         ax.axhline(0, color="#999", lw=0.8)
-        ax.set_ylim(lo, 0.05)
+        ax.set_ylim(lo, hi)
         ax.set_title(IV_LABEL[iv], fontsize=9.5)
         ax.set_xticks([10, 30, 50, 70, 90, 100])
         ax.tick_params(labelsize=7.5)
@@ -378,7 +385,7 @@ def table_page(pdf, es, plt):
     ax = fig.add_axes([0.07, 0.25, 0.86, 0.66])
     ax.axis("off")
     t = ax.table(cellText=rows, colLabels=["condition / group", "original", "pronoun-free", "Δ", "SE(Δ)", "runs"],
-                 loc="upper center", cellLoc="right", colLoc="right")
+                 colWidths=[0.40, 0.13, 0.15, 0.12, 0.11, 0.09], loc="upper center", cellLoc="right", colLoc="right")
     t.auto_set_font_size(False)
     t.set_fontsize(8.5)
     t.scale(1, 1.35)
@@ -510,6 +517,7 @@ def main():
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--refresh-priming", action="store_true", help="re-download the priming aggregates")
     ap.add_argument("--no-priming", action="store_true", help="pronoun-free part only (skips the priming download)")
+    ap.add_argument("--fixed-enrich", action="store_true", help="score the enrichment runs on the fixed v2 stimuli")
     a = ap.parse_args()
     import matplotlib
     matplotlib.use("Agg")
@@ -523,6 +531,19 @@ def main():
     print(f"runs with both original and pronoun-free results: {len(runs)}")
     orig = load_matched(s3, ORIG, runs)
     nopron = load_matched(s3, NOPRON, runs)
+    fixed, enrich = None, []
+    if a.fixed_enrich:
+        enrich = [r for r in runs if "_enrichvm-" in r]
+        scored = set(list_cells(s3, ORIG_V2))
+        runs = [r for r in runs if r not in enrich or r in scored]
+        good = [r for r in enrich if r in scored]
+        print(f"enrichment on v2 stimuli: {len(good)} of {len(enrich)} runs")
+        cells = sorted(c for c in list_cells(s3, COMB_V2) if c.endswith("of4") and c.rsplit("__ckpt_shard", 1)[0] in good)
+        assert len(cells) == 4 * len(good), "every enrichment run needs its 4 v2 priming shards"
+        fixed = load_priming(s3, cells, pd.read_csv(REPO / PAIRING_V2), comb=COMB_V2)
+        cols = ["checkpoint_step", "category", "condition", "prefers_overt_meanlp", "run"]
+        orig = pd.concat([orig[~orig.run.isin(enrich)], load_matched(s3, ORIG_V2, good)], ignore_index=True)
+        nopron = pd.concat([nopron[~nopron.run.isin(enrich)], fixed.loc[fixed.kind == "nopron", cols]], ignore_index=True)
     e_o = endstate(orig, ["category", "condition"]).rename(columns={"prefers_overt_meanlp": "orig"})
     e_n = endstate(nopron, ["category", "condition"]).rename(columns={"prefers_overt_meanlp": "nopron"})
     es = e_o.merge(e_n, on=["run", "category", "condition"])
@@ -544,9 +565,11 @@ def main():
     if not a.no_priming:
         pairing = pd.read_csv(REPO / "evaluation/stimuli/null-subj-v2-priming-nopron-v1/pairing.csv")
         pr = load_priming(s3, comb_cells, pairing)
+        if fixed is not None:
+            pr = pd.concat([pr[~pr.run.isin(enrich)], fixed], ignore_index=True)
         shards = pd.Series([c.rsplit("__ckpt_shard", 1) for c in comb_cells])
         nshard = shards.map(lambda x: x[0]).value_counts()
-        complete = sorted(nshard[nshard == 4].index)
+        complete = sorted(r for r in nshard[nshard == 4].index if r in runs)
         pe = priming_endstate(pr, complete)
         print(f"priming: {len(comb_cells)} shard cells, {len(complete)} runs with all 4 shards")
         # cross-check: pronoun-free rows inside the combined pass vs the standalone pronoun-free eval
@@ -556,12 +579,16 @@ def main():
     d2 = es[es.category.isin(SUBJ) & es.condition.isin(["subj_2sg", "subj_2pl"])]
     per2 = d2.groupby("run")[["orig", "nopron"]].mean()
     dd = per2.nopron - per2.orig
+    by = parse_runs(dd.rename("d").reset_index())
+    arm_d, iv_d = by.groupby("arm").d.mean(), by.groupby("iv").d.mean()
+    arm_txt = ", ".join(f"{ARM_STYLE[k][3]} {arm_d[k]:+.3f}" for k in ARM_STYLE if k in arm_d.index)
+    iv_txt = ", ".join(f"{IV_LABEL[k]} {iv_d[k]:+.3f}" for k in IVS)
     if pe is not None:
         w = pe.pivot_table(index=["run"], columns="prime_status", values="prefers_overt_meanlp", aggfunc="mean")
         pe_all = (w.overt - w.null)
         priming_summary = [
             ("h", "2. Cross-construction priming (TENTATIVE)"),
-            ("t", f"• {len(complete)} of {len(runs)} runs have all 4 checkpoint shards scored; the rest are still running. "
+            ("t", f"• {len(complete)} of {len(runs)} runs have all 4 checkpoint shards scored. "
                   f"Pooled priming effect (overt − null prime): {pe_all.mean():+.3f} (SE {pe_all.std(ddof=1)/np.sqrt(len(pe_all)):.3f}).\n"
                   "• Design: prime item (context + overt or null sentence) followed by a target item from any construction; "
                   "prime and target share no content word or name; condition-matched; contexts pronoun-free.\n"
@@ -582,11 +609,11 @@ def main():
                   "model's last 3 checkpoints. Preference = P(model prefers the overt-pronoun member of a minimal pair)."),
             ("h", "1. Pronoun-free contexts (complete: all runs, all checkpoints)"),
             ("t", f"• Removing the pronoun from the context lowers end-state overt preference on 2nd-person targets by "
-                  f"{dd.mean():+.3f} (SE {dd.std(ddof=1)/np.sqrt(len(dd)):.3f}; {per2.orig.mean():.3f} → {per2.nopron.mean():.3f}).\n"
+                  f"{-dd.mean():.3f} (SE {dd.std(ddof=1)/np.sqrt(len(dd)):.3f}; {per2.orig.mean():.3f} → {per2.nopron.mean():.3f}).\n"
                   "• Targets whose context did not change (3rd person, and the other categories, where few contexts had a "
                   "pronoun) do not move: the effect is confined to the manipulated items.\n"
-                  "• The dependence is largest in models trained with their least-recoverable pronouns removed and smallest "
-                  "under rich verbal agreement (enrich verbal morphology).\n"
+                  f"• That change by arm: {arm_txt}.\n"
+                  f"• By intervention: {iv_txt}.\n"
                   "• Caveat: in the 2nd-person rewrites the addressee is no longer the subject/agent of the context ('ana , "
                   "the keys go missing often .'), so the contrast is 'addressee mentioned as a pronoun subject vs only by "
                   "vocative'. 1st-person contexts cannot mention the speaker without a pronoun; they are shown but excluded "
@@ -594,7 +621,9 @@ def main():
             *priming_summary,
             ("h", "Data checks"),
             ("t", checks + "• Stimuli: evaluation/stimuli/null-subj-v2-nopron (197 rewritten contexts, vetted 2026-10-22) and "
-                  "null-subj-v2-priming-nopron-v1 (4,608 pairings)."),
+                  "null-subj-v2-priming-nopron-v1 (4,608 pairings)."
+                  + (f"\n• The {sum(r in runs for r in enrich)} enrichment runs use the fixed v2 stimuli, where null items keep the "
+                     "verb's agreement (docs/ENRICH_NULL_AGREEMENT_FIX.md). Every other intervention is unchanged." if enrich else "")),
         ], plt)
         stimuli_page(pdf, plt)
         fig_person(pdf, es, plt)
@@ -611,8 +640,8 @@ def main():
         if pe is None:
             return print(f"wrote {a.out} (no priming)")
         text_page(pdf, "Part 2 — cross-construction priming (TENTATIVE)", [
-            ("t", f"Status: {len(complete)} of {len(runs)} runs complete (all 4 checkpoint shards); the combined pronoun-free + "
-                  "priming eval is still finishing the remainder. Numbers below use complete runs only and may shift."),
+            ("t", f"Status: {len(complete)} of {len(runs)} runs have all 4 checkpoint shards. The stimuli are unvetted, so these "
+                  "numbers are tentative. priming_deep_gpt2_large_v5_fixed_enrich.pdf has the detailed analysis."),
             ("h", "Design"),
             ("t", "• Item = <prime context> <prime sentence: overt or null> <target context> <target pair>.\n"
                   "• Every target pair gets one prime from each of the 8 constructions (4,608 pairings per condition); prime "
