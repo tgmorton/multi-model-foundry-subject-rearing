@@ -33,6 +33,76 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "scripts"))
 
 
+def load_line_info(annotated: Path, stem: str, need: set, edit_fn, line_remover, S) -> dict:
+    """line_idx -> (token starts, token ends, edited offsets, edited tokens, edited text, edited ids, removed),
+    or None for a line without a usable parse."""
+    from preprocessing.annotate import iter_annotated_file
+    info = {}
+    for entry, doc in iter_annotated_file(annotated, stem):
+        li = entry["line_idx"]
+        if li not in need:
+            continue
+        text = entry.get("raw_text", "").rstrip("\n\r")
+        if doc is None or doc.text != text:
+            info[li] = None
+            continue
+        gone = bool(line_remover(doc)[1]) if line_remover is not None else False
+        edits = (edit_fn(doc) or {}) if edit_fn is not None else {}
+        etext, eoff = S.apply_edits(doc, edits)
+        info[li] = (np.array([t.idx for t in doc]), np.array([t.idx + len(t.text) for t in doc]),
+                    np.array([eoff[t.i] for t in doc]), [edits.get(t.i, t.text) for t in doc], etext, set(edits), gone)
+    return info
+
+
+def render_item(frags: list, line_idx: int, char_start: int, rater_char_start: int, info: dict, raw: list,
+                target_len: int | None = None) -> dict:
+    """One item's fragments in the edited text. Returns {"why": reason} when it cannot be rendered, else
+    lines, char_start (pronoun offset in the edited last fragment), form_text, n_edits and, when
+    target_len (length of the base target sentence, which ends the last fragment) is given, target_start:
+    where that sentence begins in the edited last fragment."""
+    n = len(frags)
+    new, n_edits, pron_off, pron_text, tstart = [], 0, -1, None, None
+    for j, frag in enumerate(frags):
+        li = line_idx - n + 1 + j
+        inf = info.get(li)
+        if inf is None:
+            return {"why": "no_parse"}
+        starts, ends, eoff, etoks, etext, edited, gone = inf
+        if gone:
+            return {"why": "line_removed"}
+        line = raw[li]
+        if j == n - 1:
+            lo = char_start - rater_char_start            # exact: the pronoun pins it
+            if line[lo:lo + len(frag)] != frag:
+                lo = -1
+        else:
+            lo = len(line) - len(frag) if line.endswith(frag) else line.find(frag)
+        if lo < 0:
+            return {"why": "fragment_not_found"}
+        hi = lo + len(frag)
+        inside = np.flatnonzero((starts >= lo) & (ends <= hi))
+        if len(inside) == 0:
+            new.append("")
+            continue
+        f0, f1 = int(inside[0]), int(inside[-1])
+        new.append(etext[int(eoff[f0]):int(eoff[f1]) + len(etoks[f1])])
+        n_edits += sum(1 for k in range(f0, f1 + 1) if k in edited)
+        if j == n - 1:
+            hit = np.flatnonzero(starts == char_start)
+            if len(hit) == 0 or not (f0 <= int(hit[0]) <= f1):
+                return {"why": "pronoun_not_a_token"}
+            p = int(hit[0])
+            pron_off, pron_text = int(eoff[p] - eoff[f0]), etoks[p]
+            if target_len is not None:
+                s0 = hi - target_len
+                first = inside[starts[inside] >= s0]
+                if len(first) == 0:
+                    return {"why": "target_not_found"}
+                tstart = int(eoff[int(first[0])] - eoff[f0])
+    return {"why": None, "lines": new, "char_start": pron_off, "form_text": pron_text, "n_edits": n_edits,
+            "target_start": tstart}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--annotated", type=Path, required=True)
@@ -45,8 +115,6 @@ def main() -> None:
     a = ap.parse_args()
 
     import score_pronoun_recoverability as S
-    from preprocessing.annotate import iter_annotated_file
-
     edit_fn, line_remover = S.resolve_intervention(a.intervention)
     items = pd.read_parquet(a.items)
     out_rows = []
@@ -59,69 +127,19 @@ def main() -> None:
         for r in g.itertuples():
             n = len(frags[getattr(r, a.id_col)])
             need.update(range(r.line_idx - n + 1, r.line_idx + 1))
-        # per needed line: token starts, token ends, edited offsets, edited text
-        info = {}
-        for entry, doc in iter_annotated_file(a.annotated, stem):
-            li = entry["line_idx"]
-            if li not in need:
-                continue
-            text = entry.get("raw_text", "").rstrip("\n\r")
-            if doc is None or doc.text != text:
-                info[li] = None
-                continue
-            gone = bool(line_remover(doc)[1]) if line_remover is not None else False
-            edits = (edit_fn(doc) or {}) if edit_fn is not None else {}
-            etext, eoff = S.apply_edits(doc, edits)
-            info[li] = (np.array([t.idx for t in doc]), np.array([t.idx + len(t.text) for t in doc]),
-                        np.array([eoff[t.i] for t in doc]), [edits.get(t.i, t.text) for t in doc], etext, set(edits), gone)
+        info = load_line_info(a.annotated, stem, need, edit_fn, line_remover, S)
         print(f"{stem}: {len(g):,} items on {len(need):,} lines ({sum(v is None for v in info.values())} without a parse)",
               flush=True)
         for r in g.itertuples():
             cid = getattr(r, a.id_col)
-            fr = frags[cid]
-            n = len(fr)
+            x = render_item(frags[cid], int(r.line_idx), int(r.char_start), int(r.rater_char_start), info, raw)
             row = {a.id_col: cid, "rater_lines": None, "rater_char_start": -1, "form_text": None, "n_edits": 0, "rendered": False}
-            new, why, n_edits, pron_off, pron_text = [], None, 0, -1, None
-            for j, frag in enumerate(fr):
-                li = r.line_idx - n + 1 + j
-                inf = info.get(li)
-                if inf is None:
-                    why = "no_parse"
-                    break
-                starts, ends, eoff, etoks, etext, edited, gone = inf
-                if gone:
-                    why = "line_removed"
-                    break
-                line = raw[li]
-                if j == n - 1:
-                    lo = int(r.char_start) - int(r.rater_char_start)       # exact: the pronoun pins it
-                    if line[lo:lo + len(frag)] != frag:
-                        lo = -1
-                else:
-                    lo = len(line) - len(frag) if line.endswith(frag) else line.find(frag)
-                if lo < 0:
-                    why = "fragment_not_found"
-                    break
-                hi = lo + len(frag)
-                inside = np.flatnonzero((starts >= lo) & (ends <= hi))
-                if len(inside) == 0:
-                    new.append("")
-                    continue
-                f0, f1 = int(inside[0]), int(inside[-1])
-                new.append(etext[int(eoff[f0]):int(eoff[f1]) + len(etoks[f1])])
-                n_edits += sum(1 for k in range(f0, f1 + 1) if k in edited)
-                if j == n - 1:
-                    hit = np.flatnonzero(starts == int(r.char_start))
-                    if len(hit) == 0 or not (f0 <= int(hit[0]) <= f1):
-                        why = "pronoun_not_a_token"
-                        break
-                    p = int(hit[0])
-                    pron_off, pron_text = int(eoff[p] - eoff[f0]), etoks[p]
-            if why is None:
-                row.update(rater_lines=json.dumps(new), rater_char_start=pron_off, form_text=pron_text, n_edits=n_edits, rendered=True)
+            if x["why"] is None:
+                row.update(rater_lines=json.dumps(x["lines"]), rater_char_start=x["char_start"], form_text=x["form_text"],
+                           n_edits=x["n_edits"], rendered=True)
                 counts["rendered"] += 1
             else:
-                counts[why] += 1
+                counts[x["why"]] = counts.get(x["why"], 0) + 1
             out_rows.append(row)
     out = pd.DataFrame(out_rows)
     a.out.parent.mkdir(parents=True, exist_ok=True)
