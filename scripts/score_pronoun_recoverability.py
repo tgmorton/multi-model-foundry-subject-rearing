@@ -798,7 +798,7 @@ def phase_b(lines, instances, scorers: Dict[str, Path], inv_ids: List[List[int]]
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--corpus", required=True, choices=["train_90M", "pull_10M"])
+    ap.add_argument("--corpus", required=True, choices=["train_90M", "pull_10M", "test_10M"])
     ap.add_argument("--file", required=True, help="genre stem, e.g. switchboard")
     ap.add_argument("--data-root", type=Path, default=Path("/mnt/data"))
     ap.add_argument("--spacy-model", default="en_core_web_trf")

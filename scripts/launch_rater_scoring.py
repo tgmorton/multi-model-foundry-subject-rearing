@@ -69,6 +69,13 @@ except Exception as e:
 "
 export PYTHONPATH="/opt/repo:${PYTHONPATH:-}"
 cd /opt/repo
+# From here on every failure must COUNT against backoffLimit. The Job ignores exit 2 (no CUDA on
+# the node), and argparse also exits 2: on 2026-11-16 a rejected --corpus value was retried
+# ~180 times over ten hours before anyone looked. So the work runs in a subshell and any
+# failure leaves with exit 1.
+set +e
+(
+set -euo pipefail
 python - <<PYDL
 import boto3, pathlib
 P = "raters/rater-bert_large_preln-en-$RATER_CORPUS-full-v1/checkpoint-23000/"
@@ -107,6 +114,9 @@ for p in list(d.glob(stem + ".*")) + list(d.glob("$GENRE.line_removed.parquet"))
     print("uploaded", p.name)
 PYUP
 echo "SHARD $CORPUS/$GENRE $SHARD OK"
+)
+RC=$?
+if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): $CORPUS/$GENRE $SHARD"; exit 1; fi
 '''
 
 
@@ -128,7 +138,7 @@ spec:
   completionMode: Indexed
   completions: {len(tasks)}
   parallelism: {min(parallelism, len(tasks))}
-  backoffLimit: 40
+  backoffLimit: 12
   ttlSecondsAfterFinished: 604800
   podFailurePolicy:
     rules:
