@@ -184,8 +184,9 @@ def main() -> None:
     d = c.merge(item[["cand_id", "surp_item", "decile_item", "rater_tokens", "top1"]], on="cand_id", how="left")
     d["parent_cand_id"], d["variant"] = d.cand_id, False
     # synthetic variants (make_context_variants.py): same target, less of its real context
-    vfiles = sorted(a.dir.glob("variants_*.parquet"))
-    vfiles = [f for f in vfiles if not f.name.startswith(f"variants_{a.label}__")]
+    # definitions are variants_<name>.parquet; any file with "__" in its name is a score table
+    # (variants_<label>__<name>) or a condition rendering (variants_<name>__<intervention>)
+    vfiles = [f for f in sorted(a.dir.glob("variants_*.parquet")) if "__" not in f.stem]
     if a.pool:
         v = pd.read_parquet(a.dir / f"{a.pool}_candidates.parquet")
         vs = pd.read_parquet(a.dir / f"{a.pool}_{a.label}.parquet").rename(columns=cols)
