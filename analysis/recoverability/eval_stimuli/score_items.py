@@ -35,8 +35,11 @@ from score_corpus_instances import ROBBI_THRESHOLDS  # noqa: E402
 
 
 def encode_items(items: pd.DataFrame, tok, aligner, S, lines_col="rater_lines", start_col="rater_char_start",
-                 word_col="form_text"):
-    """Per item: token ids (lines tokenized separately, concatenated), mask start, piece count."""
+                 word_col="form_text", sep_id=None):
+    """Per item: token ids (lines tokenized separately, concatenated), mask start, piece count.
+
+    sep_id: put this id after every line but the last (our cls_sep-packed raters saw [SEP] after
+    each corpus line; the item's own closing [SEP] is added by score())."""
     all_lines, owner = [], []
     parsed = [json.loads(x) for x in items[lines_col]]
     for k, ls in enumerate(parsed):
@@ -50,6 +53,8 @@ def encode_items(items: pd.DataFrame, tok, aligner, S, lines_col="rater_lines", 
     for k, ls in enumerate(parsed):
         mine = enc[cur:cur + len(ls)]
         cur += len(ls)
+        if sep_id is not None:
+            mine = [m + [sep_id] for m in mine[:-1]] + mine[-1:]
         al = aligner.align_line(ls[-1], [S._Shim(int(items[start_col].iat[k]), items[word_col].iat[k])])[0]
         ids[k] = np.concatenate([np.asarray(m, dtype=np.int64) for m in mine]) if mine else np.zeros(0, np.int64)
         if al is None:
@@ -118,7 +123,13 @@ def main() -> None:
     ap.add_argument("--lines-col", default="rater_lines")
     ap.add_argument("--start-col", default="rater_char_start")
     ap.add_argument("--id-col", default="cand_id")
+    ap.add_argument("--line-sep", choices=["none", "sep"], default="none",
+                    help="'sep': [SEP] between the item's lines, as our own raters were trained (robbi: none)")
+    ap.add_argument("--thresholds-json", type=Path, default=None,
+                    help="a rater's RANKING_MANIFEST.json (decile_upper_thresholds); default: robbi's frozen bounds")
     a = ap.parse_args()
+    thresholds = (json.loads(a.thresholds_json.read_text())["decile_upper_thresholds"] if a.thresholds_json
+                  else ROBBI_THRESHOLDS)
 
     import torch
     from transformers import AutoModelForMaskedLM, AutoTokenizer
@@ -128,6 +139,8 @@ def main() -> None:
     tok = AutoTokenizer.from_pretrained(a.hf_mlm, use_fast=True)
     aligner = S.HFAligner(tok)
     items = pd.read_parquet(a.items)
+    if "rendered" in items:                       # output of render_items_condition.py
+        items = items[items.rendered].reset_index(drop=True)
     if a.shard:
         i, n = (int(x) for x in a.shard.split("/"))
         items = items.iloc[i::n].reset_index(drop=True)
@@ -140,7 +153,8 @@ def main() -> None:
         if bad:
             sys.exit(f"FAIL: {bad} items whose pronoun is not at rater_char_start")
     t0 = time.time()
-    ids, pos, npieces, wi = encode_items(items, tok, aligner, S, a.lines_col, a.start_col)
+    sep_id = tok.sep_token_id if a.line_sep == "sep" else None
+    ids, pos, npieces, wi = encode_items(items, tok, aligner, S, a.lines_col, a.start_col, sep_id=sep_id)
     print(f"{len(items):,} items encoded in {time.time() - t0:.0f}s; unaligned {(pos < 0).sum()}; "
           f"median length {int(np.median([len(x) for x in ids]))} tokens", flush=True)
     model = AutoModelForMaskedLM.from_pretrained(a.hf_mlm, attn_implementation="eager").to(device).eval()
@@ -153,6 +167,8 @@ def main() -> None:
         for k in rng.choice(np.flatnonzero(pos >= 0), size=min(a.check, int((pos >= 0).sum())), replace=False):
             ls = json.loads(items[a.lines_col].iat[k])
             enc = tok(ls, add_special_tokens=False)["input_ids"]
+            if sep_id is not None:
+                enc = [v + [sep_id] for v in enc[:-1]] + enc[-1:]
             lines = [{"line_idx": j, "ids": np.asarray(v, dtype=np.int32)} for j, v in enumerate(enc)]
             al = aligner.align_line(ls[-1], [S._Shim(int(items[a.start_col].iat[k]), items.form_text.iat[k])])[0]
             inst = [{"line_idx": len(ls) - 1, "piece_in_line": al[0], "n_pieces": al[1], "word_initial": al[2]}]
@@ -171,13 +187,13 @@ def main() -> None:
     out["n_pieces"], out["word_initial_piece"], out["n_tokens"] = npieces, wi, [len(x) for x in ids]
     out["surp"], out["logprob_first"], out["entropy"] = surp, first, ent
     out["top1"] = [tok.convert_ids_to_tokens(int(t)) if t >= 0 else None for t in top]
-    out["decile"] = np.where(np.isnan(surp), -1, np.searchsorted(ROBBI_THRESHOLDS, np.nan_to_num(surp), side="left")).astype(np.int8)
+    out["decile"] = np.where(np.isnan(surp), -1, np.searchsorted(thresholds, np.nan_to_num(surp), side="left")).astype(np.int8)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(a.out)
     share = out[out.decile >= 0].decile.value_counts(normalize=True).sort_index().round(4)
     a.out.with_suffix(".meta.json").write_text(json.dumps({
         "items": str(a.items), "hf_mlm": a.hf_mlm, "label": a.label, "n": len(out), "unaligned": int((pos < 0).sum()),
-        "thresholds": ROBBI_THRESHOLDS, "decile_share": share.to_dict()}, indent=2))
+        "line_sep": a.line_sep, "thresholds": list(thresholds), "decile_share": share.to_dict()}, indent=2))
     print(share.to_string())
     print("SCORE OK", flush=True)
 
