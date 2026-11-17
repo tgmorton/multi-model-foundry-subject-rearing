@@ -84,6 +84,8 @@ def main() -> None:
     ap.add_argument("--rater", required=True)
     ap.add_argument("--work", type=Path, required=True)
     ap.add_argument("--pull", action="store_true")
+    ap.add_argument("--push", action="store_true",
+                    help="upload the ranking folder to S3 recoverability/rater_scores/rater_<short>/ranking/")
     ap.add_argument("--allow-partial", action="store_true",
                     help="preview: go on with the genres whose shards are complete (thresholds are then not final)")
     a = ap.parse_args()
@@ -204,6 +206,17 @@ def main() -> None:
     print(by_form[by_form.n >= 500].round(3).to_string(index=False))
     if incomplete:
         print("PREVIEW ONLY; incomplete:", incomplete)
+    if a.push:
+        if incomplete:
+            sys.exit("not pushing a preview")
+        import boto3
+        s3 = boto3.client("s3", endpoint_url="https://s3-west.nrp-nautilus.io")
+        n = 0
+        for p in sorted(out.rglob("*")):
+            if p.is_file():
+                s3.upload_file(str(p), BUCKET, f"recoverability/rater_scores/rater_{a.rater}/ranking/{p.relative_to(out)}")
+                n += 1
+        print(f"pushed {n} files to s3://{BUCKET}/recoverability/rater_scores/rater_{a.rater}/ranking/")
 
 
 if __name__ == "__main__":
