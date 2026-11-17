@@ -7,6 +7,15 @@
 # One Job per corpus (not one Indexed Job) so each can sit on a different 48 GB pool:
 # base on A40, enrichvm + impcase on L40/L40S, lemverb + rmexpl on RTX A6000 (2026-11-11,
 # every 48 GB pool full; a single pool would queue all five behind one product).
+#
+# Exit codes: each Job ignores exit 2 from the trainer container, which is what the GPU check
+# at the top of the pod script returns on a node without working CUDA. Exit 2 is also what
+# typer returns for a bad CLI argument and what python returns for a missing script, so a
+# pod failing that way would never be counted and would be retried without end
+# (thomas-rerate-enrichvm-sm-t1, 2026-11-16: ~180 pods in ten hours). Everything after the
+# GPU check therefore runs in a subshell and any failure leaves with exit 1. That includes
+# the trainer's own "GPU not healthy at trainer init" exit 2 (model_foundry/trainer.py),
+# which now counts against backoffLimit like any other failure.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -94,6 +103,11 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
           cd /opt/repo
+          # Failures below must count against backoffLimit (see "Exit codes" at the top of
+          # this file): subshell, and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           rm -rf data/raw data/tokenized data/chunked tokenizers models
           mkdir -p data /mnt/data/models/raters_v2
@@ -130,6 +144,9 @@ spec:
             python -m model_foundry.cli run "$CFG"
           done
           echo "RATER DONE $C"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): rater $C"; exit 1; fi
         env:
         - {name: CORPUS, value: "base"}
         - {name: PYTHONPATH, value: "/opt/repo"}
@@ -249,6 +266,11 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
           cd /opt/repo
+          # Failures below must count against backoffLimit (see "Exit codes" at the top of
+          # this file): subshell, and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           rm -rf data/raw data/tokenized data/chunked tokenizers models
           mkdir -p data /mnt/data/models/raters_v2
@@ -285,6 +307,9 @@ spec:
             python -m model_foundry.cli run "$CFG"
           done
           echo "RATER DONE $C"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): rater $C"; exit 1; fi
         env:
         - {name: CORPUS, value: "enrich_verbal_morphology"}
         - {name: PYTHONPATH, value: "/opt/repo"}
@@ -404,6 +429,11 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
           cd /opt/repo
+          # Failures below must count against backoffLimit (see "Exit codes" at the top of
+          # this file): subshell, and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           rm -rf data/raw data/tokenized data/chunked tokenizers models
           mkdir -p data /mnt/data/models/raters_v2
@@ -440,6 +470,9 @@ spec:
             python -m model_foundry.cli run "$CFG"
           done
           echo "RATER DONE $C"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): rater $C"; exit 1; fi
         env:
         - {name: CORPUS, value: "impoverish_case_en"}
         - {name: PYTHONPATH, value: "/opt/repo"}
@@ -558,6 +591,11 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
           cd /opt/repo
+          # Failures below must count against backoffLimit (see "Exit codes" at the top of
+          # this file): subshell, and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           rm -rf data/raw data/tokenized data/chunked tokenizers models
           mkdir -p data /mnt/data/models/raters_v2
@@ -594,6 +632,9 @@ spec:
             python -m model_foundry.cli run "$CFG"
           done
           echo "RATER DONE $C"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): rater $C"; exit 1; fi
         env:
         - {name: CORPUS, value: "lemmatize_verbs"}
         - {name: PYTHONPATH, value: "/opt/repo"}
@@ -712,6 +753,11 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
           cd /opt/repo
+          # Failures below must count against backoffLimit (see "Exit codes" at the top of
+          # this file): subshell, and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           pip install -q "wandb==0.26.0" 2>&1 | tail -2 || true
           rm -rf data/raw data/tokenized data/chunked tokenizers models
           mkdir -p data /mnt/data/models/raters_v2
@@ -748,6 +794,9 @@ spec:
             python -m model_foundry.cli run "$CFG"
           done
           echo "RATER DONE $C"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): rater $C"; exit 1; fi
         env:
         - {name: CORPUS, value: "remove_expletive_sentences_en"}
         - {name: PYTHONPATH, value: "/opt/repo"}

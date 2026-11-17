@@ -141,6 +141,17 @@ spec:
               print(f'FATAL: GPU not healthy: {e}', file=sys.stderr); sys.exit(2)
           "
 
+          # From here on every failure must COUNT against backoffLimit. The
+          # Job ignores exit 2 (the GPU probe above), and exit 2 is also what
+          # argparse and typer return for a bad argument, what rater_sweep.py
+          # returns for a base config without a rater_sweep block, and what
+          # python returns for a missing script. A pod failing that way is
+          # never counted and is retried without end
+          # (thomas-rerate-enrichvm-sm-t1, 2026-11-16). So the work runs in a
+          # subshell and any failure leaves with exit 1.
+          set +e
+          (
+          set -euo pipefail
           test -n "${WANDB_API_KEY:-}" || { echo "FAIL WANDB_API_KEY missing"; exit 1; }
           case "${SWEEP_ID:-}" in
             ""|*REPLACE*) echo "FAIL SWEEP_ID not set (render with --sweep-id)"; exit 1 ;;
@@ -194,6 +205,9 @@ spec:
           fi
           echo "trial succeeded; sentinel:"
           cat "$TRIAL_SENTINEL"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): ${CONDITION:-?}"; exit 1; fi
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - {name: PYTORCH_CUDA_ALLOC_CONF, value: "expandable_segments:True"}

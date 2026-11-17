@@ -170,6 +170,7 @@ spec:
           echo "=========================================="
 
           # GPU health probe (exit 2 → podFailurePolicy Ignore → reschedule).
+          # Nothing else in this script may leave with exit 2: see below.
           python3 -c "
           import sys, torch
           try:
@@ -183,6 +184,16 @@ spec:
           "
 
           cd /opt/repo
+          # From here on every failure must COUNT against backoffLimit. The Job
+          # ignores exit 2 (the GPU probe above), and exit 2 is also what
+          # argparse returns for a rejected flag and what python returns for a
+          # script missing at GIT_REF. A pod failing that way was never counted
+          # and was retried without end (thomas-rerate-enrichvm-sm-t1,
+          # 2026-11-16: ~180 pods in ten hours). So the work runs in a subshell
+          # and any failure leaves with exit 1; the real code is in the log.
+          set +e
+          (
+          set -euo pipefail
           # PACK>1: this pod owns a slice of RUN_IDS_JSON and runs PACK
           # cells concurrently on its one GPU — overlapping one cell's
           # checkpoint I/O and post-eval upload with another's forwards
@@ -212,6 +223,9 @@ spec:
               --batch_size {batch_size} \\
               --scratch_dir /tmp/eval_scratch $SHARD_ARGS {extra_args}
           fi
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): idx=$JOB_COMPLETION_INDEX"; exit 1; fi
         env:
         - {{name: PYTHONPATH, value: "/opt/repo"}}
         - {{name: PYTHONHASHSEED, value: "0"}}

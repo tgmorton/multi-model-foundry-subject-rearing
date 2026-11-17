@@ -94,6 +94,11 @@ spec:
           "
           cd /opt/repo
           export HF_HOME=/tmp/hf
+          # Everything below must count against backoffLimit: the Job ignores exit 2 (GPU check
+          # above) and argparse also exits 2, so failures here leave with exit 1.
+          set +e
+          (
+          set -euo pipefail
           P=recoverability/eval_stimuli/test_10M
           python - <<PY
           import boto3
@@ -110,6 +115,9 @@ spec:
               print("uploaded", f.name, f.stat().st_size)
           PY
           echo "TEST SCORE DONE $STEM"
+          )
+          RC=$?
+          if [ "$RC" -ne 0 ]; then echo "FAILED (exit $RC): $STEM"; exit 1; fi
         env:
         - {name: PYTHONPATH, value: "/opt/repo"}
         - name: NODE_NAME
