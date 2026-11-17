@@ -150,6 +150,8 @@ def main() -> None:
     ap.add_argument("--dir", type=Path, required=True, help="directory with candidates and both score tables")
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--label", default="robbi")
+    ap.add_argument("--thresholds-json", type=Path, default=None,
+                    help="a rater's RANKING_MANIFEST.json (decile_upper_thresholds); default: robbi's frozen bounds")
     ap.add_argument("--corpus-slack", type=int, default=1)
     ap.add_argument("--max-item-tokens", type=int, default=110, help="rater tokens of context + target")
     ap.add_argument("--target-words", type=int, nargs=2, default=[4, 20])
@@ -221,7 +223,9 @@ def main() -> None:
     agree.to_csv(a.out_dir / "corpus_vs_item_decile.csv")
     nat.groupby(["ptype", "decile_item", "place"]).size().rename("n").reset_index().to_csv(
         a.out_dir / "place_by_decile.csv", index=False)
-    thr = np.array([0.0] + ROBBI_THRESHOLDS + [np.inf])
+    bounds = (json.loads(a.thresholds_json.read_text())["decile_upper_thresholds"] if a.thresholds_json
+              else ROBBI_THRESHOLDS)
+    thr = np.array([0.0] + list(bounds) + [np.inf])
     di = d.decile_item.astype(int).values
     clear = (d.surp_item.values >= thr[di] * (1 + a.boundary_margin)) & (d.surp_item.values <= thr[di + 1] * (1 - a.boundary_margin))
     usable = d[(d.rater_tokens <= a.max_item_tokens) & d.target_words.between(*a.target_words) & clear].copy()
