@@ -78,16 +78,22 @@ def score(ids, pos, npieces, tok, model, device, batch_size=64, max_len=510, log
     with torch.inference_mode():
         for b0 in range(0, len(order), batch_size):
             idxs = order[b0:b0 + batch_size]
-            seqs, slots, truths = [], [], []
+            seqs, slots, truths, kept = [], [], [], []
             for k in idxs:
                 x, p, m = ids[k].copy(), int(pos[k]), int(npieces[k])
                 if len(x) > max_len:                      # keep the pronoun, trim the far left
-                    cut = len(x) - max_len
-                    x, p = x[cut:], p - cut
+                    cut = min(len(x) - max_len, p)        # never trim past the pronoun
+                    x, p = x[cut:][:max_len], p - cut
+                    if p + m > len(x):                    # the pronoun itself fell off the right end
+                        continue
+                kept.append(k)
                 truths.append(x[p:p + m].tolist())
                 x[p:p + m] = mask_id
                 seqs.append([cls_id] + x.tolist() + [sep_id])
                 slots.append(p + 1)
+            idxs = kept
+            if not seqs:
+                continue
             L = max(len(s) for s in seqs)
             batch = torch.full((len(seqs), L), pad_id, dtype=torch.long)
             attn = torch.zeros((len(seqs), L), dtype=torch.long)
@@ -123,6 +129,9 @@ def main() -> None:
     ap.add_argument("--lines-col", default="rater_lines")
     ap.add_argument("--start-col", default="rater_char_start")
     ap.add_argument("--id-col", default="cand_id")
+    ap.add_argument("--max-len", type=int, default=510,
+                    help="longest input in pieces, without [CLS]/[SEP]; longer items lose their far left. A rater "
+                         "checkpoint from the 128-token phase needs 126")
     ap.add_argument("--line-sep", choices=["none", "sep"], default="none",
                     help="'sep': [SEP] between the item's lines, as our own raters were trained (robbi: none)")
     ap.add_argument("--thresholds-json", type=Path, default=None,
@@ -158,7 +167,7 @@ def main() -> None:
     print(f"{len(items):,} items encoded in {time.time() - t0:.0f}s; unaligned {(pos < 0).sum()}; "
           f"median length {int(np.median([len(x) for x in ids]))} tokens", flush=True)
     model = AutoModelForMaskedLM.from_pretrained(a.hf_mlm, attn_implementation="eager").to(device).eval()
-    surp, first, ent, top = score(ids, pos, npieces, tok, model, device, a.batch, amp=a.amp)
+    surp, first, ent, top = score(ids, pos, npieces, tok, model, device, a.batch, max_len=a.max_len, amp=a.amp)
 
     if a.check:
         inv_ids = [aligner.inventory_ids(f) for f in S.INVENTORY_FORMS]
