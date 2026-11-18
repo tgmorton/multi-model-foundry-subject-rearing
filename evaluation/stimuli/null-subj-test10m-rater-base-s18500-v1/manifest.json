@@ -1,0 +1,133 @@
+{
+  "built": "2026-11-18",
+  "conditions": {
+    "baseline": {
+      "ablation_registry_name": "identity",
+      "output_sha256": {
+        "adverbial.csv": "cc941ee599d611d1d61ee718781e5b11ed80c0e6cdabec66ce78f5038df9d7f6",
+        "conjunction.csv": "4f666125be7b4e6f7e394b932668cd7c788502f02578c52642b01018ea828cd1",
+        "embedded_drop.csv": "280e4249bc58713bc7dfecce908c597ef17ded1170e642ec6f8f872ec2ee912f",
+        "expletive.csv": "013673f064e6728883f22b2ce52e4ab7dfc9d02e3c7bfca12de070a3350c91b8",
+        "subject_drop.csv": "74568117ef19e7e27c1ec58cd0a99e2da446e76db5c25d14693068226eba28f8"
+      },
+      "pairs": 6024,
+      "rows": 12048
+    }
+  },
+  "description": "Decile-graded null-subject pairs sampled from the unseen test split (test_10M) with their real preceding context; one distinct item per row pair, set membership in item_key.csv",
+  "format_version": "condition-matched-stimuli.v1",
+  "item_key_sha256": "8d0a2fc7bd6a74e533b3e35f3bfd8adb209609185b5f17f0d00bb3faee457ee6",
+  "rater": [
+    "rater_base_s18500"
+  ],
+  "sets": {
+    "matched": {
+      "accepted_on_review": 2649,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_base_s18500_v1",
+      "drawn_by_tier": {
+        "1": 2744,
+        "3": 27
+      },
+      "exact_share": 0.9942259112233851,
+      "excluded_on_review": 497,
+      "label": "rater_base_s18500",
+      "matched_share": 0.9527246481414652,
+      "n_candidates": 178285,
+      "n_items": 2771,
+      "n_usable": 125253,
+      "pairs": 2771,
+      "pool": null,
+      "position": "matched",
+      "reviewed_sha256": "b5e3ef7af00782ba3430b8ac4587bbf5199d29242c559dc15b1647c0c5a4ea88",
+      "seed": 20261112,
+      "unreviewed": 122
+    },
+    "natural": {
+      "accepted_on_review": 1995,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_base_s18500_nat_v1",
+      "drawn_by_tier": {
+        "1": 2746,
+        "3": 28
+      },
+      "exact_share": 0.9935111751982696,
+      "excluded_on_review": 497,
+      "label": "rater_base_s18500",
+      "matched_share": 0.9516943042537851,
+      "n_candidates": 178285,
+      "n_items": 2774,
+      "n_usable": 125253,
+      "pairs": 2774,
+      "pool": null,
+      "position": "natural",
+      "reviewed_sha256": "b5e3ef7af00782ba3430b8ac4587bbf5199d29242c559dc15b1647c0c5a4ea88",
+      "seed": 20261112,
+      "unreviewed": 779
+    },
+    "nopron": {
+      "accepted_on_review": 1067,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "emb_bare": 24,
+        "subj_1sg": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_base_s18500_nopron_v1",
+      "drawn_by_tier": {
+        "1": 435,
+        "3": 991
+      },
+      "exact_share": 0.6227208976157083,
+      "excluded_on_review": 613,
+      "label": "rater_base_s18500",
+      "matched_share": 0.938288920056101,
+      "n_candidates": 9547,
+      "n_items": 1426,
+      "n_usable": 6669,
+      "pairs": 1426,
+      "pool": "nopron_personal",
+      "position": "natural",
+      "reviewed_sha256": "0f86ea5e20e8cf7d34bf0f1662b79c72baffe8907b3d3a8b725cb1071951ea19",
+      "seed": 20261112,
+      "unreviewed": 359
+    }
+  },
+  "vetted": true,
+  "vetting": "INTERIM PREVIEW. Deciles are from the base rater at step 18,500 of 23,000 (128-token phase): bounds are the deciles of its item scores over usable test-set candidates, and the corpus-agreement tier is off. Items read on 2026-11-12 or 2026-11-17 keep their verdicts and rejected ones were not drawn; items new to this draw had not been read when the root was built (read afterwards; rejected ones are dropped in the analysis). Not reviewed by Thomas."
+}
