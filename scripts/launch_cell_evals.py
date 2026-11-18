@@ -298,6 +298,12 @@ def main() -> None:
                                      "from CephFS: pods at us-east/us-central sites sat at 12-35%% GPU (2026-11-04)")
     ap.add_argument("--pvc", default="subject-drop-archive",
                     help="data PVC; BERT-v2 checkpoints live on thomas-rater-corpus in null-subjects")
+    ap.add_argument("--out-pvc",
+                    help="second claim, mounted at /mnt/out. For when the storage cluster behind --pvc refuses writes "
+                         "(West Ceph full, 2026-11-18: markers on the volume and the S3 upload both failed after "
+                         "scoring): put a claim from another cluster here and pass, in --extra-args, "
+                         "'--output_root /mnt/out/eval_v2/<benchmark> --results-to-pvc --no-registry'. Results then "
+                         "stay on that volume until scripts/publish_eval_results_from_pvc.py copies them to S3.")
     ap.add_argument("--gpu-key", default="gpu", help="GPU resource name for pools off the plain key (rtxa6000, a40)")
     ap.add_argument("--ephemeral", default="20Gi,40Gi", help="ephemeral-storage request,limit")
     ap.add_argument("--pod-cpu", help="override the pod's CPU request (default: one core per packed run)")
@@ -393,6 +399,16 @@ def main() -> None:
         a0 = yaml_text.index("- key: nvidia.com/gpu.product")
         a1 = yaml_text.index("- key: kubernetes.io/hostname", a0)
         yaml_text = yaml_text[:a0] + yaml_text[a1:]
+
+    if args.out_pvc:
+        yaml_text = yaml_text.replace(
+            "        - {name: data, mountPath: /mnt/data}\n",
+            "        - {name: data, mountPath: /mnt/data}\n        - {name: out, mountPath: /mnt/out}\n")
+        yaml_text = yaml_text.replace(
+            f"          claimName: {args.pvc}\n",
+            f"          claimName: {args.pvc}\n      - name: out\n        persistentVolumeClaim:\n"
+            f"          claimName: {args.out_pvc}\n")
+        assert "mountPath: /mnt/out" in yaml_text and f"claimName: {args.out_pvc}" in yaml_text
 
     if args.dry_run:
         print(yaml_text)
