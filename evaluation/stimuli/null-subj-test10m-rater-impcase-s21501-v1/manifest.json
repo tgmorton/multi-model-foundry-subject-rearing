@@ -1,0 +1,148 @@
+{
+  "built": "2026-11-18",
+  "conditions": {
+    "baseline": {
+      "ablation_registry_name": "identity",
+      "output_sha256": {
+        "adverbial.csv": "90c79d550d92af7737d8e3a556a4b2c3836790ae334e72991d7c5381cbbe5402",
+        "conjunction.csv": "40c5640f55543b1dcbd4c881d0195717e370c9b25d3615af1cc8a0858334bf85",
+        "embedded_drop.csv": "8ff3afc196f2177fea0c5093249cf327cd81852236767ae618b9ab3c4d701b77",
+        "expletive.csv": "c2f3460bed52b0cc09aac4d0eda3cb919e9dd2f033e97a7a9e6d6a8f2bec720d",
+        "subject_drop.csv": "012353de65a91f3a864d412155267a0d9e710e7a0109c27bd3b8dde7976d7120"
+      },
+      "pairs": 6005,
+      "rows": 12010
+    },
+    "impoverish_case": {
+      "ablation_registry_name": "impoverish_case",
+      "changed_rows": 3640,
+      "items_not_rendered": {},
+      "method": "token edits applied to the parsed corpus line (condition_root_from_parse.py); the null item is the edited overt sentence with the pronoun deleted",
+      "output_sha256": {
+        "adverbial.csv": "2c26b4d1fd9bbe2b1c8914832b91922760de39aa6bed927b14d0dcd2869eab17",
+        "conjunction.csv": "6d74f0c1555a5c1f1796eb4b8111084d57f8622e3fec6eb942f883125a296114",
+        "embedded_drop.csv": "e95f44671cc863f0497c3791edb8de028768ee957dc6e80d38b384301e02f9e7",
+        "expletive.csv": "30f754c3542146c6cac090984d9db0049759bd3c92c4ea284a9f6c12eaaea535",
+        "subject_drop.csv": "1a3e838e992aafebf03dbb909620107ff9a9f70dbab4ab6190fea146a302c8b1"
+      },
+      "pairs": 6005,
+      "rows": 12010
+    }
+  },
+  "description": "Decile-graded null-subject pairs sampled from the unseen test split (test_10M) with their real preceding context; one distinct item per row pair, set membership in item_key.csv",
+  "format_version": "condition-matched-stimuli.v1",
+  "item_key_sha256": "d3f93d41a59a4019a8ecdca567aec44c99332ca5e6533d29b45e089002a7376a",
+  "rater": [
+    "rater_impcase_s21501"
+  ],
+  "sets": {
+    "matched": {
+      "accepted_on_review": 2748,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_impcase_s21501_v1",
+      "drawn_by_tier": {
+        "1": 2755,
+        "3": 23
+      },
+      "exact_share": 0.994240460763139,
+      "excluded_on_review": 553,
+      "label": "rater_impcase_s21501",
+      "matched_share": 0.9503239740820735,
+      "n_candidates": 178285,
+      "n_items": 2778,
+      "n_usable": 125258,
+      "pairs": 2778,
+      "pool": null,
+      "position": "matched",
+      "reviewed_sha256": "6f374308cd5129f270c7431862ca85d8e266cf017f9c5065f091146d6a5dfe2d",
+      "seed": 20261112,
+      "unreviewed": 30
+    },
+    "natural": {
+      "accepted_on_review": 2566,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "conj": 48,
+        "emb_bare": 24,
+        "emb_that": 24,
+        "expl_it": 24,
+        "subj_1pl": 24,
+        "subj_1sg": 24,
+        "subj_2": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_impcase_s21501_nat_v1",
+      "drawn_by_tier": {
+        "1": 2759,
+        "3": 23
+      },
+      "exact_share": 0.9942487419122933,
+      "excluded_on_review": 553,
+      "label": "rater_impcase_s21501",
+      "matched_share": 0.9521926671459382,
+      "n_candidates": 178285,
+      "n_items": 2782,
+      "n_usable": 125258,
+      "pairs": 2782,
+      "pool": null,
+      "position": "natural",
+      "reviewed_sha256": "6f374308cd5129f270c7431862ca85d8e266cf017f9c5065f091146d6a5dfe2d",
+      "seed": 20261112,
+      "unreviewed": 216
+    },
+    "nopron": {
+      "accepted_on_review": 1315,
+      "agree_exact": 1.0,
+      "agree_within_slack": 1.0,
+      "boundary_margin": 0.05,
+      "cells": {
+        "adv": 48,
+        "emb_bare": 24,
+        "subj_1sg": 24,
+        "subj_3pl": 24,
+        "subj_3sg": 24
+      },
+      "corpus_slack": 1,
+      "dir": "rater_impcase_s21501_nopron_v1",
+      "drawn_by_tier": {
+        "1": 423,
+        "3": 1000
+      },
+      "exact_share": 0.5748418833450457,
+      "excluded_on_review": 696,
+      "label": "rater_impcase_s21501",
+      "matched_share": 0.9058327477160928,
+      "n_candidates": 9532,
+      "n_items": 1423,
+      "n_usable": 6612,
+      "pairs": 1423,
+      "pool": "nopron_personal",
+      "position": "natural",
+      "reviewed_sha256": "cee0f7bfac2566c32dec677709af44cb842ea8ee01a49157e448ca8c7ee2d4fd",
+      "seed": 20261112,
+      "unreviewed": 108
+    }
+  },
+  "vetted": true,
+  "vetting": "INTERIM PREVIEW. Deciles are from the impcase rater at step 21501 of 23,000, scored on the impoverish_case rendering: bounds are the deciles of its item scores over usable test-set candidates, and the corpus-agreement tier is off. Items read earlier keep their verdicts and rejected ones were not drawn; items new to this draw had not been read when the root was built (read afterwards; rejected ones are dropped in the analysis). Not reviewed by Thomas."
+}
